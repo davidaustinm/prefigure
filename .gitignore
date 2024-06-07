@@ -1,0 +1,6 @@
+.venv
+mj_cmd.py
+__pycache__
+output
+test
+*~

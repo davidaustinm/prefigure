@@ -1,0 +1,132 @@
+import ast
+import math
+import numpy as np
+import math_utilities
+import calculus
+from math import *
+from math_utilities import *
+
+# Allow authors to perform some mathematical operations and to define
+# some quantities in a safe way.  This essentially defines a namespace
+# available to authors.  We use an abstract syntax tree (AST) to
+# parse an author-generated expression and check that it only uses
+# safe python operations.  We also replace any lists or tuples with
+# equivalent numpy arrays
+#
+# TODO:  clean up and consolidate 
+
+# Record built-in python functions and constants as allowed
+functions = {x for x in dir(math) + dir(math_utilities) if not "__" in x}.difference({'e', 'pi'})
+variables = {'e', 'pi'}
+
+# Transforms an AST by wrapping any List or Tuple inside a numpy array
+class TransformList(ast.NodeTransformer):
+    def visit_Tuple(self, node):
+        return self.visit_List(node)
+    def visit_List(self, node):
+        if isinstance(node, (ast.List, ast.Tuple)):
+            # descend the ast and visit each of the children
+            node.elts = [self.visit(elt) for elt in node.elts]
+            # now wrap a tuple or list in a numpy array
+            return ast.Call(
+                func=ast.Attribute(
+                    value=ast.Name(id='np', ctx=ast.Load()),
+                    attr='array',
+                    ctx=ast.Load()),
+                args=[node],
+                keywords=[])
+
+        else:
+            return node
+
+# Evaluate a safe expression after transforming the AST as above
+def transform_eval(expr):
+    tree = ast.parse(expr, mode='eval')
+    tree = TransformList().visit(tree)
+    ast.fix_missing_locations(tree)
+    return eval(compile(tree, '', 'eval'))
+
+# validate an individual node inside an AST.  These are the allowed
+# python constructions.  This function will be called recursively on
+# each node of the tree
+def validate_node(node, args=None):
+    if isinstance(node, ast.Constant):
+        return True
+    if isinstance(node, ast.Expression):
+        return validate_node(node.body, args)
+    if isinstance(node, ast.Name):
+        return node.id in variables or node.id in args
+    if isinstance(node, (ast.List, ast.Tuple)):
+        return all([validate_node(elt, args) for elt in node.elts])
+    if isinstance(node, ast.BinOp):
+        return validate_node(node.left, args) and validate_node(node.right, args)
+    if isinstance(node, ast.UnaryOp):
+        return validate_node(node.operand, args)
+    if isinstance(node, ast.Subscript):
+        return validate_node(node.value, args) and validate_node(node.slice.value, args)
+    if isinstance(node, ast.Call):
+        if node.func.id in functions:
+            return all([validate_node(arg, args) for arg in node.args])
+        return False
+    return False
+
+# Validate an expression by sending the AST's root to validate_node
+# and traversing the tree recursively
+def validate(s, args=None):
+    tree = ast.parse(s, mode='eval')
+    return validate_node(tree, args)
+
+# Validate and then evaluate a valid expression.  This function
+# will be called from other parts of the project.
+def valid_eval(s, name=None, substitution=True):
+    if substitution:
+        s = s.replace('^', '**')
+    equal = s.find('=')
+    # is this a function?  If so:
+    if equal >= 0:
+        name, expr = [field.strip() for field in s.split('=')]
+        open = name.find('(')
+        close = name.find(')')
+        args = name[open+1: close].strip()
+        name = name[:open]
+        if validate(expr, args):
+            cmd = 'lambda ' + args + ': ' + expr
+            functions.add(name)
+            variables.add(name)
+            globals()[name] = transform_eval(cmd)
+            return globals()[name]
+        else:
+            raise SyntaxError(f'Unsafe function definition: {expr}')
+        return
+    # otherwise, it's just an expression
+    else:
+        if validate(s):
+            value = transform_eval(s)
+            if name is not None:
+                variables.add(name)
+                globals()[name] = value
+            return value
+        else:
+            raise SyntaxError(f'Unsafe definition: {s}')
+
+# used in a definition tag
+def define(expression, substitution=True):
+    left, right = [side.strip() for side in expression.split("=")]
+    if left.find('(') > 0:
+        valid_eval(expression, substitution=substitution)
+    else:
+        valid_eval(right, left, substitution=substitution)
+
+# retrieves and evaluates an author-defined function
+def evaluate(function, a):
+    return globals()[function](a)
+
+# retrieves a one-variable function and returns its derivative
+def derivative(f, name):
+    globals()[name] = lambda x: calculus.derivative(f, x)
+    functions.add(name)
+    variables.add(name)
+
+def enter_namespace(name, value):
+    globals()[name] = value
+    variables.add(name)

@@ -1,0 +1,37 @@
+<diagram width="300" height="300" margins="5">
+  <definition>
+    alignments=['ne','ne','ne','nw','nw','sw','se','se']
+  </definition>
+  <definition substitution="no">
+    labels=['1','\omega','i','\omega^3','-1','\omega^5','-i','\omega^7']
+  </definition>
+  <definition>f(t)=(cos(pi*t/4),sin(pi*t/4))</definition>
+  <coordinates bbox="[-1.4,-1.4,1.4,1.4]">
+    <grid id="grid" />
+    <axes id="axes" />
+    <circle id="unit-circle" center="(0,0)" radius="1" stroke="blue"/>
+    <repeat parameter="k=0..7">
+      <point id="point" p="f(k)" alignment="alignments[k]">
+	<m>${labels[k]}</m>
+      </point>
+    </repeat>
+  </coordinates>
+
+  <annotations>
+    <annotation id="figure" text="The eighth roots of unity">
+      <annotation id="axes" text="The coordinate axes" />
+      <annotation id="grid" text="The coordinate grid" />
+      <annotation id="unit-circle" text="The unit circle" circular="true">
+        <annotation id="point-k=0" text="The primitive eighth root of unity to the power zero" speech="one"/>
+        <annotation id="point-k=1" text="The primitive eighth root of unity" speech="omega"/>
+        <annotation id="point-k=2" text="The primitive eighth root of unity squared" speech="i"/>
+        <annotation id="point-k=3" text="The primitive eighth root of unity cubed" speech="omega cubed"/>
+        <annotation id="point-k=4" text="The primitive eighth root of unity to the fourth" speech="minus one"/>
+        <annotation id="point-k=5" text="The primitive eighth root of unity to the fifth" speech="omega to the fifth"/>
+        <annotation id="point-k=6" text="The primitive eighth root of unity to the sixth" speech="minus i"/>
+        <annotation id="point-k=7" text="The primitive eighth root of unity to the seventh" speech="omega to the seventh"/>
+      </annotation>
+    </annotation>
+  </annotations>
+
+</diagram>
