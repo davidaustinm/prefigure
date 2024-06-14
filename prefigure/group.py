@@ -23,4 +23,4 @@ def group(element, diagram, parent, outline_status):
 
     group = ET.SubElement(parent, 'g')
     diagram.add_id(group, element.get('id'))
-    diagram.parse(element, group)
+    diagram.parse(element, group, outline_status)

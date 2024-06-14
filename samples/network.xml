@@ -1,7 +1,5 @@
 <diagram xml:id="figure" width="300" height="300" margins="25">
 
-  <rectangle lower-left="(0,0)" dimensions="(300,300)" fill="lightgray"/>
-
   <group outline="tactile">
   <network id="path-network" edgedefault="directed" seed="1">
     <node id="a" label="a" fill="orangered" />

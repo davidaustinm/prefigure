@@ -243,6 +243,7 @@ class Diagram:
     # component itself on top of the outline
     def finish_outline(self, element, stroke, thickness, fill, parent):
         ET.SubElement(parent, 'use', attrib={
+            'id': element.get('id', 'none'),
             'fill': str(fill),
             'stroke-width': str(thickness),
             'stroke': str(stroke),

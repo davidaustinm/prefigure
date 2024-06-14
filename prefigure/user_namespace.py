@@ -63,7 +63,9 @@ def validate_node(node, args=None):
     if isinstance(node, ast.UnaryOp):
         return validate_node(node.operand, args)
     if isinstance(node, ast.Subscript):
-        return validate_node(node.value, args) and validate_node(node.slice.value, args)
+        return validate_node(node.value, args) and validate_node(node.slice, args)
+    if isinstance(node, ast.Index):
+        return validate_node(node.value)
     if isinstance(node, ast.Call):
         if node.func.id in functions:
             return all([validate_node(arg, args) for arg in node.args])

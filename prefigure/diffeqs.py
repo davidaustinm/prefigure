@@ -32,7 +32,6 @@ def plot_de_solution(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
         finish_outline(element, diagram, parent)
         return
-
     if element.get('function') is not None:
         element.set('name', '__de_solution')
         de_solve(element, diagram, parent, None)
@@ -47,6 +46,7 @@ def plot_de_solution(element, diagram, parent, outline_status):
     # axes='(y0, y1)', for instance, as the axes
     axes = element.get('axes', '(t,y)'). strip()[1: -1].split(',')
     x_axis, y_axis = [a.strip() for a in axes]
+
     if x_axis.startswith('y'):
         axis0 = solution[int(x_axis[1:]) + 1]
     else:
@@ -58,7 +58,6 @@ def plot_de_solution(element, diagram, parent, outline_status):
         axis1 = solution[int(y_axis[1:]) + 1]
 
     curve = zip(axis0, axis1)
-
     p = diagram.transform(next(curve))
     cmds = ['M ' + util.pt2str(p)]
     while True:

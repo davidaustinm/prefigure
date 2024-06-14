@@ -1,4 +1,4 @@
-## Supports graphical elements describing regions in the plane
+# Supports graphical elements describing regions in the plane
 
 import lxml.etree as ET
 import user_namespace as un
