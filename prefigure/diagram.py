@@ -57,11 +57,12 @@ class Diagram:
     def find_id(self, element, id = None):
         # We'll add an id attribute to the SVG element
         # If not specified, the id is obtained from a count of elements
+        suffix = ''.join(self.id_suffix)
         if id is None:
             self.ids[element.tag] = self.ids.get(element.tag, -1) + 1
-            return element.tag+'-'+str(self.ids[element.tag]) + self.id_suffix[-1]
+            return element.tag+'-'+str(self.ids[element.tag])+suffix
         else:
-            return id + self.id_suffix[-1]
+            return id + suffix
 
     def output_format(self):
         return self.format
