@@ -84,8 +84,13 @@ class Diagram:
 
     def begin_figure(self):
         # set up the dimensions of the diagram in SVG coordinates
-        width = un.valid_eval(self.diagram_element.get('width'))
-        height = un.valid_eval(self.diagram_element.get('height'))
+        dims = self.diagram_element.get('dimensions')
+        if dims is None:
+            width = un.valid_eval(self.diagram_element.get('width'))
+            height = un.valid_eval(self.diagram_element.get('height'))
+        else:
+            width, height = un.valid_eval(dims)
+
         margins = un.valid_eval(self.diagram_element.get('margins', '[0]*4'))
         if not isinstance(margins, list):
             margins = [margins] * 4

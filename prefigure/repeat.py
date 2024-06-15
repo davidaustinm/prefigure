@@ -27,10 +27,5 @@ def repeat(element, diagram, parent, outline_status):
         for child in element_cp:
             definition.append(copy.deepcopy(child))
         
-        '''
-        diagram.push_id_suffix('-' + var + '=' + k_str) 
-        diagram.parse(element, group, outline_status)
-        diagram.pop_id_suffix
-        '''
     diagram.parse(element, parent, outline_status)
 
