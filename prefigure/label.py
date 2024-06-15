@@ -1,13 +1,14 @@
 import os
 import sys
 import re
+import inspect
+from pathlib import Path
 import numpy as np
 import lxml.etree as ET
 import utilities as util
 import CTM
 import user_namespace as un
 import tempfile
-import mj_cmd
 
 # Labels will be handled here.
 # An important point is how a label will be aligned relative to its anchor.
@@ -149,8 +150,11 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
         format = 'svg'
 
     # have MathJax process the HTML file and load the resulting
-    # SVG labels into label_tree
-    mj_command = 'node {}mj-sre-page.js --{} {} {} > {}'.format(mj_cmd.mathjax_path, format, options, mj_input, mj_output)
+    # SVG labels into label_tree 
+    path = Path(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+    mj_path = str(path.parent.absolute() / 'js') 
+
+    mj_command = 'node {}/mj-sre-page.js --{} {} {} > {}'.format(mj_path, format, options, mj_input, mj_output)
     os.system(mj_command)
     label_tree = ET.parse(mj_output)
 
