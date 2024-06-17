@@ -2,8 +2,7 @@
   <definition>a=1</definition>
   <definition>f(x) = exp(x/3)*cos(x)</definition>
   <coordinates bbox="[-4,-4,4,4]">
-    <grid id="grid" />
-    <axes xlabel="x" ylabel="y"/>
+    <grid-axes xlabel="x" ylabel="y"/>
 
     <group id="graph-tangent">
       <graph id="graph" function='f' />
@@ -18,8 +17,6 @@
   <annotations>
     <annotation id="figure"
                 text="The graph of a function and its tangent line at the point a equals 1">
-      <annotation id="axes" text="A pair of coordinate axes" />
-      <annotation id="grid" text="Equally spaced horizontal and vertical grid lines" />
       <annotation id="graph-tangent" text="The graph and its tangent line">
         <annotation id="graph" text="The graph of the function f" sonify="yes"/>
         <annotation id="point" text="The point a comma f of a"/>

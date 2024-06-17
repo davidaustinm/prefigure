@@ -5,8 +5,17 @@ def annotations(element, diagram, parent, outline_status):
     if diagram.output_format() == 'tactile':
         return
 
+    # traverse the annotation tree and create the XML annotation output
+    # We first add default annotations, such as grid-axes
     diagram.initialize_annotations()
+
+    default_annotations = diagram.get_default_annotations()
+    default_annotations_added = False
     for subelement in element:
+        if not default_annotations_added:
+            for index, annotation in enumerate(default_annotations):
+                subelement.insert(index, annotation)
+            default_annotations_added = True
         annotate(subelement, diagram)
 
 def annotate(element, diagram, parent = None):
@@ -17,11 +26,16 @@ def annotate(element, diagram, parent = None):
     annotation = ET.Element('annotation')
     diagram.add_annotation(annotation)
     annotation.set('id', element.get('id'))
+    
+    active = False
 
-    active = element.get('text') is not None
-    if active:
-        annotation.set('speech2', element.get('text'))
-
+    for key, value in element.attrib.items():
+        if (key == 'text'):
+            active = True
+            annotation.set('speech2', value)
+        else:
+            annotation.set(key, value)
+        
     if len(element) > 1:
         el = ET.Element('grouped')
     else:

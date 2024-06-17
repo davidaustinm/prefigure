@@ -264,8 +264,12 @@ class Diagram:
             sys.exit()
 
         self.annotations_root = ET.Element('annotations')
-        for def_annotation in self.default_annotations:
-            self.annotations_root.append(def_annotation)
+
+    def add_default_annotation(self, annotation):
+        self.default_annotations.append(annotation)
+
+    def get_default_annotations(self):
+        return self.default_annotations
 
     def get_annotations_root(self):
         return self.annotations_root

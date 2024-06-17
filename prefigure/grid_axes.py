@@ -290,21 +290,17 @@ def grid_axes(element, diagram, parent, outline_status):
                           }
     )
 
-    '''
-    group_annotation = etree.Element('annotation')
+    group_annotation = ET.Element('annotation')
     group_annotation.set('id', 'grid-axes')
     group_annotation.set('text', 'The coordinate grid and axes')
-    default_annotations.append(group_annotation)
-    '''
+    diagram. add_default_annotation(group_annotation)
 
     grid(element, diagram, group, outline_status)
 
-    '''
-    annotation = etree.Element('annotation')
-    annotation.set('id', el.get('id'))
+    annotation = ET.Element('annotation')
+    annotation.set('id', 'grid')
     annotation.set('text', 'The coordinate grid')
     group_annotation.append(annotation)
-    '''
 
     el = ET.Element('axes')
     el.set('id', 'axes')
@@ -316,12 +312,10 @@ def grid_axes(element, diagram, parent, outline_status):
         el.set('decorations', element.get('decorations'))
     axes(el, diagram, group, outline_status)
 
-    '''
-    annotation = etree.Element('annotation')
-    annotation.set('id', el.get('id'))
+    annotation = ET.Element('annotation')
+    annotation.set('id', 'axes')
     annotation.set('text', 'The coordinate axes')
     group_annotation.append(annotation)
-    '''
 
 # construct a grid with a given basis
 def grid_with_basis(element, diagram, parent, basis, outline_status):
