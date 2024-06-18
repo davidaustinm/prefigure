@@ -142,8 +142,6 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     with ET.xmlfile(mj_input, encoding='utf-8') as xf:
         xf.write(label_html_tree, pretty_print=True)
 
-    print(ET.tostring(label_html_tree))    
-
     options = ''
     if output_format == 'tactile':
         format = 'braille'
