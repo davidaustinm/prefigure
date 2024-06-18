@@ -63,7 +63,7 @@ def add_tactile_arrowhead_marker(diagram, mid=False):
     marker.set('markerWidth', util.float2str(l-x2))
     marker.set('markerHeight', util.float2str(dims[1]))
     marker.set('markerUnits', 'strokeWidth')  # userSpaceOnUse?
-    marker.set('orient', 'auto')
+    marker.set('orient', 'auto-start-reverse')
     marker.set('refX', util.float2str(abs(x2)))
     marker.set('refY', util.float2str(dims[1]/2))
 
@@ -118,7 +118,7 @@ def add_arrowhead_marker(diagram, mid=False):
                          'markerWidth': util.float2str(l-x2),
                          'markerHeight': util.float2str(dims[1]),
                          'markerUnits': 'strokeWidth',
-                         'orient': 'auto',
+                         'orient': 'auto-start-reverse',
                          'refX': util.float2str(abs(x2)),
                          'refY': util.float2str(dims[1]/2)
                          }
@@ -136,4 +136,9 @@ def add_arrowhead_marker(diagram, mid=False):
 
 def add_arrowhead_to_path(diagram, location, path):
     id = add_arrowhead_marker(diagram, location[-3:] == 'mid')
-    path.set('style', location + r': url(#{})'.format(id))
+    style = path.get('style', None)
+    if style is None:
+        path.set('style', location + r': url(#{})'.format(id))
+    else:
+        style += ';' + location + r': url(#{})'.format(id)
+        path.set('style', style)

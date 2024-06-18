@@ -3,6 +3,7 @@ import numpy as np
 import math
 import utilities as util
 import user_namespace as un
+import arrow
 
 # Process a line XML element into an SVG line element
 def line(element, diagram, parent, outline_status):
@@ -22,6 +23,12 @@ def line(element, diagram, parent, outline_status):
     util.set_attr(element, 'thickness', '2')
     util.add_attr(line, util.get_1d_attr(element))
     line.set('type', 'line')
+
+    arrows = int(element.get('arrows', '0'))
+    if arrows > 0:
+        arrow.add_arrowhead_to_path(diagram, 'marker-end', line)
+    if arrows > 1:
+        arrow.add_arrowhead_to_path(diagram, 'marker-start', line)
     util.cliptobbox(line, element)
 
     if outline_status == 'add_outline':

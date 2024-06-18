@@ -4,6 +4,7 @@ import math
 import user_namespace as un
 import label
 import line
+import arrow
 
 # Add graphical elements for grids and axes
 
@@ -122,13 +123,21 @@ def axes(element, diagram, parent, outline_status):
 
     decorations = element.get('decorations', 'yes')
 
-    line_el = line.mk_line((bbox[0], 0), (bbox[2], 0), diagram)
-    line_el.set('type', 'horizontal axis')
-    axes.append(line_el)
+    h_line_el = line.mk_line((bbox[0], 0), (bbox[2], 0), diagram)
+    h_line_el.set('type', 'horizontal axis')
+    axes.append(h_line_el)
 
-    line_el = line.mk_line((0, bbox[1]), (0, bbox[3]), diagram)
-    line_el.set('type', 'vertical axis')
-    axes.append(line_el)
+    v_line_el = line.mk_line((0, bbox[1]), (0, bbox[3]), diagram)
+    v_line_el.set('type', 'vertical axis')
+    axes.append(v_line_el)
+
+    arrows = int(element.get('arrows', '0'))
+    if arrows > 0:
+        arrow.add_arrowhead_to_path(diagram, 'marker-end', h_line_el)
+        arrow.add_arrowhead_to_path(diagram, 'marker-end', v_line_el)
+    if arrows > 1:
+        arrow.add_arrowhead_to_path(diagram, 'marker-start', h_line_el)
+        arrow.add_arrowhead_to_path(diagram, 'marker-start', v_line_el)
 
     if element.get('labels') == 'no':
         return
@@ -169,7 +178,7 @@ def axes(element, diagram, parent, outline_status):
             g_hticks.append(line_el)
             x += hticks[1]
 
-    if decorations == 'yes' or element.get('hlabels', None) != None:
+    if decorations == 'yes' or element.get('hlabels', None) is not None:
         x = hlabels[0]
         while x <= hlabels[2]:
             if any([abs(x-p) < position_tolerance for p in [bbox[0], bbox[2],0]]):
