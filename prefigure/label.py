@@ -103,7 +103,7 @@ def label(element, diagram, parent, outline_status = None):
         else:
             text += '$${}$$'.format(math.text)
             plain_text += str(math.text)
-        if math.tail != None:
+        if math.tail is not None:
             text += math.tail
             plain_text += str(math.tail)
     text = text.strip()
