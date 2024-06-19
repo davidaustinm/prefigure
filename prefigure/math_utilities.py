@@ -21,3 +21,7 @@ def angle(p, units = 'deg'):
     if units == 'deg':
         return math.degrees(angle)
     return angle
+
+def roll(array):
+    array = np.array(array)
+    return np.roll(array, 1, axis=0)

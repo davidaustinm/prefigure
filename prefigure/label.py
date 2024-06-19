@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import inspect
+import louis
 from pathlib import Path
 import numpy as np
 import lxml.etree as ET
@@ -69,6 +70,8 @@ alignment_circle = [
     'west', 'southwest', 'south', 'southeast'
 ]
 
+nemeth_on =  '⠸⠩ '
+nemeth_off = '⠸⠱ '
 # Now we'll place a label into a diagram.  Labels are created by
 # mathjax so we're going to put all the labels into an HTML file
 # to be processed together.  As a result, labels will be added to
@@ -80,8 +83,8 @@ def label(element, diagram, parent, outline_status = None):
     # Define a group to hold the label.  
     group = ET.Element('g')
     diagram.add_label(element, group)
-    label_id = diagram.find_id(element)
-    group.set('id', label_id)
+    diagram.add_id(element)
+    group.set('id', element.get('id'))
 
     # For non-tactile output, add a group to the diagram.
     # We'll return and insert the label into the group later
@@ -89,28 +92,31 @@ def label(element, diagram, parent, outline_status = None):
     if diagram.output_format() != 'tactile':
         parent.append(group)
 
-    # No matter the output format, we'll write the text into
+    # We first go pull out the <m> tags and write them into
     # an HTML file to be processed by MathJax
-    # TODO:  allow labels with plain text in addition to math
+    # We also want to know if the label is a single lower-case
+    # letter so that we can add a letter indicator
     text = element.text
     if text is None:
         text = ''
     plain_text = text
-    for math in element.findall('m') + element.findall('me'):
-        if math.tag == 'm':
-            text += '\({}\)'.format(math.text)
-            plain_text += str(math.text)
-        else:
-            text += '$${}$$'.format(math.text)
-            plain_text += str(math.text)
+    for math in element.findall('m'):
+        diagram.add_id(math)
+        math_id = math.get('id')
+        math_text = evaluate_text(math.text)
+        math_text = '\({}\)'.format(math_text)
+
+        # add the label's text to the HTML tree
+        div = ET.SubElement(diagram.label_html(), 'div')
+        div.set('id', math_id)
+        div.text = math_text
+
+        text += math_text
+        plain_text += str(math_text)
         if math.tail is not None:
             text += math.tail
             plain_text += str(math.tail)
     text = text.strip()
-
-    # Allow substitutions from the user namespace
-    tokens = re.split(r"(\${[^}]*})", text)
-    text = ''.join([str(un.valid_eval(token[2:-1])) if token.startswith('${') else token for token in tokens])
 
     # if we're making a tactile diagram and the text is a single
     # lower-case letter, we'll add a letter indicator in front
@@ -119,11 +125,10 @@ def label(element, diagram, parent, outline_status = None):
         if char_distance >= 0 and char_distance < 26:
             element.set('add-letter-indicator', 'yes')
 
-    # add the label's text to the HTML tree
-    div = ET.SubElement(diagram.label_html(), 'div')
-    div.set('id', label_id)
-    div.text = text
-
+# Allow substitutions from the user namespace
+def evaluate_text(text):
+    tokens = re.split(r"(\${[^}]*})", text)
+    return ''.join([str(un.valid_eval(token[2:-1])) if token.startswith('${') else token for token in tokens])
 
 def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     # if there are no labels, there's nothing to do
@@ -167,21 +172,23 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     # now go through each label and place them in the diagram
     for label, group_ctm in label_group_dict.items():
         group, ctm = group_ctm
-        id = group.get('id')
-        div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
 
         if diagram.output_format() == 'tactile':
-            position_braille_label(label, diagram, ctm,
-                                   background_group, braille_group, div)
+            position_braille_label(label, diagram, ctm, background_group, 
+                                   braille_group, label_tree)
         else:
-            position_svg_label(label, diagram, ctm, group, div)
+            position_svg_label(label, diagram, ctm, group, label_tree)
 
     working_dir.cleanup()
 
-def position_braille_label(element, diagram, ctm, background_group,
-                           braille_group, div):
+# use this to retrieve elements from the mathjax output
+#        div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
+
+
+def position_braille_label(element, diagram, ctm, 
+                           background_group, braille_group, label_tree):
     group = ET.SubElement(braille_group, 'g')
-    group.set('id', div.get('id'))
+    group.set('id', element.get('id'))
 
     # Determine the anchor point p and then adjust it using
     # the alignment and offset
@@ -214,15 +221,44 @@ def position_braille_label(element, diagram, ctm, background_group,
 
     p[0] += offset[0]
     p[1] -= offset[1]
-    try:
-        insert = div.xpath('mjx-data/mjx-braille')[0]
-    except IndexError:
-        print('Error in processing label, possibly a LaTeX error: ' + div.text)
-        sys.exit()
-    text = insert.text
+
+    if element.text is not None and len(element.text.strip()) > 0:
+        text = element.text.lstrip()
+        typeform = [0] * len(text)
+        braille_text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
+                                             text, typeform=[0]*len(text))
+    else:
+        braille_text = ''
+
+    for math in element.findall('m'):
+        id = math.get('id')
+        div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
+
+        try:
+            insert = div.xpath('mjx-data/mjx-braille')[0]
+        except IndexError:
+            print('Error in processing label, possibly a LaTeX error: ' + div.text)
+            sys.exit()
+
+        math_text = math.text
+        regex = re.compile('[a-zA-Z]')
+        if len(math_text) == 1 and len(regex.findall(math_text)) > 0:
+            insert.text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
+                                                math.text, typeform=[1])
+        else:
+            insert.text = nemeth_on + insert.text + nemeth_off
+
+        braille_text += insert.text
+
+        if math.tail is not None and len(math.tail.strip()) > 0:
+            typeform = [0] * len(math.tail)
+            braille_text += louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
+                                                math.tail, typeform=typeform)
+
     if element.get('add-letter-indicator', 'no') == 'yes':
-        text = '\u2830' + text
-    w = 5*gap*len(text)
+        # braille_text = '\u2830' + braille_text
+        pass
+    w = 5*gap*len(braille_text)
     h = 5*gap
 
     p[0] += w*displacement[0]
@@ -253,11 +289,11 @@ def position_braille_label(element, diagram, ctm, background_group,
     text_element = ET.SubElement(group, 'text')
     text_element.set('x', util.float2str(p[0]))
     text_element.set('y', util.float2str(p[1]))
-    text_element.text = text
+    text_element.text = braille_text
     text_element.set('font-family', "Braille29")
     text_element.set('font-size', "29px")
 
-def position_svg_label(element, diagram, ctm, group, div):
+def position_svg_label(element, diagram, ctm, group, label_tree):
     ns = {'svg': 'http://www.w3.org/2000/svg'}
     try:
         insert = div.xpath('//mjx-data/mjx-container/svg:svg',
