@@ -28,6 +28,7 @@ import vector
 #   elements having that tag
 
 tag_dict = {
+    'angle-marker': circle.angle,
     'annotations': annotations.annotations,
     'arc': circle.arc,
     'area-between-curves': area.area_between_curves,

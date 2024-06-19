@@ -193,3 +193,63 @@ def arc(element, diagram, parent, outline_status):
         finish_outline(element, diagram, parent)
     else:
         parent.append(arc)
+
+def angle(element, diagram, parent, outline_status):
+    if outline_status == 'finish_outline':
+        finish_outline(element, diagram, parent)
+        return
+
+    element.set('stroke', element.get('stroke', 'black'))
+    if diagram.output_format() == 'tactile':
+        if element.get('fill') is not None:
+            element.set('fill', 'lightgray')
+    else:
+        element.set('fill', element.get('fill', 'none'))
+    element.set('thickness', element.get('thickness','2'))
+
+    points = element.get('points', None)
+    if points is None:
+        p = un.valid_eval(element.get('p'))
+        p1 = un.valid_eval(element.get('p1'))
+        p2 = un.valid_eval(element.get('p2'))
+    else:
+        points = un.valid_eval(points)
+        p = points[1]
+        p1 = points[0]
+        p2 = points[2]
+    radius = un.valid_eval(element.get('radius','30'))
+
+    # convert to svg coordinates
+
+    p = diagram.transform(p)
+    p1 = diagram.transform(p1)
+    p2 = diagram.transform(p2)
+
+    initial_point = (p1-p)/np.linalg.norm(p1-p)*radius + p
+    final_point = (p2-p)/np.linalg.norm(p2-p)*radius + p
+
+    initial_point_str = util.pt2str(initial_point)
+    final_point_str = util.pt2str(final_point)
+
+    
+    d = 'M ' + initial_point_str
+    d += ' A ' + util.pt2str((radius, radius)) + ' 0 '
+    d += ' 0 0 ' + final_point_str
+
+    arc = ET.Element('path')
+    diagram.add_id(arc, element.get('id'))
+    arc.set('d', d)
+
+    util.add_attr(arc, util.get_1d_attr(element))
+    arc.set('type', 'arc')
+    util.cliptobbox(arc, element)
+
+    if outline_status == 'add_outline':
+        diagram.add_outline(element, arc, parent, outline_width=2)
+        return
+
+    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+        diagram.add_outline(element, arc, parent, outline_width=4)
+        finish_outline(element, diagram, parent)
+    else:
+        parent.append(arc)        
