@@ -138,34 +138,19 @@ def arc(element, diagram, parent, outline_status):
     large_arc = '1' if abs(stop - start) >= math.pi else '0'
     sweep = '1' if stop - start < 0 else '0'
 
-    if element.get('pixel-dims', 'no') == 'no':
-        initial_point = diagram.transform(center + np.array([radius * math.cos(start),
-                                                             radius * math.sin(start)]))
-        final_point = diagram.transform(center + np.array([radius * math.cos(stop),
-                                                           radius * math.sin(stop)]))
-        x_radius = abs((diagram.transform([center[0] + radius, center[1]]) -
-                        diagram.transform(center))[0])
+    initial_point = diagram.transform(center + np.array([radius * math.cos(start),
+                                                         radius * math.sin(start)]))
+    final_point = diagram.transform(center + np.array([radius * math.cos(stop),
+                                                       radius * math.sin(stop)]))
+    x_radius = abs((diagram.transform([center[0] + radius, center[1]]) -
+                    diagram.transform(center))[0])
 
-        y_radius = abs((diagram.transform([center[0], center[1] + radius]) -
-                        diagram.transform(center))[1])
+    y_radius = abs((diagram.transform([center[0], center[1] + radius]) -
+                    diagram.transform(center))[1])
 
-        initial_point_str = util.pt2str(initial_point)
-        final_point_str = util.pt2str(final_point)
-        center_str = util.pt2str(diagram.transform(center))
-
-    else:
-        center = diagram.transform(center)
-        initial_point = center + np.array([radius * math.cos(start),
-                                           -radius*math.sin(start)])
-        final_point = center + np.array([radius * math.cos(stop),
-                                        -radius*math.sin(stop)])
-
-        initial_point_str = util.pt2str(initial_point)
-        final_point_str = util.pt2str(final_point)
-
-        x_radius = radius
-        y_radius = radius
-        center_str = util.pt2str(center)
+    initial_point_str = util.pt2str(initial_point)
+    final_point_str = util.pt2str(final_point)
+    center_str = util.pt2str(diagram.transform(center))
 
     if sector:
         d = 'M ' + center_str + ' L ' + initial_point_str
@@ -270,6 +255,9 @@ def angle(element, diagram, parent, outline_status):
     arc = ET.Element('path')
     diagram.add_id(arc, element.get('id'))
     arc.set('d', d)
+
+    if element.get('arrow', None) is not None:
+        arrow.add_arrowhead_to_path(diagram, 'marker-end', arc)
 
     util.add_attr(arc, util.get_1d_attr(element))
     arc.set('type', 'arc')

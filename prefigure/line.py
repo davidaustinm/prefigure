@@ -13,12 +13,18 @@ def line(element, diagram, parent, outline_status):
 
     p1 = un.valid_eval(element.get('p1'))
     p2 = un.valid_eval(element.get('p2'))
+    endpoint_offsets = None
     if element.get('infinite', 'no') == 'yes':
         p1, p2 = infinite_line(p1, p2, diagram)
         if p1 is None:  # the line doesn't hit the bounding box
             return
+    else:
+        endpoint_offsets = element.get('offsets', None)
+        if endpoint_offsets is not None:
+            endpoint_offsets = un.valid_eval(endpoint_offsets)
 
-    line = mk_line(p1, p2, diagram, element.get('id', None))
+    line = mk_line(p1, p2, diagram, element.get('id', None), 
+                   endpoint_offsets=endpoint_offsets)
     util.set_attr(element, 'stroke', 'black')
     util.set_attr(element, 'thickness', '2')
     util.add_attr(line, util.get_1d_attr(element))
@@ -49,12 +55,17 @@ def finish_outline(element, diagram, parent):
                            parent)
 
 # We'll be adding lines in other places so we'll use this more widely
-def mk_line(p0, p1, diagram, id = None, user_coords = True):
+def mk_line(p0, p1, diagram, id = None, endpoint_offsets = None, user_coords = True):
     line = ET.Element('line')
     diagram.add_id(line, id)
     if user_coords:
         p0 = diagram.transform(p0)
         p1 = diagram.transform(p1)
+    if endpoint_offsets is not None:
+        p0[0] += endpoint_offsets[0][0]
+        p0[1] -= endpoint_offsets[0][1]
+        p1[0] += endpoint_offsets[1][0]
+        p1[1] -= endpoint_offsets[1][1]
     line.set('x1', util.float2str(p0[0]))
     line.set('y1', util.float2str(p0[1]))
     line.set('x2', util.float2str(p1[0]))

@@ -137,6 +137,13 @@ def label(element, diagram, parent, outline_status = None):
             plain_text += str(math.tail)
     text = text.strip()
 
+    align = util.get_attr(element, 'alignment', 'c')
+    if align.startswith('2') or align == 'e':
+        align = 'east'
+
+    element.set('alignment', align)
+    element.set('p', util.get_attr(element, 'p', '[0,0]'))
+
     # if we're making a tactile diagram and the text is a single
     # lower-case letter, we'll add a letter indicator in front
     if diagram.output_format() == 'tactile' and len(plain_text) == 1:
@@ -334,24 +341,32 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     else:
         offset = un.valid_eval(offset)
 
-    ns = {'svg': 'http://www.w3.org/2000/svg'}
+    # A label can have different components comprised of alternating
+    # text and MathJax.  We now need to position each component appropriately.
+    # Horizontal placement is relatively simple so we'll do it as we pass through
+    # the list.  Vertical placement is more involved so well make a pass through
+    # the list and record all the relevant data in vertical_data.  An entry in 
+    # this list will be the SVG element and how far above and below the baseline
+    # the label extends (both measured positively)
     width = 0
-    height = 0
-    from lxml.etree import QName
+    vertical_data = []
+    # Are we starting off with some text?
     if element.text is not None and len(element.text.strip()) > 0:
         text = element.text.lstrip()
         context = cairo_context
         x_bearing, y_bearing, t_width, t_height, x_advance, y_advance = context.text_extents(text)
 
-        text_el = ET.SubElement(label_group, 'text', nsmap=ns)
+        text_el = ET.SubElement(label_group, 'text')
         text_el.set('x', util.float2str(-x_bearing))
-        text_el.set('y', util.float2str(-y_bearing))
         text_el.set('font-family', 'sans')
         text_el.set('font-size', str(font_size))
         text_el.text = text
         width += x_advance
-        height = max(height, t_height)
 
+        vertical_data.append([text_el, -y_bearing, t_height+y_bearing])
+
+    # Now we'll go through the MathJax labels
+    ns = {'svg': 'http://www.w3.org/2000/svg'}
     for math in element.findall('m'):
         id = math.get('id')
         div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
@@ -362,33 +377,51 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
             print('Error in processing label, possibly a LaTeX error: ' + div.text)
             sys.exit()
 
-        insert.set('x', str(width))
-        width += 8*float(insert.get('width')[:-2])
-        height = max(height, 8*float(insert.get('height')[:-2]))
-
         # Express dimensions in px for rsvg-convert
+        dim_dict = {}
         for attr in ['style', 'width', 'height']:
             fields = insert.get(attr).split()
             dimension = fields[-1]
             index = dimension.find('ex')
             dimension = float(dimension[:index]) * 8
+            dim_dict[attr] = dimension
             pts = '{0:.3f}px'.format(dimension)
             fields[-1] = pts
             insert.set(attr, ' '.join(fields))
         label_group.append(insert)   
 
+        insert.set('x', str(width))
+        width += dim_dict['width']
+
+        above = dim_dict['height'] + dim_dict['style']
+        below = -dim_dict['style']
+        vertical_data.append([insert, above, below])
+
         if math.tail is not None and len(math.tail.strip()) > 0:
-            text = ' ' + math.tail
+            text = ' ' + math.tail.strip()
             context = cairo_context
             x_bearing, y_bearing, t_width, t_height, x_advance, y_advance = context.text_extents(text)
             text_el = ET.SubElement(label_group, 'text')
+            width += 3
             text_el.set('x', util.float2str(width))
-            text_el.set('y', util.float2str(-y_bearing))
             text_el.set('font-family', 'sans')
             text_el.set('font-size', str(font_size))
             text_el.text = text
             width += x_advance
-            height = max(height, t_height)
+
+            vertical_data.append([text_el, -y_bearing, t_height+y_bearing])
+
+    # Now that we've placed all the components and gathered their vertical
+    # data, we'll go back through and adjust the vertical positioning
+    above = max([entry[1] for entry in vertical_data])
+    below = max([entry[2] for entry in vertical_data])
+    height = above + below
+    for component_data in vertical_data:
+        component = component_data[0]
+        if component.tag == 'text':
+            component.set('y', util.float2str(above))
+        else:
+            component.set('y', util.float2str(above-component_data[1]))
 
     tform = CTM.translatestr(p[0] + offset[0], p[1] - offset[1])
 
@@ -421,7 +454,6 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
 
 # add a caption to a tactile diagram in the upper-left corner
 #   e.g. "Figure 2.3.4"
-# TODO:  improve using Michael Cantino's feedback
 def caption(element, diagram, parent, outline_status):
     if diagram.output_format() != "tactile":  
         return
