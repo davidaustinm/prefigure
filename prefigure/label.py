@@ -405,7 +405,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     group.set('transform', tform)
 
     # add a white rectangle behind the label, if requested
-    if element.get('clear-background', 'yes') == 'no':
+    if element.get('clear-background', 'no') == 'yes':
         bg_margin = int(element.get('background-margin', '6'))
         rect = ET.SubElement(group, 'rect')
         rect.set('x', str(-bg_margin))
