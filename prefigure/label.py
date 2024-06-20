@@ -3,6 +3,7 @@ import sys
 import re
 import inspect
 import louis
+import cairo
 from pathlib import Path
 import numpy as np
 import lxml.etree as ET
@@ -72,10 +73,22 @@ alignment_circle = [
 
 nemeth_on =  '⠸⠩ '
 nemeth_off = '⠸⠱ '
+
+# We use pycairo to measure the dimensions of svg text labels
+# so we need a cairo context.  This is not needed for tactiles diagrams
+
+surface = cairo.SVGSurface('sample.svg', 200, 200)
+context = cairo.Context(surface)
+context.select_font_face('sans')
+font_size = 14
+context.set_font_size(font_size)
+cairo_context = context
+
 # Now we'll place a label into a diagram.  Labels are created by
 # mathjax so we're going to put all the labels into an HTML file
 # to be processed together.  As a result, labels will be added to
 # the diagram after all the other components have been processed.
+
 def label(element, diagram, parent, outline_status = None):
     if outline_status == 'add_outline':  # we're not ready for labels
         return
@@ -184,7 +197,6 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
 # use this to retrieve elements from the mathjax output
 #        div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
 
-
 def position_braille_label(element, diagram, ctm, 
                            background_group, braille_group, label_tree):
     group = ET.SubElement(braille_group, 'g')
@@ -226,7 +238,7 @@ def position_braille_label(element, diagram, ctm,
         text = element.text.lstrip()
         typeform = [0] * len(text)
         braille_text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
-                                             text, typeform=[0]*len(text))
+                                             text, typeform=[0]*len(text)) 
     else:
         braille_text = ''
 
@@ -294,13 +306,8 @@ def position_braille_label(element, diagram, ctm,
     text_element.set('font-size', "29px")
 
 def position_svg_label(element, diagram, ctm, group, label_tree):
-    ns = {'svg': 'http://www.w3.org/2000/svg'}
-    try:
-        insert = div.xpath('//mjx-data/mjx-container/svg:svg',
-                           namespaces=ns)[0]
-    except IndexError:
-        print('Error in processing label, possibly a LaTeX error: ' + div.text)
-        sys.exit()
+    # We're going to put everything inside a group
+    label_group = ET.Element('g')
 
     # Determine the anchor point p and then adjust it using
     # the alignment and offset
@@ -315,8 +322,61 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     else:
         offset = un.valid_eval(offset)
 
-    w = 8*float(insert.get('width')[:-2])
-    h = 8*float(insert.get('height')[:-2])
+    ns = {'svg': 'http://www.w3.org/2000/svg'}
+    width = 0
+    height = 0
+    from lxml.etree import QName
+    if element.text is not None and len(element.text.strip()) > 0:
+        text = element.text.lstrip()
+        context = cairo_context
+        x_bearing, y_bearing, t_width, t_height, x_advance, y_advance = context.text_extents(text)
+
+        text_el = ET.SubElement(label_group, 'text', nsmap=ns)
+        text_el.set('x', util.float2str(-x_bearing))
+        text_el.set('y', util.float2str(-y_bearing))
+        text_el.set('font-family', 'sans')
+        text_el.set('font-size', str(font_size))
+        text_el.text = text
+        width += x_advance
+        height = max(height, t_height)
+
+    for math in element.findall('m'):
+        id = math.get('id')
+        div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
+        try:
+            insert = div.xpath('//mjx-data/mjx-container/svg:svg',
+                               namespaces=ns)[0]
+        except IndexError:
+            print('Error in processing label, possibly a LaTeX error: ' + div.text)
+            sys.exit()
+
+        insert.set('x', str(width))
+        width += 8*float(insert.get('width')[:-2])
+        height = max(height, 8*float(insert.get('height')[:-2]))
+
+        # Express dimensions in px for rsvg-convert
+        for attr in ['style', 'width', 'height']:
+            fields = insert.get(attr).split()
+            dimension = fields[-1]
+            index = dimension.find('ex')
+            dimension = float(dimension[:index]) * 8
+            pts = '{0:.3f}px'.format(dimension)
+            fields[-1] = pts
+            insert.set(attr, ' '.join(fields))
+        label_group.append(insert)   
+
+        if math.tail is not None and len(math.tail.strip()) > 0:
+            text = ' ' + math.tail
+            context = cairo_context
+            x_bearing, y_bearing, t_width, t_height, x_advance, y_advance = context.text_extents(text)
+            text_el = ET.SubElement(label_group, 'text')
+            text_el.set('x', util.float2str(width))
+            text_el.set('y', util.float2str(-y_bearing))
+            text_el.set('font-family', 'sans')
+            text_el.set('font-size', str(font_size))
+            text_el.text = text
+            width += x_advance
+            height = max(height, t_height)
 
     tform = CTM.translatestr(p[0] + offset[0], p[1] - offset[1])
 
@@ -327,33 +387,24 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     rot = element.get('rotate', None)
     if rot is not None:
         tform = tform + ' ' + CTM.rotatestr(float(rot))
-    tform = tform + ' ' + CTM.translatestr(w*displacement[0], -h*displacement[1])
+    tform = tform + ' ' + CTM.translatestr(width*displacement[0], 
+                                           -height*displacement[1])
 
     group.set('transform', tform)
 
     # add a white rectangle behind the label, if requested
-    if element.get('clear-background', 'no') == 'yes':
+    if element.get('clear-background', 'yes') == 'no':
         bg_margin = int(element.get('background-margin', '6'))
         rect = ET.SubElement(group, 'rect')
         rect.set('x', str(-bg_margin))
         rect.set('y', str(-bg_margin))
-        rect.set('width', str(w+2*bg_margin))
-        rect.set('height', str(h+2*bg_margin))
+        rect.set('width', str(width+2*bg_margin))
+        rect.set('height', str(height+2*bg_margin))
         rect.set('stroke', 'none')
         rect.set('fill', '#fff')
 
-    # Express dimensions in px for rsvg-convert
-    for attr in ['style', 'width', 'height']:
-        fields = insert.get(attr).split()
-        dimension = fields[-1]
-        index = dimension.find('ex')
-        dimension = float(dimension[:index]) * 8
-        pts = '{0:.3f}px'.format(dimension)
-        fields[-1] = pts
-        insert.set(attr, ' '.join(fields))
-
-    group.append(insert)
-    diagram.add_id(group, element.get('expr'))
+    group.append(label_group)
+    diagram.add_id(label_group, element.get('expr'))
     group.set('type', 'label')
 
 # add a caption to a tactile diagram in the upper-left corner

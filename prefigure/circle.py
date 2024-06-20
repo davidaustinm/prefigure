@@ -194,6 +194,7 @@ def arc(element, diagram, parent, outline_status):
     else:
         parent.append(arc)
 
+# Alexei's angle marker
 def angle(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
         finish_outline(element, diagram, parent)
@@ -225,16 +226,35 @@ def angle(element, diagram, parent, outline_status):
     p1 = diagram.transform(p1)
     p2 = diagram.transform(p2)
 
-    initial_point = (p1-p)/np.linalg.norm(p1-p)*radius + p
-    final_point = (p2-p)/np.linalg.norm(p2-p)*radius + p
+    # Define vectors from p to p1 and p2, normalized
+    v1 = (p1 - p)/np.linalg.norm(p1-p)
+    v2 = (p2 - p)/np.linalg.norm(p2-p)
 
+    # To determine the orientation, look at the z-component of cross product.
+    # Keep in mind that y-axis in svg is directed down. large_arc_flag is 0 if the 
+    # arc is supposed to be small
+
+    large_arc_flag = int(v1[0]*v2[1] - v1[1]*v2[0] > 0)
+
+    # It may make sense to have the default radius depend on the measure of the angle,
+    # unless the user overrides it
+    if large_arc_flag:
+        angle = 2*np.pi - math.acos(np.dot(v1,v2))
+    else:
+        angle = math.acos(np.dot(v1,v2))
+
+    # heuristically determined radius
+    default_radius = int(30/angle)
+    radius = un.valid_eval(element.get('radius', str(default_radius)))
+
+    initial_point = v1*radius + p
+    final_point = v2*radius + p
     initial_point_str = util.pt2str(initial_point)
     final_point_str = util.pt2str(final_point)
 
-    
     d = 'M ' + initial_point_str
     d += ' A ' + util.pt2str((radius, radius)) + ' 0 '
-    d += ' 0 0 ' + final_point_str
+    d += str(large_arc_flag) + ' 0 ' + final_point_str
 
     arc = ET.Element('path')
     diagram.add_id(arc, element.get('id'))

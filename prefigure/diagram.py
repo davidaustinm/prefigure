@@ -18,10 +18,12 @@ class Diagram:
         # create the XML tree for the svg output
         svg_uri = "http://www.w3.org/2000/svg"
         xlink_uri = "http://www.w3.org/1999/xlink"
+        xml_uri = "http://www.w3/org/1999/xml"
         self.href = ET.QName(xlink_uri, "href")
 
         nsmap = {None: svg_uri,
-                 'xlink': xlink_uri}
+                 'xlink': xlink_uri,
+                 'xml': xml_uri}
         self.root = ET.Element("svg", nsmap = nsmap)
 
         self.id_suffix = ['']
