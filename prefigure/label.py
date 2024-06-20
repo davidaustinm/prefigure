@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import math
 import inspect
 import louis
 import cairo
@@ -70,6 +71,11 @@ alignment_circle = [
     'east', 'northeast', 'north', 'northwest',
     'west', 'southwest', 'south', 'southeast'
 ]
+
+def get_alignment_from_direction(direction):
+    direction_angle = math.degrees(math.atan2(direction[1], direction[0]))
+    align = round(direction_angle/45) % 8
+    return alignment_circle[align]
 
 nemeth_on =  '⠸⠩ '
 nemeth_off = '⠸⠱ '
@@ -204,7 +210,10 @@ def position_braille_label(element, diagram, ctm,
 
     # Determine the anchor point p and then adjust it using
     # the alignment and offset
-    p = ctm.transform(un.valid_eval(element.get('p')))
+    if element.get('user-coords', 'yes') == 'yes':
+        p = ctm.transform(un.valid_eval(element.get('p')))
+    else:
+        p = un.valid_eval(element.get('p'))
     alignment = util.get_attr(element, 'alignment', 'center')
     displacement = braille_displacement[alignment]
 
@@ -312,7 +321,10 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     # Determine the anchor point p and then adjust it using
     # the alignment and offset
     # TODO:  improve auto offsets
-    p = ctm.transform(un.valid_eval(element.get('p')))
+    if element.get('user-coords', 'yes') == 'yes':
+        p = ctm.transform(un.valid_eval(element.get('p')))
+    else:
+        p = un.valid_eval(element.get('p'))
     alignment = util.get_attr(element, 'alignment', 'center')
     displacement = alignment_displacement[alignment]
 

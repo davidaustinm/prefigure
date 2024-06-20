@@ -4,6 +4,8 @@ import numpy as np
 import user_namespace as un
 import utilities as util
 import arrow
+import copy
+import label
 
 # Add graphical elements related to circles
 def circle(element, diagram, parent, outline_status):
@@ -49,6 +51,7 @@ def circle(element, diagram, parent, outline_status):
         parent.append(circle)
 
 def finish_outline(element, diagram, parent):
+    add_label(element, diagram, parent)
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),
@@ -245,8 +248,16 @@ def angle(element, diagram, parent, outline_status):
 
     # heuristically determined radius
     default_radius = int(30/angle)
+    default_radius = min(30, default_radius)
+    default_radius = max(15, default_radius)
     radius = un.valid_eval(element.get('radius', str(default_radius)))
 
+    direction = (v1+v2)/np.linalg.norm(v1+v2)*(-1)**large_arc_flag
+    label_location = p + direction*radius
+    element.set('label-location', util.pt2str(label_location, spacer=','))
+    if element.get('alignment', None) is None:
+        element.set('alignment', 
+                    label.get_alignment_from_direction([direction[0], -direction[1]]))
     initial_point = v1*radius + p
     final_point = v2*radius + p
     initial_point_str = util.pt2str(initial_point)
@@ -272,4 +283,30 @@ def angle(element, diagram, parent, outline_status):
         diagram.add_outline(element, arc, parent, outline_width=4)
         finish_outline(element, diagram, parent)
     else:
+        parent = add_label(element, diagram, parent)
         parent.append(arc)        
+
+def add_label(element, diagram, parent):
+    # Is there a label associated with the marker?
+    text = element.text
+    if text is not None or len(element) > 0:
+        # If there's a label, we'll bundle the label and the angle mark in a group
+        group = ET.SubElement(parent, 'g')
+        diagram.add_id(group, element.get('id'))
+        group.set('type', 'labeled-angle-marker')
+
+        # Now we'll create a new XML element describing the label
+        el = copy.deepcopy(element)
+        el.tag = 'label'
+        el.set('alignment', element.get('alignment'))
+        el.set('p', element.get('label-location'))
+        el.set('user-coords', 'no')
+        if element.get('offset', None) is not None:
+            el.set('offset', element.get('offset'))
+
+        # add the label graphical element to the group
+        label.label(el, diagram, group)
+        return group
+    else:
+        return parent
+
