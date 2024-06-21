@@ -239,18 +239,21 @@ class Diagram:
         path.set('id', outline_id)
         self.add_reusable(path)
 
-        ET.SubElement(parent, 'use', attrib={       
+        use = ET.SubElement(parent, 'use', attrib={       
             'fill': fill,
             'stroke-width': str(int(width) + outline_width),
             'stroke': 'white',
             self.href: r'#' + outline_id
         }
         )
+        if self.output_format() == 'tactile':
+            use.set('style', path.get('style-outline', 'none'))
+            element.set('style-plain', path.get('style-plain', 'none'))
 
     # after the outline of a graphical component is added, we then add the 
     # component itself on top of the outline
     def finish_outline(self, element, stroke, thickness, fill, parent):
-        ET.SubElement(parent, 'use', attrib={
+        use = ET.SubElement(parent, 'use', attrib={
             'id': element.get('id', 'none'),
             'fill': str(fill),
             'stroke-width': str(thickness),
@@ -259,6 +262,8 @@ class Diagram:
             self.href: r'#' + element.get('id') + '-outline'
         }
         )
+        if self.output_format() == 'tactile':
+            use.set('style', element.get('style-plain'))
 
     def initialize_annotations(self):
         if self.annotations_root is not None:

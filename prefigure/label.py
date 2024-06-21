@@ -122,8 +122,8 @@ def label(element, diagram, parent, outline_status = None):
     for math in element.findall('m'):
         diagram.add_id(math)
         math_id = math.get('id')
-        math_text = evaluate_text(math.text)
-        math_text = '\({}\)'.format(math_text)
+        math.text = evaluate_text(math.text).strip()
+        math_text = '\({}\)'.format(math.text)
 
         # add the label's text to the HTML tree
         div = ET.SubElement(diagram.label_html(), 'div')
@@ -271,8 +271,10 @@ def position_braille_label(element, diagram, ctm,
         math_text = math.text
         regex = re.compile('[a-zA-Z]')
         if len(math_text) == 1 and len(regex.findall(math_text)) > 0:
+            # if we want italics, set typeform=[1]
+            typeform = [0]
             insert.text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
-                                                math.text, typeform=[1])
+                                                math.text, typeform=typeform)
         else:
             if element.get('nemeth-switch', 'no') == 'yes':
                 insert.text = nemeth_on + insert.text + nemeth_off
