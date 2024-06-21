@@ -1,11 +1,11 @@
 import os
 import sys
 import lxml.etree as ET
+import numpy as np
 import tags
 import user_namespace as un
 import CTM
 import label
-
 
 class Diagram:
     def __init__(self, diagram_element, filename,
@@ -93,8 +93,8 @@ class Diagram:
         else:
             width, height = un.valid_eval(dims)
 
-        margins = un.valid_eval(self.diagram_element.get('margins', '[0]*4'))
-        if not isinstance(margins, list):
+        margins = un.valid_eval(self.diagram_element.get('margins', '[0,0,0,0]'))
+        if not isinstance(margins, np.ndarray):
             margins = [margins] * 4
 
         # tactile diagrams will be embossed on 11.5"x11" paper

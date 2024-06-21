@@ -78,7 +78,7 @@ def grid(element, diagram, parent, outline_status):
         y += ry[1]
 
 # Automate finding the positions where ticks and labels go
-label_delta = {2: 0.2, 3: 0.5, 4: 1, 5: 1,
+label_delta = {2: 0.2, 3: 0.5, 4: 0.5, 5: 1,
                6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1,
                12: 2, 13: 2, 14: 2, 15: 2, 16: 2, 17: 2,
                18: 2, 19: 2, 20: 2}
@@ -92,7 +92,11 @@ def find_label_positions(coordinate_range):
     while distance <= 1:
         distance *= 10
         dx /= 10
-    dx *= label_delta[round(2*distance)]
+    if dx > 1:
+        dx *= label_delta[round(2*distance)]
+        dx = int(dx)
+    else:
+        dx *= label_delta[round(2*distance)]
     if coordinate_range[1] < coordinate_range[0]:
         dx *= -1
         x0 = dx * math.floor(coordinate_range[0]/dx+1e-10)

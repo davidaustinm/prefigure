@@ -274,7 +274,8 @@ def position_braille_label(element, diagram, ctm,
             insert.text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
                                                 math.text, typeform=[1])
         else:
-            insert.text = nemeth_on + insert.text + nemeth_off
+            if element.get('nemeth-switch', 'no') == 'yes':
+                insert.text = nemeth_on + insert.text + nemeth_off
 
         braille_text += insert.text
 
