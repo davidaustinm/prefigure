@@ -225,7 +225,7 @@ def position_braille_label(element, diagram, ctm,
     displacement = braille_displacement[alignment]
 
     # TODO:  improve automatic tactile offsets
-    offset = util.get_attr(element, 'offset', 'none')
+    offset = util.get_attr(element, 'abs-offset', 'none')
     if offset == 'none':
         offset = [8*(displacement[0] + 0.5), 8*(displacement[1]+0.5)]
     else:
@@ -236,6 +236,8 @@ def position_braille_label(element, diagram, ctm,
         offset[0] += 6
     if displacement[1] == -1:
         offset[1] -= 6
+    if alignment == 'n' or alignment == 'north':
+        offset[1] += 5
 
     # 'gap' is the distance, in points, between two braille dots,
     # 1/20th of an inch
@@ -246,6 +248,11 @@ def position_braille_label(element, diagram, ctm,
         offset = [-30, 0]
     if alignment == 'xl':
         offset = [-10, 12]
+
+    if element.get('offset', None) is not None:
+        relative_offset = un.valid_eval(element.get('offset'))
+        offset = [offset[0] + relative_offset[0],
+                  offset[1] + relative_offset[1]]
 
     p[0] += offset[0]
     p[1] -= offset[1]
@@ -338,11 +345,16 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     alignment = util.get_attr(element, 'alignment', 'center')
     displacement = alignment_displacement[alignment]
 
-    offset = util.get_attr(element, 'offset', 'none')
+    offset = util.get_attr(element, 'abs-offset', 'none')
     if offset == 'none':
         offset = [8*(displacement[0] + 0.5), 8*(displacement[1]-0.5)]
     else:
         offset = un.valid_eval(offset)
+
+    if element.get('offset', None) is not None:
+        relative_offset = un.valid_eval(element.get('offset'))
+        offset = [offset[0] + relative_offset[0],
+                  offset[1] + relative_offset[1]]
 
     # A label can have different components comprised of alternating
     # text and MathJax.  We now need to position each component appropriately.
@@ -449,7 +461,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
         rect.set('width', str(width+2*bg_margin))
         rect.set('height', str(height+2*bg_margin))
         rect.set('stroke', 'none')
-        rect.set('fill', '#fff')
+        rect.set('fill', 'white')
 
     group.append(label_group)
     diagram.add_id(label_group, element.get('expr'))

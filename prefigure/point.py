@@ -96,17 +96,29 @@ def add_label(element, diagram, parent):
 
         # Determine how far to offset the label
         # TODO:  improve tactile offsets
-        offset = element.get('offset', None)
-        if offset is None:
-            o = float(size) + 1
-            offset = [2*o*(displacement[0]+0.5),
-                      2*o*(displacement[1]-0.5)]
-            if diagram.output_format() == 'tactile' and offset[0] < 0:
+        o = float(size) + 1
+        offset = [2*o*(displacement[0]+0.5),
+                  2*o*(displacement[1]-0.5)]
+        if diagram.output_format() == 'tactile':
+            if offset[0] < 0:
                 offset[0] -= 6
-        else:
-            offset = un.valid_eval(offset)
-
-        el.set('offset', str(offset))
+        else:  # push regular labels a bit more in cardinal directions
+            cardinal_push = 3
+            if abs(offset[0]) < 1e-14:
+                if offset[1] > 0:
+                    offset[1] += cardinal_push
+                if offset[1] < 0:
+                    offset[1] -= cardinal_push
+            if abs(offset[1]) < 1e-14:
+                if offset[0] > 0:
+                    offset[0] += cardinal_push
+                if offset[0] < 0:
+                    offset[0] -= cardinal_push
+        
+        relative_offset = element.get('offset', None)
+        if relative_offset is not None:
+            offset += un.valid_eval(relative_offset)
+        el.set('abs-offset', util.np2str(offset))
 
         # add the label graphical element to the group
         label.label(el, diagram, group)

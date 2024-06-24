@@ -26,6 +26,9 @@ def rectangle(element, diagram, parent, outline_status):
     path.set('y', util.float2str(p1[1]))
     path.set('width', util.float2str(p1[0]-p0[0]))
     path.set('height', util.float2str(p0[1]-p1[1]))
+    if element.get('corner-radius', None) is not None:
+        r = un.valid_eval(element.get('corner-radius'))
+        path.set('ry', util.float2str(r))
 
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:

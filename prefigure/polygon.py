@@ -3,6 +3,8 @@
 import lxml.etree as ET
 import user_namespace as un
 import utilities as util
+import math_utilities as math_util
+import arrow
 
 # Process a polygon tag into a graphical component
 def polygon(element, diagram, parent, outline_status):
@@ -33,16 +35,53 @@ def polygon(element, diagram, parent, outline_status):
             plot_points.append(un.valid_eval(points))
         points = plot_points
 
-    # Form an SVG path now that we have the vertices
-    p = diagram.transform(points[0])
-    d = ['M ' + util.pt2str(p)]
-    for p in points[1:]:
-        p = diagram.transform(p)
-        d.append('L ' + util.pt2str(p))
-    if element.get('closed', 'no') == 'yes':
-        d.append('Z')
-    d = ' '.join(d)
+    points = [diagram.transform(point) for point in points]
 
+    radius = int(element.get('corner-radius', '0'))
+    closed = element.get('closed', 'no')
+    # Form an SVG path now that we have the vertices
+    if radius == 0:
+        p = points[0]
+        d = ['M ' + util.pt2str(p)]
+        for p in points[1:]:
+            d.append('L ' + util.pt2str(p))
+        if closed == 'yes':
+            d.append('Z')
+        d = ' '.join(d)
+    else:
+        if closed == 'yes':
+            points.append(points[0])
+        N = len(points) - 1  # number of segments
+        cmds = ''
+        for i, endpoints in enumerate(zip(points[:-1], points[1:])):
+            p, q = endpoints
+            u = math_util.normalize(q-p)
+            p1 = p + radius*u
+            p2 = q - radius*u
+            if i == 0:
+                if closed == 'yes':
+                    cmds = 'M ' + util.pt2str(p1)
+                    initial_point = p1
+                    cmds += 'L ' + util.pt2str(p2)
+                else:
+                    cmds += 'M ' + util.pt2str(p)
+                    cmds += 'L ' + util.pt2str(p2)
+            if i == N - 1:
+                cmds += 'Q ' + util.pt2str(p)
+                cmds += ' ' + util.pt2str(p1)
+                if closed == 'yes':
+                    cmds += 'L ' + util.pt2str(p2)
+                    cmds += 'Q ' + util.pt2str(q)
+                    cmds += ' ' + util.pt2str(initial_point)
+                    cmds += 'Z'
+                else:
+                    cmds += 'L' + util.pt2str(q)
+            if i > 0 and i < N - 1:
+                cmds += 'Q' + util.pt2str(p)
+                cmds += ' ' + util.pt2str(p1)
+                cmds += 'L' + util.pt2str(p2)
+            
+        d = cmds
     path = ET.Element('path')
     diagram.add_id(path, element.get('id'))
     path.set('d', d)
@@ -50,6 +89,13 @@ def polygon(element, diagram, parent, outline_status):
     path.set('type', 'polygon')
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
     util.cliptobbox(path, element)
+
+    arrows = int(element.get('arrows', '0'))
+    if arrows > 0:
+        arrow.add_arrowhead_to_path(diagram, 'marker-end', path)
+    if arrows > 1:
+        arrow.add_arrowhead_to_path(diagram, 'marker-start', path)
+
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, path, parent)

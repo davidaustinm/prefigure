@@ -3,6 +3,7 @@ import math
 import numpy as np
 import user_namespace as un
 import utilities as util
+import math_utilities as math_util
 import arrow
 import copy
 import label
@@ -107,7 +108,7 @@ def arc(element, diagram, parent, outline_status):
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
-        if element.get('fill') is not None:
+        if element.get('fill', 'none') != 'none':
             element.set('fill', 'lightgray')
     else:
         element.set('stroke', element.get('stroke', 'none'))
@@ -168,9 +169,11 @@ def arc(element, diagram, parent, outline_status):
     arc.set('type', 'arc')
     util.cliptobbox(arc, element)
 
-    if element.get('arrow', 'no') == 'yes':
-        arrow.add_arrowhead_marker(diagram)
-        arc.set('style', r'marker-end: url(#arrow-head-end)')
+    arrows = int(element.get('arrows', '0'))
+    if arrows > 0:
+        arrow.add_arrowhead_to_path(diagram, 'marker-end', arc)
+    if arrows > 1:
+        arrow.add_arrowhead_to_path(diagram, 'marker-start', arc)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, arc, parent, outline_width=2)
@@ -215,8 +218,8 @@ def angle(element, diagram, parent, outline_status):
     p2 = diagram.transform(p2)
 
     # Define vectors from p to p1 and p2, normalized
-    v1 = (p1 - p)/np.linalg.norm(p1-p)
-    v2 = (p2 - p)/np.linalg.norm(p2-p)
+    v1 = math_util.normalize(p1 - p)
+    v2 = math_util.normalize(p2 - p)
 
     # To determine the orientation, look at the z-component of cross product.
     # Keep in mind that y-axis in svg is directed down. large_arc_flag is 0 if the 
@@ -237,7 +240,10 @@ def angle(element, diagram, parent, outline_status):
     default_radius = max(15, default_radius)
     radius = un.valid_eval(element.get('radius', str(default_radius)))
 
-    direction = (v1+v2)/np.linalg.norm(v1+v2)*(-1)**large_arc_flag
+    if np.all(np.isclose(v1 + v2, np.zeros(2))):  # is the angle = 180?
+        direction = np.array([v1[1], -v1[0]])
+    else:
+        direction = math_util.normalize(v1+v2)*(-1)**large_arc_flag
     label_location = p + direction*radius
     element.set('label-location', util.pt2str(label_location, spacer=','))
     if element.get('alignment', None) is None:

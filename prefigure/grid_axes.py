@@ -1,6 +1,7 @@
 import lxml.etree as ET
 import utilities as util
 import math
+import re
 import user_namespace as un
 import label
 import line
