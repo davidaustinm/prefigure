@@ -206,14 +206,17 @@ class Diagram:
         return self.ctm_stack.pop(-1)
 
     def add_reusable(self, element):
-        if self.reusables.get(element.get('id'), False):
+        if self.has_reusable(element.get('id', 'none')):
             return
         self.defs.append(element)
-        self.reusables[element.get('id')] = True
+        self.reusables[element.get('id')] = element
 
     def has_reusable(self, reusable):
-        return self.reusables.get(reusable, False)
-
+        return self.reusables.get(reusable, None) is not None
+    
+    def get_reusable(self, reusable):
+        return self.reusables.get(reusable, None)
+    
     def push_id_suffix(self, suffix):
         self.id_suffix.append(suffix)
 
@@ -246,9 +249,17 @@ class Diagram:
             self.href: r'#' + outline_id
         }
         )
-        if self.output_format() == 'tactile':
-            use.set('style', path.get('style-outline', 'none'))
-            element.set('style-plain', path.get('style-plain', 'none'))
+        # We need to be careful with arrow heads.  The references to
+        # the arrow heads are in path, which is now a reusable.  We will
+        # retrieve the references, change the references to point to the
+        # outlined arrow heads, and add them to the use element.  In the
+        # finish_outline function, we'll remove the references from the
+        # reusable since otherwise we'll only see the original arrow heads
+        for marker in ['marker-end', 'marker-start', 'marker-mid']:
+            reference = path.get(marker, None)
+            if reference is not None:
+                reference = reference.replace(')', '-outline)')
+                use.set(marker, reference)
 
     # after the outline of a graphical component is added, we then add the 
     # component itself on top of the outline
@@ -262,8 +273,14 @@ class Diagram:
             self.href: r'#' + element.get('id') + '-outline'
         }
         )
-        if self.output_format() == 'tactile':
-            use.set('style', element.get('style-plain'))
+        # We have to clean up the arrow heads.  The references to the
+        # arrow heads are in the reusable so we'll retrieve them and
+        # and include them with the use element.
+        reusable = self.get_reusable(element.get('id') + '-outline')
+        for marker in ['marker-start', 'marker-end', 'marker-mid']:
+            if reusable.get(marker, 'none') != 'none':
+                use.set(marker, reusable.get(marker))
+                reusable.attrib.pop(marker)
 
     def initialize_annotations(self):
         if self.annotations_root is not None:

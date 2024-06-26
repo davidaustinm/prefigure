@@ -7,149 +7,46 @@ import CTM
 # Form arrows to be used with a variety of graphical components
 # Arrowheads are created as markers and then added to paths
 
-# Creates a path describing an arrow head (not currently used)
-# Note that point, direction, and width are given in SVG default coordinates
-def draw_arrowhead(point, direction, width):
-    ctm = CTM.CTM()
-    ctm.translate(point[0], point[1])
-    ctm.rotate(-math.atan2(-direction[1], direction[0]), units='rad')
-
-    dims = (width, 3*width)
-    t = dims[0]/2
-    s = dims[1]/2
-
-    A = 24*math.pi/180
-    B = 60*math.pi/180
-    l = t*math.tan(B)+0.1
-
-    x2 = l-s/math.tan(A)
-    x1 = x2 + (s-t)/math.tan(B)
-
-    cmds = ['M ' + util.pt2str(ctm.transform((x1, -t)))]
-    cmds.append('L ' + util.pt2str(ctm.transform((x2, -s))))
-    cmds.append('L ' + util.pt2str(ctm.transform((l, 0))))
-    cmds.append('L ' + util.pt2str(ctm.transform((x2, s))))
-    cmds.append('L ' + util.pt2str(ctm.transform((x1, t))))
-    cmds.append('Z')    
-
-    d = ' '.join(cmds)
-
-    return d
-
-'''
-# Construct an arrowhead for a tactile diagram, following BANA guidelines
-# TODO:  what happens when the stroke-width is unusually large
-def add_tactile_arrowhead_marker(diagram, mid=False):
-    angle = 25
-    outline_width = 9  # 1/8th of an inch
-    t = 1
-    s = 9
-    id = 'tactile-arrow-head'
-    A = angle*math.pi/180
-    l = t/math.tan(A)+0.1
-
-    y = s*math.tan(A)
-
-    ctm = CTM.CTM()
-    ctm.translate(s-l, y)
-    cmds = ['M ' + util.pt2str(ctm.transform((l,0)))]
-    cmds.append('L ' + util.pt2str(ctm.transform((l-s, y))))
-    cmds.append('L ' + util.pt2str(ctm.transform((l-s, -y))))
-    cmds.append('Z')
-
-    d = ' '.join(cmds)
-
-    x2 = l-s
-    dims = [1, 2*y]
-
-    marker = ET.Element('marker')
-    marker.set('id', id)
-    marker.set('markerWidth', util.float2str(l-x2))
-    marker.set('markerHeight', util.float2str(dims[1]))
-    marker.set('markerUnits', 'strokeWidth')  # userSpaceOnUse?
-    marker.set('orient', 'auto-start-reverse')
-    marker.set('refX', util.float2str(abs(x2)))
-    marker.set('refY', util.float2str(dims[1]/2))
-
-    ET.SubElement(marker, 'path', attrib=
-                  {'d': d,
-                   'fill': 'context-stroke',
-                   'stroke': 'context-none'
-                   }
-                  )
-
-    diagram.add_reusable(marker)
-
-    # now we'll make an outline marker too
-    p1 = np.array((l, 0))
-    p2 = np.array((l - s, y))
-    p3 = np.array((l - s, -y))
-
-    # push the top edge outline_width units away
-    push_angle = math.radians(90 - angle)
-    w = outline_width*np.array((math.cos(push_angle), math.sin(push_angle)))
-    q1 = p1 + w
-    q2 = p2 + w
-
-    # now the left side
-    v = outline_width * np.array((-1,0))
-    q3 = p1 + v
-    q4 = p3 + v
-
-    # now the bottom edge
-    w = np.array((w[0], -w[1]))
-    q5 = p3 + w
-    q6 = p1 + w
-
-    q1, q2, q3, q4, q5, q6 = [util.pt2str(ctm.transform(p)) for p in [q1, q2, q3, q4, q5, q6]]
-
-    ctm = ctm.translate(outline_width, outline_width)
-
-    cmds = ['M', q1]
-    cmds += ['L', q2]
-    cmds += ['A', str(outline_width), str(outline_width),'0','0','0',q3]
-    cmds += ['L', q4]
-    cmds += ['A', str(outline_width), str(outline_width),'0','0','0',q5]
-    cmds += ['L', q6]
-    cmds += ['A', str(outline_width), str(outline_width),'0','0','0',q1]
-    cmds += ['Z']
-    d = ' '.join(cmds)                
-    
-    marker = ET.Element('marker')
-    marker.set('id', id+'-outline')
-    marker.set('markerWidth', util.float2str(l-x2))
-    marker.set('markerHeight', util.float2str(dims[1]))
-    marker.set('markerUnits', 'strokeWidth')  # userSpaceOnUse?
-    marker.set('orient', 'auto-start-reverse')
-    marker.set('refX', util.float2str(abs(x2)))
-    marker.set('refY', util.float2str(dims[1]/2))
-
-    ET.SubElement(marker, 'path', attrib=
-                  {'d': d,
-                   'fill': 'context-stroke',
-                   'stroke': 'context-none'
-                   }
-                  )
-    diagram.add_reusable(marker)
-    return id
-'''
-
-# improved outlining
+# We'll make arrow heads for tactile diagrams.  Our arrow heads
+# will be created in default SVG coordinates since the outlines
+# are expressed in those coordinates.  Otherwise, the outlines 
+# grow extremely large and blot out elements in the background.
+# Because of this, we need to create an arrow head for each stroke
+# width.
 def add_tactile_arrowhead_marker(diagram, path, mid=False):
+    # get the stroke width from the graphical component
     stroke_width_str = path.get('stroke-width', '1')
     stroke_width = int(stroke_width_str)
-    id = 'tactile-arrow-head-'+stroke_width_str
+    id = 'arrow-head-'+stroke_width_str
 
+    # if we've seen this already, there's no need to create it again
+    if diagram.has_reusable(id):
+        return id
+
+    # Now we'll construct the regular (un-outlined) arrow head.
+    # "angle" below is half of the angle at the tip of the head
+    # BANA guidelines say this should be between 15 and 22.5 so
+    # our angle is a bit too big, but this angle creates a bit
+    # more differentiation between the arrow head and the path
+    # it's attached to
     angle = 25
-    outline_width = 9  # 1/8th of an inch
+    A = math.radians(angle)  # angle in radians
+    # We'll construct the arrow head as if the stroke-width is t=1
+    # and then scale it below.  We need to think of the path as a
+    # rectangle whose height is 2t.  So the tip of the arrow head
+    # needs to extend between the endpoint of the path.  
+    # The variable l measures the extent the tip extends beyond
+    # this endpoint.  The variable s measures the horizontal extent
+    # of the arrow head and y is the vertical extent above the
+    # center line of the path
     t = 1
     s = 9
-
-    A = angle*math.pi/180
     l = t/math.tan(A)+0.1
-
     y = s*math.tan(A)
 
+    # Scale and translate to fit the stroke-width
+    # p1, p2, and p3 are the vertices of the triangle
+    # with p1 as the tip
     ctm = CTM.CTM()
     ctm.scale(stroke_width, stroke_width)
     ctm.translate(s-l, y)
@@ -163,6 +60,8 @@ def add_tactile_arrowhead_marker(diagram, path, mid=False):
 
     d = ' '.join(cmds)
 
+    # Now we're done constructing the shape of the arrow head
+    # so we'll add it to a marker and save as a reusable
     x2 = l-s
     dims = [1, 2*y]
 
@@ -184,8 +83,10 @@ def add_tactile_arrowhead_marker(diagram, path, mid=False):
 
     diagram.add_reusable(marker)
 
-    # now we'll make an outline marker too
-    # push the top edge outline_width units away
+    outline_width = 9  # 1/8th of an inch
+    # We've finished creating the visible arrow head.  Now we need to create
+    # an outline which extends 1/8th of an inch beyond the arrow head.
+    # First we push the top edge outline_width units away
     push_angle = math.radians(90 - angle)
     w = outline_width*np.array((math.cos(push_angle), math.sin(push_angle)))
     q1 = p1 + w
@@ -201,10 +102,14 @@ def add_tactile_arrowhead_marker(diagram, path, mid=False):
     q5 = p3 + w
     q6 = p1 + w
 
+    # Now that we have the vertices of the outlined arrow head, we will 
+    # translate the coordinate system to use as a marker
     ctm = CTM.CTM()
     ctm.translate(outline_width, outline_width)
     q1, q2, q3, q4, q5, q6 = [util.pt2str(ctm.transform(p)) for p in [q1, q2, q3, q4, q5, q6]]
 
+    # Now construct the path, put it in a marker, and add as a reusable
+    # The id appends "-outline"
     cmds = ['M', q1]
     cmds += ['L', q2]
     cmds += ['A', str(outline_width), str(outline_width),'0','0','1',q3]
@@ -235,49 +140,63 @@ def add_tactile_arrowhead_marker(diagram, path, mid=False):
     return id
 
 # Arrowhead marker for a non-tactile figure
+# This will follow the same logic as the tactile arrow head created
+# above, only the shape of a regular arrow head is slightly different
+# than a tactile arrow head.
 def add_arrowhead_marker(diagram, path, mid=False):
     if diagram.output_format() == 'tactile':
         return add_tactile_arrowhead_marker(diagram, path)
+    
+    # get the stroke width from the graphical component
+    stroke_width_str = path.get('stroke-width', '1')
+    stroke_width = int(stroke_width_str)
 
+    # Dimensions are a bit different if the arrow head is at an
+    # end or in the middle of a path
     if not mid:
-        id = 'arrow-head-end'
-        dims = (1, 3)
+        id = 'arrow-head-end-'+stroke_width_str
+        dims = (1, 4)
     else:
-        id = 'arrow-head-mid'
-        dims = (1, 11/3)
+        id = 'arrow-head-mid-'+stroke_width_str
+        dims = (1, 13/3) #11/3)
 
+    # If we've already created this one, we'll just move on
     if diagram.has_reusable(id):
         return id
 
-    t = dims[0]/2
-    s = dims[1]/2
-
-    A = 24*math.pi/180
-    B = 60*math.pi/180
-    l = t*math.tan(B)+0.1
-
-    x2 = l-s/math.tan(A)
+    # Next we'll construct the path defining the arrow head
+    t, s = [d/2 for d in dims]
+    A = math.radians(24)
+    B = math.radians(60)
+    l = t/math.tan(A) + 0.1
+    x2 = l - s/math.tan(A)
     x1 = x2 + (s-t)/math.tan(B)
 
     ctm = CTM.CTM()
-    ctm.translate(-x2, dims[1]/2)
-    cmds = ['M ' + util.pt2str(ctm.transform((x1, -t)))]
-    cmds.append('L ' + util.pt2str(ctm.transform((x2, -s))))
-    cmds.append('L ' + util.pt2str(ctm.transform((l, 0))))
-    cmds.append('L ' + util.pt2str(ctm.transform((x2, s))))
-    cmds.append('L ' + util.pt2str(ctm.transform((x1, t))))
-    cmds.append('Z')    
+    ctm.scale(stroke_width, stroke_width)
+    ctm.translate(-x2, s)
+    p1 = ctm.transform((l,0))
+    p2 = ctm.transform((x2,s))
+    p3 = ctm.transform((x1,t))
+    p4 = ctm.transform((x1,-t))
+    p5 = ctm.transform((x2, -s))
 
-    d = ' '.join(cmds)
+    d = 'M ' + util.pt2str(p1)
+    d += 'L ' + util.pt2str(p2)
+    d += 'L ' + util.pt2str(p3)
+    d += 'L ' + util.pt2str(p4)
+    d += 'L ' + util.pt2str(p5)
+    d += 'Z'
 
+    # Now put the arrow head in a marker and add as a reusable
     marker = ET.Element('marker', attrib=
                         {'id': id,
-                         'markerWidth': util.float2str(l-x2),
-                         'markerHeight': util.float2str(dims[1]),
-                         'markerUnits': 'strokeWidth',
+                         'markerWidth': util.float2str(stroke_width*(l-x2)),
+                         'markerHeight': util.float2str(stroke_width*2*s),
+                         'markerUnits': 'userSpaceOnUse',
                          'orient': 'auto-start-reverse',
-                         'refX': util.float2str(abs(x2)),
-                         'refY': util.float2str(dims[1]/2)
+                         'refX': util.float2str(stroke_width*abs(x2)),
+                         'refY': util.float2str(stroke_width*s)
                          }
                         )
 
@@ -289,24 +208,66 @@ def add_arrowhead_marker(diagram, path, mid=False):
                   )
 
     diagram.add_reusable(marker)
+
+    outline_width = 2
+    # We've finished creating the visible arrow head.  Now we need to create
+    # an outline which extends 1/8th of an inch beyond the arrow head.
+    # First we push the top edge outline_width units away
+    push_angle = math.pi/2 - A
+    w = outline_width*np.array((math.cos(push_angle), math.sin(push_angle)))
+    q1 = p1 + w
+    q2 = p2 + w
+
+    # now the left side
+    v = outline_width * np.array((-1,0))
+    q3 = p2 + v
+    q4 = p5 + v
+
+    # now the bottom edge
+    w = np.array((w[0], -w[1]))
+    q5 = p5 + w
+    q6 = p1 + w
+
+    # Now that we have the vertices of the outlined arrow head, we will 
+    # translate the coordinate system to use as a marker
+    ctm = CTM.CTM()
+    ctm.translate(outline_width, outline_width)
+    q1, q2, q3, q4, q5, q6 = [util.pt2str(ctm.transform(p)) for p in [q1, q2, q3, q4, q5, q6]]
+
+    # Now construct the path, put it in a marker, and add as a reusable
+    # The id appends "-outline"
+    cmds = ['M', q1]
+    cmds += ['L', q2]
+    cmds += ['A', str(outline_width), str(outline_width),'0','0','1',q3]
+    cmds += ['L', q4]
+    cmds += ['A', str(outline_width), str(outline_width),'0','0','1',q5]
+    cmds += ['L', q6]
+    cmds += ['A', str(outline_width), str(outline_width),'0','0','1',q1]
+    cmds += ['Z']
+
+    d = ' '.join(cmds)                
+    
+    marker = ET.Element('marker')
+    marker.set('id', id+'-outline')
+    marker.set('markerWidth', util.float2str(stroke_width*(l-x2)+2*outline_width))
+    marker.set('markerHeight', util.float2str(stroke_width*2*s+2*outline_width))
+    marker.set('markerUnits', 'userSpaceOnUse')  # userSpaceOnUse?
+    marker.set('orient', 'auto-start-reverse')
+    marker.set('refX', util.float2str(abs(stroke_width*x2)+outline_width))
+    marker.set('refY', util.float2str(stroke_width*s+outline_width))
+
+    ET.SubElement(marker, 'path', attrib=
+                  {'d': d,
+                   'fill': 'context-stroke',
+                   'stroke': 'context-none'
+                   }
+                  )
+
+    diagram.add_reusable(marker)
+
     return id
 
 def add_arrowhead_to_path(diagram, location, path):
     id = add_arrowhead_marker(diagram, path, location[-3:] == 'mid')
-    if diagram.output_format() == 'tactile':
-        style_outline = path.get('style-outline', None)
-        style_plain = path.get('style-plain', None)
-        if style_outline is None:
-            style_outline = ''
-            style_plain = ''
-        style_outline += ';' + location + r': url(#{})'.format(id+'-outline')
-        style_plain += ';' + location + r': url(#{})'.format(id)
-        path.set('style-outline', style_outline)
-        path.set('style-plain', style_plain)
-    else:
-        style = path.get('style', None)
-        if style is None:
-            path.set('style', location + r': url(#{})'.format(id))
-        else:
-            style += ';' + location + r': url(#{})'.format(id)
-            path.set('style', style)
+    path.set(location, r'url(#{})'.format(id))
+
