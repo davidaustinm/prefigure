@@ -278,7 +278,9 @@ def angle(element, diagram, parent, outline_status):
         finish_outline(element, diagram, parent)
     else:
         parent = add_label(element, diagram, parent)
-        parent.append(arc)        
+        if element.get('id', 'none') == parent.get('id'):
+            element.attrib.pop('id')
+        parent.append(arc)
 
 def add_label(element, diagram, parent):
     # Is there a label associated with the marker?

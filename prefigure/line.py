@@ -2,6 +2,7 @@ import lxml.etree as ET
 import numpy as np
 import math
 import utilities as util
+import math_utilities as math_util
 import user_namespace as un
 import arrow
 
@@ -11,15 +12,20 @@ def line(element, diagram, parent, outline_status):
         finish_outline(element, diagram, parent)
         return
 
-    p1 = un.valid_eval(element.get('p1'))
-    p2 = un.valid_eval(element.get('p2'))
+    endpts = element.get('endpoints', None)
+    if endpts is None:
+        p1 = un.valid_eval(element.get('p1'))
+        p2 = un.valid_eval(element.get('p2'))
+    else:
+        p1, p2 = un.valid_eval(endpts
+                               )
     endpoint_offsets = None
     if element.get('infinite', 'no') == 'yes':
         p1, p2 = infinite_line(p1, p2, diagram)
         if p1 is None:  # the line doesn't hit the bounding box
             return
     else:
-        endpoint_offsets = element.get('offsets', None)
+        endpoint_offsets = element.get('endpoint-offsets', None)
         if endpoint_offsets is not None:
             endpoint_offsets = un.valid_eval(endpoint_offsets)
 
@@ -62,10 +68,16 @@ def mk_line(p0, p1, diagram, id = None, endpoint_offsets = None, user_coords = T
         p0 = diagram.transform(p0)
         p1 = diagram.transform(p1)
     if endpoint_offsets is not None:
-        p0[0] += endpoint_offsets[0][0]
-        p0[1] -= endpoint_offsets[0][1]
-        p1[0] += endpoint_offsets[1][0]
-        p1[1] -= endpoint_offsets[1][1]
+        if len(endpoint_offsets.shape) == 1:
+            u = math_util.normalize(p1-p0)
+            p0 = p0 + endpoint_offsets[0] * u
+            p1 = p1 + endpoint_offsets[1] * u
+        else:
+            p0[0] += endpoint_offsets[0][0]
+            p0[1] -= endpoint_offsets[0][1]
+            p1[0] += endpoint_offsets[1][0]
+            p1[1] -= endpoint_offsets[1][1]
+
     line.set('x1', util.float2str(p0[0]))
     line.set('y1', util.float2str(p0[1]))
     line.set('x2', util.float2str(p1[0]))

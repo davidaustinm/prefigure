@@ -273,6 +273,11 @@ class Diagram:
             self.href: r'#' + element.get('id') + '-outline'
         }
         )
+        # labeled points and angle markers are in a <g> with the 
+        # point's id.  To avoid duplicate id's, we'll remove the
+        # id from the graphical component
+        if element.get('id', 'none') == parent.get('id', 'none'):
+            use.attrib.pop('id')
         # We have to clean up the arrow heads.  The references to the
         # arrow heads are in the reusable so we'll retrieve them and
         # and include them with the use element.
