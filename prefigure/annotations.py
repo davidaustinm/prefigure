@@ -22,6 +22,9 @@ def annotate(element, diagram, parent = None):
     if parent is None:
         parent = diagram.get_annotations_root()
 
+    if element.get('ref', None) is not None:
+        element.set('id', element.get('ref'))
+
     # initialize this annotation
     annotation = ET.Element('annotation')
     diagram.add_annotation(annotation)

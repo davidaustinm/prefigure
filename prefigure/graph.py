@@ -51,7 +51,7 @@ def graph(element, diagram, parent, outline_status = None):
     # By default, we clip the graph to the bounding box
     if element.get('cliptobbox') is None:
         element.set('cliptobbox', 'yes')
-    util.cliptobbox(path, element)
+    util.cliptobbox(path, element, diagram)
 
     # Finish up handling any requested outlines
     if outline_status == 'add_outline':

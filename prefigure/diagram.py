@@ -4,6 +4,7 @@ import lxml.etree as ET
 import numpy as np
 import tags
 import user_namespace as un
+import utilities as util
 import CTM
 import label
 
@@ -47,6 +48,9 @@ class Diagram:
 
         # a dictionary to remember some network information
         self.network_coordinates = {}
+
+        # stack for managing bounding boxes and clipping
+        self.clippaths = []
 
     def add_label(self, element, group):
         self.label_group_dict[element] = [group, self.ctm()]
@@ -131,17 +135,27 @@ class Diagram:
         # initialize the SVG element 'defs' and add the clipping path
         self.defs = ET.SubElement(self.root, 'defs')
 
-        clippath = ET.SubElement(self.defs, 'clipPath',
-                                 attrib={'id': 'clip-to-bounding-box'})
-
+        clippath = ET.Element('clipPath')
         ET.SubElement(clippath, 'rect',
                       attrib={
-                             'x': str(margins[0]),
-                             'y': str(margins[3]),
-                             'width': str(width),
-                             'height': str(height)
+                             'x': util.float2str(margins[0]),
+                             'y': util.float2str(margins[3]),
+                             'width': util.float2str(width),
+                             'height': util.float2str(height)
                          })
+        self.push_clippath(clippath)
 
+    def push_clippath(self, clippath):
+        self.defs.append(clippath)
+        self.add_id(clippath)
+        self.clippaths.append(clippath.get('id'))
+
+    def pop_clippath(self):
+        self.clippaths.pop(-1)
+
+    def get_clippath(self):
+        return self.clippaths[-1]
+    
     def place_labels(self):
         label.place_labels(self,
                            self.filename,
@@ -187,7 +201,8 @@ class Diagram:
             for attr, value in child.items():
                 if attr.startswith(prefix):
                     child.set(attr[len(prefix):], value)
-
+            if child.get('at') is not None:
+                child.set('id', child.get('at'))
             tags.parse_element(child, self, root, outline_status)
 
     def ctm(self):
@@ -278,6 +293,7 @@ class Diagram:
         # id from the graphical component
         if element.get('id', 'none') == parent.get('id', 'none'):
             use.attrib.pop('id')
+
         # We have to clean up the arrow heads.  The references to the
         # arrow heads are in the reusable so we'll retrieve them and
         # and include them with the use element.

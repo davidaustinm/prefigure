@@ -55,7 +55,7 @@ def point(element, diagram, parent, outline_status = None):
     element.set('thickness', util.get_attr(element, 'thickness', '2'))
     util.add_attr(shape, util.get_2d_attr(element))
     shape.set('type', 'point')
-    util.cliptobbox(shape, element)
+    util.cliptobbox(shape, element, diagram)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, shape, parent)

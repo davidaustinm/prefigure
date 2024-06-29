@@ -39,7 +39,7 @@ def circle(element, diagram, parent, outline_status):
     element.set('thickness', element.get('thickness', '2'))
     util.add_attr(circle, util.get_2d_attr(element))
     circle.set('type', 'circle')
-    util.cliptobbox(circle, element)
+    util.cliptobbox(circle, element, diagram)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, circle, parent)
@@ -88,7 +88,7 @@ def ellipse(element, diagram, parent, outline_status):
     element.set('thickness', element.get('thickness', '2'))
     util.add_attr(circle, util.get_2d_attr(element))
     circle.set('type', 'ellipse')
-    util.cliptobbox(circle, element)
+    util.cliptobbox(circle, element, diagram)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, circle, parent)
@@ -167,7 +167,7 @@ def arc(element, diagram, parent, outline_status):
     arc.set('d', d)
     util.add_attr(arc, util.get_2d_attr(element))
     arc.set('type', 'arc')
-    util.cliptobbox(arc, element)
+    util.cliptobbox(arc, element, diagram)
 
     arrows = int(element.get('arrows', '0'))
     if arrows > 0:
@@ -267,7 +267,7 @@ def angle(element, diagram, parent, outline_status):
 
     util.add_attr(arc, util.get_1d_attr(element))
     arc.set('type', 'arc')
-    util.cliptobbox(arc, element)
+    util.cliptobbox(arc, element, diagram)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, arc, parent, outline_width=2)

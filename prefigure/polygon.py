@@ -88,7 +88,7 @@ def polygon(element, diagram, parent, outline_status):
     util.add_attr(path, util.get_2d_attr(element))
     path.set('type', 'polygon')
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
-    util.cliptobbox(path, element)
+    util.cliptobbox(path, element, diagram)
 
     arrows = int(element.get('arrows', '0'))
     if arrows > 0:

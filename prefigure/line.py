@@ -41,7 +41,7 @@ def line(element, diagram, parent, outline_status):
         arrow.add_arrowhead_to_path(diagram, 'marker-end', line)
     if arrows > 1:
         arrow.add_arrowhead_to_path(diagram, 'marker-start', line)
-    util.cliptobbox(line, element)
+    util.cliptobbox(line, element, diagram)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, line, parent)

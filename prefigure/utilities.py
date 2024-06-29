@@ -49,9 +49,11 @@ def get_2d_attr(element):
     d['fill'] = get_color(element.get('fill'))
     return d
 
-def cliptobbox(g_element, element):
-    if element.get('cliptobbox', 'no') == 'yes':
-        g_element.set('clip-path', r'url(#clip-to-bounding-box)')
+def cliptobbox(g_element, element, diagram):
+    if element.get('cliptobbox', 'no') == 'no':
+        return
+    id = diagram.get_clippath()
+    g_element.set('clip-path', r'url(#{})'.format(id))
 
 def float2str(x):
     return "%.1f" % x

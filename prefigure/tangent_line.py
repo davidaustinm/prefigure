@@ -49,7 +49,7 @@ def tangent(element, diagram, parent, outline_status):
     util.add_attr(line_el, util.get_1d_attr(element))
     line_el.set('type', 'tangent line')
     element.set('cliptobbox', 'yes')
-    util.cliptobbox(line_el, element)
+    util.cliptobbox(line_el, element, diagram)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, line_el, parent)

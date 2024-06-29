@@ -82,7 +82,7 @@ def plot_de_solution(element, diagram, parent, outline_status):
     path.set('type', 'parametric curve')
 
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
-    util.cliptobbox(path, element)
+    util.cliptobbox(path, element, diagram)
     
     if outline_status == 'add_outline':
         diagram.add_outline(element, path, parent)

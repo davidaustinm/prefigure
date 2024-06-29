@@ -41,15 +41,16 @@ def grid(element, diagram, parent, outline_status):
         grid_with_basis(element, diagram, parent, basis, outline_status)
         return
 
+    thickness = element.get('thickness', '1')
     grid = ET.SubElement(parent, 'g',
                          attrib={
                              'id': element.get('id', 'grid'),
                              'stroke': '#ccc',
-                             'stroke-width': '1'
+                             'stroke-width': thickness
                          }
                          )
 
-    util.cliptobbox(grid, element)
+    util.cliptobbox(grid, element, diagram)
 
     bbox = diagram.bbox()
     rx = element.get('rx')
@@ -123,7 +124,7 @@ def axes(element, diagram, parent, outline_status):
                              }
     )
 
-    util.cliptobbox(axes, element)
+    util.cliptobbox(axes, element, diagram)
     bbox = diagram.bbox()
 
     decorations = element.get('decorations', 'yes')
@@ -219,7 +220,6 @@ def axes(element, diagram, parent, outline_status):
         vlabels = find_label_positions((bbox[1], bbox[3]))
     else:
         vlabels = un.valid_eval(vlabels)
-
     g_vticks = ET.SubElement(axes, 'g', attrib={
                               'type': 'vertical ticks'
                               }
@@ -324,6 +324,10 @@ def grid_axes(element, diagram, parent, outline_status):
         el.set('ylabel', element.get('ylabel'))
     if element.get('decorations') is not None:
         el.set('decorations', element.get('decorations'))
+    if element.get('hlabels') is not None:
+        el.set('hlabels', element.get('hlabels'))
+    if element.get('vlabels') is not None:
+        el.set('vlabels', element.get('vlabels'))
     axes(el, diagram, group, outline_status)
 
     annotation = ET.Element('annotation')
