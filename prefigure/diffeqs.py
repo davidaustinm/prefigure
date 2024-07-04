@@ -9,7 +9,8 @@ def de_solve(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
         return
 
-    f = un.valid_eval(element.get('function'))
+    g = un.valid_eval(element.get('function'))
+    def f(y,t): return g(t,y)
     t0 = un.valid_eval(element.get('t0'))
     y0 = un.valid_eval(element.get('y0'))
 
@@ -48,14 +49,14 @@ def plot_de_solution(element, diagram, parent, outline_status):
     x_axis, y_axis = [a.strip() for a in axes]
 
     if x_axis.startswith('y'):
-        axis0 = solution[int(x_axis[1:]) + 1]
+        axis0 = solution[int(x_axis[1:])+1]
     else:
         axis0 = solution[0]
 
     if y_axis == 'y':
         axis1 = solution[1]
     else:
-        axis1 = solution[int(y_axis[1:]) + 1]
+        axis1 = solution[int(y_axis[1:])+1]
 
     curve = zip(axis0, axis1)
     p = diagram.transform(next(curve))

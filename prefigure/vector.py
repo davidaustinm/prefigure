@@ -41,7 +41,7 @@ def vector(element, diagram, parent, outline_status):
         element.set('stroke', 'black')
     else:
         util.set_attr(element, 'stroke', 'black')
-        util.set_attr(element, 'fill', 'black')
+        util.set_attr(element, 'fill', 'none')
     util.set_attr(element, 'thickness', '4')
 
     vector = ET.Element('path')

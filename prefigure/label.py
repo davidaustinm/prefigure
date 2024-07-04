@@ -142,6 +142,8 @@ def label(element, diagram, parent, outline_status = None):
         align = 'east'
 
     element.set('alignment', align)
+    if element.get('anchor', None) is not None:
+        element.set('p', element.get('anchor'))
     element.set('p', util.get_attr(element, 'p', '[0,0]'))
 
     # if we're making a tactile diagram and the text is a single

@@ -84,6 +84,10 @@ def valid_eval(s, name=None, substitution=True):
     if substitution:
         s = s.replace('^', '**')
     equal = s.find('=')
+    if s.strip()[0] == r'#':  # it's a color
+        return s
+    if s.strip().startswith('rgb'): # it's a color
+        return s
     # is this a function?  If so:
     if equal >= 0:
         name, expr = [field.strip() for field in s.split('=')]

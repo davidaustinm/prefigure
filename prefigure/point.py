@@ -90,11 +90,14 @@ def add_label(element, diagram, parent):
         # Now we'll create a new XML element describing the label
         el = copy.deepcopy(element)
         el.tag = 'label'
+
+        if element.get('alignment', '').strip() == 'e':
+            element.set('alignment', 'east')
         alignment = util.get_attr(element, 'alignment', 'ne')
         el.set('alignment', alignment)
         size = element.get('size', '4')
         displacement = label.alignment_displacement[alignment]
-        el.set('p', util.get_attr(element, 'p', '(0,0)'))
+        el.set('anchor', util.get_attr(element, 'p', '(0,0)'))
 
         # Determine how far to offset the label
         # TODO:  improve tactile offsets

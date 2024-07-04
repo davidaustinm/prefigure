@@ -42,10 +42,11 @@ def grid(element, diagram, parent, outline_status):
         return
 
     thickness = element.get('thickness', '1')
+    stroke = element.get('stroke', r'#ccc')
     grid = ET.SubElement(parent, 'g',
                          attrib={
                              'id': element.get('id', 'grid'),
-                             'stroke': '#ccc',
+                             'stroke': stroke,
                              'stroke-width': thickness
                          }
                          )
@@ -53,17 +54,21 @@ def grid(element, diagram, parent, outline_status):
     util.cliptobbox(grid, element, diagram)
 
     bbox = diagram.bbox()
-    rx = element.get('rx')
-    if rx is None:
-        rx = find_gridspacing((bbox[0], bbox[2])) 
+    spacings = element.get('spacings', None)
+    if spacings is not None:
+        rx, ry = un.valid_eval(spacings)
     else:
-        rx = un.valid_eval(rx)
+        rx = element.get('hspacing')
+        if rx is None:
+            rx = find_gridspacing((bbox[0], bbox[2])) 
+        else:
+            rx = un.valid_eval(rx)
 
-    ry = element.get('ry')
-    if ry is None:
-        ry = find_gridspacing((bbox[1], bbox[3]))
-    else:
-        ry = un.valid_eval(ry)
+        ry = element.get('vspacing')
+        if ry is None:
+            ry = find_gridspacing((bbox[1], bbox[3]))
+        else:
+            ry = un.valid_eval(ry)
 
     x = rx[0]
     while x <= rx[2]:
@@ -116,11 +121,14 @@ def find_label_positions(coordinate_range):
 # TODO:  Matt's request for boundaries
 position_tolerance = 1e-10
 def axes(element, diagram, parent, outline_status):
+    stroke = element.get('stroke', 'black')
+    thickness = element.get('thickness', '2')
+
     axes = ET.SubElement(parent, 'g',
                          attrib={
                              'id': element.get('id', 'axes'),
-                             'stroke': 'black',
-                             'stroke-width': '2'
+                             'stroke': stroke,
+                             'stroke-width': thickness
                              }
     )
 
@@ -131,10 +139,12 @@ def axes(element, diagram, parent, outline_status):
 
     h_line_el = line.mk_line((bbox[0], 0), (bbox[2], 0), diagram)
     h_line_el.set('type', 'horizontal axis')
+    h_line_el.set('stroke-width', thickness)
     axes.append(h_line_el)
 
     v_line_el = line.mk_line((0, bbox[1]), (0, bbox[3]), diagram)
     v_line_el.set('type', 'vertical axis')
+    v_line_el.set('stroke-width', thickness)
     axes.append(v_line_el)
 
     arrows = int(element.get('arrows', '0'))

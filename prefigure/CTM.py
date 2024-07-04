@@ -48,7 +48,7 @@ def scalestr(x, y):
     return 'scale('+str(x)+','+str(y)+')'
 
 def rotatestr(theta):
-    return 'rotate('+str(-theta)+')'
+    return 'rotate('+util.float2str(-theta)+')'
 
 class CTM:
     def __init__(self, ctm = None):

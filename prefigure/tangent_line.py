@@ -32,7 +32,7 @@ def tangent(element, diagram, parent, outline_status):
     y2 = tangent(x2)
     p1 = (x1, y1)
     p2 = (x2, y2)
-    if element.get('infinite') == 'yes' or element.get('domain') == None:
+    if element.get('infinite') == 'yes' or element.get('domain') is None:
         p1, p2 = line.infinite_line(p1, p2, diagram)
     if p1 is None:
         return

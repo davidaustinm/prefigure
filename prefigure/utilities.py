@@ -7,6 +7,8 @@ colors = {'gray': r'#777', 'lightgray': r'#ccc', 'darkgray': r'#333'}
 def get_color(color):
     if color is None:
         return 'none'
+    if isinstance(color, np.ndarray):
+        return 'rgb({},{},{})'.format(color)
     return colors.get(color, color)
 
 def add_attr(element, attr):
@@ -29,6 +31,8 @@ def get_1d_attr(element):
     d = {}
     if element.get('stroke') is not None:
         d['stroke'] = get_color(element.get('stroke'))
+    if element.get('stroke-opacity') is not None:
+        d['stroke-opacity'] = element.get('stroke-opacity')
     if element.get('opacity') is not None:
         d['opacity'] = element.get('opacity')
     if element.get('thickness') is not None:
@@ -47,6 +51,10 @@ def get_1d_attr(element):
 def get_2d_attr(element):
     d = get_1d_attr(element)
     d['fill'] = get_color(element.get('fill'))
+    if element.get('fill-rule') is not None:
+        d['fill-rule'] = element.get('fill-rule')
+    if element.get('fill-opacity') is not None:
+        d['fill-opacity'] = element.get('fill-opacity')
     return d
 
 def cliptobbox(g_element, element, diagram):

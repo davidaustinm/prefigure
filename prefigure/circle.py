@@ -4,6 +4,7 @@ import numpy as np
 import user_namespace as un
 import utilities as util
 import math_utilities as math_util
+import CTM
 import arrow
 import copy
 import label
@@ -69,13 +70,25 @@ def ellipse(element, diagram, parent, outline_status):
     right = [center[0] + a, center[1]]
     top = [center[0], center[1] + b]
     center, right, top = map(diagram.transform, [center, right, top])
+    cx = util.float2str(center[0])
+    cy = util.float2str(center[1])
 
     circle = ET.Element('ellipse')
     diagram.add_id(circle, element.get('id'))
-    circle.set('cx', util.float2str(center[0]))
-    circle.set('cy', util.float2str(center[1]))
+    circle.set('cx', cx)
+    circle.set('cy', cy)
     circle.set('rx', util.float2str(right[0]-center[0]))
     circle.set('ry', util.float2str(center[1]-top[1]))
+
+    if element.get('rotate', None) is not None:
+        rotation = un.valid_eval(element.get('rotate'))
+        if element.get('degrees', 'yes') == 'no':
+            rotation = math.degrees(rotation)
+        transform_strs = [CTM.translatestr(center[0], center[1]), 
+                          CTM.rotatestr(rotation),
+                          CTM.translatestr(-center[0], -center[1])]
+        transform_str = ' '.join(transform_strs)
+        circle.set('transform', transform_str)
 
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
@@ -249,6 +262,9 @@ def angle(element, diagram, parent, outline_status):
     if element.get('alignment', None) is None:
         element.set('alignment', 
                     label.get_alignment_from_direction([direction[0], -direction[1]]))
+    else:
+        if element.get('alignment').strip() == 'e':
+            element.set('alignment', 'east')
     initial_point = v1*radius + p
     final_point = v2*radius + p
     initial_point_str = util.pt2str(initial_point)
@@ -262,12 +278,12 @@ def angle(element, diagram, parent, outline_status):
     diagram.add_id(arc, element.get('id'))
     arc.set('d', d)
 
-    if element.get('arrow', None) is not None:
-        arrow.add_arrowhead_to_path(diagram, 'marker-end', arc)
-
     util.add_attr(arc, util.get_1d_attr(element))
     arc.set('type', 'arc')
     util.cliptobbox(arc, element, diagram)
+
+    if element.get('arrow', None) is not None:
+        arrow.add_arrowhead_to_path(diagram, 'marker-end', arc)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, arc, parent, outline_width=2)
