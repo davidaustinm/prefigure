@@ -129,7 +129,7 @@ class Diagram:
         ctm.scale(1,-1)
         ctm.translate(margins[0], margins[1])
         bbox = [0,0,width,height]
-        un.valid_eval(str(bbox), 'bbox')
+        un.enter_namespace('bbox', bbox)
         self.ctm_stack = [[ctm, bbox]]
 
         # initialize the SVG element 'defs' and add the clipping path

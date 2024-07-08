@@ -38,7 +38,7 @@ def network(element, diagram, parent, outline_status):
             box[3] = max(box[3], value[1])
 
     coords = ET.Element('coordinates')
-    coords.set('bbox', str(box))
+    coords.set('bbox', util.pt2long_str(box, spacer=','))
 
     network_group = ET.SubElement(coords, 'group')
     diagram.add_id(network_group, element.get('id'))

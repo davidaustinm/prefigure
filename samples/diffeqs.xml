@@ -1,5 +1,5 @@
 <diagram width="300" height="300" margins="10">
-  <definition>f(y,t) = t-y</definition>
+  <definition>f(t,y) = t-y</definition>
   <coordinates bbox="[-4,-4,4,4]">
     <grid id="grid"/>
     <axes id="axes" xlabel="t" ylabel="y"/>

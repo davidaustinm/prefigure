@@ -478,5 +478,5 @@ def caption(element, diagram, parent, outline_status):
     element.set('alignment', 'ne')
     element.set('offset', '(0,10)')
     box = diagram.bbox()
-    element.set('p', str((box[0], box[3])))
+    element.set('p', util.pt2str((box[0], box[3]), spacer=","))
     label(element, diagram, parent)

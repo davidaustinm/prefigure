@@ -205,7 +205,7 @@ def axes(element, diagram, parent, outline_status):
             math_element = ET.SubElement(xlabel, 'm')
             math_element.text = r'\text{'+str(x)+'}'
 
-            xlabel.set('p', str((x, 0)))
+            xlabel.set('p', '({},0)'.format(x))
             if diagram.output_format() == 'tactile':
                 xlabel.set('alignment', 'ha')
                 xlabel.set('offset', '(0,-20)')
@@ -263,7 +263,7 @@ def axes(element, diagram, parent, outline_status):
             math_element = ET.SubElement(ylabel, 'm')
             math_element.text = r'\text{'+str(y)+'}'
             # process as a math number
-            ylabel.set('p', str((0, y)))
+            ylabel.set('p', '(0,{})'.format(y))
 
             if diagram.output_format() == 'tactile':
                 ylabel.set('alignment', 'va')
@@ -289,7 +289,7 @@ def axes(element, diagram, parent, outline_status):
         math_element = ET.SubElement(el, 'm')
         math_element.text = xlabel
         el.set('clear-background', 'no')
-        el.set('p', str([bbox[2], 0]))
+        el.set('p', '({},0)'.format(bbox[2]))
         el.set('alignment', 'xl')
         label.label(el, diagram, parent, outline_status)
 
@@ -299,7 +299,7 @@ def axes(element, diagram, parent, outline_status):
         math_element = ET.SubElement(el, 'm')
         math_element.text = ylabel
         el.set('clear-background', 'no')
-        el.set('p', str([0, bbox[3]]))
+        el.set('p', '(0,{})'.format(bbox[3]))
         el.set('alignment', 'se')
         label.label(el, diagram, parent, outline_status)
 
