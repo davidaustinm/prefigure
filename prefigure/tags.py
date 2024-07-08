@@ -1,5 +1,5 @@
 import sys
-
+import lxml.etree as ET
 import annotations
 import area
 import clip
@@ -65,6 +65,8 @@ tag_dict = {
 # apply the processing function based on the XML element's tag
 
 def parse_element(element, diagram, root, outline_status = None):
+    if element.tag is ET.Comment:
+        return
     try:
         function = tag_dict[element.tag]
     except KeyError:

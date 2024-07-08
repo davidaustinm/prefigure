@@ -19,6 +19,8 @@ def annotations(element, diagram, parent, outline_status):
         annotate(subelement, diagram)
 
 def annotate(element, diagram, parent = None):
+    if element.tag is ET.Comment:
+        return
     if parent is None:
         parent = diagram.get_annotations_root()
 
