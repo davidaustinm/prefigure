@@ -301,7 +301,11 @@ def angle(element, diagram, parent, outline_status):
 def add_label(element, diagram, parent):
     # Is there a label associated with the marker?
     text = element.text
-    if text is not None or len(element) > 0:
+
+    # is there a label here?
+    has_text = text is not None and len(text.strip()) > 0
+    all_comments = all([subel.tag is ET.Comment for subel in element])
+    if has_text or not all_comments:
         # If there's a label, we'll bundle the label and the angle mark in a group
         group = ET.SubElement(parent, 'g')
         diagram.add_id(group, element.get('id'))
