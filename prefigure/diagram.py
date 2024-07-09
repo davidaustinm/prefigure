@@ -204,10 +204,6 @@ class Diagram:
         # modified attributes
         prefix = self.format + '-'
         for child in element:
-            # replace any format-specific attributes
-            for attr, value in child.items():
-                if attr.startswith(prefix):
-                    child.set(attr[len(prefix):], value)
             # we're publicly using 'at' rather than 'id' for handles
             if child.get('at') is not None:
                 child.set('id', child.get('at'))
@@ -217,6 +213,10 @@ class Diagram:
                 for attr, value in defaults.attrib.items():
                     if child.get(attr, None) is None:
                         child.set(attr, value)
+            # replace any format-specific attributes
+            for attr, value in child.items():
+                if attr.startswith(prefix):
+                    child.set(attr[len(prefix):], value)
             tags.parse_element(child, self, root, outline_status)
 
     def ctm(self):
