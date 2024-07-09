@@ -3,7 +3,7 @@ import utilities as util
 import user_namespace as un
 
 def clip(element, diagram, parent, outline_status):
-    dims = un.valid_eval(element.get('dims', '(1,1)'))
+    dims = un.valid_eval(element.get('dimensions', '(1,1)'))
     if element.get('center') is not None:
         center = un.valid_eval(element.get('center'))
         ll = center - 0.5*dims

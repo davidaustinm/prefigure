@@ -10,7 +10,7 @@ import label
 
 class Diagram:
     def __init__(self, diagram_element, filename,
-                 diagram_number, format):
+                 diagram_number, format, output, publication):
         self.diagram_element = diagram_element
         self.filename = filename
         self.diagram_number = diagram_number
@@ -51,6 +51,12 @@ class Diagram:
 
         # stack for managing bounding boxes and clipping
         self.clippaths = []
+
+        # read in defaults from publication file
+        self.defaults = {}
+        if publication is not None:
+            for subelement in publication:
+                self.defaults[subelement.tag] = subelement
 
     def add_label(self, element, group):
         self.label_group_dict[element] = [group, self.ctm()]
@@ -198,11 +204,19 @@ class Diagram:
         # modified attributes
         prefix = self.format + '-'
         for child in element:
+            # replace any format-specific attributes
             for attr, value in child.items():
                 if attr.startswith(prefix):
                     child.set(attr[len(prefix):], value)
+            # we're publicly using 'at' rather than 'id' for handles
             if child.get('at') is not None:
                 child.set('id', child.get('at'))
+            # see if the publication flie has any defaults
+            defaults = self.defaults.get(child.tag, None)
+            if defaults is not None:
+                for attr, value in defaults.attrib.items():
+                    if child.get(attr, None) is None:
+                        child.set(attr, value)
             tags.parse_element(child, self, root, outline_status)
 
     def ctm(self):
