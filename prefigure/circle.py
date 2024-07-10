@@ -187,6 +187,8 @@ def arc(element, diagram, parent, outline_status):
         arrow.add_arrowhead_to_path(diagram, 'marker-end', arc)
     if arrows > 1:
         arrow.add_arrowhead_to_path(diagram, 'marker-start', arc)
+    if arrows < 0:
+        arrow.add_arrowhead_to_path(diagram, 'marker-start', arc)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, arc, parent, outline_width=2)

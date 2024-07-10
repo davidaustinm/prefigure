@@ -211,6 +211,8 @@ class Diagram:
         # modified attributes
         prefix = self.format + '-'
         for child in element:
+            if child.tag is ET.Comment:
+                continue
             child.tag = ET.QName(child).localname
             # we're publicly using 'at' rather than 'id' for handles
             if child.get('at') is not None:

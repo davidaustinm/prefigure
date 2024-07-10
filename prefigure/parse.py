@@ -48,6 +48,8 @@ if pub_file is not None:
     try:
         publication = (pubs_with_ns + pubs_without_ns)[0]
         for child in publication:
+            if child.tag is ET.Comment:
+                continue
             child.tag = ET.QName(child).localname
     except IndexError:
         print('Publication file should have a <prefigure> element')
