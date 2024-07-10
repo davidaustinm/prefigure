@@ -183,12 +183,14 @@ def arc(element, diagram, parent, outline_status):
     util.cliptobbox(arc, element, diagram)
 
     arrows = int(element.get('arrows', '0'))
+    forward = 'marker-end'
+    backward = 'marker-start'
+    if element.get('reverse', 'no') == 'yes':
+        forward, backward = backward, forward
     if arrows > 0:
-        arrow.add_arrowhead_to_path(diagram, 'marker-end', arc)
+        arrow.add_arrowhead_to_path(diagram, forward, arc)
     if arrows > 1:
-        arrow.add_arrowhead_to_path(diagram, 'marker-start', arc)
-    if arrows < 0:
-        arrow.add_arrowhead_to_path(diagram, 'marker-start', arc)
+        arrow.add_arrowhead_to_path(diagram, backward, arc)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, arc, parent, outline_width=2)
@@ -285,8 +287,10 @@ def angle(element, diagram, parent, outline_status):
     util.cliptobbox(arc, element, diagram)
 
     if element.get('arrow', None) is not None:
-        arrow.add_arrowhead_to_path(diagram, 'marker-end', arc)
-
+        if element.get('reverse', 'no') == 'yes':
+            arrow.add_arrowhead_to_path(diagram, 'marker-end', arc)
+        else:
+            arrow.add_arrowhead_to_path(diagram, 'marker-start', arc)
     if outline_status == 'add_outline':
         diagram.add_outline(element, arc, parent, outline_width=2)
         return

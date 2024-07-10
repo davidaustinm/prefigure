@@ -39,10 +39,14 @@ def line(element, diagram, parent, outline_status):
     line.set('type', 'line')
 
     arrows = int(element.get('arrows', '0'))
+    forward = 'marker-end'
+    backward = 'marker-start'
+    if element.get('reverse', 'no') == 'yes':
+        forward, backward = backward, forward
     if arrows > 0:
-        arrow.add_arrowhead_to_path(diagram, 'marker-end', line)
+        arrow.add_arrowhead_to_path(diagram, forward, line)
     if arrows > 1:
-        arrow.add_arrowhead_to_path(diagram, 'marker-start', line)
+        arrow.add_arrowhead_to_path(diagram, backward, line)
     util.cliptobbox(line, element, diagram)
 
     if outline_status == 'add_outline':

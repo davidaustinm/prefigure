@@ -91,10 +91,14 @@ def polygon(element, diagram, parent, outline_status):
     util.cliptobbox(path, element, diagram)
 
     arrows = int(element.get('arrows', '0'))
+    forward = 'marker-end'
+    backward = 'marker-start'
+    if element.get('reverse', 'no') == 'yes':
+        forward, backward = backward, forward
     if arrows > 0:
-        arrow.add_arrowhead_to_path(diagram, 'marker-end', path)
+        arrow.add_arrowhead_to_path(diagram, forward, path)
     if arrows > 1:
-        arrow.add_arrowhead_to_path(diagram, 'marker-start', path)
+        arrow.add_arrowhead_to_path(diagram, backward, path)
 
 
     if outline_status == 'add_outline':
