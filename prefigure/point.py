@@ -45,6 +45,22 @@ def point(element, diagram, parent, outline_status = None):
         points += ' ' + util.pt2str((p[0], p[1]+size), spacer=',')
         points += ' ' + util.pt2str((p[0]-size, p[1]), spacer=',')
         shape.set('points', points)
+    if style == 'cross':
+        shape.tag = 'path'
+        size *= 1.4
+        d = 'M ' + util.pt2str((p[0]-size, p[1]+size))
+        d += 'L ' + util.pt2str((p[0]+size, p[1]-size)) 
+        d += 'M ' + util.pt2str((p[0]+size, p[1]+size)) 
+        d += 'L ' + util.pt2str((p[0]-size, p[1]-size))
+        shape.set('d', d)
+    if style == 'plus':
+        shape.tag = 'path'
+        size *= 1.4
+        d = 'M ' + util.pt2str((p[0]-size, p[1]))
+        d += 'L ' + util.pt2str((p[0]+size, p[1]))
+        d += 'M ' + util.pt2str((p[0], p[1]+size))
+        d += 'L ' + util.pt2str((p[0], p[1]-size))
+        shape.set('d', d)
 
     if diagram.output_format() == 'tactile':
         element.set('fill', 'lightgray')
