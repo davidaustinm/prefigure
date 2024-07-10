@@ -15,6 +15,7 @@ class Diagram:
         self.filename = filename
         self.diagram_number = diagram_number
         self.format = format
+        self.output = output
 
         # create the XML tree for the svg output
         svg_uri = "http://www.w3.org/2000/svg"
@@ -57,6 +58,11 @@ class Diagram:
         if publication is not None:
             for subelement in publication:
                 self.defaults[subelement.tag] = subelement
+
+        if self.defaults.get('macros', None) is not None:
+            macros_div = ET.SubElement(self.label_html_body, 'div')
+            macros_div.set('id', 'latex-macros')
+            macros_div.text = '\({}\)'.format(self.defaults.get('macros').text)
 
     def add_label(self, element, group):
         self.label_group_dict[element] = [group, self.ctm()]
@@ -198,12 +204,14 @@ class Diagram:
             element = self.diagram_element
         if root is None:
             root = self.root
-
+        # strip out the namespace prefix
+        element.tag = ET.QName(element).localname
         # We allow an element's attributes to be rewritten depending on
         # the format.  For instance, tactile diagrams sometimes require
         # modified attributes
         prefix = self.format + '-'
         for child in element:
+            child.tag = ET.QName(child).localname
             # we're publicly using 'at' rather than 'id' for handles
             if child.get('at') is not None:
                 child.set('id', child.get('at'))

@@ -33,6 +33,8 @@ def line(element, diagram, parent, outline_status):
                    endpoint_offsets=endpoint_offsets)
     util.set_attr(element, 'stroke', 'black')
     util.set_attr(element, 'thickness', '2')
+    if diagram.output_format() == 'tactile':
+        element.set('stroke', 'black')
     util.add_attr(line, util.get_1d_attr(element))
     line.set('type', 'line')
 

@@ -388,7 +388,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
         id = math.get('id')
         div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
         try:
-            insert = div.xpath('//mjx-data/mjx-container/svg:svg',
+            insert = div.xpath('mjx-data/mjx-container/svg:svg',
                                namespaces=ns)[0]
         except IndexError:
             print('Error in processing label, possibly a LaTeX error: ' + div.text)
