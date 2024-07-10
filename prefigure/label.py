@@ -83,7 +83,7 @@ nemeth_off = '⠸⠱ '
 # We use pycairo to measure the dimensions of svg text labels
 # so we need a cairo context.  This is not needed for tactiles diagrams
 
-surface = cairo.SVGSurface('sample.svg', 200, 200)
+surface = cairo.SVGSurface(None, 200, 200)
 context = cairo.Context(surface)
 context.select_font_face('sans')
 font_size = 14
