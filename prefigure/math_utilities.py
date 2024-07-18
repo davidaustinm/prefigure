@@ -1,4 +1,6 @@
 import numpy as np
+import scipy
+import scipy.special
 import math
 
 # introduce some useful mathematical operations
@@ -25,3 +27,6 @@ def angle(p, units = 'deg'):
 def roll(array):
     array = np.array(array)
     return np.roll(array, 1, axis=0)
+
+def choose(n,k):
+    return int(scipy.special.binom(n,k))

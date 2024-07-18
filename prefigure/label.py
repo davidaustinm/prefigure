@@ -118,6 +118,7 @@ def label(element, diagram, parent, outline_status = None):
     text = element.text
     if text is None:
         text = ''
+    else: element.text = evaluate_text(text)
     plain_text = text
     for math in element.findall('m'):
         diagram.add_id(math)
@@ -133,6 +134,7 @@ def label(element, diagram, parent, outline_status = None):
         text += math_text
         plain_text += str(math_text)
         if math.tail is not None:
+            math.tail = evaluate_text(math.tail)
             text += math.tail
             plain_text += str(math.tail)
     text = text.strip()
@@ -365,11 +367,14 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     # the list and record all the relevant data in vertical_data.  An entry in 
     # this list will be the SVG element and how far above and below the baseline
     # the label extends (both measured positively)
+    number_m = len(element.findall('m'))
     width = 0
     vertical_data = []
     # Are we starting off with some text?
     if element.text is not None and len(element.text.strip()) > 0:
         text = element.text.lstrip()
+        if number_m == 0:
+            text = text.rstrip()
         context = cairo_context
         x_bearing, y_bearing, t_width, t_height, x_advance, y_advance = context.text_extents(text)
 
@@ -384,7 +389,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
 
     # Now we'll go through the MathJax labels
     ns = {'svg': 'http://www.w3.org/2000/svg'}
-    for math in element.findall('m'):
+    for num, math in enumerate(element.findall('m')):
         id = math.get('id')
         div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
         try:
@@ -416,6 +421,8 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
 
         if math.tail is not None and len(math.tail.strip()) > 0:
             text = ' ' + math.tail.strip()
+            if num + 1 == number_m:
+                text = text.rstrip()
             context = cairo_context
             x_bearing, y_bearing, t_width, t_height, x_advance, y_advance = context.text_extents(text)
             text_el = ET.SubElement(label_group, 'text')
