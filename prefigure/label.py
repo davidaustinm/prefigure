@@ -8,9 +8,9 @@ import cairo
 from pathlib import Path
 import numpy as np
 import lxml.etree as ET
-import utilities as util
-import CTM
-import user_namespace as un
+from prefigure import utilities as util
+from prefigure import CTM
+from prefigure import user_namespace as un
 import tempfile
 
 # Labels will be handled here.

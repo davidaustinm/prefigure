@@ -1,7 +1,7 @@
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
-import arrow
+from prefigure import user_namespace as un
+from prefigure import utilities as util
+from prefigure import arrow
 
 # Add a graphical element describing a vector
 def vector(element, diagram, parent, outline_status):

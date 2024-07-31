@@ -1,10 +1,10 @@
 import ast
 import math
 import numpy as np
-import math_utilities
-import calculus
+from prefigure import math_utilities
+from prefigure import calculus
 from math import *
-from math_utilities import *
+from prefigure.math_utilities import *
 
 # Allow authors to perform some mathematical operations and to define
 # some quantities in a safe way.  This essentially defines a namespace

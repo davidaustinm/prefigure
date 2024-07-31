@@ -1,8 +1,8 @@
 ## Add a graphical element describing a rectangle
 
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
+from prefigure import user_namespace as un
+from prefigure import utilities as util
 
 # Process a rectangle tag
 def rectangle(element, diagram, parent, outline_status):

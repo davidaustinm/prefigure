@@ -1,9 +1,9 @@
 ## Add a graphical element for implicit curves
 
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
-import math_utilities as m_util
+from prefigure import user_namespace as un
+from prefigure import utilities as util
+from prefigure import math_utilities as m_util
 
 # add an implicit curve to a diagram
 def implicit_curve(element, diagram, parent, outline_status):

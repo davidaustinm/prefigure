@@ -1,6 +1,6 @@
 import numpy as np
-import math_utilities as math_util
-import utilities as util
+from prefigure import math_utilities as math_util
+from prefigure import utilities as util
 import copy
 import math
 

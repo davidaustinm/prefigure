@@ -1,5 +1,5 @@
 import lxml.etree as ET
-import user_namespace as un
+from prefigure import user_namespace as un
 import copy
 
 # Allows a block of XML to repeat with a changing parameter
