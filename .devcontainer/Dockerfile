@@ -1,14 +1,29 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11
+# Use Debian 12 as the base image
+FROM debian:12
 
-# Set the working directory in the container
-# WORKDIR /usr/src/app
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install any needed packages specified in requirements.txt
-RUN apt install python3-louis libcairo2-dev pkg-config python3-dev
+# Update the package list and install necessary packages
+RUN apt-get update && \
+    apt-get install -y python3-dev python3-louis npm nodejs && \
+    apt-get clean
 
-# Define environment variable
-# ENV NAME World
+# Install a package using npm (replace 'your-package' with the actual package name)
+RUN npm install -g mathjax-full
 
-# Run the application
-# CMD ["python", "./your-script.py"]
+# Execute any additional shell commands here, if necessary
+# Example: create a directory
+RUN mkdir /mathjax-js
+
+# Set the working directory
+WORKDIR /mathjax-js
+
+# Add any necessary files (if applicable)
+# COPY . /your-directory
+
+# Define the entry point or command to run (if applicable)
+# CMD ["your-command"]
+
+# Expose a port (if applicable)
+# EXPOSE 8080
