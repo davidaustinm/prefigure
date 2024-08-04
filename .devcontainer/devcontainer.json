@@ -1,14 +1,5 @@
 {
     "name": "PreFigure",
     "dockerFile": "Dockerfile",
-    "context": ".",
-    "settings": {
-      "terminal.integrated.shell.linux": "/bin/bash"
-    },
-    "extensions": [
-      "ms-python.python",
-      "esbenp.prettier-vscode"
-    ],
-    "postCreateCommand": "pip install -r requirements.txt",
-    "remoteUser": "vscode"
-  }
+    "postCreateCommand": "pip3 install --break-system-packages /workspaces/prefigure-easy"
+}
