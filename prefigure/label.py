@@ -99,7 +99,7 @@ def label(element, diagram, parent, outline_status = None):
     if outline_status == 'add_outline':  # we're not ready for labels
         return
 
-    # Define a group to hold the label.  
+    # Define a group to hold the label.
     group = ET.Element('g')
     diagram.add_label(element, group)
     diagram.add_id(element)
@@ -185,9 +185,13 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
         format = 'svg'
 
     # have MathJax process the HTML file and load the resulting
-    # SVG labels into label_tree 
-    path = Path(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
-    mj_path = str(path.parent.absolute() / 'js') 
+    # SVG labels into label_tree
+
+    mj_path = '/workspaces/prefigure/js'
+    # First check if we're using the codespace environment
+    if not os.path.isdir(mj_path):
+        path = Path(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+        mj_path = str(path.parent.absolute() / 'js')
 
     mj_command = 'node {}/mj-sre-page.js --{} {} {} > {}'.format(mj_path, format, options, mj_input, mj_output)
     os.system(mj_command)
@@ -204,7 +208,7 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
         group, ctm = group_ctm
 
         if diagram.output_format() == 'tactile':
-            position_braille_label(label, diagram, ctm, background_group, 
+            position_braille_label(label, diagram, ctm, background_group,
                                    braille_group, label_tree)
         else:
             position_svg_label(label, diagram, ctm, group, label_tree)
@@ -214,7 +218,7 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
 # use this to retrieve elements from the mathjax output
 #        div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
 
-def position_braille_label(element, diagram, ctm, 
+def position_braille_label(element, diagram, ctm,
                            background_group, braille_group, label_tree):
     group = ET.SubElement(braille_group, 'g')
     group.set('id', element.get('id'))
@@ -264,8 +268,8 @@ def position_braille_label(element, diagram, ctm,
     if element.text is not None and len(element.text.strip()) > 0:
         text = element.text.lstrip()
         typeform = [0] * len(text)
-        braille_text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
-                                             text, typeform=[0]*len(text)) 
+        braille_text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"],
+                                             text, typeform=[0]*len(text))
     else:
         braille_text = ''
 
@@ -284,7 +288,7 @@ def position_braille_label(element, diagram, ctm,
         if len(math_text) == 1 and len(regex.findall(math_text)) > 0:
             # if we want italics, set typeform=[1]
             typeform = [0]
-            insert.text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
+            insert.text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"],
                                                 math.text, typeform=typeform)
         else:
             if element.get('nemeth-switch', 'no') == 'yes':
@@ -294,7 +298,7 @@ def position_braille_label(element, diagram, ctm,
 
         if math.tail is not None and len(math.tail.strip()) > 0:
             typeform = [0] * len(math.tail)
-            braille_text += louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
+            braille_text += louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"],
                                                 math.tail, typeform=typeform)
 
     if element.get('add-letter-indicator', 'no') == 'yes':
@@ -364,7 +368,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     # text and MathJax.  We now need to position each component appropriately.
     # Horizontal placement is relatively simple so we'll do it as we pass through
     # the list.  Vertical placement is more involved so well make a pass through
-    # the list and record all the relevant data in vertical_data.  An entry in 
+    # the list and record all the relevant data in vertical_data.  An entry in
     # this list will be the SVG element and how far above and below the baseline
     # the label extends (both measured positively)
     number_m = len(element.findall('m'))
@@ -410,7 +414,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
             pts = '{0:.3f}px'.format(dimension)
             fields[-1] = pts
             insert.set(attr, ' '.join(fields))
-        label_group.append(insert)   
+        label_group.append(insert)
 
         insert.set('x', str(width))
         width += dim_dict['width']
@@ -456,7 +460,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     rot = element.get('rotate', None)
     if rot is not None:
         tform = tform + ' ' + CTM.rotatestr(float(rot))
-    tform = tform + ' ' + CTM.translatestr(width*displacement[0], 
+    tform = tform + ' ' + CTM.translatestr(width*displacement[0],
                                            -height*displacement[1])
 
     group.set('transform', tform)
@@ -479,7 +483,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
 # add a caption to a tactile diagram in the upper-left corner
 #   e.g. "Figure 2.3.4"
 def caption(element, diagram, parent, outline_status):
-    if diagram.output_format() != "tactile":  
+    if diagram.output_format() != "tactile":
         return
     element.tag = 'label'
     element.set('alignment', 'ne')
