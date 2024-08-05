@@ -14,4 +14,4 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /workspaces/prefigure/js
 
 # Install a package using npm (replace 'your-package' with the actual package name)
-RUN npm install mathjax-full
+RUN npm install
