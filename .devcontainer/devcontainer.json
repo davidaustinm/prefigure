@@ -1,5 +1,5 @@
 {
     "name": "PreFigure",
     "dockerFile": "Dockerfile",
-    "postCreateCommand": "pip3 install --break-system-packages /workspaces/prefigure-easy"
+    "postCreateCommand": "pip3 install --break-system-packages -e /workspaces/prefigure-easy"
 }
