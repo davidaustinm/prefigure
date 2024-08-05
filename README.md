@@ -38,6 +38,7 @@ Alternatively you can use a Github codespace to run this module. When viewing
 the repository click the 'Code' button neat the top right of the source code listing as if you were going to clone the repository. Move to the 'Codespaces' tab and from there use the plus button to create a new Codespace on main.
 
 This will create a Docker image, and install all of the necessary dependencies. To parse an XML input file you can use 'prefig' in place of 'python parse.py' as above.
+
 ## Acknowledgements
 
 [Volker Sorge](https://www.birmingham.ac.uk/staff/profiles/computer-science/academic-staff/sorge-volker) has provided crucial support for this project as well as access to the diagcess library for navigating an image with a screen reader.
