@@ -26,6 +26,14 @@ def annotate(element, diagram, parent = None):
 
     if element.get('ref', None) is not None:
         element.set('id', element.get('ref'))
+        element.attrib.pop('ref')
+    element.attrib.pop('annotate', None)
+
+    # let's check to see if this is a reference to an annotation branch
+    annotation = diagram.get_annotation_branch(element.get('id'))
+    if annotation is not None:
+        annotate(annotation, diagram, parent)
+        return
 
     # initialize this annotation
     annotation = ET.Element('annotation')
@@ -41,7 +49,7 @@ def annotate(element, diagram, parent = None):
         else:
             annotation.set(key, value)
         
-    if len(element) > 1:
+    if len(element) > 0:
         el = ET.Element('grouped')
     else:
         if active:

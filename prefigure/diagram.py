@@ -35,6 +35,10 @@ class Diagram:
         self.annotations_root = None
         self.default_annotations = []
 
+        # store annotation branches
+        self.annotation_branches = {}
+        self.annotation_branch_stack = []
+
         # set up the HTML tree for labels to send to MathJax
         self.label_group_dict = {}
         self.label_html_tree = ET.Element('html')
@@ -82,6 +86,9 @@ class Diagram:
         else:
             return id + suffix
 
+    def append_id_suffix(self, element):
+        return self.find_id(element, element.get('id', None))
+    
     def output_format(self):
         return self.format
 
@@ -228,6 +235,16 @@ class Diagram:
                 if attr.startswith(prefix):
                     child.set(attr[len(prefix):], value)
             tags.parse_element(child, self, root, outline_status)
+            if child.get('annotate', 'no') == 'yes' and outline_status != 'add_outline':
+                tag = child.tag
+                if tag != 'group' and tag != 'repeat':
+                    annotation = ET.Element('annotation')
+                    for attrib in ['id', 'text', 'sonify', 'circular']:
+                        if child.get(attrib, None) is not None:
+                            annotation.set(attrib, child.get(attrib))
+                    if annotation.get('text', None) is not None:
+                        annotation.set('text', label.evaluate_text(annotation.get('text')))
+                    self.add_annotation_to_branch(annotation)
 
     def ctm(self):
         return self.ctm_stack[-1][0]
@@ -345,3 +362,22 @@ class Diagram:
 
     def add_annotation(self, annotation):
         self.annotations_root.append(annotation)
+
+    def push_to_annotation_branch(self, annotation):
+        if len(self.annotation_branch_stack) == 0:
+            self.annotation_branches[annotation.get('id')] = annotation
+        else:
+            self.add_annotation_to_branch(annotation)
+        self.annotation_branch_stack.append(annotation)
+
+    def pop_from_annotation_branch(self):
+        self.annotation_branch_stack.pop(-1)
+
+    def add_annotation_to_branch(self, annotation):
+        if len(self.annotation_branch_stack) == 0:
+            return
+        self.annotation_branch_stack[-1].append(annotation)
+        annotation.set('id', self.append_id_suffix(annotation))
+
+    def get_annotation_branch(self, id):
+        return self.annotation_branches.pop(id, None)

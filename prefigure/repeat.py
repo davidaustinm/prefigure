@@ -1,6 +1,8 @@
 import lxml.etree as ET
 from prefigure import user_namespace as un
 import copy
+import group
+import label
 
 # Allows a block of XML to repeat with a changing parameter
 
@@ -13,8 +15,11 @@ def repeat(element, diagram, parent, outline_status):
     # we change this to a group element and then add the children
     # for each value of the parameter
     element_cp = copy.deepcopy(element)
+    id = element.get('id')
     element.clear()
     element.tag = 'group'
+    if id is not None:
+        element.set('id', id)
 
     for k in range(start, stop+1):
         k_str = str(k)
@@ -27,5 +32,18 @@ def repeat(element, diagram, parent, outline_status):
         for child in element_cp:
             definition.append(copy.deepcopy(child))
         
-    diagram.parse(element, parent, outline_status)
+    annotation = None
+    if element_cp.get('annotate', 'no') == 'yes' and outline_status != 'add_outline':
+        annotation = ET.Element('annotation')
+        for attrib in ['id', 'text', 'circular', 'sonify']:
+            if element_cp.get(attrib, None) is not None:
+                annotation.set(attrib, element_cp.get(attrib))
+        if annotation.get('text', None) is not None:
+            annotation.set('text', label.evaluate_text(annotation.get('text')))
+        diagram.push_to_annotation_branch(annotation)
 
+    #diagram.parse(element, parent, outline_status)
+    group.group(element, diagram, parent, outline_status)
+
+    if annotation is not None:
+        diagram.pop_from_annotation_branch()
