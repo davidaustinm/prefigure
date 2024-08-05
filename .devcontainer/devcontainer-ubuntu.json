@@ -1,0 +1,5 @@
+{
+    "name": "PreFigure Ubuntu",
+    "dockerFile": "Dockerfile-ubuntu",
+    "postCreateCommand": "pip3 install --break-system-packages -e /workspaces/prefigure && npm install --prefix=/workspaces/prefigure/js"
+}
