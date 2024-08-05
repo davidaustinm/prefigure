@@ -196,6 +196,7 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
             path = Path(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
             mj_path = str(path.parent.absolute() / 'js')
 
+    print(f'Using MathJax install at {mj_path}')
     mj_command = 'node {}/mj-sre-page.js --{} {} {} > {}'.format(mj_path, format, options, mj_input, mj_output)
     os.system(mj_command)
     label_tree = ET.parse(mj_output)
