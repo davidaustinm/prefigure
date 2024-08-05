@@ -1,8 +1,9 @@
-import lxml.etree as ET
-from prefigure import user_namespace as un
 import copy
-import group
-import label
+import lxml.etree as ET
+
+from prefigure import user_namespace as un
+from prefigure import group
+from prefigure import label
 
 # Allows a block of XML to repeat with a changing parameter
 
