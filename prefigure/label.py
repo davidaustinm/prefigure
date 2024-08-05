@@ -187,11 +187,14 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     # have MathJax process the HTML file and load the resulting
     # SVG labels into label_tree
 
+    # JJB: Some very bad nesting here, should clean up logic later.
     mj_path = '/workspaces/prefigure/js'
     # First check if we're using the codespace environment
     if not os.path.isdir(mj_path):
-        path = Path(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
-        mj_path = str(path.parent.absolute() / 'js')
+        mj_path = '/workspaces/prefigure-user/js'
+        if not os.path.isdir(mj_path):
+            path = Path(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+            mj_path = str(path.parent.absolute() / 'js')
 
     mj_command = 'node {}/mj-sre-page.js --{} {} {} > {}'.format(mj_path, format, options, mj_input, mj_output)
     os.system(mj_command)
