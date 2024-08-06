@@ -1,6 +1,6 @@
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
+from prefigure import user_namespace as un
+from prefigure import utilities as util
 
 # process a coordinates element defining a coordinate
 #    system.  destination, which will usually be None,

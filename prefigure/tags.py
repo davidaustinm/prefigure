@@ -1,28 +1,28 @@
 import sys
 import lxml.etree as ET
-import annotations
-import area
-import clip
-import circle
-import coordinates
-import definition
-import diffeqs
-import graph
-import grid_axes
-import group
-import implicit
-import label
-import line
-import network
-import parametric_curve
-import point
-import polygon
-import rectangle
-import riemann_sum
-import repeat
-import slope_field
-import tangent_line
-import vector
+from prefigure import annotations
+from prefigure import area
+from prefigure import clip
+from prefigure import circle
+from prefigure import coordinates
+from prefigure import definition
+from prefigure import diffeqs
+from prefigure import graph
+from prefigure import grid_axes
+from prefigure import group
+from prefigure import implicit
+from prefigure import label
+from prefigure import line
+from prefigure import network
+from prefigure import parametric_curve
+from prefigure import point
+from prefigure import polygon
+from prefigure import rectangle
+from prefigure import riemann_sum
+from prefigure import repeat
+from prefigure import slope_field
+from prefigure import tangent_line
+from prefigure import vector
 
 # this dictionary associates tags to a function that processes
 #   elements having that tag

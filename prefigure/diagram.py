@@ -2,11 +2,11 @@ import os
 import sys
 import lxml.etree as ET
 import numpy as np
-import tags
-import user_namespace as un
-import utilities as util
-import CTM
-import label
+from prefigure import tags
+from prefigure import user_namespace as un
+from prefigure import utilities as util
+from prefigure import CTM
+from prefigure import label
 
 class Diagram:
     def __init__(self, diagram_element, filename,

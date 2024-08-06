@@ -1,8 +1,8 @@
 import lxml.etree as ET
 import math
 import numpy as np
-import utilities as util
-import CTM
+from prefigure import utilities as util
+from prefigure import CTM
 
 # Form arrows to be used with a variety of graphical components
 # Arrowheads are created as markers and then added to paths

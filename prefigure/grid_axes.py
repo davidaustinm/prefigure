@@ -1,11 +1,11 @@
 import lxml.etree as ET
-import utilities as util
+from prefigure import utilities as util
 import math
 import re
-import user_namespace as un
-import label
-import line
-import arrow
+from prefigure import user_namespace as un
+from prefigure import label
+from prefigure import line
+from prefigure import arrow
 
 # Add graphical elements for grids and axes
 
