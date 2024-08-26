@@ -1,10 +1,10 @@
 .venv
 node_modules
 package-lock.json
-mj_cmd.py
 __pycache__
 output
 test
-cli.py
+parse.py
 dist
+mj_sre
 *~

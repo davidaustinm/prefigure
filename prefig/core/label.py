@@ -6,7 +6,7 @@ import inspect
 try:
     import louis
 except:
-    print("Can't import louis")
+    print("Failed to import louis")
 import cairo
 from pathlib import Path
 import numpy as np
@@ -190,9 +190,16 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     # have MathJax process the HTML file and load the resulting
     # SVG labels into label_tree 
     path = Path(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
-    mj_path = str(path.absolute() / 'js') 
+    mj_dir = path.absolute() / 'mj_sre'
+    mj_dir_str = str(mj_dir)
 
-    mj_command = 'node {}/mj-sre-page.js --{} {} {} > {}'.format(mj_path, format, options, mj_input, mj_output)
+    if not mj_dir.is_dir():
+        from .. import scripts
+        scripts.install_mj.main()
+            
+
+    mj_command = 'node {}/mj-sre-page.js --{} {} {} > {}'.format(mj_dir_str, format, options, mj_input, mj_output)
+
     os.system(mj_command)
     label_tree = ET.parse(mj_output)
 
