@@ -1,8 +1,8 @@
 # Supports graphical elements describing regions in the plane
 
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
+from . import user_namespace as un
+from . import utilities as util
 
 # Area under a graph and between two graphs
 def area_between_curves(element, diagram, parent, outline_status):

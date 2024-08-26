@@ -1,7 +1,7 @@
-import user_namespace as un
-import utilities as util
-import calculus
-import line
+from . import user_namespace as un
+from . import utilities as util
+from . import calculus
+from . import line
 
 # Add a graphical element representing the tangent line to a graph
 def tangent(element, diagram, parent, outline_status):

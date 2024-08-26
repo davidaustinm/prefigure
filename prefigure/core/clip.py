@@ -1,6 +1,6 @@
 import lxml.etree as ET
-import utilities as util
-import user_namespace as un
+from . import utilities as util
+from . import user_namespace as un
 
 def clip(element, diagram, parent, outline_status):
     dims = un.valid_eval(element.get('dimensions', '(1,1)'))

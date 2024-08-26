@@ -1,9 +1,9 @@
 import lxml.etree as ET
 import numpy as np
-import user_namespace as un
-import utilities
+from . import user_namespace as un
+from . import utilities
 import math
-import grid_axes
+from . import grid_axes
 
 # Add a graphical element for slope fields
 def slope_field(element, diagram, parent, outline_status):

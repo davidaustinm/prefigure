@@ -1,13 +1,13 @@
 import lxml.etree as ET
 import math
 import numpy as np
-import user_namespace as un
-import utilities as util
-import math_utilities as math_util
-import CTM
-import arrow
 import copy
-import label
+from . import user_namespace as un
+from . import utilities as util
+from . import math_utilities as math_util
+from . import CTM
+from . import arrow
+from . import label
 
 # Add graphical elements related to circles
 def circle(element, diagram, parent, outline_status):

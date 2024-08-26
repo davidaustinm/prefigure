@@ -2,8 +2,8 @@ import numpy as np
 import lxml.etree as ET
 import sys
 import scipy.integrate
-import user_namespace as un
-import utilities as util
+from . import user_namespace as un
+from . import utilities as util
 
 def de_solve(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':

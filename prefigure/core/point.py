@@ -1,8 +1,8 @@
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
+from . import user_namespace as un
+from . import utilities as util
 import copy
-import label        
+from . import label        
 
 # Add a graphical element describing a point
 def point(element, diagram, parent, outline_status = None):

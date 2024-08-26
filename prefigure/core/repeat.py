@@ -1,8 +1,8 @@
 import lxml.etree as ET
-import user_namespace as un
+from . import user_namespace as un
 import copy
-import group
-import label
+from . import group
+from . import label
 
 # Allows a block of XML to repeat with a changing parameter
 

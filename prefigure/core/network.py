@@ -2,11 +2,11 @@ import lxml.etree as ET
 import networkx as nx
 import numpy as np
 import math
-import user_namespace as un
-import math_utilities as m_util
-import utilities as util
-import coordinates
-import label
+from . import user_namespace as un
+from . import math_utilities as m_util
+from . import utilities as util
+from . import coordinates
+from . import label
 
 # Add a graphical element describing a network
 def network(element, diagram, parent, outline_status):

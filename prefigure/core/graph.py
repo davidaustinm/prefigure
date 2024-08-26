@@ -1,6 +1,6 @@
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
+from . import user_namespace as un
+from . import utilities as util
 
 # Graph of a 1-variable function
 # We'll set up an SVG polyline element by sampling the graph

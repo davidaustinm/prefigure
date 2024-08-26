@@ -1,8 +1,8 @@
 ## Add a graphical element describing a parametric curve
 
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
+from . import user_namespace as un
+from . import utilities as util
 
 def parametric_curve(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':

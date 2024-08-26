@@ -1,6 +1,6 @@
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
+from . import user_namespace as un
+from . import utilities as util
 
 # Add a graphical element describing a Riemann sum
 def riemann_sum(element, diagram, parent, outline_status):

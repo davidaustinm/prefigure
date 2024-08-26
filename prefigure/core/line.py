@@ -1,10 +1,10 @@
 import lxml.etree as ET
 import numpy as np
 import math
-import utilities as util
-import math_utilities as math_util
-import user_namespace as un
-import arrow
+from . import utilities as util
+from . import math_utilities as math_util
+from . import user_namespace as un
+from . import arrow
 
 # Process a line XML element into an SVG line element
 def line(element, diagram, parent, outline_status):

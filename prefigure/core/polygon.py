@@ -1,10 +1,10 @@
 ## Add a graphical element describing a polygon
 
 import lxml.etree as ET
-import user_namespace as un
-import utilities as util
-import math_utilities as math_util
-import arrow
+from . import user_namespace as un
+from . import utilities as util
+from . import math_utilities as math_util
+from . import arrow
 
 # Process a polygon tag into a graphical component
 def polygon(element, diagram, parent, outline_status):

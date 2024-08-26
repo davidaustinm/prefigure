@@ -1,4 +1,4 @@
-import user_namespace as un
+from . import user_namespace as un
 import numpy as np
 
 colors = {'gray': r'#777', 'lightgray': r'#ccc', 'darkgray': r'#333'}

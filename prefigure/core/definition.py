@@ -1,4 +1,4 @@
-import user_namespace as un
+from . import user_namespace as un
 
 # allows authors to define mathematical quantities
 #    to be used in the diagram
