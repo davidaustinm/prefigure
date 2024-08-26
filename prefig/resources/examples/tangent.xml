@@ -1,26 +1,26 @@
-<diagram width="300" height="300" margins="5">
+<diagram dimensions="(300,300)" margins="5">
   <definition>a=1</definition>
   <definition>f(x) = exp(x/3)*cos(x)</definition>
   <coordinates bbox="[-4,-4,4,4]">
     <grid-axes xlabel="x" ylabel="y"/>
 
-    <group id="graph-tangent">
-      <graph id="graph" function='f' />
-      <tangent-line id="tangent" function="f" point="a"
+    <group at="graph-tangent">
+      <graph at="graph" function='f' />
+      <tangent-line at="tangent" function="f" point="a"
 		    infinite="yes"/>
-      <point id="point" p="(a, f(a))">
+      <point at="point" p="(a, f(a))">
 	<m>(a,f(a))</m>
       </point>
     </group>
   </coordinates>
 
   <annotations>
-    <annotation id="figure"
+    <annotation ref="figure"
                 text="The graph of a function and its tangent line at the point a equals 1">
-      <annotation id="graph-tangent" text="The graph and its tangent line">
-        <annotation id="graph" text="The graph of the function f" sonify="yes"/>
-        <annotation id="point" text="The point a comma f of a"/>
-        <annotation id="tangent" text="The tangent line to the graph of f at the point"/>
+      <annotation ref="graph-tangent" text="The graph and its tangent line">
+        <annotation ref="graph" text="The graph of the function f" sonify="yes"/>
+        <annotation ref="point" text="The point a comma f of a"/>
+        <annotation ref="tangent" text="The tangent line to the graph of f at the point"/>
       </annotation>
     </annotation>
   </annotations>

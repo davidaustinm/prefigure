@@ -18,7 +18,7 @@ def network(element, diagram, parent, outline_status):
     G = nx.Graph()
 
     for node in element.findall('node'):
-        G.add_node(node.get('id'))
+        G.add_node(node.get('at'))
     for edge in element.findall('edge'):
         G.add_edge(edge.get('source'),
                    edge.get('target'))
@@ -41,7 +41,7 @@ def network(element, diagram, parent, outline_status):
     coords.set('bbox', util.pt2long_str(box, spacer=','))
 
     network_group = ET.SubElement(coords, 'group')
-    diagram.add_id(network_group, element.get('id'))
+    diagram.add_id(network_group, element.get('at'))
     if outline_status == 'add_outline':
         network_group.set('outline', 'always')
 
@@ -49,7 +49,7 @@ def network(element, diagram, parent, outline_status):
 
     for edge in element.findall('edge'):
         edgegroup = ET.SubElement(network_group, 'group')
-        diagram.add_id(edgegroup, edge.get('id'))
+        diagram.add_id(edgegroup, edge.get('at'))
         if outline_status == 'add_outline':
             edgegroup.set('outline', 'always')
 
@@ -89,11 +89,11 @@ def network(element, diagram, parent, outline_status):
 
     for node in element.findall('node'):
         nodegroup = ET.SubElement(network_group, 'group')
-        diagram.add_id(nodegroup, node.get('id')+'-pt')
+        diagram.add_id(nodegroup, node.get('at')+'-pt')
         if outline_status == 'add_outline':
             nodegroup.set('outline', 'always')
 
-        position = pos[node.get('id')]
+        position = pos[node.get('at')]
         p = ET.SubElement(nodegroup, 'point')
         p.set('p', '(' + util.pt2long_str(position, spacer=',') + ')')
         if diagram.output_format() == 'tactile':

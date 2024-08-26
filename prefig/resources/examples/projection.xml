@@ -1,4 +1,4 @@
-<diagram width="300" height="300" margins="5">
+<diagram dimensions="(300,300)" margins="5">
 
   <definition>v=(2,1)</definition>
   <definition>b=(2,4)</definition>
@@ -6,38 +6,37 @@
   <definition>bperp=b- bhat</definition>
 
   <coordinates bbox="[-1,-1,5,5]">
+    <grid-axes at="grid-axes"/>
 
-    <grid-axes id="grid-axes"/>
-
-    <group id="line-L">
+    <group at="line-L">
       <line p1="(0,0)" p2="v" infinite="yes" stroke="blue" thickness="2"/>
       <label p="(4.4,2.5)">
 	<m>L</m>
       </label>
     </group>
 
-    <group id="vector-bperp">
+    <group at="vector-bperp">
       <label p="midpoint(b,bhat)" alignment="ne" clear-background="yes">
 	<m>{\mathbf b}^\perp</m>
       </label>
       <vector v="bperp" tail="bhat" stroke="gray"/>
     </group>
 
-    <group id="vector-b">
+    <group at="vector-b">
       <vector v="b"/>
       <label p="b" alignment="nw">
 	<m>{\mathbf b}</m>
       </label>
     </group>
 
-    <group id="vector-bhat">
+    <group at="vector-bhat">
       <vector v="bhat" stroke="red" />
       <label p="bhat" alignment="se">
 	<m>\widehat{\mathbf b}</m>
       </label>
     </group>
 
-    <group id="vector-v">
+    <group at="vector-v">
       <vector v="v"/>
       <label p="v" alignment="se">
 	<m>{\mathbf v}</m>
@@ -46,26 +45,26 @@
   </coordinates>
 
   <annotations>
-    <annotation id="figure"
+    <annotation ref="figure"
 		text="A line L, a vector b, and the orthogonal projection of b onto L">
-      <annotation id="grid-axes"
+      <annotation ref="grid-axes"
 		  text="The coordinate grid and axes">
-	<annotation id="grid" text="The coordinate grid" />
-	<annotation id="axes" text="The coordinate axes" />
+	<annotation ref="grid" text="The coordinate grid" />
+	<annotation ref="axes" text="The coordinate axes" />
       </annotation>
 	
-      <annotation id="vector-v"
+      <annotation ref="vector-v"
 		  text="The line L, a vector v parallel to L, and the vector b">
-	<annotation id="line-L" text="The line L" />
-	<annotation id="vector-v" text="A vector v that is parallel to L" />
-	<annotation id="vector-b" text="The vector b" />
+	<annotation ref="line-L" text="The line L" />
+	<annotation ref="vector-v" text="A vector v that is parallel to L" />
+	<annotation ref="vector-b" text="The vector b" />
       </annotation>
 
-      <annotation id="vector-bperp"
+      <annotation ref="vector-bperp"
 		  text="b is decomposed into b hat and b perp">
-	<annotation id="vector-bperp"
+	<annotation ref="vector-bperp"
 		    text="The vector b perp is orthogonal to L"/>
-	<annotation id="vector-bhat"
+	<annotation ref="vector-bhat"
 		    text="The vector b hat is parallel to L and is the orthogonal projection of b onto L"/>
       </annotation>
     </annotation>
