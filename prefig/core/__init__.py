@@ -19,6 +19,7 @@ from . import (
     math_utilities,
     network,
     parametric_curve,
+    parse,
     point,
     polygon,
     rectangle,

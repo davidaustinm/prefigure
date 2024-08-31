@@ -1,0 +1,13 @@
+<prefigure>
+  <!-- Configure default behaviors for a PreFigure project here.  
+       For instance,
+
+  <graph stroke="green"/>
+
+  -->
+
+  <!-- Add latex macros -->
+  <macros>
+
+  </macros>
+</prefigure>

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prefig"
-version = "0.1.6"
+version = "0.1.8"
 description = "An authoring system for mathematical diagrams"
 authors = ["David Austin <david.austin.m@gmail.com>"]
 license = "GPL"
@@ -14,11 +14,11 @@ numpy = ">=2.1.0"
 networkx = ">=3.3"
 pycairo = ">=1.26.1"
 scipy = ">=1.14.1"
+click = "^8.1.7"
+psutil = "^6.0.0"
 
 [tool.poetry.scripts]
-prefig = "prefig.prefig:main"
-prefig_init = "prefig.scripts.prefig_init:main"
-prefig_examples = "prefig.scripts.copy_examples:main"
+prefig = "prefig.cli:main"
 
 [tool.poetry.dev-dependencies]
 
