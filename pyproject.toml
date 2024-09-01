@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "prefig"
-version = "0.1.8"
+version = "0.1.9"
 description = "An authoring system for mathematical diagrams"
+readme = "README.md"
+homepage = "https://prefigure.org"
+repository = "https://github.com/davidaustinm/prefigure"
 authors = ["David Austin <david.austin.m@gmail.com>"]
-license = "GPL"
+license = "GPL-3.0-or-later"
 
 include = ["resources"]
 

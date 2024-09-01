@@ -95,6 +95,8 @@ def new():
         dirs_exist_ok = True
     )
 
+    os.makedirs(cwd / 'source', exist_ok = True)
+
     
 @main.command(
     help="Installs PreFigure examples in current directory"
