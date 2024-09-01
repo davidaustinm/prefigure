@@ -1,5 +1,4 @@
 import click
-import sys
 import os
 import psutil
 import shutil
@@ -50,8 +49,7 @@ def init():
         subprocess.run(["npm", "install", f"--prefix={destination}"])
     except:
         click.echo("MathJax installation failed.  Is npm installed on your system?")
-        sys.exit()
-   
+        return
 
     click.echo("Installing the Braille29 font")
     home = Path(os.path.expanduser('~'))
