@@ -9,7 +9,7 @@ More information, including detailed documentation, is available from the [PreFi
 You may author and compile PreFigure diagrams in either of two environments:
 
 1. PreFigure is available in a [GitHub Codespace](https://github.com/davidaustinm/prefigure-codespace).  This is a free, cloud-based platform that takes care of all the installation details and creates a fully configured working environment.  Follow the instructions on that page to create your codespace and then get started authoring diagrams.
-2. PreFigure may be installed locally as a Python package following the [instructions given below.](#Local Installation).
+2. PreFigure may be installed locally as a Python package following the instructions in the **Local Installation** section below.
 
 ## Local Installation
 
@@ -51,7 +51,7 @@ PreFigure may be installed locally as a Python package in the usual way using `p
     pip install prefig
     ```
 
-5. You will need a local installation of `node` and `npm` to produce mathematical labels.  (The `node` installation includes `npm`.)  This is a simple process, but you should Google to find the instructions for your operating system.  On a Ubuntu machine, it's as easy as 
+5. You will need a local installation of `node` and `npm` to produce mathematical labels.  (The `node` installation includes `npm`.)  This is a simple process, but you should search to find the instructions for your operating system.  On a Ubuntu machine, it's as easy as 
 
     ```
     apt install nodejs
@@ -91,7 +91,7 @@ You may wish to perform the following steps to set up your authoring environment
     prefig init
     ```
 
-    which will use `npm` to install some MathJax modules.  It will also install the Braille29 font needed for tactile diagrams.  If the MathJax modules are not installed when you attempt to build a diagram, PreFigure will attempt to install them.
+    which will use `npm` to install some MathJax modules.  It will also install the Braille29 font needed for tactile diagrams.  If the MathJax modules are not installed when you attempt to build a diagram, PreFigure will attempt to install them when you build your first diagram.
 
 2. You may install a set of examples for exploration in the current directory using
 
