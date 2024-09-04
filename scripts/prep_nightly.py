@@ -17,7 +17,7 @@ def main() -> None:
     )
 
     # If there's not a new commit, then we just stop
-    if (datetime.now() - lastcommit).days < 1:
+    if (datetime.now() - lastcommit).days > 1:
         print("No recent commit:", lastcommit)
         return
 
