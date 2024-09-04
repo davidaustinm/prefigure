@@ -40,6 +40,7 @@ jobs:
           echo "Updating version number"
           output=$(poetry run python scripts/prep_nightly.py)
           echo "Completed nightly prep"
+          echo "Output: $output"
           if [[ $output == *"OK to deploy"* ]]; then
             poetry build
             poetry config repositories.test-pypi https://test.pypi.org/legacy/
