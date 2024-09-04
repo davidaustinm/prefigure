@@ -41,12 +41,12 @@ jobs:
           output=$(poetry run python scripts/prep_nightly.py)
           echo "Completed nightly prep"
           if [[ $output == *"OK to deploy"* ]]; then
-	    poetry build
-	    poetry config repositories.test-pypi https://test.pypi.org/legacy/
-	    poetry config pypi-token.test-pypi $TEST_PYPI_TOKEN
-	    poetry publish -r test-pypi
-	    echo "Published to test.pypi"
-	    
+            poetry build
+            poetry config repositories.test-pypi https://test.pypi.org/legacy/
+            poetry config pypi-token.test-pypi $TEST_PYPI_TOKEN
+            poetry publish -r test-pypi
+            echo "Published to test.pypi
+
             #poetry config pypi-token.pypi $PYPI_TOKEN
             #poetry publish --build
             #echo "Published to pypi"
