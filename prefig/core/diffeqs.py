@@ -9,18 +9,27 @@ def de_solve(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
         return
 
-    g = un.valid_eval(element.get('function'))
-    def f(y,t): return g(t,y)
+    f = un.valid_eval(element.get('function'))
+
     t0 = un.valid_eval(element.get('t0'))
     y0 = un.valid_eval(element.get('y0'))
+    if not isinstance(y0, np.ndarray):
+        y0 = np.array([y0])
 
     t1 = diagram.bbox()[2]
     t1 = un.valid_eval(element.get('t1', str(t1)))
-    N = un.valid_eval(element.get('N', '100'))
 
+    N = un.valid_eval(element.get('N', '100'))
     t = np.linspace(t0, t1, N)
-    y = scipy.integrate.odeint(f, y0, t)
-    solution = np.c_[t, y].T
+
+    method = element.get('method', 'RK45')
+    solution = scipy.integrate.solve_ivp(f,
+                                         (t0, t1),
+                                         y0,
+                                         t_eval=t,
+                                         method=method)
+    solution = np.stack((solution.t, *solution.y))
+
     try:
         name = element.get('name')
     except KeyError:

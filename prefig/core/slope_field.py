@@ -1,9 +1,11 @@
 import lxml.etree as ET
 import numpy as np
+import math
+import copy
 from . import user_namespace as un
 from . import utilities
-import math
 from . import grid_axes
+from . import group
 
 # Add a graphical element for slope fields
 def slope_field(element, diagram, parent, outline_status):
@@ -14,8 +16,24 @@ def slope_field(element, diagram, parent, outline_status):
     f = un.valid_eval(element.get('function'))
     bbox = diagram.bbox()
 
-    cmds = []
+    # We're going to turn this element into a group and add lines to it
+    element.tag = "group"
+    if element.get('outline', 'no') == 'yes':
+        element.set('outline', 'always')
 
+    # Now we'll construct a line with all the graphical information
+    # and make copies of it
+    line_template = ET.Element('line')
+
+    if diagram.output_format() == 'tactile':
+        line_template.set('stroke', 'black')
+    else:
+        line_template.set('stroke', element.get('stroke', 'blue'))
+    line_template.set('thickness', element.get('thickness', '2'))
+    if element.get('arrows', 'no') == 'yes':
+        line_template.set('arrows', '1')
+
+    # Now we'll construct each of the lines in the slope field
     system = element.get('system', None) == 'yes'
     spacings = element.get('spacings', None)
     if spacings is not None:
@@ -29,14 +47,20 @@ def slope_field(element, diagram, parent, outline_status):
     while x <= rx[2]:
         y = ry[0]
         while y <= ry[2]:
+            line = copy.deepcopy(line_template)
+            element.append(line)
             if system:
                 change = f(0, [x,y])
                 if abs(change[0]) < 1e-08:
                     dx = 0
                     dy = ry[1]/4
+                    if change[1] < 0:
+                        dy *= -1
                 else:
                     slope = change[1]/change[0]
                     dx = rx[1]/(4*math.sqrt(1+slope**2))
+                    if change[0] < 0:
+                        dx *= -1
                     dy = slope*dx
             else:
                 slope = f(x,y)
@@ -46,39 +70,10 @@ def slope_field(element, diagram, parent, outline_status):
             x1 = x + dx
             y0 = y - dy
             y1 = y + dy
-            p0 = diagram.transform((x0, y0))
-            p1 = diagram.transform((x1, y1))
-            cmds.append('M ' + utilities.pt2str(p0))
-            cmds.append('L ' + utilities.pt2str(p1))
+            line.set('p1', utilities.pt2long_str((x0,y0), spacer=','))
+            line.set('p2', utilities.pt2long_str((x1,y1), spacer=','))
             y += ry[1]
         x += rx[1]
-    d = ' '.join(cmds)
 
-    if diagram.output_format() == 'tactile':
-        element.set('stroke', 'black')
-    else:
-        element.set('stroke', element.get('stroke', 'blue'))
-    element.set('thickness', element.get('thickness', '2'))
+    group.group(element, diagram, parent, outline_status)
 
-    path = ET.Element('path')
-    diagram.add_id(path, element.get('id'))
-    utilities.add_attr(path, utilities.get_1d_attr(element))
-    path.set('d', d)
-    path.set('type', 'slope field')
-
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
-        diagram.add_outline(element, path, parent)
-        finish_outline(element, diagram, parent)
-    else:
-        parent.append(path)
-
-def finish_outline(element, diagram, parent):
-    diagram.finish_outline(element,
-                           element.get('stroke'),
-                           element.get('thickness'),
-                           'none',
-                           parent)

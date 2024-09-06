@@ -3,7 +3,7 @@
   <coordinates bbox="[-4,-4,4,4]">
     <grid at="grid"/>
     <axes at="axes" xlabel="t" ylabel="y"/>
-    <slope-field at="slope-field" function="f"/>
+    <slope-field at="slope-field" function="f" arrows="yes" outline="yes"/>
     <group at="solutions" outline="tactile">
       <repeat parameter="k=-4..4">
 	<plot-de-solution id="solution" function="f" t0="0" y0="k"
