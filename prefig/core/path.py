@@ -34,18 +34,28 @@ def path(element, diagram, parent, outline_status):
     cmds.append(util.pt2str(start))
 
     for child in element:
+        if child.tag == "moveto":
+            user_point = un.valid_eval(child.get('point'))
+            point = diagram.transform(user_point)
+            cmds.append('M')
+            cmds.append(util.pt2str(point))
+            current_point = user_point
+            continue
+            
         if child.tag == "horizontal":
             distance = un.valid_eval(child.get('distance'))
             user_point = (current_point[0] + distance,
                           current_point[1])
             child.tag = 'lineto'
             child.set('point', util.pt2long_str(user_point,spacer=","))
+            
         if child.tag == "vertical":
             distance = un.valid_eval(child.get('distance'))
             user_point = (current_point[0],
                           current_point[1] + distance)
             child.tag = 'lineto'
             child.set('point', util.pt2long_str(user_point,spacer=","))
+            
         if child.tag == "lineto":
             if child.get('decoration', None) is not None:
                 cmds, current_point = decorate(child,
@@ -59,6 +69,7 @@ def path(element, diagram, parent, outline_status):
             cmds.append(util.pt2str(point))
             current_point = user_point
             continue
+        
         if child.tag == "cubic-bezier":
             cmds.append('C')
             user_control_pts = un.valid_eval(child.get('controls'))
