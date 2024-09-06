@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to test_pypi
+    name: Deploy to pypi
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
@@ -35,7 +35,7 @@ jobs:
 
       - name: Run prep_nightly script and publish if ready
         env:
-          TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
           echo "Updating version number"
           output=$(poetry run python scripts/prep_nightly.py)
@@ -43,12 +43,7 @@ jobs:
           echo "Output: $output"
           if [[ $output == *"OK to deploy"* ]]; then
             poetry build
-            poetry config repositories.test-pypi https://test.pypi.org/legacy/
-            poetry config pypi-token.test-pypi $TEST_PYPI_TOKEN
-            poetry publish -r test-pypi
-            echo "Published to test.pypi"
-
-            #poetry config pypi-token.pypi $PYPI_TOKEN
-            #poetry publish --build
-            #echo "Published to pypi"
+            poetry config pypi-token.pypi $PYPI_TOKEN
+            poetry publish
+            echo "Published to pypi.org"
           fi
