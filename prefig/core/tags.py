@@ -14,6 +14,7 @@ from . import implicit
 from . import label
 from . import line
 from . import network
+from . import path
 from . import parametric_curve
 from . import point
 from . import polygon
@@ -51,6 +52,7 @@ tag_dict = {
     'line': line.line,
     'network': network.network,
     'parametric-curve': parametric_curve.parametric_curve,
+    'path': path.path,
     'plot-de-solution': diffeqs.plot_de_solution,
     'point': point.point,
     'polygon': polygon.polygon,

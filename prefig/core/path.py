@@ -1,0 +1,212 @@
+## Add a graphical element for an SVG path
+
+import lxml.etree as ET
+import math
+from . import user_namespace as un
+from . import utilities as util
+from . import math_utilities as math_util
+from . import arrow
+from . import CTM
+
+# Process a path tag into a graphical component
+def path(element, diagram, parent, outline_status):
+    if outline_status == 'finish_outline':
+        finish_outline(element, diagram, parent)
+        return
+
+    if diagram.output_format() == 'tactile':
+        if element.get('stroke') is not None:
+            element.set('stroke', 'black')
+        if element.get('fill') is not None:
+            element.set('fill', 'lightgray')
+    util.set_attr(element, 'stroke', 'none')
+    util.set_attr(element, 'fill', 'none')
+    util.set_attr(element, 'thickness', '2')
+
+    cmds = ["M"]
+    start = element.get('start', None)
+    if start is None:
+        print("A <path> element needs a @start attribute")
+        return
+    user_start = un.valid_eval(start)
+    current_point = user_start
+    start = diagram.transform(user_start)
+    cmds.append(util.pt2str(start))
+
+    for child in element:
+        if child.tag == "horizontal":
+            distance = un.valid_eval(child.get('distance'))
+            user_point = (current_point[0] + distance,
+                          current_point[1])
+            child.tag = 'lineto'
+            child.set('point', util.pt2long_str(user_point,spacer=","))
+        if child.tag == "vertical":
+            distance = un.valid_eval(child.get('distance'))
+            user_point = (current_point[0],
+                          current_point[1] + distance)
+            child.tag = 'lineto'
+            child.set('point', util.pt2long_str(user_point,spacer=","))
+        if child.tag == "lineto":
+            if child.get('decoration', None) is not None:
+                cmds, current_point = decorate(child,
+                                               diagram,
+                                               current_point,
+                                               cmds)
+                continue
+            user_point = un.valid_eval(child.get('point'))
+            point = diagram.transform(user_point)
+            cmds.append('L')
+            cmds.append(util.pt2str(point))
+            current_point = user_point
+            continue
+        if child.tag == "cubic-bezier":
+            cmds.append('C')
+            user_control_pts = un.valid_eval(child.get('controls'))
+            control_pts= [diagram.transform(p) for p in user_control_pts]
+            cmds.append(','.join([util.pt2str(p) for p in control_pts]))
+            current_point = user_control_pts[-1]
+            continue
+        if child.tag == "smooth-cubic":
+            cmds.append('S')
+            user_control_pts = un.valid_eval(child.get('controls'))
+            control_pts= [diagram.transform(p) for p in user_control_pts]
+            cmds.append(','.join([util.pt2str(p) for p in control_pts]))
+            current_point = user_control_pts[-1]
+            continue
+        if child.tag == "quadratic-bezier":
+            cmds.append('Q')
+            user_control_pts = un.valid_eval(child.get('controls'))
+            control_pts= [diagram.transform(p) for p in user_control_pts]
+            cmds.append(','.join([util.pt2str(p) for p in control_pts]))
+            current_point = user_control_pts[-1]
+            continue
+        if child.tag == "smooth-quadratic":
+            cmds.append('T')
+            user_point = un.valid_eval(child.get('point'))
+            point = diagram.transform(user_point)
+            cmds.append(util.pt2str(point))
+            current_point = user_point
+            continue
+        print('Unknown tag in <path>:', child.tag)
+        return
+
+    if element.get('closed', 'no') == 'yes':
+        cmds.append('Z')
+    d = ' '.join(cmds)
+    path = ET.Element('path')
+    diagram.add_id(path, element.get('id'))
+    path.set('d', d)
+    util.add_attr(path, util.get_2d_attr(element))
+    path.set('type', 'path')
+    element.set('cliptobbox', element.get('cliptobbox', 'yes'))
+    util.cliptobbox(path, element, diagram)
+
+    arrows = int(element.get('arrows', '0'))
+    forward = 'marker-end'
+    backward = 'marker-start'
+    if element.get('reverse', 'no') == 'yes':
+        forward, backward = backward, forward
+    if arrows > 0:
+        arrow.add_arrowhead_to_path(diagram, forward, path)
+    if arrows > 1:
+        arrow.add_arrowhead_to_path(diagram, backward, path)
+
+
+    if outline_status == 'add_outline':
+        diagram.add_outline(element, path, parent)
+        return
+
+    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+        diagram.add_outline(element, path, parent)
+        finish_outline(element, diagram, parent)
+
+    else:
+        parent.append(path)
+
+def finish_outline(element, diagram, parent):
+    diagram.finish_outline(element,
+                           element.get('stroke'),
+                           element.get('thickness'),
+                           element.get('fill', 'none'),
+                           parent)
+
+def decorate(child, diagram, current_point, cmds):
+    user_point = un.valid_eval(child.get('point'))
+    ctm = CTM.CTM()
+    p0 = diagram.transform(current_point)
+    p1 = diagram.transform(user_point)
+    diff = p1 - p0
+    length = math_util.length(diff)
+    ctm.translate(*p0)
+    ctm.rotate(math.atan2(diff[1], diff[0]), units="rad")
+
+    decoration = child.get('decoration')
+    decoration_data = [d.strip() for d in decoration.split(';')]
+    if decoration_data[0] == 'coil':
+        # number, location, dimensions
+        data = [d.split(':') for d in decoration_data[1:]]
+        data = {k:v for k, v in data}
+        dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
+        location = un.valid_eval(data.get('location', '0.5'))
+        if data.get('number', None) is None:
+            number = math.floor((length - dimensions[0]/2)/dimensions[0])
+        else:
+            number = un.valid_eval(data.get('number'))
+        coil_length = (number+0.5)*dimensions[0]
+        while coil_length > length:
+            number -= 1
+            coil_length = (number+0.5)*dimensions[0]
+        leftover = length - coil_length
+
+        N = 25
+        dt = 2*math.pi/N
+        t = 0
+        x_init = leftover/2
+        x_pos = x_init + dimensions[0]/2
+        iterates = math.floor((number+0.5)*N)
+        cmds += ['L', util.pt2str(ctm.transform((x_init,0)))]
+        dx = (coil_length-dimensions[0])/iterates
+        for _ in range(iterates):
+            y = -dimensions[1] * math.sin(t)
+            x_pos += dx
+            x = x_pos - dimensions[0]/2 * math.cos(t)
+            t += dt
+            cmds += ['L', util.pt2str(ctm.transform((x, y)))]
+        cmds += ['L', util.pt2str(ctm.transform((x,0)))]
+        cmds += ['L', util.pt2str(ctm.transform((length, 0)))]
+
+    if decoration_data[0] == 'zigzag':
+        # number, location, dimensions
+        data = [d.split(':') for d in decoration_data[1:]]
+        data = {k:v for k, v in data}
+        dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
+        location = un.valid_eval(data.get('location', '0.5'))
+        if data.get('number', None) is None:
+            number = math.floor((length - dimensions[0]/2)/dimensions[0])
+        else:
+            number = un.valid_eval(data.get('number'))
+        coil_length = number*dimensions[0]
+        while coil_length > length:
+            number -= 1
+            coil_length = number*dimensions[0]
+        leftover = length - coil_length
+
+        N = 4
+        dt = 2*math.pi/N
+        t = 0
+        x_init = leftover/2
+        x_pos = x_init 
+        iterates = math.floor(number*N)
+        cmds += ['L', util.pt2str(ctm.transform((x_init,0)))]
+        dx = (coil_length-dimensions[0])/iterates
+        y = 0
+        for _ in range(iterates):
+            t += dt
+            x_pos += dx
+            y = -dimensions[1] * math.sin(t)
+            cmds += ['L', util.pt2str(ctm.transform((x_pos, y)))]
+        cmds += ['L', util.pt2str(ctm.transform((x_pos,0)))]
+        cmds += ['L', util.pt2str(ctm.transform((length, 0)))]
+
+    return cmds, user_point
+    

@@ -20,6 +20,7 @@ from . import (
     network,
     parametric_curve,
     parse,
+    path,
     point,
     polygon,
     rectangle,
