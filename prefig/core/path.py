@@ -208,5 +208,22 @@ def decorate(child, diagram, current_point, cmds):
         cmds += ['L', util.pt2str(ctm.transform((x_pos,0)))]
         cmds += ['L', util.pt2str(ctm.transform((length, 0)))]
 
+    if decoration_data[0] == 'capacitor':
+        data = [d.split(':') for d in decoration_data[1:]]
+        data = {k:v for k, v in data}
+        dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
+        location = un.valid_eval(data.get('location', '0.5'))
+        x_mid = length * location
+        x0 = x_mid - dimensions[0]/2
+        x1 = x_mid + dimensions[0]/2
+
+        cmds += ['L', util.pt2str(ctm.transform((x0,0)))]
+        cmds += ['M', util.pt2str(ctm.transform((x0,dimensions[1])))]
+        cmds += ['L', util.pt2str(ctm.transform((x0,-dimensions[1])))]
+        cmds += ['M', util.pt2str(ctm.transform((x1,dimensions[1])))]
+        cmds += ['L', util.pt2str(ctm.transform((x1,-dimensions[1])))]
+        cmds += ['M', util.pt2str(ctm.transform((x1,0)))]
+        cmds += ['L', util.pt2str(ctm.transform((length, 0)))]
+
     return cmds, user_point
     
