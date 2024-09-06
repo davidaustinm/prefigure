@@ -8,7 +8,7 @@ import fileinput
 
 
 def main() -> None:
-    # Get the dae from the most recent commit
+    # Get the date from the most recent commit
     url = f"https://api.github.com/repos/davidaustinm/prefigure/commits"
     response = urlopen(url)
     data = json.loads(response.read())
@@ -16,7 +16,7 @@ def main() -> None:
         data[0]["commit"]["committer"]["date"], "%Y-%m-%dT%H:%M:%SZ"
     )
 
-    # If there's not a new commit, then we just stop
+    # If there's not a new commit, there's nothing to do
     if (datetime.now() - lastcommit).days > 1:
         print("No recent commit:", lastcommit)
         return
@@ -27,8 +27,7 @@ def main() -> None:
     ):
         if line.startswith("version"):
             version = str(line.split('"')[1])
-            #newversion = version + ".dev" + datetime.now().strftime("%Y%m%d%H%M%S")
-            newversion = "0.1.10.dev" + datetime.now().strftime("%Y%m%d%H%M%S")
+            newversion = version + ".dev" + datetime.now().strftime("%Y%m%d%H%M%S")
             print(line.replace(line, f'version = "{newversion}"'.rstrip()))
         else:
             print(line.rstrip())
