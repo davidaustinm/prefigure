@@ -98,6 +98,26 @@ def path(element, diagram, parent, outline_status):
             cmds.append(util.pt2str(point))
             current_point = user_point
             continue
+        if child.tag == 'arc':
+            center = un.valid_eval(child.get('center'))
+            radius = un.valid_eval(child.get('radius'))
+            angular_range = un.valid_eval(child.get('range'))
+            if child.get('degrees', 'yes') == 'yes':
+                angular_range = [math.radians(a) for a in angular_range]
+            N = 100
+            t = angular_range[0]
+            dt = (angular_range[1] - angular_range[0]) / N
+            user_start = [center[0] + radius * math.cos(t),
+                          center[1] + radius * math.sin(t)]
+            start = diagram.transform(user_start)
+            cmds += ['L', util.pt2str(start)]
+            for _ in range(N):
+                t += dt
+                user_point = [center[0] + radius * math.cos(t),
+                              center[1] + radius * math.sin(t)]
+                point = diagram.transform(user_point)
+                cmds += ['L', util.pt2str(point)]
+            continue
         print('Unknown tag in <path>:', child.tag)
         return
 
@@ -163,16 +183,22 @@ def decorate(child, diagram, current_point, cmds):
             number = math.floor((length - dimensions[0]/2)/dimensions[0])
         else:
             number = un.valid_eval(data.get('number'))
-        coil_length = (number+0.5)*dimensions[0]
-        while coil_length > length:
+        half_coil_fraction = (number+0.5)*dimensions[0] / length
+        while (
+                location - half_coil_fraction < 0 or
+                location + half_coil_fraction > 1
+        ):
             number -= 1
-            coil_length = (number+0.5)*dimensions[0]
-        leftover = length - coil_length
+            half_coil_fraction = (number+0.5)*dimensions[0] / length
+        start_coil = length * (location - half_coil_fraction)
+        end_coil = length * (location + half_coil_fraction)
+        coil_length = 2 * half_coil_fraction * length
 
-        N = 25
+        N = 40
         dt = 2*math.pi/N
         t = 0
-        x_init = leftover/2
+        #x_init = leftover/2
+        x_init = start_coil
         x_pos = x_init + dimensions[0]/2
         iterates = math.floor((number+0.5)*N)
         cmds += ['L', util.pt2str(ctm.transform((x_init,0)))]
@@ -196,20 +222,31 @@ def decorate(child, diagram, current_point, cmds):
             number = math.floor((length - dimensions[0]/2)/dimensions[0])
         else:
             number = un.valid_eval(data.get('number'))
-        coil_length = number*dimensions[0]
+        '''
         while coil_length > length:
             number -= 1
             coil_length = number*dimensions[0]
         leftover = length - coil_length
+        '''
+        half_zig_fraction = number*dimensions[0] / length
+        while (
+                location - half_zig_fraction < 0 or
+                location + half_zig_fraction > 1
+        ):
+            number -= 1
+            half_zig_fraction = number*dimensions[0] / length
+        start_zig = length * (location - half_zig_fraction)
+        end_zig = length * (location + half_zig_fraction)
+        zig_length = 2 * half_zig_fraction * length
+        
 
         N = 4
         dt = 2*math.pi/N
         t = 0
-        x_init = leftover/2
-        x_pos = x_init 
+        x_pos = start_zig
         iterates = math.floor(number*N)
-        cmds += ['L', util.pt2str(ctm.transform((x_init,0)))]
-        dx = (coil_length-dimensions[0])/iterates
+        cmds += ['L', util.pt2str(ctm.transform((x_pos,0)))]
+        dx = zig_length/iterates
         y = 0
         for _ in range(iterates):
             t += dt

@@ -6,6 +6,7 @@ from . import user_namespace as un
 from . import utilities
 from . import grid_axes
 from . import group
+from . import math_utilities as math_util
 
 # Add a graphical element for slope fields
 def slope_field(element, diagram, parent, outline_status):
@@ -48,9 +49,10 @@ def slope_field(element, diagram, parent, outline_status):
         y = ry[0]
         while y <= ry[2]:
             line = copy.deepcopy(line_template)
-            element.append(line)
             if system:
                 change = f(0, [x,y])
+                if math_util.length(change) > 1e-05:
+                    element.append(line)
                 if abs(change[0]) < 1e-08:
                     dx = 0
                     dy = ry[1]/4
@@ -66,6 +68,7 @@ def slope_field(element, diagram, parent, outline_status):
                 slope = f(x,y)
                 dx = rx[1]/(4*math.sqrt(1+slope**2))
                 dy = slope*dx
+                element.append(line)
             x0 = x - dx
             x1 = x + dx
             y0 = y - dy
