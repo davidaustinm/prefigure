@@ -34,92 +34,10 @@ def path(element, diagram, parent, outline_status):
     cmds.append(util.pt2str(start))
 
     for child in element:
-        if child.tag == "moveto":
-            user_point = un.valid_eval(child.get('point'))
-            point = diagram.transform(user_point)
-            cmds.append('M')
-            cmds.append(util.pt2str(point))
-            current_point = user_point
-            continue
-            
-        if child.tag == "horizontal":
-            distance = un.valid_eval(child.get('distance'))
-            user_point = (current_point[0] + distance,
-                          current_point[1])
-            child.tag = 'lineto'
-            child.set('point', util.pt2long_str(user_point,spacer=","))
-            
-        if child.tag == "vertical":
-            distance = un.valid_eval(child.get('distance'))
-            user_point = (current_point[0],
-                          current_point[1] + distance)
-            child.tag = 'lineto'
-            child.set('point', util.pt2long_str(user_point,spacer=","))
-            
-        if child.tag == "lineto":
-            if child.get('decoration', None) is not None:
-                cmds, current_point = decorate(child,
-                                               diagram,
-                                               current_point,
-                                               cmds)
-                continue
-            user_point = un.valid_eval(child.get('point'))
-            point = diagram.transform(user_point)
-            cmds.append('L')
-            cmds.append(util.pt2str(point))
-            current_point = user_point
-            continue
-        
-        if child.tag == "cubic-bezier":
-            cmds.append('C')
-            user_control_pts = un.valid_eval(child.get('controls'))
-            control_pts= [diagram.transform(p) for p in user_control_pts]
-            cmds.append(','.join([util.pt2str(p) for p in control_pts]))
-            current_point = user_control_pts[-1]
-            continue
-        if child.tag == "smooth-cubic":
-            cmds.append('S')
-            user_control_pts = un.valid_eval(child.get('controls'))
-            control_pts= [diagram.transform(p) for p in user_control_pts]
-            cmds.append(','.join([util.pt2str(p) for p in control_pts]))
-            current_point = user_control_pts[-1]
-            continue
-        if child.tag == "quadratic-bezier":
-            cmds.append('Q')
-            user_control_pts = un.valid_eval(child.get('controls'))
-            control_pts= [diagram.transform(p) for p in user_control_pts]
-            cmds.append(','.join([util.pt2str(p) for p in control_pts]))
-            current_point = user_control_pts[-1]
-            continue
-        if child.tag == "smooth-quadratic":
-            cmds.append('T')
-            user_point = un.valid_eval(child.get('point'))
-            point = diagram.transform(user_point)
-            cmds.append(util.pt2str(point))
-            current_point = user_point
-            continue
-        if child.tag == 'arc':
-            center = un.valid_eval(child.get('center'))
-            radius = un.valid_eval(child.get('radius'))
-            angular_range = un.valid_eval(child.get('range'))
-            if child.get('degrees', 'yes') == 'yes':
-                angular_range = [math.radians(a) for a in angular_range]
-            N = 100
-            t = angular_range[0]
-            dt = (angular_range[1] - angular_range[0]) / N
-            user_start = [center[0] + radius * math.cos(t),
-                          center[1] + radius * math.sin(t)]
-            start = diagram.transform(user_start)
-            cmds += ['L', util.pt2str(start)]
-            for _ in range(N):
-                t += dt
-                user_point = [center[0] + radius * math.cos(t),
-                              center[1] + radius * math.sin(t)]
-                point = diagram.transform(user_point)
-                cmds += ['L', util.pt2str(point)]
-            continue
-        print('Unknown tag in <path>:', child.tag)
-        return
+        cmds, current_point = process_tag(child,
+                                          diagram,
+                                          cmds,
+                                          current_point)
 
     if element.get('closed', 'no') == 'yes':
         cmds.append('Z')
@@ -154,13 +72,112 @@ def path(element, diagram, parent, outline_status):
     else:
         parent.append(path)
 
-def finish_outline(element, diagram, parent):
-    diagram.finish_outline(element,
-                           element.get('stroke'),
-                           element.get('thickness'),
-                           element.get('fill', 'none'),
-                           parent)
+def process_tag(child, diagram, cmds, current_point):
+    if child.tag == "moveto":
+        user_point = un.valid_eval(child.get('point'))
+        point = diagram.transform(user_point)
+        cmds.append('M')
+        cmds.append(util.pt2str(point))
+        current_point = user_point
+        return cmds, current_point
+            
+    if child.tag == "horizontal":
+        distance = un.valid_eval(child.get('distance'))
+        user_point = (current_point[0] + distance,
+                      current_point[1])
+        child.tag = 'lineto'
+        child.set('point', util.pt2long_str(user_point,spacer=","))
+            
+    if child.tag == "vertical":
+        distance = un.valid_eval(child.get('distance'))
+        user_point = (current_point[0],
+                      current_point[1] + distance)
+        child.tag = 'lineto'
+        child.set('point', util.pt2long_str(user_point,spacer=","))
+            
+    if child.tag == "lineto":
+        if child.get('decoration', None) is not None:
+            return decorate(child,
+                            diagram,
+                            current_point,
+                            cmds)
 
+        user_point = un.valid_eval(child.get('point'))
+        point = diagram.transform(user_point)
+        cmds.append('L')
+        cmds.append(util.pt2str(point))
+        current_point = user_point
+        return cmds, current_point
+        
+    if child.tag == "cubic-bezier":
+        cmds.append('C')
+        user_control_pts = un.valid_eval(child.get('controls'))
+        control_pts= [diagram.transform(p) for p in user_control_pts]
+        cmds.append(','.join([util.pt2str(p) for p in control_pts]))
+        current_point = user_control_pts[-1]
+        return cmds, current_point
+    if child.tag == "smooth-cubic":
+        cmds.append('S')
+        user_control_pts = un.valid_eval(child.get('controls'))
+        control_pts= [diagram.transform(p) for p in user_control_pts]
+        cmds.append(','.join([util.pt2str(p) for p in control_pts]))
+        current_point = user_control_pts[-1]
+        return cmds, current_point
+    if child.tag == "quadratic-bezier":
+        cmds.append('Q')
+        user_control_pts = un.valid_eval(child.get('controls'))
+        control_pts= [diagram.transform(p) for p in user_control_pts]
+        cmds.append(','.join([util.pt2str(p) for p in control_pts]))
+        current_point = user_control_pts[-1]
+        return cmds, current_point
+    if child.tag == "smooth-quadratic":
+        cmds.append('T')
+        user_point = un.valid_eval(child.get('point'))
+        point = diagram.transform(user_point)
+        cmds.append(util.pt2str(point))
+        current_point = user_point
+        return cmds, current_point
+    if child.tag == 'arc':
+        center = un.valid_eval(child.get('center'))
+        radius = un.valid_eval(child.get('radius'))
+        angular_range = un.valid_eval(child.get('range'))
+        if child.get('degrees', 'yes') == 'yes':
+            angular_range = [math.radians(a) for a in angular_range]
+        N = 100
+        t = angular_range[0]
+        dt = (angular_range[1] - angular_range[0]) / N
+        user_start = [center[0] + radius * math.cos(t),
+                      center[1] + radius * math.sin(t)]
+        start = diagram.transform(user_start)
+        cmds += ['L', util.pt2str(start)]
+        for _ in range(N):
+            t += dt
+            user_point = [center[0] + radius * math.cos(t),
+                          center[1] + radius * math.sin(t)]
+            point = diagram.transform(user_point)
+            cmds += ['L', util.pt2str(point)]
+        return cmds, current_point
+
+    if child.tag == 'repeat':
+        parameter = child.get('parameter')
+        var, expr = parameter.split('=')
+        var = var.strip()
+        start, stop = map(un.valid_eval, expr.split('..'))
+
+        for k in range(start, stop+1):
+            k_str = str(k)
+            un.valid_eval(k_str, var)
+
+            for sub_child in child:
+                cmds, current_point = process_tag(sub_child,
+                                                  diagram,
+                                                  cmds,
+                                                  current_point)
+        return cmds, current_point
+        
+    print('Unknown tag in <path>:', child.tag)
+    return cmds, current_point
+        
 def decorate(child, diagram, current_point, cmds):
     user_point = un.valid_eval(child.get('point'))
     ctm = CTM.CTM()
@@ -174,11 +191,11 @@ def decorate(child, diagram, current_point, cmds):
     decoration = child.get('decoration')
     decoration_data = [d.strip() for d in decoration.split(';')]
     if decoration_data[0] == 'coil':
-        # number, location, dimensions
-        data = [d.split(':') for d in decoration_data[1:]]
+        # number, center, dimensions
+        data = [d.split('=') for d in decoration_data[1:]]
         data = {k:v for k, v in data}
         dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
-        location = un.valid_eval(data.get('location', '0.5'))
+        location = un.valid_eval(data.get('center', '0.5'))
         if data.get('number', None) is None:
             number = math.floor((length - dimensions[0]/2)/dimensions[0])
         else:
@@ -214,10 +231,10 @@ def decorate(child, diagram, current_point, cmds):
 
     if decoration_data[0] == 'zigzag':
         # number, location, dimensions
-        data = [d.split(':') for d in decoration_data[1:]]
+        data = [d.split('=') for d in decoration_data[1:]]
         data = {k:v for k, v in data}
         dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
-        location = un.valid_eval(data.get('location', '0.5'))
+        location = un.valid_eval(data.get('center', '0.5'))
         if data.get('number', None) is None:
             number = math.floor((length - dimensions[0]/2)/dimensions[0])
         else:
@@ -257,10 +274,10 @@ def decorate(child, diagram, current_point, cmds):
         cmds += ['L', util.pt2str(ctm.transform((length, 0)))]
 
     if decoration_data[0] == 'capacitor':
-        data = [d.split(':') for d in decoration_data[1:]]
+        data = [d.split('=') for d in decoration_data[1:]]
         data = {k:v for k, v in data}
         dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
-        location = un.valid_eval(data.get('location', '0.5'))
+        location = un.valid_eval(data.get('center', '0.5'))
         x_mid = length * location
         x0 = x_mid - dimensions[0]/2
         x1 = x_mid + dimensions[0]/2
@@ -275,3 +292,11 @@ def decorate(child, diagram, current_point, cmds):
 
     return cmds, user_point
     
+
+def finish_outline(element, diagram, parent):
+    diagram.finish_outline(element,
+                           element.get('stroke'),
+                           element.get('thickness'),
+                           element.get('fill', 'none'),
+                           parent)
+
