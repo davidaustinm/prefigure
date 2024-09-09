@@ -17,17 +17,20 @@ def circle(element, diagram, parent, outline_status):
 
     center = un.valid_eval(element.get('center'))
     radius = un.valid_eval(element.get('radius', '1'))
-    right = [center[0] + radius, center[1]]
-    top = [center[0], center[1] + radius]
-    center, right, top = map(diagram.transform, [center, right, top])
 
-    circle = ET.Element('ellipse')
+    # We could use an SVG ellipse, but we're going to use a path for
+    # unions and intersections
+    circle = ET.Element('path')
     diagram.add_id(circle, element.get('id'))
 
-    circle.set('cx', util.float2str(center[0]))
-    circle.set('cy', util.float2str(center[1]))
-    circle.set('rx', util.float2str(right[0]-center[0]))
-    circle.set('ry', util.float2str(center[1] - top[1]))
+    N = un.valid_eval(element.get('N', '100'))
+    cmds = make_path(diagram,
+                     center,
+                     (radius, radius),
+                     (0,360),
+                     N=N)
+    cmds.append('Z')
+    circle.set('d', ' '.join(cmds))
 
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
@@ -66,29 +69,23 @@ def ellipse(element, diagram, parent, outline_status):
         return
 
     center = un.valid_eval(element.get('center'))
-    a, b = un.valid_eval(element.get('axes', '(1,1)'))
-    right = [center[0] + a, center[1]]
-    top = [center[0], center[1] + b]
-    center, right, top = map(diagram.transform, [center, right, top])
-    cx = util.float2str(center[0])
-    cy = util.float2str(center[1])
+    axes_length = un.valid_eval(element.get('axes', '(1,1)'))
+    rotate = un.valid_eval(element.get('rotate', '0'))
+    if element.get('degrees', 'yes') == 'no':
+        rotate = math.degrees(rotate)
 
-    circle = ET.Element('ellipse')
+    N = un.valid_eval(element.get('N', '100'))
+    circle = ET.Element('path')
     diagram.add_id(circle, element.get('id'))
-    circle.set('cx', cx)
-    circle.set('cy', cy)
-    circle.set('rx', util.float2str(right[0]-center[0]))
-    circle.set('ry', util.float2str(center[1]-top[1]))
+    cmds = make_path(diagram,
+                     center,
+                     axes_length,
+                     (0, 360),
+                     rotate=rotate,
+                     N=N)
 
-    if element.get('rotate', None) is not None:
-        rotation = un.valid_eval(element.get('rotate'))
-        if element.get('degrees', 'yes') == 'no':
-            rotation = math.degrees(rotation)
-        transform_strs = [CTM.translatestr(center[0], center[1]), 
-                          CTM.rotatestr(rotation),
-                          CTM.translatestr(-center[0], -center[1])]
-        transform_str = ' '.join(transform_strs)
-        circle.set('transform', transform_str)
+    cmds.append('Z')
+    circle.set('d', ' '.join(cmds))
 
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
@@ -146,38 +143,24 @@ def arc(element, diagram, parent, outline_status):
     radius = un.valid_eval(element.get('radius'))
     sector = element.get('sector', 'no') == 'yes'
 
-    if element.get('degrees', 'yes') == 'yes':
-        angular_range = [math.radians(a) for a in angular_range]
-    start, stop = angular_range
-    large_arc = '1' if abs(stop - start) >= math.pi else '0'
-    sweep = '1' if stop - start < 0 else '0'
+    if element.get('degrees', 'yes') == 'no':
+        angular_range = [math.degrees(a) for a in angular_range]
 
-    initial_point = diagram.transform(center + np.array([radius * math.cos(start),
-                                                         radius * math.sin(start)]))
-    final_point = diagram.transform(center + np.array([radius * math.cos(stop),
-                                                       radius * math.sin(stop)]))
-    x_radius = abs((diagram.transform([center[0] + radius, center[1]]) -
-                    diagram.transform(center))[0])
-
-    y_radius = abs((diagram.transform([center[0], center[1] + radius]) -
-                    diagram.transform(center))[1])
-
-    initial_point_str = util.pt2str(initial_point)
-    final_point_str = util.pt2str(final_point)
-    center_str = util.pt2str(diagram.transform(center))
-
-    if sector:
-        d = 'M ' + center_str + ' L ' + initial_point_str
-    else:
-        d = 'M ' + initial_point_str
-    d += ' A ' + util.pt2str((x_radius, y_radius)) + ' 0 '
-    d += large_arc + ' ' + sweep + ' ' + final_point_str
-    if sector:
-        d += 'Z'
+    N = un.valid_eval(element.get('N', '100'))
 
     arc = ET.Element('path')
     diagram.add_id(arc, element.get('id'))
-    arc.set('d', d)
+
+    cmds = make_path(diagram,
+                     center,
+                     (radius, radius),
+                     angular_range,
+                     N=N)
+
+    if sector:
+        cmds += ['L', util.pt2str(diagram.transform(center)), 'Z']
+
+    arc.set('d', ' '.join(cmds))
     util.add_attr(arc, util.get_2d_attr(element))
     arc.set('type', 'arc')
     util.cliptobbox(arc, element, diagram)
@@ -201,6 +184,31 @@ def arc(element, diagram, parent, outline_status):
         finish_outline(element, diagram, parent)
     else:
         parent.append(arc)
+
+def make_path(diagram,
+              center,
+              axes_length,
+              angular_range,
+              rotate = 0,
+              N=100):
+    ctm = CTM.CTM()
+    ctm.translate(*center)
+    ctm.rotate(rotate)
+    ctm.scale(*axes_length)
+    angular_range = [math.radians(angle) for angle in angular_range]
+    t = angular_range[0]
+    dt = (angular_range[1]-angular_range[0])/N
+    cmds = []
+    for _ in range(N):
+        point = ctm.transform((math.cos(t), math.sin(t)))
+        point = diagram.transform(point)
+        point
+        command = 'L'
+        if len(cmds) == 0:
+            command = 'M'
+        cmds += [command, util.pt2str(point)]
+        t += dt
+    return cmds
 
 # Alexei's angle marker
 def angle(element, diagram, parent, outline_status):

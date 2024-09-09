@@ -7,6 +7,21 @@ from . import utilities as util
 from . import math_utilities as math_util
 from . import arrow
 from . import CTM
+from . import tags
+
+# These are the tags that can appear within a path
+path_tags = {'moveto',
+             'lineto',
+             'horizontal',
+             'vertical',
+             'cubic-bezier',
+             'quadratic-bezier',
+             'smooth-cubic',
+             'smooth-quadratic'}
+
+def is_path_tag(tag):
+    return tag in path_tags
+             
 
 # Process a path tag into a graphical component
 def path(element, diagram, parent, outline_status):
@@ -72,6 +87,11 @@ def path(element, diagram, parent, outline_status):
     else:
         parent.append(path)
 
+# Here are some tags that we can append to a path        
+graphical_tags = {'graph',
+                  'parametric-curve',
+                  'polygon'}
+
 def process_tag(child, diagram, cmds, current_point):
     if child.tag == "moveto":
         user_point = un.valid_eval(child.get('point'))
@@ -113,21 +133,23 @@ def process_tag(child, diagram, cmds, current_point):
         cmds.append('C')
         user_control_pts = un.valid_eval(child.get('controls'))
         control_pts= [diagram.transform(p) for p in user_control_pts]
-        cmds.append(','.join([util.pt2str(p) for p in control_pts]))
-        current_point = user_control_pts[-1]
-        return cmds, current_point
-    if child.tag == "smooth-cubic":
-        cmds.append('S')
-        user_control_pts = un.valid_eval(child.get('controls'))
-        control_pts= [diagram.transform(p) for p in user_control_pts]
-        cmds.append(','.join([util.pt2str(p) for p in control_pts]))
+        cmds.append(' '.join([util.pt2str(p) for p in control_pts]))
         current_point = user_control_pts[-1]
         return cmds, current_point
     if child.tag == "quadratic-bezier":
         cmds.append('Q')
         user_control_pts = un.valid_eval(child.get('controls'))
         control_pts= [diagram.transform(p) for p in user_control_pts]
-        cmds.append(','.join([util.pt2str(p) for p in control_pts]))
+        cmds.append(' '.join([util.pt2str(p) for p in control_pts]))
+        current_point = user_control_pts[-1]
+        return cmds, current_point
+    # Let's take these out to facilitate shape handling
+    '''
+    if child.tag == "smooth-cubic":
+        cmds.append('S')
+        user_control_pts = un.valid_eval(child.get('controls'))
+        control_pts= [diagram.transform(p) for p in user_control_pts]
+        cmds.append(' '.join([util.pt2str(p) for p in control_pts]))
         current_point = user_control_pts[-1]
         return cmds, current_point
     if child.tag == "smooth-quadratic":
@@ -137,6 +159,7 @@ def process_tag(child, diagram, cmds, current_point):
         cmds.append(util.pt2str(point))
         current_point = user_point
         return cmds, current_point
+    '''
     if child.tag == 'arc':
         center = un.valid_eval(child.get('center'))
         radius = un.valid_eval(child.get('radius'))
@@ -173,6 +196,20 @@ def process_tag(child, diagram, cmds, current_point):
                                                   diagram,
                                                   cmds,
                                                   current_point)
+        return cmds, current_point
+
+    if child.tag in graphical_tags:
+        dummy_parent = ET.Element('group')
+        tags.parse_element(child, diagram, dummy_parent)
+        child_cmds = dummy_parent.getchildren()[0].get('d').strip()
+        if child_cmds[0] == 'M':
+            child_cmds = 'L' + child_cmds[1:]
+        if child_cmds[-1] == 'Z':
+            child_cmds = child_cmds[:-1].strip()
+        cmds.append(child_cmds)
+        coordinates = child_cmds.split()
+        final_point = [float(c) for c in coordinates[-2:]]
+        current_point = diagram.inverse_transform(final_point)
         return cmds, current_point
         
     print('Unknown tag in <path>:', child.tag)
@@ -239,12 +276,7 @@ def decorate(child, diagram, current_point, cmds):
             number = math.floor((length - dimensions[0]/2)/dimensions[0])
         else:
             number = un.valid_eval(data.get('number'))
-        '''
-        while coil_length > length:
-            number -= 1
-            coil_length = number*dimensions[0]
-        leftover = length - coil_length
-        '''
+
         half_zig_fraction = number*dimensions[0] / length
         while (
                 location - half_zig_fraction < 0 or

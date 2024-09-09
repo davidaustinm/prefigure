@@ -21,6 +21,7 @@ from . import polygon
 from . import rectangle
 from . import riemann_sum
 from . import repeat
+from . import shape
 from . import slope_field
 from . import tangent_line
 from . import vector
@@ -42,12 +43,14 @@ tag_dict = {
     'de-solve': diffeqs.de_solve,
     'definition': definition.definition,
     'derivative': definition.derivative,
+    'difference': shape.difference,
     'ellipse': circle.ellipse,
     'graph': graph.graph,
     'grid': grid_axes.grid,
     'grid-axes': grid_axes.grid_axes,
     'group': group.group,
     'implicit-curve': implicit.implicit_curve,
+    'intersection': shape.intersection,
     'label': label.label,
     'line': line.line,
     'network': network.network,
@@ -59,15 +62,21 @@ tag_dict = {
     'rectangle': rectangle.rectangle,
     'riemann-sum': riemann_sum.riemann_sum,
     'repeat': repeat.repeat,
+    'shape': shape.shape,
     'slope-field': slope_field.slope_field,
+    'symmetric-difference': shape.xor,
     'tangent-line': tangent_line.tangent,
-    'vector': vector.vector,
+    'union': shape.union,
+    'vector': vector.vector
 }
 
 # apply the processing function based on the XML element's tag
 
 def parse_element(element, diagram, root, outline_status = None):
     if element.tag is ET.Comment:
+        return
+    if path.is_path_tag(element.tag):
+        print(f"A <{element.tag}> tag can only occur inside a path")
         return
     try:
         function = tag_dict[element.tag]

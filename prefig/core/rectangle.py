@@ -3,6 +3,7 @@
 import lxml.etree as ET
 from . import user_namespace as un
 from . import utilities as util
+from . import math_utilities as math_util
 
 # Process a rectangle tag
 def rectangle(element, diagram, parent, outline_status):
@@ -17,18 +18,38 @@ def rectangle(element, diagram, parent, outline_status):
     if center is not None:
         center = un.valid_eval(center)
         ll = center - 0.5 * dims
-    p0 = diagram.transform(ll)
-    p1 = diagram.transform(ll + dims)
+    p0 = ll
+    p1 = ll + dims
 
-    path = ET.SubElement(parent, 'rect')
+    # We're going to make a path so that we can use this with shape operations
+    path = ET.SubElement(parent, 'path')
     diagram.add_id(path, element.get('id'))
-    path.set('x', util.float2str(p0[0]))
-    path.set('y', util.float2str(p1[1]))
-    path.set('width', util.float2str(p1[0]-p0[0]))
-    path.set('height', util.float2str(p0[1]-p1[1]))
-    if element.get('corner-radius', None) is not None:
-        r = un.valid_eval(element.get('corner-radius'))
-        path.set('ry', util.float2str(r))
+
+    user_corners = [p0, (p1[0], p0[1]), p1, (p0[0], p1[1])]
+    corners = [diagram.transform(c) for c in user_corners]
+
+    radius = un.valid_eval(element.get('corner-radius', '0'))
+    if radius == 0:
+        cmds = ['M', util.pt2str(corners[0])]
+        for c in corners[1:]:
+            cmds += ['L', util.pt2str(c)]
+        cmds.append('Z')
+    else:
+        cmds = []
+        corners += corners[:2]
+        for i in range(4):
+            v1 = math_util.normalize(corners[i+1] - corners[i])
+            v2 = math_util.normalize(corners[i+2] - corners[i+1])
+            command = 'L'
+            if len(cmds) == 0:
+                command = 'M'
+            cmds += [command, util.pt2str(corners[i+1] - radius*v1)]
+            cmds += ['Q',
+                     util.pt2str(corners[i+1]),
+                     util.pt2str(corners[i+1] + radius*v2)]
+        cmds.append('Z')
+
+    path.set('d', ' '.join(cmds))
 
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:

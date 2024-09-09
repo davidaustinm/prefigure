@@ -45,11 +45,16 @@ def init():
 
     shutil.rmtree(destination / "node_modules", ignore_errors=True)
 
+    # we need to change into MathJax directory to install
+    # on Windows and linux
+    wd = os.getcwd()
+    os.chdir(destination)
     try:
-        subprocess.run(["npm", "install", f"--prefix={destination}"])
+        subprocess.run(["npm", "install"]) #, f"--prefix={destination}"])
     except:
         click.echo("MathJax installation failed.  Is npm installed on your system?")
         return
+    os.chdir(wd)
 
     click.echo("Installing the Braille29 font")
     home = Path(os.path.expanduser('~'))

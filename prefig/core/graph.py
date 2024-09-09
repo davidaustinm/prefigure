@@ -3,7 +3,7 @@ from . import user_namespace as un
 from . import utilities as util
 
 # Graph of a 1-variable function
-# We'll set up an SVG polyline element by sampling the graph
+# We'll set up an SVG path element by sampling the graph
 # on an equally spaced mesh
 def graph(element, diagram, parent, outline_status = None):
     # if we've already added an outline, just plot the graph
@@ -24,10 +24,13 @@ def graph(element, diagram, parent, outline_status = None):
     N = int(element.get('N', 100))
     dx = (domain[1] - domain[0])/N
     x = domain[0]
-    points = []
+    cmds = []
     for _ in range(N+1):
         p = diagram.transform((x, f(x)))
-        points.append(util.pt2str(p, ','))
+        if len(cmds) == 0:
+            cmds = ['M', util.pt2str(p)]
+        else:
+            cmds += ['L', util.pt2str(p)]
         x += dx
 
     # now set up the attributes
@@ -40,13 +43,13 @@ def graph(element, diagram, parent, outline_status = None):
     attrib.update(util.get_1d_attr(element))
     attrib.update(
         {
-            'points': ' '.join(points),
+            'd': ' '.join(cmds),
             'fill': 'none',
             'type': 'function-graph'
         }
     )
 
-    path = ET.Element('polyline', attrib = attrib)
+    path = ET.Element('path', attrib = attrib)
 
     # By default, we clip the graph to the bounding box
     if element.get('cliptobbox') is None:

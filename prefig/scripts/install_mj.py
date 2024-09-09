@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import os
 from pathlib import Path
 import shutil
 
@@ -16,12 +17,17 @@ def main():
 
     shutil.rmtree(destination / "node_modules", ignore_errors=True)
 
+    # We need to change into mj_sre directory for installation
+    # on Windows and linux
+    wd = os.getcwd()
+    os.chdir(destination)
     print("Installing MathJax libraries with npm")
     try:
-        subprocess.run(["npm", "install", f"--prefix={destination}"])
+        subprocess.run(["npm", "install"]) #, f"--prefix={destination}"])
     except:
         print("MathJax installation failed.  Is npm installed on your system?")
         sys.exit()
+    os.chdir(wd)
 
         
 if __name__ == "__main__":

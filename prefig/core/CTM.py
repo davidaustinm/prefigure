@@ -54,20 +54,32 @@ class CTM:
     def __init__(self, ctm = None):
         if ctm is None:
             self.ctm = identity()
+            self.inverse = identity()
         else:
             self.ctm = ctm
 
     def translate(self, x, y):
         m = translation(x, y)
         self.ctm = concat(self.ctm, m)
+        minv = translation(-x, -y)
+        self.inverse = concat(minv, self.inverse)
 
     def scale(self, x, y):
         s = scaling(x, y)
         self.ctm = concat(self.ctm, s)
+        sinv = scaling(1/x, 1/y)
+        self.inverse = concat(sinv, self.inverse)
 
     def rotate(self, theta, units="deg"):
         m = rotation(theta, units)
         self.ctm = concat(self.ctm, m)
+        minv = rotation(-theta, units)
+        self.inverse = concat(minv, self.inverse)
+
+    def inverse_transform(self, p):
+        p = list(p).copy()
+        p.append(1)
+        return np.array([math_util.dot(self.inverse[i], p) for i in range(2)])
 
     def transform(self, p):
         p = list(p).copy()
@@ -75,4 +87,4 @@ class CTM:
         return np.array([math_util.dot(self.ctm[i], p) for i in range(2)])
 
     def copy(self):
-        return CTM(copy.deepcopy(self.ctm))
+        return copy.deepcopy(self) # CTM(copy.deepcopy(self.ctm))

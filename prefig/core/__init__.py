@@ -26,6 +26,7 @@ from . import (
     rectangle,
     repeat,
     riemann_sum,
+    shape,
     slope_field,
     tags,
     tangent_line,

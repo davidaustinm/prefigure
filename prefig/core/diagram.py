@@ -45,6 +45,23 @@ class Diagram:
         self.label_html_body = ET.Element('body')
         self.label_html_tree.append(self.label_html_body)
 
+        # a dictionary for holding shapes
+        self.shape_dict = {}
+
+        # these are the tags that can define shapes
+        self.allowed_shapes = {
+            'arc',
+            'area-between-curves',
+            'area-under-curve',
+            'circle',
+            'ellipse',
+            'graph',
+            'parametric-curve',
+            'path',
+            'polygon',
+            'rectangle'
+        }
+
         # each SVG element will have an id, we'll store a count of ids here
         self.ids = {}
 
@@ -106,6 +123,10 @@ class Diagram:
     def transform(self, p):
         ctm, b = self.ctm_stack[-1]
         return ctm.transform(p)
+
+    def inverse_transform(self, p):
+        ctm, b = self.ctm_stack[-1]
+        return ctm.inverse_transform(p)
 
     def begin_figure(self):
         # set up the dimensions of the diagram in SVG coordinates
@@ -234,8 +255,29 @@ class Diagram:
             for attr, value in child.items():
                 if attr.startswith(prefix):
                     child.set(attr[len(prefix):], value)
+
+            if (
+                    child.tag in self.allowed_shapes and
+                    child.get('define-shape','no') == 'yes'
+            ):
+                dummy_parent = ET.Element('group')
+                tags.parse_element(
+                    child,
+                    self,
+                    dummy_parent
+                )
+                shape = dummy_parent.getchildren()[0]
+                shape.attrib.pop('stroke', None)
+                shape.attrib.pop('fill', None)
+                self.defs.append(shape)
+                self.shape_dict[shape.get('id')] = shape
+                continue
+                
             tags.parse_element(child, self, root, outline_status)
-            if child.get('annotate', 'no') == 'yes' and outline_status != 'add_outline':
+            if (
+                    child.get('annotate', 'no') == 'yes' and
+                    outline_status != 'add_outline'
+            ):
                 tag = child.tag
                 if tag != 'group' and tag != 'repeat':
                     annotation = ET.Element('annotation')
@@ -381,3 +423,19 @@ class Diagram:
 
     def get_annotation_branch(self, id):
         return self.annotation_branches.pop(id, None)
+
+    def recall_shape(self, shape_id):
+        return self.shape_dict.get(shape_id, None)
+        
+    def get_shape(self, shape_id):
+        shape = self.recall_shape(shape_id)
+        if shape is not None:
+            return shape
+        
+        paths = self.root.findall('path')
+        for path in paths:
+            if path.get('id', None) == shape_id:
+                return path
+
+        print(f"We cannot find a <shape> with @id = {shape_id}")
+        return None
