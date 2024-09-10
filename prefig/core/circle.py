@@ -170,10 +170,23 @@ def arc(element, diagram, parent, outline_status):
     backward = 'marker-start'
     if element.get('reverse', 'no') == 'yes':
         forward, backward = backward, forward
+    
     if arrows > 0:
-        arrow.add_arrowhead_to_path(diagram, forward, arc)
+        arrow.add_arrowhead_to_path(
+            diagram,
+            forward,
+            arc,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
     if arrows > 1:
-        arrow.add_arrowhead_to_path(diagram, backward, arc)
+        arrow.add_arrowhead_to_path(
+            diagram,
+            backward,
+            arc,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, arc, parent, outline_width=2)
@@ -296,9 +309,21 @@ def angle(element, diagram, parent, outline_status):
 
     if element.get('arrow', None) is not None:
         if element.get('reverse', 'no') == 'yes':
-            arrow.add_arrowhead_to_path(diagram, 'marker-end', arc)
+            arrow.add_arrowhead_to_path(
+                diagram,
+                'marker-end',
+                arc,
+                arrow_width=element.get('arrow-width', None),
+                arrow_angles=element.get('arrow-angles', None)
+            )
         else:
-            arrow.add_arrowhead_to_path(diagram, 'marker-start', arc)
+            arrow.add_arrowhead_to_path(
+                diagram,
+                'marker-start',
+                arc,
+                arrow_width=element.get('arrow-width', None),
+                arrow_angles=element.get('arrow-angles', None)
+            )
     if outline_status == 'add_outline':
         diagram.add_outline(element, arc, parent, outline_width=2)
         return

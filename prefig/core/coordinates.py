@@ -35,7 +35,8 @@ def coordinates(element, diagram, root, outline_status):
     ctm.scale( (destination[2]-destination[0])/float(bbox[2]-bbox[0]),
                (destination[3]-destination[1])/float(bbox[3]-bbox[1]) )
     ctm.translate(-bbox[0], -bbox[1])
-    un.valid_eval(destination_str, 'bbox')
+    bbox_str = '['+','.join([str(b) for b in bbox])+']'
+    un.valid_eval(bbox_str, 'bbox')
 
     diagram.push_ctm([ctm, bbox])
     diagram.parse(element, root, outline_status)

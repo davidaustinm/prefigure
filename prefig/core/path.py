@@ -71,10 +71,21 @@ def path(element, diagram, parent, outline_status):
     if element.get('reverse', 'no') == 'yes':
         forward, backward = backward, forward
     if arrows > 0:
-        arrow.add_arrowhead_to_path(diagram, forward, path)
+        arrow.add_arrowhead_to_path(
+            diagram,
+            forward,
+            path,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
     if arrows > 1:
-        arrow.add_arrowhead_to_path(diagram, backward, path)
-
+        arrow.add_arrowhead_to_path(
+            diagram,
+            backward,
+            path,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, path, parent)

@@ -54,7 +54,13 @@ def vector(element, diagram, parent, outline_status):
         location = 'marker-mid'
     else:
         location = 'marker-end'
-    arrow.add_arrowhead_to_path(diagram, location, vector)
+    arrow.add_arrowhead_to_path(
+        diagram,
+        location,
+        vector,
+        arrow_width=element.get('arrow-width', None),
+        arrow_angles=element.get('arrow-angles', None)
+    )
     vector.set('type', 'vector')
 
     if outline_status == 'add_outline':

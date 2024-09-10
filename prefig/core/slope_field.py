@@ -34,6 +34,11 @@ def slope_field(element, diagram, parent, outline_status):
     if element.get('arrows', 'no') == 'yes':
         line_template.set('arrows', '1')
 
+    if element.get('arrow-width', None) is not None:
+        line_template.set('arrow-width', element.get('arrow-width'))
+    if element.get('arrow-angles', None) is not None:
+        line_template.set('arrow-angles', element.get('arrow-angles'))
+
     # Now we'll construct each of the lines in the slope field
     system = element.get('system', None) == 'yes'
     spacings = element.get('spacings', None)

@@ -44,9 +44,47 @@ def line(element, diagram, parent, outline_status):
     if element.get('reverse', 'no') == 'yes':
         forward, backward = backward, forward
     if arrows > 0:
-        arrow.add_arrowhead_to_path(diagram, forward, line)
+        arrow.add_arrowhead_to_path(
+            diagram,
+            forward,
+            line,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
     if arrows > 1:
-        arrow.add_arrowhead_to_path(diagram, backward, line)
+        arrow.add_arrowhead_to_path(
+            diagram,
+            backward,
+            line,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
+
+    if element.get('additional-arrows', None) is not None:
+        additional = un.valid_eval(element.get('additional-arrows'))
+        if not isinstance(additional, np.ndarray):
+            additional = np.array([additional])
+        list_additional = list(additional)
+        list_additional.sort()
+
+        line.tag = "path"
+        cmds = ['M', line.get('x1'), line.get('y1')]
+        p1 = np.array([float(line.get('x1')), float(line.get('y1'))])
+        p2 = np.array([float(line.get('x2')), float(line.get('y2'))])
+        for additional in list_additional:
+            p = (1-additional)*p1 + additional*p2
+            cmds += ['L', util.pt2str(p)]
+        cmds += ['L', line.get('x2'), line.get('y2')]
+        line.set('d', ' '.join(cmds))
+        arrow.add_arrowhead_to_path(
+            diagram,
+            'marker-mid',
+            line,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
+
+        
     util.cliptobbox(line, element, diagram)
 
     if outline_status == 'add_outline':

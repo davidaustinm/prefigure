@@ -3,6 +3,7 @@ import math
 import numpy as np
 from . import utilities as util
 from . import CTM
+from . import user_namespace as un
 
 # Form arrows to be used with a variety of graphical components
 # Arrowheads are created as markers and then added to paths
@@ -143,7 +144,18 @@ def add_tactile_arrowhead_marker(diagram, path, mid=False):
 # This will follow the same logic as the tactile arrow head created
 # above, only the shape of a regular arrow head is slightly different
 # than a tactile arrow head.
-def add_arrowhead_marker(diagram, path, mid=False):
+def add_arrowhead_marker(diagram,
+                         path,
+                         mid=False,
+                         arrow_width=None,
+                         arrow_angles=None):
+    if arrow_width is not None:
+        arrow_width = un.valid_eval(arrow_width)
+    if arrow_angles is not None:
+        arrow_angles = un.valid_eval(arrow_angles)
+    else:
+        arrow_angles = (24, 60)
+
     if diagram.output_format() == 'tactile':
         return add_tactile_arrowhead_marker(diagram, path)
     
@@ -153,12 +165,17 @@ def add_arrowhead_marker(diagram, path, mid=False):
 
     # Dimensions are a bit different if the arrow head is at an
     # end or in the middle of a path
+    id_data = f"_{arrow_width}_{arrow_angles[0]}_{arrow_angles[1]}"
     if not mid:
-        id = 'arrow-head-end-'+stroke_width_str
-        dims = (1, 4)
+        id = 'arrow-head-end-'+stroke_width_str+id_data
+        if arrow_width is None:
+            arrow_width = 4
+        dims = (1, arrow_width)
     else:
-        id = 'arrow-head-mid-'+stroke_width_str
-        dims = (1, 13/3) #11/3)
+        id = 'arrow-head-mid-'+stroke_width_str+id_data
+        if arrow_width is None:
+            arrow_width = 13/3
+        dims = (1, arrow_width) #11/3)
 
     # If we've already created this one, we'll just move on
     if diagram.has_reusable(id):
@@ -166,8 +183,7 @@ def add_arrowhead_marker(diagram, path, mid=False):
 
     # Next we'll construct the path defining the arrow head
     t, s = [d/2 for d in dims]
-    A = math.radians(24)
-    B = math.radians(60)
+    A, B = [math.radians(angle) for angle in arrow_angles]
     l = t/math.tan(A) + 0.1
     x2 = l - s/math.tan(A)
     x1 = x2 + (s-t)/math.tan(B)
@@ -267,7 +283,15 @@ def add_arrowhead_marker(diagram, path, mid=False):
 
     return id
 
-def add_arrowhead_to_path(diagram, location, path):
-    id = add_arrowhead_marker(diagram, path, location[-3:] == 'mid')
+def add_arrowhead_to_path(diagram,
+                          location,
+                          path,
+                          arrow_width=None,
+                          arrow_angles=None):
+    id = add_arrowhead_marker(diagram,
+                              path,
+                              location[-3:] == 'mid',
+                              arrow_width,
+                              arrow_angles)
     path.set(location, r'url(#{})'.format(id))
 
