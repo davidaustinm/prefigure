@@ -30,17 +30,11 @@ jobs:
         shell: bash
         run: python -m poetry install
 
-      - name: Run prep_nightly script and publish if ready
+      - name: publish to pypi.org
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
-          echo "Updating version number"
-          output=$(poetry run python scripts/prep_nightly.py)
-          echo "Completed nightly prep"
-          echo "Output: $output"
-          if [[ $output == *"OK to deploy"* ]]; then
-            poetry build
-            poetry config pypi-token.pypi $PYPI_TOKEN
-            poetry publish
-            echo "Published to pypi.org"
-          fi
+          poetry build
+          poetry config pypi-token.pypi $PYPI_TOKEN
+          poetry publish
+          echo "Published to pypi.org"
