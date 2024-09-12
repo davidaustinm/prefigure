@@ -3,6 +3,7 @@
 import lxml.etree as ET
 from . import user_namespace as un
 from . import utilities as util
+from . import arrow
 
 def parametric_curve(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
@@ -42,6 +43,28 @@ def parametric_curve(element, diagram, parent, outline_status):
 
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
     util.cliptobbox(path, element, diagram)
+
+    arrows = int(element.get('arrows', '0'))
+    forward = 'marker-end'
+    backward = 'marker-start'
+    if element.get('reverse', 'no') == 'yes':
+        forward, backward = backward, forward
+    if arrows > 0:
+        arrow.add_arrowhead_to_path(
+            diagram,
+            forward,
+            path,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
+    if arrows > 1:
+        arrow.add_arrowhead_to_path(
+            diagram,
+            backward,
+            path,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, path, parent)

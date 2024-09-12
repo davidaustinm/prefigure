@@ -48,20 +48,6 @@ class Diagram:
         # a dictionary for holding shapes
         self.shape_dict = {}
 
-        # these are the tags that can define shapes
-        self.allowed_shapes = {
-            'arc',
-            'area-between-curves',
-            'area-under-curve',
-            'circle',
-            'ellipse',
-            'graph',
-            'parametric-curve',
-            'path',
-            'polygon',
-            'rectangle'
-        }
-
         # each SVG element will have an id, we'll store a count of ids here
         self.ids = {}
 
@@ -256,23 +242,6 @@ class Diagram:
                 if attr.startswith(prefix):
                     child.set(attr[len(prefix):], value)
 
-            if (
-                    child.tag in self.allowed_shapes and
-                    child.get('define-shape','no') == 'yes'
-            ):
-                dummy_parent = ET.Element('group')
-                tags.parse_element(
-                    child,
-                    self,
-                    dummy_parent
-                )
-                shape = dummy_parent.getchildren()[0]
-                shape.attrib.pop('stroke', None)
-                shape.attrib.pop('fill', None)
-                self.defs.append(shape)
-                self.shape_dict[shape.get('id')] = shape
-                continue
-                
             tags.parse_element(child, self, root, outline_status)
             if (
                     child.get('annotate', 'no') == 'yes' and
@@ -426,6 +395,11 @@ class Diagram:
 
     def recall_shape(self, shape_id):
         return self.shape_dict.get(shape_id, None)
+
+    def add_shape(self, shape):
+        self.defs.append(shape)
+        id = shape.get('id', shape.get('at'))
+        self.shape_dict[id] = shape
         
     def get_shape(self, shape_id):
         shape = self.recall_shape(shape_id)

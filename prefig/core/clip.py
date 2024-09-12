@@ -3,22 +3,17 @@ from . import utilities as util
 from . import user_namespace as un
 
 def clip(element, diagram, parent, outline_status):
-    dims = un.valid_eval(element.get('dimensions', '(1,1)'))
-    if element.get('center') is not None:
-        center = un.valid_eval(element.get('center'))
-        ll = center - 0.5*dims
-    else:
-        ll = un.valid_eval(element.get('lower-left', '(0,0)'))
-    p0 = diagram.transform(ll)
-    p1 = diagram.transform(ll + dims)
+    shape_ref = element.get('shape', None)
+    if shape_ref is None:
+        print("A <clip> tag needs a @shape attribute")
+        return
+
+    shape = diagram.recall_shape(shape_ref)
 
     clip = ET.Element('clipPath')
-    path = ET.SubElement(clip, 'rect')
-    diagram.add_id(clip, element.get('id'))
-    path.set('x', util.float2str(p0[0]))
-    path.set('y', util.float2str(p1[1]))
-    path.set('width', util.float2str(p1[0]-p0[0]))
-    path.set('height', util.float2str(p0[1]-p1[1]))
+    clip.append(shape)
+    clip_id = 'clip-'+shape_ref
+    clip.set('id', clip_id)
 
     diagram.add_reusable(clip)
 

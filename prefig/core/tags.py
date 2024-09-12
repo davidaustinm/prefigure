@@ -42,15 +42,14 @@ tag_dict = {
     'coordinates': coordinates.coordinates,
     'de-solve': diffeqs.de_solve,
     'definition': definition.definition,
+    'define-shapes': shape.define,
     'derivative': definition.derivative,
-    'difference': shape.difference,
     'ellipse': circle.ellipse,
     'graph': graph.graph,
     'grid': grid_axes.grid,
     'grid-axes': grid_axes.grid_axes,
     'group': group.group,
     'implicit-curve': implicit.implicit_curve,
-    'intersection': shape.intersection,
     'label': label.label,
     'line': line.line,
     'network': network.network,
@@ -64,10 +63,7 @@ tag_dict = {
     'repeat': repeat.repeat,
     'shape': shape.shape,
     'slope-field': slope_field.slope_field,
-    'symmetric-difference': shape.xor,
     'tangent-line': tangent_line.tangent,
-    'union': shape.union,
-    'vector': vector.vector
 }
 
 # apply the processing function based on the XML element's tag
