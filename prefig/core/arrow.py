@@ -162,17 +162,18 @@ def add_arrowhead_marker(diagram,
     # get the stroke width from the graphical component
     stroke_width_str = path.get('stroke-width', '1')
     stroke_width = int(stroke_width_str)
+    stroke_color = path.get('stroke')
 
     # Dimensions are a bit different if the arrow head is at an
     # end or in the middle of a path
     id_data = f"_{arrow_width}_{arrow_angles[0]}_{arrow_angles[1]}"
     if not mid:
-        id = 'arrow-head-end-'+stroke_width_str+id_data
+        id = 'arrow-head-end-'+stroke_width_str+id_data+'-'+stroke_color
         if arrow_width is None:
             arrow_width = 4
         dims = (1, arrow_width)
     else:
-        id = 'arrow-head-mid-'+stroke_width_str+id_data
+        id = 'arrow-head-mid-'+stroke_width_str+id_data+'-'+stroke_color
         if arrow_width is None:
             arrow_width = 13/3
         dims = (1, arrow_width) #11/3)
@@ -218,8 +219,9 @@ def add_arrowhead_marker(diagram,
 
     ET.SubElement(marker, 'path', attrib=
                   {'d': d,
-                   'fill': 'context-stroke',
-                   'stroke': 'context-none'
+                   'fill': stroke_color, #'context-stroke',
+                   'stroke': 'none'
+                   #'stroke': 'context-none'
                    }
                   )
 
@@ -274,8 +276,9 @@ def add_arrowhead_marker(diagram,
 
     ET.SubElement(marker, 'path', attrib=
                   {'d': d,
-                   'fill': 'context-stroke',
-                   'stroke': 'context-none'
+                   'fill': 'white', #'context-stroke',
+                   'stroke': 'none'
+                   #'stroke': 'context-none'
                    }
                   )
 
