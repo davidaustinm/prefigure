@@ -345,6 +345,7 @@ def position_braille_label(element, diagram, ctm,
     text_element.set('font-family', "Braille29")
     text_element.set('font-size', "29px")
 
+
 def position_svg_label(element, diagram, ctm, group, label_tree):
     # We're going to put everything inside a group
     label_group = ET.Element('g')
@@ -370,100 +371,139 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
         offset = [offset[0] + relative_offset[0],
                   offset[1] + relative_offset[1]]
 
-    # A label can have different components comprised of alternating
-    # text and MathJax.  We now need to position each component appropriately.
-    # Horizontal placement is relatively simple so we'll do it as we pass through
-    # the list.  Vertical placement is more involved so well make a pass through
-    # the list and record all the relevant data in vertical_data.  An entry in 
-    # this list will be the SVG element and how far above and below the baseline
-    # the label extends (both measured positively)
-    number_m = len(element.findall('m'))
-    width = 0
-    vertical_data = []
-    # Are we starting off with some text?
-    if element.text is not None and len(element.text.strip()) > 0:
-        text = element.text.lstrip()
-        if number_m == 0:
-            text = text.rstrip()
-        context = cairo_context
-        x_bearing, y_bearing, t_width, t_height, x_advance, y_advance = context.text_extents(text)
 
-        text_el = ET.SubElement(label_group, 'text')
-        text_el.set('x', util.float2str(-x_bearing))
-        text_el.set('font-family', 'sans')
-        text_el.set('font-size', str(font_size))
-        text_el.text = text
-        width += x_advance
+    # A label can have rows consisting of different components
+    # comprised of text, with italics and bold, and <m> tags.
+    # Our first task is to extract all of these components and measure them
 
-        vertical_data.append([text_el, -y_bearing, t_height+y_bearing])
+    std_font_face = ['sans', 14, 'normal', 'normal']
+    it_font_face =  ['sans', 14, 'italic', 'normal']
+    b_font_face  =  ['sans', 14, 'normal', 'bold']
+    it_b_font_face  =  ['sans', 14, 'italic', 'bold']
 
-    # Now we'll go through the MathJax labels
-    ns = {'svg': 'http://www.w3.org/2000/svg'}
-    for num, math in enumerate(element.findall('m')):
-        id = math.get('id')
-        div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
-        try:
-            insert = div.xpath('mjx-data/mjx-container/svg:svg',
-                               namespaces=ns)[0]
-        except IndexError:
-            print('Error in processing label, possibly a LaTeX error: ' + div.text)
-            sys.exit()
+    label = element
 
-        # Express dimensions in px for rsvg-convert
-        dim_dict = {}
-        for attr in ['style', 'width', 'height']:
-            fields = insert.get(attr).split()
-            dimension = fields[-1]
-            index = dimension.find('ex')
-            dimension = float(dimension[:index]) * 8
-            dim_dict[attr] = dimension
-            pts = '{0:.3f}px'.format(dimension)
-            fields[-1] = pts
-            insert.set(attr, ' '.join(fields))
-        label_group.append(insert)   
+    # We first pass through all the text and elements in the label
+    # extracting the text and the font information
 
-        insert.set('x', str(width))
-        width += dim_dict['width']
+    row = [(label.text, std_font_face)]
+    text_elements = [row]
+    
+    for el in label:
+        if el.tag == 'newline':
+            row = []
+            text_elements.append(row)
+        if el.tag == 'm':
+            row.append(el)
+        if el.tag == 'it':
+            row.append((el.text, it_font_face))
+            for child in el:
+                if child.tag != 'b':
+                    print(f"<{child.tag}> is not allowed inside a <it>")
+                    continue
+                row.append((child.text, it_b_font_face))
+                row.append((child.tail, it_font_face))
+        
+        if el.tag == 'b':
+            row.append((el.text, b_font_face))
+            for child in el:
+                if child.tag != 'it':
+                    print(f"<{child.tag}> is not allowed inside a <b>")
+                    continue
+                row.append((child.text, it_b_font_face))
+                row.append((child.tail, b_font_face))
+        row.append((el.tail, std_font_face))
 
-        above = dim_dict['height'] + dim_dict['style']
-        below = -dim_dict['style']
-        vertical_data.append([insert, above, below])
+    # Let's make another pass through the elements removing
+    # empty text and adding whitespace
+    for num, row in enumerate(text_elements):
+        new_row = []
+        begin_space = False
+        for element in row:
+            if isinstance(element, tuple): # is this a text
+                text = element[0]
+                if text is not None:
+                    text = text.strip()
+                    if len(text) > 0:
+                        new_row.append(mk_text_element(text,
+                                                       element[1],
+                                                       label_group))
+                
+            else: # otherwise it's an <m>
+                new_row.append(mk_m_element(element,
+                                            label_tree,
+                                            label_group))
+                begin_space = True
+        text_elements[num] = new_row
 
-        if math.tail is not None and len(math.tail.strip()) > 0:
-            text = ' ' + math.tail.strip()
-            if num + 1 == number_m:
-                text = text.rstrip()
-            context = cairo_context
-            x_bearing, y_bearing, t_width, t_height, x_advance, y_advance = context.text_extents(text)
-            text_el = ET.SubElement(label_group, 'text')
-            width += 3
-            text_el.set('x', util.float2str(width))
-            text_el.set('font-family', 'sans')
-            text_el.set('font-size', str(font_size))
-            text_el.text = text
-            width += x_advance
+    # let's go through each row and find the dimensions
+    cairo_context.select_font_face('sans',
+                                   cairo.FontSlant.NORMAL,
+                                   cairo.FontWeight.NORMAL
+                                   )
+    space = cairo_context.text_extents(' ')[4]
+    interline = un.valid_eval(label.get('interline', '3'))
+    text_dimensions = []
+    for num, row in enumerate(text_elements):
+        width = 0
+        above = [0]
+        below = [0]
+        for el in row:
+            width += el[1]
+            above.append(el[2])
+            below.append(el[3])
+        above = max(above)
+        below = max(below)
+        height = above + below
+        width += (len(row)-1) * space
+        if num == len(text_elements) - 1:
+            interline = 0
+        text_dimensions.append([width,
+                                height+interline,
+                                above,
+                                below])
 
-            vertical_data.append([text_el, -y_bearing, t_height+y_bearing])
+    # let's find the dimension of the bounding box
+    width = max([row[0] for row in text_dimensions])
+    height = sum([row[1] for row in text_dimensions])
 
-    # Now that we've placed all the components and gathered their vertical
-    # data, we'll go back through and adjust the vertical positioning
-    above = max([entry[1] for entry in vertical_data])
-    below = max([entry[2] for entry in vertical_data])
-    height = above + below
-    for component_data in vertical_data:
-        component = component_data[0]
-        if component.tag == 'text':
-            component.set('y', util.float2str(above))
-        else:
-            component.set('y', util.float2str(above-component_data[1]))
+    # finally, we set the location of each subelement
+    justify = label.get('justify', 'center')
+    y_location = 0
+    for row, dims in zip(text_elements, text_dimensions):
+        row_width = dims[0]
+        row_above = dims[2]
+        x_location = 0
+        if justify == 'center':
+            x_location = (width - row_width)/2
+        if justify == 'right':
+            x_location = width - row_width
+        for el in row:
+            component = el[0]
+            component.set('x', util.float2str(x_location))
+            x_location += el[1] + space
+            if component.tag == 'text':
+                component.set('y',
+                              util.float2str(y_location+row_above)
+                              )
+            else:
+                component.set('y',
+                              util.float2str(y_location+
+                                             row_above-
+                                             el[2])
+                              )
+        y_location += dims[1]
+                
 
+
+    # Now we find the coordinate transform for the label_group
     tform = CTM.translatestr(p[0] + offset[0], p[1] - offset[1])
 
-    sc = float(element.get('scale', '1'))
+    sc = float(label.get('scale', '1'))
     if sc != 1:
         tform = tform + ' ' + CTM.scalestr(sc, sc)
 
-    rot = element.get('rotate', None)
+    rot = label.get('rotate', None)
     if rot is not None:
         tform = tform + ' ' + CTM.rotatestr(float(rot))
     tform = tform + ' ' + CTM.translatestr(width*displacement[0], 
@@ -472,8 +512,8 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     group.set('transform', tform)
 
     # add a white rectangle behind the label, if requested
-    if element.get('clear-background', 'no') == 'yes':
-        bg_margin = int(element.get('background-margin', '6'))
+    if label.get('clear-background', 'no') == 'yes':
+        bg_margin = int(label.get('background-margin', '6'))
         rect = ET.SubElement(group, 'rect')
         rect.set('x', str(-bg_margin))
         rect.set('y', str(-bg_margin))
@@ -483,8 +523,69 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
         rect.set('fill', 'white')
 
     group.append(label_group)
-    diagram.add_id(label_group, element.get('expr'))
+    diagram.add_id(label_group, label.get('expr'))
     group.set('type', 'label')
+
+
+def mk_text_element(text_str, font_face, label_group):
+    text_el = ET.SubElement(label_group, 'text')
+    text_el.text = text_str
+    text_el.set('font-family', font_face[0])
+    text_el.set('font-size', str(font_face[1]))
+    if font_face[2] == 'italic':
+        text_el.set('font-style', 'italic')
+    if font_face[3] == 'bold':
+        text_el.set('font-weight', 'bold')
+
+    if font_face[2] == 'italic':
+        font_slant = cairo.FontSlant.ITALIC
+    else:
+        font_slant = cairo.FontSlant.NORMAL
+    if font_face[3] == 'bold':
+        font_weight = cairo.FontWeight.BOLD
+    else:
+        font_weight = cairo.FontWeight.NORMAL
+    cairo_context.select_font_face(font_face[0],
+                                   font_slant,
+                                   font_weight)
+    cairo_context.set_font_size(font_face[1])
+    extents = cairo_context.text_extents(text_str)
+    y_bearing = extents[1]
+    t_height  = extents[3]
+    xadvance  = extents[4]
+    return [text_el, xadvance, -y_bearing, t_height+y_bearing]
+
+
+def mk_m_element(m_tag, label_tree, label_group):
+    m_tag_id = m_tag.get('id')
+    div = label_tree.xpath("//html/body/div[@id = '{}']".format(m_tag_id))[0]
+    ns = {'svg': 'http://www.w3.org/2000/svg'}
+    try:
+        insert = div.xpath('mjx-data/mjx-container/svg:svg',
+                           namespaces=ns)[0]
+    except IndexError:
+        print('Error in processing label, possibly a LaTeX error: ' + div.text)
+        sys.exit()
+
+    # Express dimensions in px for rsvg-convert
+    dim_dict = {}
+    for attr in ['style', 'width', 'height']:
+        fields = insert.get(attr).split()
+        dimension = fields[-1]
+        index = dimension.find('ex')
+        dimension = float(dimension[:index]) * 8
+        dim_dict[attr] = dimension
+        pts = '{0:.3f}px'.format(dimension)
+        fields[-1] = pts
+        insert.set(attr, ' '.join(fields))
+    label_group.append(insert)   
+
+    width = dim_dict['width']
+
+    above = dim_dict['height'] + dim_dict['style']
+    below = -dim_dict['style']
+    return [insert, width, above, below]
+
 
 # add a caption to a tactile diagram in the upper-left corner
 #   e.g. "Figure 2.3.4"
@@ -497,3 +598,5 @@ def caption(element, diagram, parent, outline_status):
     box = diagram.bbox()
     element.set('p', util.pt2str((box[0], box[3]), spacer=","))
     label(element, diagram, parent)
+
+    
