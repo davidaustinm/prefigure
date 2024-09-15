@@ -271,50 +271,101 @@ def position_braille_label(element, diagram, ctm,
     p[0] += offset[0]
     p[1] -= offset[1]
 
-    if element.text is not None and len(element.text.strip()) > 0:
-        text = element.text.lstrip()
-        typeform = [0] * len(text)
-        braille_text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
-                                             text, typeform=[0]*len(text)) 
-    else:
-        braille_text = ''
 
-    for math in element.findall('m'):
-        id = math.get('id')
-        div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
+    # let's assemble the different pieces
+    row = [[element.text, 'plain']]
+    text_elements = [row]
+    
+    for el in element:
+        if el.tag == 'newline':
+            row = []
+            text_elements.append(row)
+        if el.tag == 'm':
+            row.append(el)
+        if el.tag == 'it':
+            row.append([el.text, 'it'])
+            for child in el:
+                if child.tag != 'b':
+                    print(f"<{child.tag}> is not allowed inside a <it>")
+                    continue
+                row.append([child.text, 'it'])
+                row.append([child.tail, 'it'])
+        
+        if el.tag == 'b':
+            row.append([el.text, 'b'])
+            for child in el:
+                if child.tag != 'it':
+                    print(f"<{child.tag}> is not allowed inside a <b>")
+                    continue
+                row.append([child.text, 'b'])
+                row.append([child.tail, 'b'])
+        row.append([el.tail, 'plain'])
 
-        try:
-            insert = div.xpath('mjx-data/mjx-braille')[0]
-        except IndexError:
-            print('Error in processing label, possibly a LaTeX error: ' + div.text)
-            sys.exit()
+    # Let's make another pass through the elements removing
+    # empty text and adding whitespace
+    for num, row in enumerate(text_elements):
+        # remove empty text
+        new_row = []
+        for el in row:
+            if isinstance(el, list): # is this a text
+                text = el[0]
+                if text is not None:
+                    text = text.strip()
+                    if len(text) > 0:
+                        if (
+                                len(new_row) > 0 and
+                                new_row[-1][1] == el[1]
+                        ):
+                            new_row[-1][0] += ' ' + text
+                        else:
+                            new_row.append([text, el[1]])
+            else: # otherwise it's an <m>
+                new_row.append(el)
+        text_elements[num] = new_row
 
-        math_text = math.text
-        regex = re.compile('[a-zA-Z]')
-        if len(math_text) == 1 and len(regex.findall(math_text)) > 0:
-            # if we want italics, set typeform=[1]
-            typeform = [0]
-            insert.text = louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
-                                                math.text, typeform=typeform)
-        else:
-            if element.get('nemeth-switch', 'no') == 'yes':
-                insert.text = nemeth_on + insert.text + nemeth_off
+    typeform_dict = {'plain':0, 'it':1, 'b':4}
+    space = louis.translateString(
+        ["braille-patterns.cti", "en-us-g2.ctb"],
+        ' ',
+        typeform=[0]
+    )
+    # translate braille strings not in an <m>
+    for num, row in enumerate(text_elements):
+        row_text = ''
+        while len(row) > 0:
+            el = row.pop(0)
+            if isinstance(el, list):
+                text = el[0]
+                if len(row) > 0:
+                    text += ' '
+                typeform = [typeform_dict[el[1]]] * len(text)
+                braille_text = louis.translateString(
+                    ["braille-patterns.cti", "en-us-g2.ctb"],
+                    text,
+                    typeform=typeform
+                )
+                row_text += braille_text
+            else:
+                m_tag_id = el.get('id')
 
-        braille_text += insert.text
+                div = label_tree.xpath("//html/body/div[@id = '{}']".format(m_tag_id))[0]
 
-        if math.tail is not None and len(math.tail.strip()) > 0:
-            typeform = [0] * len(math.tail)
-            braille_text += louis.translateString(["braille-patterns.cti", "en-us-g2.ctb"], 
-                                                math.tail, typeform=typeform)
+                try:
+                    insert = div.xpath('mjx-data/mjx-braille')[0]
+                except IndexError:
+                    print('Error in processing label, possibly a LaTeX error: ' + div.text)
+                    sys.exit()
+                row_text += insert.text
+                if len(row) > 0:
+                    row_text += space
+        text_elements[num] = row_text
 
-    if element.get('add-letter-indicator', 'no') == 'yes':
-        # braille_text = '\u2830' + braille_text
-        pass
-    w = 5*gap*len(braille_text)
-    h = 5*gap
-
-    p[0] += w*displacement[0]
-    p[1] -= h*displacement[1]
+    interline = 28.8  # 0.4 inches
+    width = 5 * gap * max([len(row) for row in text_elements])
+    height = 5 * gap + interline * (len(text_elements) - 1)
+    
+    p[0] += width*displacement[0]
+    p[1] -= height*displacement[1]
 
     # snap the point onto the 20dpi embossing grid
     p = [3.6 * round(c/3.6) for c in p]
@@ -323,11 +374,11 @@ def position_braille_label(element, diagram, ctm,
     bg_margin = 9  # 1/8th of a inch
     rect = ET.SubElement(background_group, 'rect')
     rect.set('x', util.float2str(p[0]-bg_margin))
-    rect.set('y', util.float2str(p[1]-h-bg_margin))
-    rect.set('width', util.float2str(w+2*bg_margin))
-    rect.set('height', util.float2str(h+2*bg_margin))
+    rect.set('y', util.float2str(p[1]-height-bg_margin))
+    rect.set('width', util.float2str(width+2*bg_margin))
+    rect.set('height', util.float2str(height+2*bg_margin))
     rect.set('stroke', 'none')
-    rect.set('fill', '#fff')
+    rect.set('fill', 'white')
 
     # show the lower-left corner point for debugging
     circle = ET.Element('circle')
@@ -337,13 +388,24 @@ def position_braille_label(element, diagram, ctm,
     circle.set('fill', '#00f')
 #    group.append(circle)
 
-    # Now add the label
-    text_element = ET.SubElement(group, 'text')
-    text_element.set('x', util.float2str(p[0]))
-    text_element.set('y', util.float2str(p[1]))
-    text_element.text = braille_text
-    text_element.set('font-family', "Braille29")
-    text_element.set('font-size', "29px")
+    # Now add the labels
+    justify = element.get('justify', 'center')
+    x = p[0] 
+    y = p[1] - height + 5*gap
+    for el in text_elements:
+        text_element = ET.SubElement(group, 'text')
+        x_line = x
+        if justify == 'right':
+            x_line = x + width - 5*gap*len(el)
+        if justify == 'center':
+            x_line = x+ (width - 5*gap*len(el))/2
+            x_line = gap * round(x_line/gap)
+        text_element.set('x', util.float2str(x_line))
+        text_element.set('y', util.float2str(y))
+        text_element.text = el
+        text_element.set('font-family', "Braille29")
+        text_element.set('font-size', "29px")
+        y += interline
 
 
 def position_svg_label(element, diagram, ctm, group, label_tree):
