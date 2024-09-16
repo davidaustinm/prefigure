@@ -64,6 +64,7 @@ tag_dict = {
     'shape': shape.shape,
     'slope-field': slope_field.slope_field,
     'tangent-line': tangent_line.tangent,
+    'vector': vector.vector
 }
 
 # apply the processing function based on the XML element's tag
