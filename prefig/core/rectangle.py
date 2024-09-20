@@ -4,6 +4,7 @@ import lxml.etree as ET
 from . import user_namespace as un
 from . import utilities as util
 from . import math_utilities as math_util
+from . import CTM
 
 # Process a rectangle tag
 def rectangle(element, diagram, parent, outline_status):
@@ -18,6 +19,8 @@ def rectangle(element, diagram, parent, outline_status):
     if center is not None:
         center = un.valid_eval(center)
         ll = center - 0.5 * dims
+    else:
+        center = ll + 0.5*dims
     p0 = ll
     p1 = ll + dims
 
@@ -25,7 +28,19 @@ def rectangle(element, diagram, parent, outline_status):
     path = ET.SubElement(parent, 'path')
     diagram.add_id(path, element.get('id'))
 
-    user_corners = [p0, (p1[0], p0[1]), p1, (p0[0], p1[1])]
+    rotate = un.valid_eval(element.get('rotate', '0'))
+    ctm = CTM.CTM()
+    ctm.translate(*center)
+    ctm.rotate(rotate)
+    dx, dy = dims/2
+    user_corners = [ctm.transform(p) for p in [
+        (-dx, -dy), (dx, -dy), (dx, dy), (-dx, dy)
+    ]
+                    ]
+    
+    
+
+#    user_corners = [p0, (p1[0], p0[1]), p1, (p0[0], p1[1])]
     corners = [diagram.transform(c) for c in user_corners]
 
     radius = un.valid_eval(element.get('corner-radius', '0'))

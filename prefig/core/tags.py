@@ -12,6 +12,7 @@ from . import grid_axes
 from . import group
 from . import implicit
 from . import label
+from . import legend
 from . import line
 from . import network
 from . import path
@@ -51,6 +52,7 @@ tag_dict = {
     'group': group.group,
     'implicit-curve': implicit.implicit_curve,
     'label': label.label,
+    'legend': legend.legend,
     'line': line.line,
     'network': network.network,
     'parametric-curve': parametric_curve.parametric_curve,
@@ -73,8 +75,15 @@ def parse_element(element, diagram, root, outline_status = None):
     if element.tag is ET.Comment:
         return
     if path.is_path_tag(element.tag):
-        print(f"A <{element.tag}> tag can only occur inside a path")
+        print(f"A <{element.tag}> tag can only occur inside a <path>")
         return
+    if label.is_label_tag(element.tag):
+        print(f"A <{element.tag}> tag can only occur inside a <label>")
+        return
+    if grid_axes.is_axes_tag(element.tag):
+        print(f"A <{element.tag}> tag can only occur inside a <axes> or <grid-axes>")
+        return
+        
     try:
         function = tag_dict[element.tag]
     except KeyError:

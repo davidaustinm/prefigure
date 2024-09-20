@@ -11,7 +11,9 @@ from . import tags
 
 # These are the tags that can appear within a path
 path_tags = {'moveto',
+             'rmoveto',
              'lineto',
+             'rlineto',
              'horizontal',
              'vertical',
              'cubic-bezier',
@@ -111,7 +113,15 @@ def process_tag(child, diagram, cmds, current_point):
         cmds.append(util.pt2str(point))
         current_point = user_point
         return cmds, current_point
-            
+    
+    if child.tag == "rmoveto":
+        user_point = un.valid_eval(child.get('point'))
+        current_point = current_point + user_point
+        point = diagram.transform(current_point)
+        cmds.append('M')
+        cmds.append(util.pt2str(point))
+        return cmds, current_point
+    
     if child.tag == "horizontal":
         distance = un.valid_eval(child.get('distance'))
         user_point = (current_point[0] + distance,
@@ -126,6 +136,12 @@ def process_tag(child, diagram, cmds, current_point):
         child.tag = 'lineto'
         child.set('point', util.pt2long_str(user_point,spacer=","))
             
+    if child.tag == "rlineto":
+        user_point = un.valid_eval(child.get('point'))
+        user_point = current_point + user_point
+        child.tag = "lineto"
+        child.set('point', util.pt2long_str(user_point,spacer=","))
+    
     if child.tag == "lineto":
         if child.get('decoration', None) is not None:
             return decorate(child,
@@ -307,6 +323,45 @@ def decorate(child, diagram, current_point, cmds):
         iterates = math.floor(number*N)
         cmds += ['L', util.pt2str(ctm.transform((x_pos,0)))]
         dx = zig_length/iterates
+        y = 0
+        for _ in range(iterates):
+            t += dt
+            x_pos += dx
+            y = -dimensions[1] * math.sin(t)
+            cmds += ['L', util.pt2str(ctm.transform((x_pos, y)))]
+        cmds += ['L', util.pt2str(ctm.transform((x_pos,0)))]
+        cmds += ['L', util.pt2str(ctm.transform((length, 0)))]
+
+    if decoration_data[0] == 'wave':
+        # number, location, dimensions
+        data = [d.split('=') for d in decoration_data[1:]]
+        data = {k:v for k, v in data}
+        dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
+        location = un.valid_eval(data.get('center', '0.5'))
+        if data.get('number', None) is None:
+            number = math.floor((length - dimensions[0]/2)/dimensions[0])
+        else:
+            number = un.valid_eval(data.get('number'))
+
+        half_wave_fraction = number*dimensions[0] / length
+        while (
+                location - half_wave_fraction < 0 or
+                location + half_wave_fraction > 1
+        ):
+            number -= 1
+            half_wave_fraction = number*dimensions[0] / length
+        start_wave = length * (location - half_wave_fraction)
+        end_wave = length * (location + half_wave_fraction)
+        wave_length = 2 * half_wave_fraction * length
+        
+
+        N = 30
+        dt = 2*math.pi/N
+        t = 0
+        x_pos = start_wave
+        iterates = math.floor(number*N)
+        cmds += ['L', util.pt2str(ctm.transform((x_pos,0)))]
+        dx = wave_length/iterates
         y = 0
         for _ in range(iterates):
             t += dt

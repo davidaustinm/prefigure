@@ -7,6 +7,13 @@ from . import label
 from . import line
 from . import arrow
 
+
+# These tags can appear in an <axes> or <grid-axes>
+axes_tags = {'xlabel', 'ylabel'}
+
+def is_axes_tag(tag):
+    return tag in axes_tags
+
 # Add graphical elements for grids and axes
 
 # Determine the grid spacing when it's not given

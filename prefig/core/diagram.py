@@ -60,6 +60,12 @@ class Diagram:
         # stack for managing bounding boxes and clipping
         self.clippaths = []
 
+        # list for legends
+        self.legends = []
+
+        # dictionary for label dimensions
+        self.label_dims = {}
+
         # read in defaults from publication file
         self.defaults = {}
         if publication is not None:
@@ -71,8 +77,24 @@ class Diagram:
             macros_div.set('id', 'latex-macros')
             macros_div.text = '\({}\)'.format(self.defaults.get('macros').text)
 
+    def add_legend(self, legend):
+        self.legends.append(legend)
+        
     def add_label(self, element, group):
         self.label_group_dict[element] = [group, self.ctm()]
+
+    def get_label_group(self, element):
+        return self.label_group_dict.get(element)
+
+    def register_label_dims(self, element, dimensions):
+        self.label_dims[element] = dimensions
+
+    def get_label_dims(self, element):
+        dims = self.label_dims.get(element, None)
+        if dims is None:
+            print(f"Cannot find dimensions for {element}")
+            return
+        return dims
 
     def add_id(self, element, id = None):
         # We'll add an id attribute to the SVG element
@@ -189,6 +211,9 @@ class Diagram:
                            self.label_group_dict,
                            self.label_html_tree)
 
+        for legend in self.legends:
+            legend.place_legend(self)
+        
     def end_figure(self):
         # form the output filenames
         if self.diagram_number is None:
@@ -289,6 +314,9 @@ class Diagram:
 
     def pop_id_suffix(self):
         self.id_suffix.pop(-1)
+
+    def get_root(self):
+        return self.root
 
     # when a graphical component is outlined, we first add the component's path
     # to <defs> so that it can be reused, then we stroke it with a thick white

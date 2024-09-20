@@ -16,6 +16,13 @@ from . import CTM
 from . import user_namespace as un
 import tempfile
 
+
+# These are tags that can occur in a label
+label_tags = {'it', 'b', 'newline'}
+
+def is_label_tag(tag):
+    return tag in label_tags
+
 # Labels will be handled here.
 # An important point is how a label will be aligned relative to its anchor.
 # These dictionaries define alignments on a 3x3 grid with the anchor at the center.
@@ -105,7 +112,7 @@ def label(element, diagram, parent, outline_status = None):
     # Define a group to hold the label.  
     group = ET.Element('g')
     diagram.add_label(element, group)
-    diagram.add_id(element)
+    diagram.add_id(element, element.get('id'))
     group.set('id', element.get('id'))
 
     # For non-tactile output, add a group to the diagram.
@@ -207,7 +214,9 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     # and their clear backgrounds and add it at the end of the diagram
     if diagram.output_format() == 'tactile':
         background_group = ET.SubElement(root, 'g')
+        background_group.set('id', 'background-group')
         braille_group = ET.SubElement(root, 'g')
+        braille_group.set('id', 'braille-group')
 
     # now go through each label and place them in the diagram
     for label, group_ctm in label_group_dict.items():
@@ -270,7 +279,6 @@ def position_braille_label(element, diagram, ctm,
 
     p[0] += offset[0]
     p[1] -= offset[1]
-
 
     # let's assemble the different pieces
     row = [[element.text, 'plain']]
@@ -363,6 +371,8 @@ def position_braille_label(element, diagram, ctm,
     interline = 28.8  # 0.4 inches
     width = 5 * gap * max([len(row) for row in text_elements])
     height = 5 * gap + interline * (len(text_elements) - 1)
+
+    diagram.register_label_dims(element, (width, height))
     
     p[0] += width*displacement[0]
     p[1] -= height*displacement[1]
@@ -370,11 +380,17 @@ def position_braille_label(element, diagram, ctm,
     # snap the point onto the 20dpi embossing grid
     p = [3.6 * round(c/3.6) for c in p]
 
+    tform = CTM.translatestr(*p)
+    group.set('transform', tform)
+
     # add a white background behind the label
     bg_margin = 9  # 1/8th of a inch
     rect = ET.SubElement(background_group, 'rect')
+    rect.set('id', element.get('id') + '-background')
     rect.set('x', util.float2str(p[0]-bg_margin))
     rect.set('y', util.float2str(p[1]-height-bg_margin))
+    #rect.set('x', util.float2str(-bg_margin))
+    #rect.set('y', util.float2str(-height-bg_margin))
     rect.set('width', util.float2str(width+2*bg_margin))
     rect.set('height', util.float2str(height+2*bg_margin))
     rect.set('stroke', 'none')
@@ -390,8 +406,12 @@ def position_braille_label(element, diagram, ctm,
 
     # Now add the labels
     justify = element.get('justify', 'center')
+    '''
     x = p[0] 
     y = p[1] - height + 5*gap
+    '''
+    x = 0
+    y = -height + 5*gap
     for el in text_elements:
         text_element = ET.SubElement(group, 'text')
         x_line = x
@@ -528,6 +548,8 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     # let's find the dimension of the bounding box
     width = max([row[0] for row in text_dimensions])
     height = sum([row[1] for row in text_dimensions])
+
+    diagram.register_label_dims(label, (width, height))
 
     # finally, we set the location of each subelement
     justify = label.get('justify', 'center')
