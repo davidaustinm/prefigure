@@ -66,6 +66,7 @@ tag_dict = {
     'shape': shape.shape,
     'slope-field': slope_field.slope_field,
     'tangent-line': tangent_line.tangent,
+    'triangle': polygon.triangle,
     'vector': vector.vector
 }
 

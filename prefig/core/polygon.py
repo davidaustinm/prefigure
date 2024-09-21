@@ -1,10 +1,13 @@
 ## Add a graphical element describing a polygon
 
 import lxml.etree as ET
+import numpy as np
 from . import user_namespace as un
 from . import utilities as util
 from . import math_utilities as math_util
 from . import arrow
+from . import point
+from . import label
 
 # Process a polygon tag into a graphical component
 def polygon(element, diagram, parent, outline_status):
@@ -122,6 +125,65 @@ def polygon(element, diagram, parent, outline_status):
 
     else:
         parent.append(path)
+
+def triangle(element, diagram, parent, outline_status):
+    if outline_status == 'finish_outline':
+        polygon(element, diagram, parent, outline_status)
+        for child in element:
+            if child.tag == 'point':
+                point.point(element, diagram, parent, outline_status)
+            if child.tag == 'label':
+                label.label(element, diagram, parent, outline_status)
+        return
+
+    vertices = un.valid_eval(element.get('vertices'))
+    if len(vertices) != 3:
+        print('Warning:  a <triangle> should have 3 vertices')
+        return
+    element.set('closed', 'yes')
+    element.set('points', element.get('vertices'))
+    element.set('stroke', element.get('stroke', 'black'))
+    polygon(element, diagram, parent, outline_status)
+
+    labels = element.get('labels', None)
+    alignment_dict = {}
+    if labels is not None:
+        labels = [l.strip() for l in labels.split(',')]
+        vertices = list(vertices)
+        vertices += vertices[:2]
+        vertices = np.array(vertices)
+        for i in range(1,4):
+            u = vertices[i-1] - vertices[i]
+            v = vertices[i+1] - vertices[i]
+            direction = -(u+v)
+            alignment = label.get_alignment_from_direction(direction)
+            alignment_dict[i % 3] = alignment
+            
+    if element.get('show-vertices', 'no') == 'yes':
+        for i in range(3):
+            point_el = ET.SubElement(element, 'point')
+            point_el.set('p', util.pt2long_str(vertices[i], spacer=','))
+            fill = element.get('point-fill', None)
+            if fill is not None:
+                point_el.set('fill', fill)
+            if alignment_dict.get(i, None) is not None:
+                m_tag = ET.SubElement(point_el, 'm')
+                m_tag.text = labels[i]
+                point_el.set('alignment', alignment_dict[i])
+            
+            point.point(point_el, diagram, parent, outline_status)
+        return
+            
+    if labels is not None:
+        for i in range(3):
+            label_el = ET.SubElement(element, 'label')
+            label_el.set('anchor', util.pt2long_str(vertices[i],
+                                                    spacer=','))
+            label_el.set('alignment', alignment_dict[i])
+            m_tag = ET.SubElement(label_el, 'm')
+            m_tag.text = labels[i]
+            label.label(label_el, diagram, parent, outline_status)
+    
 
 def finish_outline(element, diagram, parent):
     diagram.finish_outline(element,
