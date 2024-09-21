@@ -309,10 +309,17 @@ def view(filename, ignore_annotations, restart_server, port):
         filename += '.svg'
 
     view_path = None
+    path = Path(filename)
+    try:
+        os.chdir(path.parent)
+    except:
+        print(f"There is no directory {path.parent}")
+        return
+
     for dir, dirs, files in os.walk(os.getcwd()):
         files = set(files)
-        if filename in files:
-            view_path = dir + '/' + filename
+        if path.name in files:
+            view_path = path.parent / dir / path.name
     if view_path is None:
         click.echo(f'Unable to find {filename}')
         return
@@ -338,7 +345,7 @@ def view(filename, ignore_annotations, restart_server, port):
     SECONDS = 2
 
     # Does this figure have annotations
-    if ignore_annotations or not Path(view_path[:-4] + '.xml').exists():
+    if ignore_annotations or not view_path.with_suffix('.xml').exists():
         # Don't worry about annotations so just open the SVG in a browser
         file_rel_path = os.path.relpath(view_path, home_dir)
         url = f'{url_preamble}/{file_rel_path}'

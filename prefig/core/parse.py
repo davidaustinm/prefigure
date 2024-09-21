@@ -21,7 +21,7 @@ def mk_diagram(element, format, publication,
 
 def parse(filename, format, pub_file):
     # Load the publication file, if there is one
-    ns = {'pf': 'http://prefigure.org'}
+    ns = {'pf': 'https://prefigure.org'}
     if pub_file is not None:
         publication = ET.parse(pub_file)
         pubs_with_ns = publication.xpath('//pf:prefigure', namespaces=ns)
@@ -49,9 +49,21 @@ def parse(filename, format, pub_file):
     for diagram_number, element in enumerate(diagrams):
         if len(diagrams) == 1:
             diagram_number = None
+            check_duplicate_handles(element, set())
             mk_diagram(element, format, publication,
                        filename, diagram_number)
 
+def check_duplicate_handles(element, handles):
+    for child in element:
+        id1 = child.get('id', None)
+        id2 = child.get('at', None)
+        for id in [id1, id2]:
+            if id is not None:
+                if id in handles:
+                    print(f"Duplicate handle: {id}.  Unexpected behavior could result.")
+                else:
+                    handles.add(id)
+        check_duplicate_handles(child, handles)
 
 if __name__ == '__main__':
     main()

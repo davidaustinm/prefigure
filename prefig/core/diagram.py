@@ -66,6 +66,8 @@ class Diagram:
         # dictionary for label dimensions
         self.label_dims = {}
 
+        
+
         # read in defaults from publication file
         self.defaults = {}
         if publication is not None:
@@ -235,6 +237,12 @@ class Diagram:
             diagram.append(self.annotations_root)
             et = ET.ElementTree(diagram)
             et.write(out+'.xml', pretty_print=True)
+        else:
+            try:
+                os.remove(out+'.xml')
+            except OSError:
+                pass
+                
 
     # Here we parse the children of the given XML element
     # Resulting SVG elements will be placed below root
