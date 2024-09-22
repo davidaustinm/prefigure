@@ -1,4 +1,5 @@
 import lxml.etree as ET
+import numpy as np
 from . import user_namespace as un
 from . import utilities as util
 
@@ -9,7 +10,6 @@ from . import utilities as util
 
 def coordinates(element, diagram, root, outline_status):
     ctm, current_bbox = diagram.ctm_bbox()
-    bbox = un.valid_eval(element.get('bbox'))
     destination_str = element.get('destination', None)
     if destination_str is None:
         destination = current_bbox
@@ -19,6 +19,31 @@ def coordinates(element, diagram, root, outline_status):
 
     lower_left_clip = diagram.transform(destination[:2])
     upper_right_clip = diagram.transform(destination[2:])
+
+    dest_dx, dest_dy = upper_right_clip - lower_left_clip
+    dest_dy *= -1
+
+    bbox = un.valid_eval(element.get('bbox'))
+    if element.get('aspect-ratio', None) is not None:
+        ratio = un.valid_eval(element.get('aspect-ratio'))
+        if element.get('preserve-y-range', 'no') == 'yes':
+            box_dy = bbox[3]-bbox[1]
+            y_scale = dest_dy / box_dy
+            x_scale = ratio * y_scale
+            box_dx = dest_dx / x_scale
+            bbox = np.array([bbox[0],
+                             bbox[1],
+                             bbox[0] + box_dx,
+                             bbox[3]])
+        else:
+            box_dx = bbox[2]-bbox[0]
+            x_scale = dest_dx / box_dx
+            y_scale = x_scale / ratio
+            box_dy = dest_dy / y_scale
+            bbox = np.array([bbox[0],
+                             bbox[1],
+                             bbox[2],
+                             bbox[1] + box_dy])
 
     clippath = ET.Element('clipPath')
     clip_box = ET.SubElement(clippath, 'rect')

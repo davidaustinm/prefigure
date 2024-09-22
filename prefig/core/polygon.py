@@ -2,12 +2,15 @@
 
 import lxml.etree as ET
 import numpy as np
+import copy
 from . import user_namespace as un
 from . import utilities as util
 from . import math_utilities as math_util
 from . import arrow
 from . import point
 from . import label
+from . import circle
+from . import group
 
 # Process a polygon tag into a graphical component
 def polygon(element, diagram, parent, outline_status):
@@ -127,6 +130,7 @@ def polygon(element, diagram, parent, outline_status):
         parent.append(path)
 
 def triangle(element, diagram, parent, outline_status):
+    '''
     if outline_status == 'finish_outline':
         polygon(element, diagram, parent, outline_status)
         for child in element:
@@ -135,17 +139,42 @@ def triangle(element, diagram, parent, outline_status):
             if child.tag == 'label':
                 label.label(element, diagram, parent, outline_status)
         return
+    '''
 
     vertices = un.valid_eval(element.get('vertices'))
     if len(vertices) != 3:
         print('Warning:  a <triangle> should have 3 vertices')
         return
-    element.set('closed', 'yes')
-    element.set('points', element.get('vertices'))
-    element.set('stroke', element.get('stroke', 'black'))
-    polygon(element, diagram, parent, outline_status)
 
-    labels = element.get('labels', None)
+    # We're going to turn this into a group since we may be adding
+    # other components.  Plus, we want to allow appropriate outlining
+    # of tactile versions
+    element_cp = copy.deepcopy(element)
+    element.tag = 'group'
+    element.set('outline', 'tactile')
+
+    element_cp.tag = 'polygon'
+    element_cp.set('closed', 'yes')
+    element_cp.set('points', element_cp.get('vertices'))
+    element_cp.set('stroke', element_cp.get('stroke', 'black'))
+    element.append(element_cp)
+
+    # add angle-markers
+    if element_cp.get('angle-markers', 'no') == 'yes':
+        u = vertices[1]-vertices[0]
+        v = vertices[2]-vertices[1]
+        if u[0]*v[1] - u[1]*v[0] > 0: # check the orientation
+            verts = list(vertices)
+            verts.reverse()
+            vertices = np.array(verts)
+        for _ in range(3):
+            marker = ET.SubElement(element, 'angle-marker')
+            points = ['('+util.pt2long_str(p, spacer=',')+')' for p in vertices]
+            points = f"({','.join(points)})"
+            marker.set('points', points)
+            vertices = math_util.roll(vertices)
+
+    labels = element_cp.get('labels', None)
     alignment_dict = {}
     if labels is not None:
         labels = [l.strip() for l in labels.split(',')]
@@ -159,31 +188,28 @@ def triangle(element, diagram, parent, outline_status):
             alignment = label.get_alignment_from_direction(direction)
             alignment_dict[i % 3] = alignment
             
-    if element.get('show-vertices', 'no') == 'yes':
+    if element_cp.get('show-vertices', 'no') == 'yes':
         for i in range(3):
             point_el = ET.SubElement(element, 'point')
             point_el.set('p', util.pt2long_str(vertices[i], spacer=','))
-            fill = element.get('point-fill', None)
+            fill = element_cp.get('point-fill', None)
             if fill is not None:
                 point_el.set('fill', fill)
             if alignment_dict.get(i, None) is not None:
                 m_tag = ET.SubElement(point_el, 'm')
                 m_tag.text = labels[i]
                 point_el.set('alignment', alignment_dict[i])
-            
-            point.point(point_el, diagram, parent, outline_status)
-        return
-            
-    if labels is not None:
-        for i in range(3):
-            label_el = ET.SubElement(element, 'label')
-            label_el.set('anchor', util.pt2long_str(vertices[i],
-                                                    spacer=','))
-            label_el.set('alignment', alignment_dict[i])
-            m_tag = ET.SubElement(label_el, 'm')
-            m_tag.text = labels[i]
-            label.label(label_el, diagram, parent, outline_status)
-    
+    else:
+        if labels is not None:
+            for i in range(3):
+                label_el = ET.SubElement(element, 'label')
+                label_el.set('anchor', util.pt2long_str(vertices[i],
+                                                        spacer=','))
+                label_el.set('alignment', alignment_dict[i])
+                m_tag = ET.SubElement(label_el, 'm')
+                m_tag.text = labels[i]
+
+    group.group(element, diagram, parent, outline_status)
 
 def finish_outline(element, diagram, parent):
     diagram.finish_outline(element,

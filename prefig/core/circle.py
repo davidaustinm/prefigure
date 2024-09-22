@@ -249,6 +249,11 @@ def angle(element, diagram, parent, outline_status):
         p2 = points[2]
     radius = un.valid_eval(element.get('radius','30'))
 
+    # is this a right angle
+    u = math_util.normalize(p1 - p)
+    v = math_util.normalize(p2 - p)
+    right = abs(math_util.dot(u, v)) < 0.001
+
     # convert to svg coordinates
 
     p = diagram.transform(p)
@@ -273,9 +278,13 @@ def angle(element, diagram, parent, outline_status):
         angle = math.acos(np.dot(v1,v2))
 
     # heuristically determined radius
-    default_radius = int(30/angle)
+    default_radius = int(27/angle)
     default_radius = min(30, default_radius)
     default_radius = max(15, default_radius)
+
+    if diagram.output_format() == 'tactile':
+        default_radius *= 1.5
+
     radius = un.valid_eval(element.get('radius', str(default_radius)))
 
     if np.all(np.isclose(v1 + v2, np.zeros(2))):  # is the angle = 180?
@@ -299,6 +308,20 @@ def angle(element, diagram, parent, outline_status):
     d += ' A ' + util.pt2str((radius, radius)) + ' 0 '
     d += str(large_arc_flag) + ' 0 ' + final_point_str
 
+    # is this a right angle?
+    if right and math.degrees(angle) < 180:
+        ctm = CTM.CTM()
+        ctm.translate(*p)
+        '''
+        angle = math.atan2(v1[1],v1[0])
+        ctm.rotate(angle, units="rad")
+        d = 'M ' + util.pt2str(ctm.transform((radius,0)))
+        d += ' L ' + util.pt2str(ctm.transform((radius, -radius)))
+        d += ' L ' + util.pt2str(ctm.transform((0, -radius)))
+        '''
+        d = 'M ' + util.pt2str(ctm.transform(radius*v1))
+        d += ' L ' + util.pt2str(ctm.transform(radius*(v1+v2)))
+        d += ' L ' + util.pt2str(ctm.transform(radius*v2))
     arc = ET.Element('path')
     diagram.add_id(arc, element.get('id'))
     arc.set('d', d)

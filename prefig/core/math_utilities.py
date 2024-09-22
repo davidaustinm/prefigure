@@ -30,3 +30,11 @@ def roll(array):
 
 def choose(n,k):
     return int(scipy.special.binom(n,k))
+
+def append(input, item):
+    l = list(input)
+    l.append(item)
+    if isinstance(input, np.ndarray):
+        l = np.array(l)
+    return l
+    
