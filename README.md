@@ -83,6 +83,12 @@ prefig view -i foo
 ```
 The first command will open the diagram in a browser using the `diagcess` library, which enables a reader to explore the annotations interactively.  The second command ignores the annotations and simply opens the SVG diagram in a browser.
 
+Once a diagram has been compiled, you may create a PDF using
+```
+prefig pdf foo
+```
+Adding the `-b` switch adds a `build` command before the PDF is formed.
+
 You may wish to perform the following steps to set up your authoring environment (these are automatically performed in a codespace):
 
 1. To initialize your local installation, use
