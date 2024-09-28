@@ -7,7 +7,6 @@ try:
     import louis
 except:
     print("Failed to import louis")
-import cairo
 from pathlib import Path
 import numpy as np
 import lxml.etree as ET
@@ -15,7 +14,11 @@ from . import utilities as util
 from . import CTM
 from . import user_namespace as un
 import tempfile
-
+try:
+    import cairo
+except:
+    print('Error importing Python package cairo, which is required for non-mathemaical labels.')
+    print('See the PreFigure installation instructions at https://prefigure.org')
 
 # These are tags that can occur in a label
 label_tags = {'it', 'b', 'newline'}
@@ -93,12 +96,16 @@ nemeth_off = '⠸⠱ '
 # We use pycairo to measure the dimensions of svg text labels
 # so we need a cairo context.  This is not needed for tactiles diagrams
 
-surface = cairo.SVGSurface(None, 200, 200)
-context = cairo.Context(surface)
-context.select_font_face('sans')
-font_size = 14
-context.set_font_size(font_size)
-cairo_context = context
+try:
+    surface = cairo.SVGSurface(None, 200, 200)
+    context = cairo.Context(surface)
+    context.select_font_face('sans')
+    font_size = 14
+    context.set_font_size(font_size)
+    cairo_context = context
+except:
+    # If cairo is not installed, we've already given a warning so we'll keep going
+    pass
 
 # Now we'll place a label into a diagram.  Labels are created by
 # mathjax so we're going to put all the labels into an HTML file

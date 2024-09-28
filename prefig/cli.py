@@ -7,6 +7,7 @@ import time
 import webbrowser
 from pathlib import Path
 from . import core
+from . import engine
 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -146,30 +147,10 @@ def examples():
     type=click.Path()
 )
 def build(format, publication, ignore_publication, filename):
-    if not filename.endswith('.xml'):
-        filename += '.xml'
-
-    click.echo(f'Building from PreFigure source {filename}')
-
-    # We're going to look for a publication, possibly in a parent directory
-    # unless we're told to ignore any publication file
-    if ignore_publication:
-        publication = None
-    else:
-        if publication is None:
-            pub_name = 'pf_publication.xml'
-        else:
-            pub_name = publication
-        cwd = Path(os.getcwd())
-        dirs = [cwd] + list(cwd.parents)
-        for dir in dirs:
-            pub = dir / pub_name
-            if pub.exists():
-                publication = pub
-                break
-
-    core.parse.parse(filename, format, publication)
-    return filename
+    return engine.build(format,
+                        filename,
+                        publication=publication,
+                        ignore_publication=ignore_publication)
 
 @main.command(
     help="Convert the PreFigure SVG into a PDF"
@@ -212,38 +193,22 @@ def build(format, publication, ignore_publication, filename):
     type=click.Path()
 )
 @click.pass_context
-def pdf(ctx, dpi, build_first, format, publication, ignore_publication, filename):
-    build_path = None
-    if build_first:
-        filename = ctx.invoke(build,
-                              format=format,
-                              publication=publication,
-                              ignore_publication=ignore_publication,
-                              filename=filename)
-        filename = Path(filename)
-        name = filename.name[:-4]
-        build_path = str(filename.parent / 'output' / (name + '.svg'))
+def pdf(
+        ctx,
+        dpi,
+        build_first,
+        format,
+        publication,
+        ignore_publication,
+        filename):
 
-    if build_path is None:
-        if filename.endswith('.xml'):
-            filename = filename[:-4] + '.svg'
-        if not filename.endswith('.svg'):
-            filename = filename + '.svg'
-
-        for dir, dirs, files in os.walk(os.getcwd()):
-            files = set(files)
-            if filename in files:
-                build_path = dir + '/' + filename
-        if build_path is None:
-            click.echo(f'Unable to find {filename}')
-            return
-
-    dpi = str(dpi)
-        
-    click.echo(f'Converting {build_path} to PDF')
-    pdf_args = ['-a','-d',dpi,'-p',dpi,'-f','pdf','-o']
-    pdf_args = ['rsvg-convert'] + pdf_args + [build_path[:-4]+'.pdf',build_path]
-    subprocess.run(pdf_args)
+    engine.pdf(
+        format,
+        filename,
+        dpi=dpi,
+        build_first=build_first,
+        publication=publication,
+        ignore_publication=ignore_publication)
 
 @main.command(
     help="View a diagram and annotations in a web browser"
