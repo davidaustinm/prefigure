@@ -207,7 +207,7 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     mj_dir = path.absolute() / 'mj_sre'
     mj_dir_str = str(mj_dir)
 
-    if not mj_dir.is_dir():
+    if not (mj_dir / 'mj-sre-page.js').exists():
         from .. import scripts
         scripts.install_mj.main()
             
