@@ -86,5 +86,8 @@ class CTM:
         p.append(1)
         return np.array([math_util.dot(self.ctm[i], p) for i in range(2)])
 
+    def concat(self, m):
+        return CTM(concat(self.ctm, m))
+
     def copy(self):
         return copy.deepcopy(self) # CTM(copy.deepcopy(self.ctm))

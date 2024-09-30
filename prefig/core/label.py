@@ -75,7 +75,9 @@ braille_displacement = {
     'c':  [-0.5, -0.5],
     'xaxis-label': [0, -1],
     'ha': [0, -1],     # horizontal axis label
+    'hat': [0, 0],    # top horizontal axis label
     'va': [-1, -0.5],  # vertical axis label
+    'va': [0, -0.5],   # right vertical axis label
     'xl': [-1, 0]
 }
 
@@ -274,9 +276,13 @@ def position_braille_label(element, diagram, ctm,
     gap = 3.6
     if alignment == 'ha':
         offset = [-4*gap, -30]
+    if alignment == 'hat':
+        offset = [-4*gap, 30]
     if alignment == 'va':
         offset = [-30, 0]
-    if alignment == 'xl':
+    if alignment == 'var':
+        offset = [30, 0]
+    if alignment == 'xl':  
         offset = [-10, 12]
 
     if element.get('offset', None) is not None:

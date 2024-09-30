@@ -1,11 +1,13 @@
 import lxml.etree as ET
 import math
 import re
+import numpy as np
 from . import utilities as util
 from . import user_namespace as un
 from . import label
 from . import line
 from . import arrow
+from . import CTM
 
 
 # These tags can appear in an <axes> or <grid-axes>
@@ -140,16 +142,60 @@ def axes(element, diagram, parent, outline_status):
     )
 
     util.cliptobbox(axes, element, diagram)
-    bbox = diagram.bbox()
+    ctm, bbox = diagram.ctm_bbox()
 
+    top_labels = False
+    y_axis_location = 0
+    y_axis_offsets = (0,0)
+    if bbox[1] * bbox[3] >= 0:
+        if bbox[3] <= 0:
+            top_labels = True
+            y_axis_location = bbox[3]
+            if bbox[3] < 0:
+                y_axis_offsets = (0,-5)
+        else:
+            y_axis_location = bbox[1]
+            y_axis_offsets = (5,0)
+    y_axis_offsets = np.array(y_axis_offsets)
+
+    right_labels = False
+    x_axis_location = 0
+    x_axis_offsets = (0,0)
+    if bbox[0] * bbox[2] >= 0:
+        if bbox[2] <= 0:
+            right_labels = True
+            x_axis_location = bbox[2]
+            if bbox[2] < 0:
+                x_axis_offsets = (0,-10)
+        else:
+            x_axis_location = bbox[0]
+            x_axis_offsets = (10,0)
+    x_axis_offsets = np.array(x_axis_offsets)
+    
     decorations = element.get('decorations', 'yes')
 
-    h_line_el = line.mk_line((bbox[0], 0), (bbox[2], 0), diagram)
+    left_axis = diagram.transform((bbox[0], y_axis_location))
+    right_axis = diagram.transform((bbox[2], y_axis_location))
+
+    h_line_el = line.mk_line(left_axis,
+                             right_axis,
+                             diagram,
+                             endpoint_offsets = x_axis_offsets,
+                             user_coords = False)
+    h_line_el.set('stroke', stroke)
     h_line_el.set('type', 'horizontal axis')
     h_line_el.set('stroke-width', thickness)
     axes.append(h_line_el)
 
-    v_line_el = line.mk_line((0, bbox[1]), (0, bbox[3]), diagram)
+    bottom_axis = diagram.transform((x_axis_location, bbox[1]))
+    top_axis = diagram.transform((x_axis_location, bbox[3]))
+
+    v_line_el = line.mk_line(bottom_axis,
+                             top_axis,
+                             diagram,
+                             endpoint_offsets = y_axis_offsets,
+                             user_coords = False)
+    v_line_el.set('stroke', stroke)
     v_line_el.set('type', 'vertical axis')
     v_line_el.set('stroke-width', thickness)
     axes.append(v_line_el)
@@ -188,13 +234,16 @@ def axes(element, diagram, parent, outline_status):
     if hticks is not None:
         hticks = un.valid_eval(hticks)
         x = hticks[0]
+        tick_direction = 1
+        if top_labels:
+            tick_direction = -1
         while x <= hticks[2]:
             if any([abs(x-p) < position_tolerance for p in [bbox[0], bbox[2]]]):
                 x += hticks[1]
                 continue
-            p = diagram.transform((x,0))
-            line_el = line.mk_line((p[0], p[1]+ticksize[0]),
-                                   (p[0], p[1]-ticksize[1]),
+            p = diagram.transform((x,y_axis_location))
+            line_el = line.mk_line((p[0], p[1]+tick_direction*ticksize[0]),
+                                   (p[0], p[1]-tick_direction*ticksize[1]),
                                    diagram,
                                    user_coords=False)
             line_el.set('type', 'tick on horizontal axis')
@@ -203,6 +252,9 @@ def axes(element, diagram, parent, outline_status):
 
     if decorations == 'yes' or element.get('hlabels', None) is not None:
         x = hlabels[0]
+        tick_direction = 1
+        if top_labels:
+            tick_direction = -1
         while x <= hlabels[2]:
             if any([abs(x-p) < position_tolerance for p in [bbox[0], bbox[2],0]]):
                 x += hlabels[1]
@@ -212,19 +264,27 @@ def axes(element, diagram, parent, outline_status):
             math_element = ET.SubElement(xlabel, 'm')
             math_element.text = r'\text{'+str(x)+'}'
 
-            xlabel.set('p', '({},0)'.format(x))
+            xlabel.set('p', '({},{})'.format(x, y_axis_location))
             if diagram.output_format() == 'tactile':
-                xlabel.set('alignment', 'ha')
-                xlabel.set('offset', '(0,-20)')
+                if top_labels:
+                    xlabel.set('alignment', 'hat')
+                    xlabel.set('offset', '(0,0)')
+                else:
+                    xlabel.set('alignment', 'ha')
+                    xlabel.set('offset', '(0,0)')
             else:
-                xlabel.set('alignment', 'south')
-                xlabel.set('offset', '(0,-7)')
+                if top_labels:
+                    xlabel.set('alignment', 'north')
+                    xlabel.set('offset', '(0,7)')
+                else:
+                    xlabel.set('alignment', 'south')
+                    xlabel.set('offset', '(0,-7)')
             xlabel.set('clear-background', 'no')
             label.label(xlabel, diagram, parent, outline_status)
 
-            p = diagram.transform((x,0))
-            line_el = line.mk_line((p[0], p[1]+ticksize[0]),
-                                   (p[0], p[1]-ticksize[1]),
+            p = diagram.transform((x,y_axis_location))
+            line_el = line.mk_line((p[0], p[1]+tick_direction*ticksize[0]),
+                                   (p[0], p[1]-tick_direction*ticksize[1]),
                                    diagram,
                                    user_coords=False)
             line_el.set('type', 'tick on horizontal axis')
@@ -246,21 +306,27 @@ def axes(element, diagram, parent, outline_status):
     if vticks is not None:
         vticks = un.valid_eval(vticks)
         y = vticks[0]
+        tick_direction = 1
+        if right_labels:
+            tick_direction = -1
         while y <= vticks[2]:
             if any([abs(y-p) < position_tolerance for p in [bbox[1], bbox[3]]]):
                 y += vticks[1]
                 continue
-            p = diagram.transform((0, y))
-            line_el = line.mk_line((p[0]-ticksize[0], p[1]),
-                                (p[0]+ticksize[1], p[1]),
-                                diagram,
-                                user_coords=False)
+            p = diagram.transform((x_axis_location, y))
+            line_el = line.mk_line((p[0]-tick_direction*ticksize[0], p[1]),
+                                   (p[0]+tick_direction*ticksize[1], p[1]),
+                                   diagram,
+                                   user_coords=False)
             line_el.set('type', 'tick on vertical axis')
             g_vticks.append(line_el)
             y += vticks[1]
 
     if decorations == 'yes' or element.get('vlabels', None) is not None:
         y = vlabels[0]
+        tick_direction = 1
+        if right_labels:
+            tick_direction = -1
         while y <= vlabels[2]:
             if any([abs(y-p) < position_tolerance for p in [bbox[1], bbox[3], 0]]):
                 y += vlabels[1]
@@ -270,20 +336,28 @@ def axes(element, diagram, parent, outline_status):
             math_element = ET.SubElement(ylabel, 'm')
             math_element.text = r'\text{'+str(y)+'}'
             # process as a math number
-            ylabel.set('p', '(0,{})'.format(y))
+            ylabel.set('p', '({},{})'.format(x_axis_location, y))
 
             if diagram.output_format() == 'tactile':
-                ylabel.set('alignment', 'va')
-                ylabel.set('offset', '(-25, 0)')
+                if right_labels:
+                    ylabel.set('alignment', 'east')
+                    ylabel.set('offset', '(25, 0)')
+                else:
+                    ylabel.set('alignment', 'va')
+                    ylabel.set('offset', '(-25, 0)')
             else:
-                ylabel.set('alignment', 'west')
-                ylabel.set('offset', '(-7,0)')
+                if right_labels:
+                    ylabel.set('alignment', 'east')
+                    ylabel.set('offset', '(7,0)')
+                else:
+                    ylabel.set('alignment', 'west')
+                    ylabel.set('offset', '(-7,0)')
 
             ylabel.set('clear-background', 'no')
             label.label(ylabel, diagram, parent, outline_status)
-            p = diagram.transform((0, y))
-            line_el = line.mk_line((p[0]-ticksize[0], p[1]),
-                                   (p[0]+ticksize[1], p[1]),
+            p = diagram.transform((x_axis_location, y))
+            line_el = line.mk_line((p[0]-tick_direction*ticksize[0], p[1]),
+                                   (p[0]+tick_direction*ticksize[1], p[1]),
                                    diagram,
                                    user_coords=False)
             line_el.set('type', 'tick on vertical axis')
@@ -296,8 +370,13 @@ def axes(element, diagram, parent, outline_status):
         math_element = ET.SubElement(el, 'm')
         math_element.text = xlabel
         el.set('clear-background', 'no')
-        el.set('p', '({},0)'.format(bbox[2]))
+        el.set('p', '({},{})'.format(bbox[2], y_axis_location))
         el.set('alignment', 'xl')
+        if arrows > 0:
+            if diagram.output_format() == 'tactile':
+                el.set('offset', '(-6,6)')
+            else:
+                el.set('offset', '(-2,2)')
         label.label(el, diagram, parent, outline_status)
 
     ylabel = element.get('ylabel')
@@ -306,12 +385,14 @@ def axes(element, diagram, parent, outline_status):
         math_element = ET.SubElement(el, 'm')
         math_element.text = ylabel
         el.set('clear-background', 'no')
-        el.set('p', '(0,{})'.format(bbox[3]))
+        el.set('p', '({},{})'.format(x_axis_location, bbox[3]))
         el.set('alignment', 'se')
+        if arrows > 0:
+            el.set('offset', '(2,-2)')
         label.label(el, diagram, parent, outline_status)
 
+
 # Adds both a grid and axes with spacings found automatically
-# TODO:  add annotations
 
 def grid_axes(element, diagram, parent, outline_status):
     group = ET.SubElement(parent, 'g',
