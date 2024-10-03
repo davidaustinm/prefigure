@@ -154,8 +154,9 @@ def axes(element, diagram, parent, outline_status):
             if bbox[3] < 0:
                 y_axis_offsets = (0,-5)
         else:
-            y_axis_location = bbox[1]
-            y_axis_offsets = (5,0)
+            if abs(bbox[1]) > 1e-10:
+                y_axis_location = bbox[1]
+                y_axis_offsets = (5,0)
     y_axis_offsets = np.array(y_axis_offsets)
 
     right_labels = False
@@ -168,8 +169,9 @@ def axes(element, diagram, parent, outline_status):
             if bbox[2] < 0:
                 x_axis_offsets = (0,-10)
         else:
-            x_axis_location = bbox[0]
-            x_axis_offsets = (10,0)
+            if abs(bbox[0]) > 1e-10:
+                x_axis_location = bbox[0]
+                x_axis_offsets = (10,0)
     x_axis_offsets = np.array(x_axis_offsets)
     
     decorations = element.get('decorations', 'yes')

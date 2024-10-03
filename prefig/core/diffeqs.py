@@ -23,11 +23,23 @@ def de_solve(element, diagram, parent, outline_status):
     t = np.linspace(t0, t1, N)
 
     method = element.get('method', 'RK45')
-    solution = scipy.integrate.solve_ivp(f,
-                                         (t0, t1),
-                                         y0,
-                                         t_eval=t,
-                                         method=method)
+
+    if element.get('max-step', None) is not None:
+        max_step = un.valid_eval(element.get('max-step'))
+
+        solution = scipy.integrate.solve_ivp(f,
+                                             (t0, t1),
+                                             y0,
+                                             t_eval=t,
+                                             max_step=max_step,
+                                             method=method)
+    else:
+        solution = scipy.integrate.solve_ivp(f,
+                                             (t0, t1),
+                                             y0,
+                                             t_eval=t,
+                                             method=method)
+        
     solution = np.stack((solution.t, *solution.y))
 
     try:

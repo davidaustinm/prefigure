@@ -37,4 +37,41 @@ def append(input, item):
     if isinstance(input, np.ndarray):
         l = np.array(l)
     return l
-    
+
+def chi_oo(a, b, t):
+    if t > a and t < b:
+        return 1
+    return 0
+
+def chi_oc(a, b, t):
+    if t > a and t <= b:
+        return 1
+    return 0
+
+def chi_co(a, b, t):
+    if t >= a and t < b:
+        return 1
+    return 0
+
+def chi_cc(a, b, t):
+    if t >= a and t <= b:
+        return 1
+    return 0
+
+def eulers_method(f, t0, y0, t1, N):
+    h = (t1 - t0)/N
+    if isinstance(y0, np.ndarray):
+        points = [[t0, *y0]]
+    else:
+        points = [[t0, y0]]
+    t = t0
+    y = y0
+    for _ in range(N):
+        t += h
+        y += f(t, y) * h
+        if isinstance(y, np.ndarray):
+            points.append([t, *y])
+        else:
+            points.append([t, y])
+    return np.array(points)
+

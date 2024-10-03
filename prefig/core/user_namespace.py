@@ -12,12 +12,12 @@ from .math_utilities import *
 # parse an author-generated expression and check that it only uses
 # safe python operations.  We also replace any lists or tuples with
 # equivalent numpy arrays
-#
-# TODO:  clean up and consolidate 
+
+inf = np.inf
 
 # Record built-in python functions and constants as allowed
 functions = {x for x in dir(math) + dir(math_utilities) if not "__" in x}.difference({'e', 'pi'})
-variables = {'e', 'pi'}
+variables = {'e', 'pi', 'inf'}
 
 # Transforms an AST by wrapping any List or Tuple inside a numpy array
 class TransformList(ast.NodeTransformer):
