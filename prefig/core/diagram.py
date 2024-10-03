@@ -283,11 +283,13 @@ class Diagram:
                 tag = child.tag
                 if tag != 'group' and tag != 'repeat':
                     annotation = ET.Element('annotation')
-                    for attrib in ['id', 'text', 'sonify', 'circular']:
+                    for attrib in ['id', 'text', 'sonify', 'circular', 'speech']:
                         if child.get(attrib, None) is not None:
                             annotation.set(attrib, child.get(attrib))
                     if annotation.get('text', None) is not None:
                         annotation.set('text', label.evaluate_text(annotation.get('text')))
+                    if annotation.get('speech', None) is not None:
+                        annotation.set('speech', label.evaluate_text(annotation.get('speech')))
                     self.add_annotation_to_branch(annotation)
 
     def ctm(self):
@@ -422,6 +424,7 @@ class Diagram:
 
     def add_annotation_to_branch(self, annotation):
         if len(self.annotation_branch_stack) == 0:
+            self.annotation_branches[annotation.get('id')] = annotation
             return
         self.annotation_branch_stack[-1].append(annotation)
         annotation.set('id', self.append_id_suffix(annotation))

@@ -35,11 +35,13 @@ def repeat(element, diagram, parent, outline_status):
     annotation = None
     if element_cp.get('annotate', 'no') == 'yes' and outline_status != 'add_outline':
         annotation = ET.Element('annotation')
-        for attrib in ['id', 'text', 'circular', 'sonify']:
+        for attrib in ['id', 'text', 'circular', 'sonify', 'speech']:
             if element_cp.get(attrib, None) is not None:
                 annotation.set(attrib, element_cp.get(attrib))
         if annotation.get('text', None) is not None:
             annotation.set('text', label.evaluate_text(annotation.get('text')))
+        if annotation.get('speech', None) is not None:
+            annotation.set('speech', label.evaluate_text(annotation.get('speech')))
         diagram.push_to_annotation_branch(annotation)
 
     #diagram.parse(element, parent, outline_status)
