@@ -118,7 +118,7 @@ def network(element, diagram, parent, outline_status):
                 leaving_edges[i] = edge
                 placed = True
                 break
-        if not placed:
+        if not placed and not directed:
             vertices = [q, p]
             leaving_edges = directed_edges.get(tuple(vertices), [])
             for i, e in enumerate(leaving_edges):
