@@ -63,7 +63,9 @@ def point(element, diagram, parent, outline_status = None):
         shape.set('d', d)
 
     if diagram.output_format() == 'tactile':
-        element.set('fill', 'lightgray')
+        fill = element.get('fill', None)
+        if fill != 'none' and fill != 'white':
+            element.set('fill', 'lightgray')
         element.set('stroke', 'black')
     else:
         element.set('fill', util.get_attr(element, 'fill', 'red'))

@@ -55,9 +55,23 @@ def validate_node(node, args=None):
     if isinstance(node, ast.Expression):
         return validate_node(node.body, args)
     if isinstance(node, ast.Name):
-        return node.id in variables or node.id in args
+        if node.id in variables:
+            return True
+        if args is not None and node.id in args:
+            return True
+        raise SyntaxError(f"Unrecognized name: {node.id}")
     if isinstance(node, (ast.List, ast.Tuple)):
         return all([validate_node(elt, args) for elt in node.elts])
+    if isinstance(node, ast.Dict):
+        for key in node.keys:
+            if not validate_node(key):
+                print(f'Illegal key in dictionary: {key}')
+                return False
+        for value in node.values:
+            if not validate_node(value):
+                print(f'Illegal value in dictionary: {value}')
+                return False
+        return True
     if isinstance(node, ast.BinOp):
         return validate_node(node.left, args) and validate_node(node.right, args)
     if isinstance(node, ast.UnaryOp):
@@ -81,6 +95,8 @@ def validate(s, args=None):
 # Validate and then evaluate a valid expression.  This function
 # will be called from other parts of the project.
 def valid_eval(s, name=None, substitution=True):
+    if s is None:
+        raise SyntaxError(f'Evaluating an empty object.  Perhaps there is a required attribute that is missing')
     if substitution:
         s = s.replace('^', '**')
     equal = s.find('=')

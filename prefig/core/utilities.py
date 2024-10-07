@@ -21,7 +21,7 @@ def get_attr(element, attr, default):
         if isinstance(attribute, np.ndarray):
             return np.array2string(attribute, separator=',')
         return str(attribute)
-    except TypeError:  # this is a string that's not in the namespace
+    except (TypeError, SyntaxError):  # this is a string that's not in the namespace
         return element.get(attr, default)
     
 def set_attr(element, attr, default):

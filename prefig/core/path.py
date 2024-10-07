@@ -89,6 +89,13 @@ def path(element, diagram, parent, outline_status):
             arrow_angles=element.get('arrow-angles', None)
         )
 
+    if element.get('mid-arrow', 'no') == 'yes':
+        arrow.add_arrowhead_to_path(
+            diagram,
+            'marker-mid',
+            path
+        )
+
     if outline_status == 'add_outline':
         diagram.add_outline(element, path, parent)
         return
