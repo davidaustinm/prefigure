@@ -264,7 +264,7 @@ def axes(element, diagram, parent, outline_status):
 
             xlabel = ET.Element('label')
             math_element = ET.SubElement(xlabel, 'm')
-            math_element.text = r'\text{'+str(x)+'}'
+            math_element.text = r'\text{'+'{0:g}'.format(x)+'}'
 
             xlabel.set('p', '({},{})'.format(x, y_axis_location))
             if diagram.output_format() == 'tactile':
@@ -336,7 +336,7 @@ def axes(element, diagram, parent, outline_status):
 
             ylabel = ET.Element('label')
             math_element = ET.SubElement(ylabel, 'm')
-            math_element.text = r'\text{'+str(y)+'}'
+            math_element.text = r'\text{'+'{0:g}'.format(y)+'}'
             # process as a math number
             ylabel.set('p', '({},{})'.format(x_axis_location, y))
 

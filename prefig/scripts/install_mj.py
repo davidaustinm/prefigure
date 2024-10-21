@@ -21,7 +21,7 @@ def main():
     # on Windows and linux
     wd = os.getcwd()
     os.chdir(destination)
-    print("Installing MathJax libraries with npm")
+    print(f"Installing MathJax libraries in {destination}")
     try:
         subprocess.run(["npm", "install"]) #, f"--prefix={destination}"])
     except:

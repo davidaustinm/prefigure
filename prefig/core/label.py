@@ -3,10 +3,6 @@ import sys
 import re
 import math
 import inspect
-try:
-    import louis
-except:
-    print("Failed to import louis")
 from pathlib import Path
 import numpy as np
 import lxml.etree as ET
@@ -222,6 +218,14 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     # for braille output, we'll create a group to hold all the labels
     # and their clear backgrounds and add it at the end of the diagram
     if diagram.output_format() == 'tactile':
+        try:
+            global louis
+            import louis
+        except:
+            print('Failed to import louis so we cannot make braille labels')
+            print('See the installation instructions at https://prefigure.org')
+            print('The rest of the diagram will still be built.')
+            return
         background_group = ET.SubElement(root, 'g')
         background_group.set('id', 'background-group')
         braille_group = ET.SubElement(root, 'g')

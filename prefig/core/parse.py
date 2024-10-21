@@ -9,17 +9,18 @@ from . import user_namespace
 # This can be called from outside the project to allow, say,
 # for generating assets in a pretext document
 def mk_diagram(element, format, publication, 
-               filename, diagram_number = None):
+               filename, diagram_number, standalone):
     importlib.reload(user_namespace)
     output = None # add at a later date
     diag = diagram.Diagram(element, filename, diagram_number, 
-                           format, output, publication)
+                           format, output, publication,
+                           standalone)
     diag.begin_figure()
     diag.parse()
     diag.place_labels()
     diag.end_figure()
 
-def parse(filename, format, pub_file):
+def parse(filename, format, pub_file, standalone):
     # Load the publication file, if there is one
     ns = {'pf': 'https://prefigure.org'}
     if pub_file is not None:
@@ -51,7 +52,8 @@ def parse(filename, format, pub_file):
             diagram_number = None
             check_duplicate_handles(element, set())
             mk_diagram(element, format, publication,
-                       filename, diagram_number)
+                       filename, diagram_number,
+                       standalone)
 
 def check_duplicate_handles(element, handles):
     for child in element:

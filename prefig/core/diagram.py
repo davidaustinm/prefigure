@@ -10,12 +10,14 @@ from . import label
 
 class Diagram:
     def __init__(self, diagram_element, filename,
-                 diagram_number, format, output, publication):
+                 diagram_number, format, output, publication,
+                 standalone):
         self.diagram_element = diagram_element
         self.filename = filename
         self.diagram_number = diagram_number
         self.format = format
         self.output = output
+        self.standalone = standalone
 
         # create the XML tree for the svg output
         svg_uri = "http://www.w3.org/2000/svg"
@@ -236,10 +238,19 @@ class Diagram:
             diagram = ET.Element('diagram')
             diagram.append(self.annotations_root)
             et = ET.ElementTree(diagram)
-            et.write(out+'.xml', pretty_print=True)
+            if self.standalone:
+                output_file = out + '.xml'
+            else:
+                output_file = out + '-annotations.xml'
+            et.write(output_file, pretty_print=True)
         else:
             try:
                 os.remove(out+'.xml')
+            except OSError:
+                pass
+
+            try:
+                os.remove(out+'-annotations.xml')
             except OSError:
                 pass
                 

@@ -34,7 +34,6 @@ def main(ctx):
 def init():
     click.echo('Initializing PreFigure installation')
 
-    click.echo("Installing MathJax libraries with npm")
     prefig_root = Path(__file__).parent
     destination = prefig_root / "core" / "mj_sre"
 
@@ -50,6 +49,7 @@ def init():
     # on Windows and linux
     wd = os.getcwd()
     os.chdir(destination)
+    click.echo(f"Installing MathJax libraries in {destination}")
     try:
         subprocess.run(["npm", "install"]) #, f"--prefix={destination}"])
     except:
@@ -150,7 +150,8 @@ def build(format, publication, ignore_publication, filename):
     return engine.build(format,
                         filename,
                         publication=publication,
-                        ignore_publication=ignore_publication)
+                        ignore_publication=ignore_publication,
+                        standalone=True)
 
 @main.command(
     help="Convert the PreFigure SVG into a PDF"
@@ -206,6 +207,56 @@ def pdf(
         format,
         filename,
         dpi=dpi,
+        build_first=build_first,
+        publication=publication,
+        ignore_publication=ignore_publication)
+
+@main.command(
+    help="Convert the PreFigure SVG into a PNG"
+)
+@click.option(
+    "-b",
+    "--build_first",
+    is_flag=True,
+    default=False,
+    help="Build from PreFigure source before converting to PDF"
+)
+@click.option(
+    "-f",
+    "--format",
+    default="svg",
+    help="Desired output format, if building from source.  Either 'svg' (default) or 'tactile'"
+)
+@click.option(
+    "-p",
+    "--publication",
+    type=click.Path(),
+    default=None,
+    help="Location of publication file if building from source.  If no location is given, we'll look for a project 'pf_publication.xml' in a parent directory."
+)
+@click.option(
+    '-i',
+    "--ignore_publication",
+    is_flag=True,
+    default=False,
+    help="If building from source, ignore any publication file"
+)
+@click.argument(
+    "filename",
+    type=click.Path()
+)
+@click.pass_context
+def png(
+        ctx,
+        build_first,
+        format,
+        publication,
+        ignore_publication,
+        filename):
+
+    engine.png(
+        format,
+        filename,
         build_first=build_first,
         publication=publication,
         ignore_publication=ignore_publication)
