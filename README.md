@@ -57,6 +57,18 @@ PreFigure may be installed locally as a Python package in the usual way using `p
     apt install nodejs
     ```
 
+6. For creating tactile graphics to be embossed, you are encouraged to install `rsvg-convert`, which PreFigure uses to convert SVGs into PDFs.  On a Ubuntu, you can say
+
+    ```
+    apt install librsvg2-bin
+    ```
+
+    while Mac users can use
+
+    ```
+    brew install librsvg
+    ```
+
 ## Usage
 
 Once PreFigure is installed, help is available with
@@ -66,28 +78,48 @@ prefig --help
 ```
 or, say,
 ```
-prefig build --help
+prefig build --help.  Here is a summary of the available commands.
 ```
 
-PreFigure source files can be compiled into SVG images using one of the following two commands, with the first command creating a regular SVG file while the second produces a tactile version of the diagram.
-```
-prefig build foo.xml
-prefig build -f tactile foo.xml
-```
-By default, the output appears in `output/foo.svg` and `output/foo.xml`, where the XML output contains the annotations used by a screen reader.
+1. PreFigure source files can be compiled into SVG images using one of the following two commands, with the first command creating a regular SVG file while the second produces a tactile version of    the diagram.
 
-To view the resulting diagram, use either
-```
-prefig view foo
-prefig view -i foo
-```
-The first command will open the diagram in a browser using the `diagcess` library, which enables a reader to explore the annotations interactively.  The second command ignores the annotations and simply opens the SVG diagram in a browser.
+    ```
+    prefig build foo.xml
+    ```
 
-Once a diagram has been compiled, you may create a PDF using
-```
-prefig pdf foo
-```
-Adding the `-b` switch adds a `build` command before the PDF is formed.
+    ```
+    prefig build -f tactile foo.xml
+    ```
+
+    By default, the output appears in `output/foo.svg` and `output/foo.xml`, where the XML output   contains the annotations used by a screen reader.  If PreFigure is called from within a PreTeXt document, then the annotations will appear in `foo-annotations.xml`.
+
+2. To view the resulting diagram, use either
+
+    ```
+    prefig view foo
+    ```
+
+    ```
+    prefig view -i foo
+    ```
+
+    The first command will open the diagram in a browser using the `diagcess` library, which enables a reader to explore the annotations interactively.  The second command ignores the annotations and simply opens the SVG diagram in a browser.
+
+3. Once a diagram has been compiled, you may create a PDF using
+
+    ```
+    prefig pdf foo
+    ```
+
+    Adding the `-b` switch will build the diagram from PreFigure source before the PDF is formed.
+
+4. Similarly,
+
+    ```
+    prefig png foo
+    ```
+
+    creates a PNG.  Add the `-b` switch to `build` the diagram first.
 
 You may wish to perform the following steps to set up your authoring environment (these are automatically performed in a codespace):
 
