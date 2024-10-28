@@ -48,6 +48,17 @@ def parse(filename, format, pub_file, standalone):
     diagrams = diagrams_with_ns + diagrams_without_ns
 
     for diagram_number, element in enumerate(diagrams):
+
+        for elem in element.getiterator():
+            # Skip comments and processing instructions,
+            # because they do not have names
+            if not (
+                    isinstance(elem, ET._Comment)
+                    or isinstance(elem, ET._ProcessingInstruction)
+            ):
+                # Remove a namespace URI in the element's name
+                elem.tag = ET.QName(elem).localname
+        
         if len(diagrams) == 1:
             diagram_number = None
             check_duplicate_handles(element, set())
