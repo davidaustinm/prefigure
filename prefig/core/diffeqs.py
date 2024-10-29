@@ -4,6 +4,7 @@ import sys
 import scipy.integrate
 from . import user_namespace as un
 from . import utilities as util
+from . import arrow
 
 def de_solve(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
@@ -102,6 +103,9 @@ def plot_de_solution(element, diagram, parent, outline_status):
     path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
     path.set('type', 'parametric curve')
+
+    if element.get('arrow', 'no') == 'yes':
+        arrow.add_arrowhead_to_path(diagram, 'marker-end', path)
 
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
     util.cliptobbox(path, element, diagram)
