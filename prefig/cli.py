@@ -209,7 +209,9 @@ def pdf(
         dpi=dpi,
         build_first=build_first,
         publication=publication,
-        ignore_publication=ignore_publication)
+        ignore_publication=ignore_publication,
+        standalone=True
+    )
 
 @main.command(
     help="Convert the PreFigure SVG into a PNG"
@@ -259,7 +261,9 @@ def png(
         filename,
         build_first=build_first,
         publication=publication,
-        ignore_publication=ignore_publication)
+        ignore_publication=ignore_publication,
+        standalone=True
+    )
 
 @main.command(
     help="View a diagram and annotations in a web browser"

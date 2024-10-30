@@ -50,7 +50,8 @@ def pdf(
         build_first=True,
         publication=None,
         ignore_publication=True,
-        dpi=72
+        dpi=72,
+        standalone=False
 ):
     build_path = None
     if build_first:
@@ -89,12 +90,21 @@ def pdf(
     pdf_args = ['rsvg-convert'] + pdf_args + [output_file,build_path]
     subprocess.run(pdf_args)
 
+    if not standalone:
+        os.remove(build_path)
+        annotations = str(build_path.parent/build_path.stem) + '-annotations.xml'
+        try:
+            os.remove(annotations)
+        except FileNotFoundError:
+            pass
+
 def png(
         format,
         filename,
         build_first=True,
         publication=None,
-        ignore_publication=True
+        ignore_publication=True,
+        standalone=False
 ):
     build_path = None
     if build_first:
@@ -125,4 +135,12 @@ def png(
 
     import cairosvg
     cairosvg.svg2png(url=str(build_path), write_to=str(output_file))
+
+    if not standalone:
+        os.remove(build_path)
+        annotations = str(build_path.parent/build_path.stem) + '-annotations.xml'
+        try:
+            os.remove(annotations)
+        except FileNotFoundError:
+            pass
 
