@@ -18,7 +18,7 @@ click = "^8.1.7"
 psutil = "^6.0.0"
 networkx = "^2.5"
 scipy = "^1.5"
-numpy = "^1.19"
+numpy = [{version = ">=1.19, <=1.25", python = "3.8"}, {version = "^1.26", python = ">=3.9"}]
 pycairo = "^1.20"
 cairosvg = "^2.7.1"
 
