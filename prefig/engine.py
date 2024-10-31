@@ -14,7 +14,7 @@ def build(
         format,
         filename,
         publication=None,
-        ignore_publication=True,
+        ignore_publication=False,
         standalone=False
 ):
     path = Path(filename)
@@ -49,7 +49,7 @@ def pdf(
         filename,
         build_first=True,
         publication=None,
-        ignore_publication=True,
+        ignore_publication=False,
         dpi=72,
         standalone=False
 ):
@@ -103,7 +103,7 @@ def png(
         filename,
         build_first=True,
         publication=None,
-        ignore_publication=True,
+        ignore_publication=False,
         standalone=False
 ):
     build_path = None
