@@ -45,7 +45,7 @@ def graph(element, diagram, parent, outline_status = None):
         {
             'd': ' '.join(cmds),
             'fill': 'none',
-            'type': 'function-graph'
+#            'type': 'function-graph'
         }
     )
 

@@ -625,7 +625,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
 
     group.append(label_group)
     diagram.add_id(label_group, label.get('expr'))
-    group.set('type', 'label')
+#    group.set('type', 'label')
 
 
 def mk_text_element(text_str, font_face, label_group):

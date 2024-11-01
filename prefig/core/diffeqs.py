@@ -102,7 +102,7 @@ def plot_de_solution(element, diagram, parent, outline_status):
     diagram.add_id(path, element.get('id'))
     path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
-    path.set('type', 'parametric curve')
+#    path.set('type', 'parametric curve')
 
     if element.get('arrow', 'no') == 'yes':
         arrow.add_arrowhead_to_path(diagram, 'marker-end', path)

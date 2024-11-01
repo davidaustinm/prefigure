@@ -61,7 +61,7 @@ def vector(element, diagram, parent, outline_status):
         arrow_width=element.get('arrow-width', None),
         arrow_angles=element.get('arrow-angles', None)
     )
-    vector.set('type', 'vector')
+#    vector.set('type', 'vector')
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, vector, parent)

@@ -51,7 +51,7 @@ def area_between_curves(element, diagram, parent, outline_status):
     diagram.add_id(path, element.get('id'))
     path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
-    path.set('type', 'area between curves')
+#    path.set('type', 'area between curves')
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, path, parent)

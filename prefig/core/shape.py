@@ -146,7 +146,7 @@ def shape(element, diagram, parent, outline_status):
 
     util.set_attr(element, 'thickness', '2')
     util.add_attr(path, util.get_2d_attr(element))
-    path.set('type', 'rectangle')
+#    path.set('type', 'rectangle')
     util.cliptobbox(path, element, diagram)
 
     if outline_status == 'add_outline':

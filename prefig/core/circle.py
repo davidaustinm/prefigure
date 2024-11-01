@@ -42,7 +42,7 @@ def circle(element, diagram, parent, outline_status):
         element.set('fill', element.get('fill', 'none'))
     element.set('thickness', element.get('thickness', '2'))
     util.add_attr(circle, util.get_2d_attr(element))
-    circle.set('type', 'circle')
+#    circle.set('type', 'circle')
     util.cliptobbox(circle, element, diagram)
 
     if outline_status == 'add_outline':
@@ -97,7 +97,7 @@ def ellipse(element, diagram, parent, outline_status):
         element.set('fill', element.get('fill', 'none'))
     element.set('thickness', element.get('thickness', '2'))
     util.add_attr(circle, util.get_2d_attr(element))
-    circle.set('type', 'ellipse')
+#    circle.set('type', 'ellipse')
     util.cliptobbox(circle, element, diagram)
 
     if outline_status == 'add_outline':
@@ -162,7 +162,7 @@ def arc(element, diagram, parent, outline_status):
 
     arc.set('d', ' '.join(cmds))
     util.add_attr(arc, util.get_2d_attr(element))
-    arc.set('type', 'arc')
+#    arc.set('type', 'arc')
     util.cliptobbox(arc, element, diagram)
 
     arrows = int(element.get('arrows', '0'))
@@ -327,7 +327,7 @@ def angle(element, diagram, parent, outline_status):
     arc.set('d', d)
 
     util.add_attr(arc, util.get_1d_attr(element))
-    arc.set('type', 'arc')
+#    arc.set('type', 'arc')
     util.cliptobbox(arc, element, diagram)
 
     if element.get('arrow', None) is not None:
@@ -371,7 +371,7 @@ def add_label(element, diagram, parent):
         # If there's a label, we'll bundle the label and the angle mark in a group
         group = ET.SubElement(parent, 'g')
         diagram.add_id(group, element.get('id'))
-        group.set('type', 'labeled-angle-marker')
+#        group.set('type', 'labeled-angle-marker')
 
         # Now we'll create a new XML element describing the label
         el = copy.deepcopy(element)

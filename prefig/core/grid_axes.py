@@ -89,14 +89,14 @@ def grid(element, diagram, parent, outline_status):
     x = rx[0]
     while x <= rx[2]:
         line_el = line.mk_line((x,bbox[1]), (x,bbox[3]), diagram)
-        line_el.set('type', 'vertical grid')
+#        line_el.set('type', 'vertical grid')
         grid.append(line_el)
         x += rx[1]
 
     y = ry[0]
     while y <= ry[2]:
         line_el = line.mk_line((bbox[0], y), (bbox[2], y), diagram)
-        line_el.set('type', 'horizontal grid')
+#        line_el.set('type', 'horizontal grid')
         grid.append(line_el)
         y += ry[1]
 
@@ -228,7 +228,7 @@ def axes(element, diagram, parent, outline_status):
                              endpoint_offsets = x_axis_offsets,
                              user_coords = False)
     h_line_el.set('stroke', stroke)
-    h_line_el.set('type', 'horizontal axis')
+#    h_line_el.set('type', 'horizontal axis')
     h_line_el.set('stroke-width', thickness)
     axes.append(h_line_el)
 
@@ -241,7 +241,7 @@ def axes(element, diagram, parent, outline_status):
                              endpoint_offsets = y_axis_offsets,
                              user_coords = False)
     v_line_el.set('stroke', stroke)
-    v_line_el.set('type', 'vertical axis')
+#    v_line_el.set('type', 'vertical axis')
     v_line_el.set('stroke-width', thickness)
     axes.append(v_line_el)
 
@@ -273,7 +273,7 @@ def axes(element, diagram, parent, outline_status):
 
     g_hticks = ET.SubElement(axes, 'g',
                              attrib={
-                                 'type': 'horizontal ticks'
+#                                 'type': 'horizontal ticks'
                              }
                              )
     diagram.add_id(g_hticks)
@@ -297,7 +297,7 @@ def axes(element, diagram, parent, outline_status):
                                    (p[0], p[1]-tick_direction*ticksize[1]),
                                    diagram,
                                    user_coords=False)
-            line_el.set('type', 'tick on horizontal axis')
+#            line_el.set('type', 'tick on horizontal axis')
             g_hticks.append(line_el)
             x += hticks[1]
 
@@ -343,7 +343,7 @@ def axes(element, diagram, parent, outline_status):
                                    (p[0], p[1]-tick_direction*ticksize[1]),
                                    diagram,
                                    user_coords=False)
-            line_el.set('type', 'tick on horizontal axis')
+#            line_el.set('type', 'tick on horizontal axis')
             g_hticks.append(line_el)
 
             x += hlabels[1]
@@ -357,10 +357,11 @@ def axes(element, diagram, parent, outline_status):
         if v_pi_format:
             vlabels = 1/math.pi * vlabels
             
-    g_vticks = ET.SubElement(axes, 'g', attrib={
-                              'type': 'vertical ticks'
-                              }
-    )
+#    g_vticks = ET.SubElement(axes, 'g', attrib={
+#                              'type': 'vertical ticks'
+#                              }
+#    )
+    g_vticks = ET.SubElement(axes, 'g')
     diagram.add_id(g_vticks)
 
     if vticks is not None:
@@ -378,7 +379,7 @@ def axes(element, diagram, parent, outline_status):
                                    (p[0]+tick_direction*ticksize[1], p[1]),
                                    diagram,
                                    user_coords=False)
-            line_el.set('type', 'tick on vertical axis')
+#            line_el.set('type', 'tick on vertical axis')
             g_vticks.append(line_el)
             y += vticks[1]
 
@@ -425,7 +426,7 @@ def axes(element, diagram, parent, outline_status):
                                    (p[0]+tick_direction*ticksize[1], p[1]),
                                    diagram,
                                    user_coords=False)
-            line_el.set('type', 'tick on vertical axis')
+#            line_el.set('type', 'tick on vertical axis')
             g_vticks.append(line_el)
             y += vlabels[1]
 
@@ -561,7 +562,7 @@ def grid_with_basis(element, diagram, parent, basis, outline_status):
     diagram.add_id(coords, element.get('id'))
     util.add_attr(coords, util.get_1d_attr(element))
     coords.set('d', ' '.join(cmds))
-    coords.set('type', 'grid with basis')
+#    coords.set('type', 'grid with basis')
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, coords, parent)

@@ -36,7 +36,7 @@ def line(element, diagram, parent, outline_status):
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
     util.add_attr(line, util.get_1d_attr(element))
-    line.set('type', 'line')
+#    line.set('type', 'line')
 
     arrows = int(element.get('arrows', '0'))
     forward = 'marker-end'

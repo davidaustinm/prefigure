@@ -63,7 +63,7 @@ def path(element, diagram, parent, outline_status):
     diagram.add_id(path, element.get('id'))
     path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
-    path.set('type', 'path')
+#    path.set('type', 'path')
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
     util.cliptobbox(path, element, diagram)
 

@@ -72,7 +72,7 @@ def point(element, diagram, parent, outline_status = None):
         element.set('stroke', util.get_attr(element, 'stroke', 'black'))
     element.set('thickness', util.get_attr(element, 'thickness', '2'))
     util.add_attr(shape, util.get_2d_attr(element))
-    shape.set('type', 'point')
+#    shape.set('type', 'point')
     util.cliptobbox(shape, element, diagram)
 
     if outline_status == 'add_outline':
@@ -107,7 +107,7 @@ def add_label(element, diagram, parent):
         # If there's a label, we'll bundle the label and point in a group
         group = ET.SubElement(parent, 'g')
         diagram.add_id(group, element.get('id'))
-        group.set('type', 'labeled-point')
+#        group.set('type', 'labeled-point')
 
         # Now we'll create a new XML element describing the label
         el = copy.deepcopy(element)

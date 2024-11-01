@@ -54,13 +54,13 @@ def riemann_sum(element, diagram, parent, outline_status):
                           'fill': element.get('fill', 'none'),
                           'stroke': element.get('stroke', 'none'),
                           'stroke-width': element.get('thickness'),
-                          'type': 'riemann-sum'
+#                          'type': 'riemann-sum'
                       }
     )
 
     diagram.add_id(path, element.get('id'))
     util.add_attr(path, util.get_2d_attr(element))
-    path.set('type', 'riemann-sum')
+#    path.set('type', 'riemann-sum')
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, path, parent)

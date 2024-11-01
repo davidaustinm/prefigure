@@ -47,7 +47,7 @@ def tangent(element, diagram, parent, outline_status):
     util.set_attr(element, 'thickness', '2')
 
     util.add_attr(line_el, util.get_1d_attr(element))
-    line_el.set('type', 'tangent line')
+#    line_el.set('type', 'tangent line')
     element.set('cliptobbox', 'yes')
     util.cliptobbox(line_el, element, diagram)
 
