@@ -87,9 +87,14 @@ def point(element, diagram, parent, outline_status = None):
         if element.get('id', 'none') == parent.get('id'):
             element.attrib.pop('id')
         parent.append(shape)
+        for children in parent:
+            children.attrib.pop('id')
+
 
 def finish_outline(element, diagram, parent):
     parent = add_label(element, diagram, parent)
+    for children in parent:
+        children.attrib.pop('id')
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),
