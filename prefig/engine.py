@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from . import core
 import logging
+import lxml.etree as ET
 
 # We're going to include some basic functions here so they can be
 # called from an import
@@ -144,3 +145,69 @@ def png(
         except FileNotFoundError:
             pass
 
+def validate_source(xml_file):
+    # we first load the RelaxNG schema
+    engine_dir = Path(__file__).parent
+    schema_rng = engine_dir / "resources" / "schema" / "pf_schema.rng"
+    schema = ET.RelaxNG(file=schema_rng)
+
+    # now load the XML file and look for diagrams either in a pf namespace or no
+    tree = ET.parse(xml_file)
+    ns = {'pf':'https://prefigure.org'}
+    pf_diagrams = tree.xpath('//pf:diagram', namespaces=ns)
+    diagrams = tree.xpath('//diagram')
+    all_diagrams = pf_diagrams + diagrams
+
+    # iterate through the diagrams we have found
+    for num, diagram in enumerate(all_diagrams):
+
+        # strip out the namespace, if one is present
+        for elem in diagram.getiterator():
+            # Skip comments and processing instructions,
+            # because they do not have names
+            if not (
+                isinstance(elem, ET._Comment)
+                or isinstance(elem, ET._ProcessingInstruction)
+            ):
+                # Remove a namespace URI in the element's name
+                elem.tag = ET.QName(elem).localname
+
+        # now validate
+        try:
+            schema.assertValid(diagram)
+            if len(all_diagrams) == 1:
+                print("Diagram is valid for SVG production")
+            else:
+                print(f"diagram {num+1} is valid for SVG production")
+        except:
+            if len(all_diagrams) == 1:
+                print("Diagram failed validation for SVG production")
+            else:
+                print(f"diagram {num+1} failed validation for SVG production")
+
+    # now validate tactile diagram
+    for diagram in all_diagrams:
+        # work through the XML tree and replace tactile attributes
+        for elem in diagram.getiterator():
+            if not (
+                    isinstance(elem, ET._Comment)
+                    or isinstance(elem, ET._ProcessingInstruction)
+            ):
+                for attr, value in elem.attrib.items():
+                    if attr.startswith('tactile-'):
+                        key = attr[8:]
+                        elem.set(key, value)
+                        elem.attrib.pop(attr)
+        # now validate
+        try:
+            schema.assertValid(diagram)
+            if len(all_diagrams) == 1:
+                print("Diagram is valid for tactile production")
+            else:
+                print(f"diagram {num+1} is valid for tactile production")
+        except:
+            if len(all_diagrams) == 1:
+                print("Diagram failed validation for tactile production")
+            else:
+                print(f"diagram {num+1} failed validation for tactile production")
+                

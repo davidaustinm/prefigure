@@ -403,6 +403,16 @@ def find_active_server(port, restart):
             pass
     return None
 
+@main.command(
+    help="Validate a PreFigure XML source file against the schema"
+)
+@click.argument(
+    "xml_file",
+    type=click.Path()
+)
+def validate(xml_file):
+    engine.validate_source(xml_file)
+
 
 if __name__ == '__main__':
     main()
