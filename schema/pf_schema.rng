@@ -1,0 +1,1525 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+  <start>
+    <ref name="Diagram"/>
+  </start>
+  <define name="Diagram">
+    <element name="diagram">
+      <attribute name="dimensions"/>
+      <optional>
+        <attribute name="margins"/>
+      </optional>
+      <interleave>
+        <optional>
+          <ref name="Annotations"/>
+        </optional>
+        <zeroOrMore>
+          <ref name="DefinitionElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GraphicalElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GroupElements"/>
+        </zeroOrMore>
+        <optional>
+          <ref name="Caption"/>
+        </optional>
+      </interleave>
+    </element>
+  </define>
+  <define name="Caption">
+    <element name="caption">
+      <text/>
+    </element>
+  </define>
+  <!--
+    Annotations are constructed with a single #annotations element,
+    which contains a single #annotation
+  -->
+  <define name="Annotations">
+    <element name="annotations">
+      <ref name="Annotation"/>
+    </element>
+  </define>
+  <define name="AnnotationAttributes">
+    <attribute name="ref"/>
+    <ref name="AnnotatedElementAttributes"/>
+  </define>
+  <define name="AnnotatedElementAttributes">
+    <optional>
+      <attribute name="text"/>
+    </optional>
+    <optional>
+      <attribute name="speech"/>
+    </optional>
+    <optional>
+      <attribute name="circular">
+        <choice>
+          <value>yes</value>
+          <value>no</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="sonify">
+        <choice>
+          <value>yes</value>
+          <value>no</value>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <!-- An #annotation can contain any number of #annotation elements -->
+  <define name="Annotation">
+    <element name="annotation">
+      <ref name="AnnotationAttributes"/>
+      <zeroOrMore>
+        <ref name="Annotation"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <!-- Most elements can be annotated -->
+  <define name="CommonAttributes">
+    <optional>
+      <attribute name="annotate">
+        <choice>
+          <value>yes</value>
+          <value>no</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <ref name="AnnotatedElementAttributes"/>
+    </optional>
+  </define>
+  <!-- next come some definition elements that can be added anywhere -->
+  <define name="DefinitionElements">
+    <optional>
+      <ref name="Definition"/>
+    </optional>
+    <optional>
+      <ref name="Derivative"/>
+    </optional>
+    <optional>
+      <ref name="DE-Solution"/>
+    </optional>
+    <optional>
+      <ref name="Define-Shapes"/>
+    </optional>
+  </define>
+  <define name="Definition">
+    <element name="definition">
+      <text/>
+      <optional>
+        <attribute name="substitution">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="id-suffix"/>
+      </optional>
+    </element>
+  </define>
+  <define name="Derivative">
+    <element name="derivative">
+      <attribute name="function"/>
+      <attribute name="name"/>
+    </element>
+  </define>
+  <define name="DE-Solution">
+    <element name="de-solve">
+      <attribute name="name"/>
+      <attribute name="function"/>
+      <attribute name="t0"/>
+      <attribute name="y0"/>
+      <optional>
+        <attribute name="t1"/>
+      </optional>
+      <optional>
+        <attribute name="method"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="max-step"/>
+      </optional>
+    </element>
+  </define>
+  <define name="Define-Shapes">
+    <element name="define-shapes">
+      <oneOrMore>
+        <ref name="ShapeElements"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <!-- the next elements group other elements together -->
+  <define name="GroupElements">
+    <interleave>
+      <optional>
+        <ref name="Coordinates"/>
+      </optional>
+      <optional>
+        <ref name="Group"/>
+      </optional>
+      <optional>
+        <ref name="Repeat"/>
+      </optional>
+      <optional>
+        <ref name="Clip"/>
+      </optional>
+    </interleave>
+  </define>
+  <!-- coordinates are special in that they can contain everything a diagram can -->
+  <define name="Coordinates">
+    <element name="coordinates">
+      <attribute name="bbox"/>
+      <optional>
+        <attribute name="destination"/>
+      </optional>
+      <optional>
+        <attribute name="aspect-ratio"/>
+      </optional>
+      <optional>
+        <attribute name="preserve-y-range">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="DefinitionElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GraphicalElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GroupElements"/>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Group">
+    <element name="group">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="outline"/>
+      </optional>
+      <ref name="CommonAttributes"/>
+      <interleave>
+        <zeroOrMore>
+          <ref name="DefinitionElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GraphicalElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GroupElements"/>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Repeat">
+    <element name="repeat">
+      <attribute name="parameter"/>
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <ref name="CommonAttributes"/>
+      <interleave>
+        <zeroOrMore>
+          <ref name="DefinitionElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GraphicalElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GroupElements"/>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Clip">
+    <element name="clip">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="shape"/>
+      <ref name="CommonAttributes"/>
+      <interleave>
+        <zeroOrMore>
+          <ref name="DefinitionElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GraphicalElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GroupElements"/>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <!-- attributes and text for labels -->
+  <define name="LabelAttributes">
+    <optional>
+      <attribute name="alignment"/>
+    </optional>
+    <optional>
+      <attribute name="offset"/>
+    </optional>
+    <optional>
+      <attribute name="justify">
+        <choice>
+          <value>right</value>
+          <value>left</value>
+          <value>center</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="interline"/>
+    </optional>
+    <optional>
+      <attribute name="scale"/>
+    </optional>
+    <optional>
+      <attribute name="rotate"/>
+    </optional>
+    <optional>
+      <attribute name="clear-background">
+        <choice>
+          <value>yes</value>
+          <value>no</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="background-margin"/>
+    </optional>
+  </define>
+  <define name="Math">
+    <element name="m">
+      <text/>
+    </element>
+  </define>
+  <define name="Bold">
+    <element name="b">
+      <interleave>
+        <text/>
+        <zeroOrMore>
+          <ref name="Italic"/>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Italic">
+    <element name="it">
+      <interleave>
+        <text/>
+        <zeroOrMore>
+          <ref name="Bold"/>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Newline">
+    <element name="newline">
+      <empty/>
+    </element>
+  </define>
+  <define name="LabelElements">
+    <interleave>
+      <zeroOrMore>
+        <ref name="Math"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Bold"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Italic"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Newline"/>
+      </zeroOrMore>
+    </interleave>
+  </define>
+  <define name="LabelText">
+    <choice>
+      <text/>
+      <zeroOrMore>
+        <ref name="LabelElements"/>
+      </zeroOrMore>
+    </choice>
+  </define>
+  <define name="Label">
+    <element name="label">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="anchor"/>
+      <ref name="LabelAttributes"/>
+      <oneOrMore>
+        <ref name="LabelText"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <!-- elements that can go inside a path -->
+  <define name="PathElements">
+    <interleave>
+      <zeroOrMore>
+        <element name="moveto">
+          <attribute name="point"/>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="rmoveto">
+          <attribute name="point"/>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="lineto">
+          <attribute name="point"/>
+          <optional>
+            <attribute name="decoration"/>
+          </optional>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="rlineto">
+          <attribute name="point"/>
+          <optional>
+            <attribute name="decoration"/>
+          </optional>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="horizontal">
+          <attribute name="distance"/>
+          <optional>
+            <attribute name="decoration"/>
+          </optional>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="vertical">
+          <attribute name="distance"/>
+          <optional>
+            <attribute name="decoration"/>
+          </optional>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="cubic-bezier">
+          <attribute name="controls"/>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="quadratic-bezier">
+          <attribute name="controls"/>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="arc">
+          <attribute name="center"/>
+          <attribute name="radius"/>
+          <attribute name="range"/>
+          <optional>
+            <attribute name="degrees"/>
+          </optional>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Graph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Parametric-Curve"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Polygon"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="repeat">
+          <attribute name="parameter"/>
+          <ref name="PathElements"/>
+        </element>
+      </zeroOrMore>
+    </interleave>
+  </define>
+  <define name="ShapeElements">
+    <interleave>
+      <zeroOrMore>
+        <ref name="Arc"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Area-Between-Curves"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Area-Under-Curve"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Circle"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Ellipse"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Graph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Parametric-Curve"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Path"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Polygon"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Rectangle"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Shape"/>
+      </zeroOrMore>
+    </interleave>
+  </define>
+  <!-- graphical elements can be stroked and possibly filled -->
+  <define name="StrokeAttributes">
+    <optional>
+      <attribute name="stroke"/>
+    </optional>
+    <optional>
+      <attribute name="stroke-opacity"/>
+    </optional>
+    <optional>
+      <attribute name="opacity"/>
+    </optional>
+    <optional>
+      <attribute name="thickness"/>
+    </optional>
+    <optional>
+      <attribute name="miterlimit"/>
+    </optional>
+    <optional>
+      <attribute name="linejoin"/>
+    </optional>
+    <optional>
+      <attribute name="linecap"/>
+    </optional>
+    <optional>
+      <attribute name="dash"/>
+    </optional>
+    <optional>
+      <attribute name="cliptobbox">
+        <choice>
+          <value>yes</value>
+          <value>no</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="outline">
+        <choice>
+          <value>yes</value>
+          <value>no</value>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="FillAttributes">
+    <ref name="StrokeAttributes"/>
+    <optional>
+      <attribute name="fill"/>
+    </optional>
+    <optional>
+      <attribute name="fill-opacity"/>
+    </optional>
+    <optional>
+      <attribute name="fill-rule"/>
+    </optional>
+  </define>
+  <!-- start defining the graphical elements -->
+  <define name="GraphicalElements">
+    <interleave>
+      <zeroOrMore>
+        <ref name="Angle-Marker"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Arc"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Area-Between-Curves"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Area-Under-Curve"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Axes"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Circle"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Ellipse"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Graph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Grid"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Grid-Axes"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Implicit-Curve"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Label"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Legend"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Line"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Network"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Parametric-Curve"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Path"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Plot-DE-Solution"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Point"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Polygon"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Rectangle"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Riemann-Sum"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Shape"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Slope-Field"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Tangent-line"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Triangle"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Vector"/>
+      </zeroOrMore>
+    </interleave>
+  </define>
+  <define name="Angle-Marker">
+    <element name="angle-marker">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="points"/>
+      <optional>
+        <attribute name="radius"/>
+      </optional>
+      <optional>
+        <attribute name="arrow">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <ref name="LabelAttributes"/>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+      <optional>
+        <ref name="LabelText"/>
+      </optional>
+    </element>
+  </define>
+  <define name="Arc">
+    <element name="arc">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="points"/>
+      </optional>
+      <optional>
+        <attribute name="center"/>
+      </optional>
+      <optional>
+        <attribute name="range"/>
+      </optional>
+      <attribute name="radius"/>
+      <optional>
+        <attribute name="sector">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="degrees">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
+      <optional>
+        <attribute name="reverse">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Area-Between-Curves">
+    <element name="area-between-curves">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="function1"/>
+      </optional>
+      <optional>
+        <attribute name="function2"/>
+      </optional>
+      <optional>
+        <attribute name="functions"/>
+      </optional>
+      <optional>
+        <attribute name="domain"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Area-Under-Curve">
+    <element name="area-under-curve">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="function"/>
+      <optional>
+        <attribute name="domain"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <!-- grids and axes -->
+  <define name="Axes">
+    <element name="axes">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="hlabels"/>
+      </optional>
+      <optional>
+        <attribute name="vlabels"/>
+      </optional>
+      <optional>
+        <attribute name="xlabel"/>
+      </optional>
+      <optional>
+        <attribute name="ylabel"/>
+      </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
+      <optional>
+        <attribute name="decorations">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="h-pi-format">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="v-pi-format">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="labels">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="stroke"/>
+      </optional>
+      <optional>
+        <attribute name="thickness"/>
+      </optional>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Grid">
+    <element name="grid">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="spacings"/>
+      </optional>
+      <optional>
+        <attribute name="hspacing"/>
+      </optional>
+      <optional>
+        <attribute name="vspacing"/>
+      </optional>
+      <optional>
+        <attribute name="basis"/>
+      </optional>
+      <optional>
+        <attribute name="h-pi-format">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="v-pi-format">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="stroke"/>
+      </optional>
+      <optional>
+        <attribute name="thickness"/>
+      </optional>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Grid-Axes">
+    <element name="grid-axes">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="spacings"/>
+      </optional>
+      <optional>
+        <attribute name="hspacing"/>
+      </optional>
+      <optional>
+        <attribute name="vspacing"/>
+      </optional>
+      <optional>
+        <attribute name="h-pi-format">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="v-pi-format">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="hlabels"/>
+      </optional>
+      <optional>
+        <attribute name="vlabels"/>
+      </optional>
+      <optional>
+        <attribute name="xlabel"/>
+      </optional>
+      <optional>
+        <attribute name="ylabel"/>
+      </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
+      <optional>
+        <attribute name="decorations">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="labels">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Circle">
+    <element name="circle">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="center"/>
+      <optional>
+        <attribute name="radius"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Ellipse">
+    <element name="ellipse">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="center"/>
+      <optional>
+        <attribute name="axes"/>
+      </optional>
+      <optional>
+        <attribute name="rotate"/>
+      </optional>
+      <optional>
+        <attribute name="degrees"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Graph">
+    <element name="graph">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="function"/>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="domain"/>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Implicit-Curve">
+    <element name="implicit-curve">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="function"/>
+      <optional>
+        <attribute name="k"/>
+      </optional>
+      <optional>
+        <attribute name="depth"/>
+      </optional>
+      <optional>
+        <attribute name="initial-depth"/>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Legend">
+    <element name="legend">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="anchor"/>
+      <optional>
+        <attribute name="alignment"/>
+      </optional>
+      <optional>
+        <attribute name="vertical-skip"/>
+      </optional>
+      <optional>
+        <attribute name="scale"/>
+      </optional>
+      <optional>
+        <attribute name="stroke"/>
+      </optional>
+      <optional>
+        <attribute name="opacity"/>
+      </optional>
+      <oneOrMore>
+        <element name="item">
+          <attribute name="ref"/>
+          <oneOrMore>
+            <ref name="LabelText"/>
+          </oneOrMore>
+        </element>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="Line">
+    <element name="line">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="endpoints"/>
+      </optional>
+      <optional>
+        <attribute name="p1"/>
+      </optional>
+      <optional>
+        <attribute name="p2"/>
+      </optional>
+      <optional>
+        <attribute name="endpoint-offsets"/>
+      </optional>
+      <optional>
+        <attribute name="infinite">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <optional>
+        <attribute name="reverse">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="additional-arrows">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Network">
+    <element name="network">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="graph"/>
+      </optional>
+      <optional>
+        <attribute name="directed">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="layout"/>
+      </optional>
+      <optional>
+        <attribute name="seed"/>
+      </optional>
+      <optional>
+        <attribute name="start"/>
+      </optional>
+      <optional>
+        <attribute name="scale"/>
+      </optional>
+      <optional>
+        <attribute name="rotate"/>
+      </optional>
+      <optional>
+        <attribute name="edge-stroke"/>
+      </optional>
+      <optional>
+        <attribute name="edge-thickness"/>
+      </optional>
+      <optional>
+        <attribute name="edge-dash"/>
+      </optional>
+      <optional>
+        <attribute name="node-fill"/>
+      </optional>
+      <optional>
+        <attribute name="node-stroke"/>
+      </optional>
+      <optional>
+        <attribute name="node-thickness"/>
+      </optional>
+      <optional>
+        <attribute name="node-style"/>
+      </optional>
+      <optional>
+        <attribute name="node-size"/>
+      </optional>
+      <optional>
+        <attribute name="labels">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <element name="node">
+            <optional>
+              <attribute name="at"/>
+            </optional>
+            <optional>
+              <attribute name="p"/>
+            </optional>
+            <optional>
+              <attribute name="edges"/>
+            </optional>
+            <ref name="FillAttributes"/>
+          </element>
+        </zeroOrMore>
+        <zeroOrMore>
+          <element name="edge">
+            <optional>
+              <attribute name="at"/>
+            </optional>
+            <attribute name="vertices"/>
+            <optional>
+              <attribute name="weight"/>
+            </optional>
+            <ref name="StrokeAttributes"/>
+          </element>
+        </zeroOrMore>
+      </interleave>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Parametric-Curve">
+    <element name="parametric-curve">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="function"/>
+      <attribute name="domain"/>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="closed">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <optional>
+        <attribute name="reverse">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Path">
+    <element name="path">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="start"/>
+      <optional>
+        <attribute name="closed"/>
+      </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <optional>
+        <attribute name="reverse">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="mid-arrow">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+      <ref name="PathElements"/>
+    </element>
+  </define>
+  <define name="Plot-DE-Solution">
+    <element name="plot-de-solution">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="solution"/>
+      </optional>
+      <optional>
+        <attribute name="axes"/>
+      </optional>
+      <optional>
+        <attribute name="arrow">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="function"/>
+      </optional>
+      <optional>
+        <attribute name="t0"/>
+      </optional>
+      <optional>
+        <attribute name="y0"/>
+      </optional>
+      <optional>
+        <attribute name="t1"/>
+      </optional>
+      <optional>
+        <attribute name="method"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="max-step"/>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Point">
+    <element name="point">
+      <attribute name="p"/>
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="style"/>
+      </optional>
+      <optional>
+        <attribute name="size"/>
+      </optional>
+      <ref name="LabelAttributes"/>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+      <optional>
+        <ref name="LabelText"/>
+      </optional>
+    </element>
+  </define>
+  <define name="Polygon">
+    <element name="polygon">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="points"/>
+      <optional>
+        <attribute name="parameter"/>
+      </optional>
+      <optional>
+        <attribute name="corner-radius"/>
+      </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
+      <optional>
+        <attribute name="closed">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Rectangle">
+    <element name="rectangle">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="lower-left"/>
+      </optional>
+      <optional>
+        <attribute name="center"/>
+      </optional>
+      <optional>
+        <attribute name="dimensions"/>
+      </optional>
+      <optional>
+        <attribute name="rotate"/>
+      </optional>
+      <optional>
+        <attribute name="corner-radius"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Riemann-Sum">
+    <element name="riemann-sum">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="function"/>
+      <attribute name="N"/>
+      <optional>
+        <attribute name="domain"/>
+      </optional>
+      <optional>
+        <attribute name="rule"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Shape">
+    <element name="shape">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="shape"/>
+      </optional>
+      <optional>
+        <attribute name="shapes"/>
+      </optional>
+      <optional>
+        <attribute name="operation"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Slope-Field">
+    <element name="slope-field">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="function"/>
+      <optional>
+        <attribute name="arrows">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <optional>
+        <attribute name="system">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="spacings"/>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Tangent-line">
+    <element name="tangent-line">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="function"/>
+      <attribute name="point"/>
+      <optional>
+        <attribute name="domain"/>
+      </optional>
+      <optional>
+        <attribute name="infinite">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Triangle">
+    <element name="triangle">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="vertices"/>
+      <optional>
+        <attribute name="angle-markers">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="labels"/>
+      </optional>
+      <optional>
+        <attribute name="show-vertices">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="point-fill"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Vector">
+    <element name="vector">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="v"/>
+      <optional>
+        <attribute name="tail"/>
+      </optional>
+      <optional>
+        <attribute name="scale"/>
+      </optional>
+      <optional>
+        <attribute name="head-location"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+</grammar>

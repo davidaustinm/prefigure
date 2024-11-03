@@ -1,0 +1,616 @@
+grammar {
+start = Diagram
+
+Diagram = element diagram {
+    attribute dimensions {text},
+    attribute margins {text}?,
+    (
+        Annotations? &
+        DefinitionElements* &
+        GraphicalElements* &
+        GroupElements* &
+        Caption?
+    )
+}
+
+Caption = element caption {text}
+
+# Annotations are constructed with a single #annotations element,
+# which contains a single #annotation
+Annotations = element annotations {
+    Annotation
+}
+
+AnnotationAttributes = 
+    attribute ref {text},
+    AnnotatedElementAttributes
+
+AnnotatedElementAttributes = 
+    attribute text {text}?,
+    attribute speech {text}?,
+    attribute circular {"yes"|"no"}?,
+    attribute sonify {"yes"|"no"}?
+
+# An #annotation can contain any number of #annotation elements
+Annotation = element annotation {
+    AnnotationAttributes,
+    Annotation*
+}
+
+# Most elements can be annotated
+CommonAttributes =
+    attribute annotate {"yes"|"no"}?,
+    AnnotatedElementAttributes?
+
+# next come some definition elements that can be added anywhere
+DefinitionElements = 
+    Definition?,
+    Derivative?,
+    DE-Solution?,
+    Define-Shapes?
+
+Definition = element definition {
+    text,
+    attribute substitution {"yes"|"no"}?,
+    attribute id-suffix {text}?
+}
+
+Derivative = element derivative {
+    attribute function {text},
+    attribute name {text}
+}
+
+DE-Solution = element de-solve {
+    attribute name {text},
+    attribute function {text},
+    attribute t0 {text},
+    attribute y0 {text},
+    attribute t1 {text}?,
+    attribute method {text}?,
+    attribute N {text}?,
+    attribute max-step {text}?
+}
+
+Define-Shapes = element define-shapes {
+    ShapeElements+
+}
+
+# the next elements group other elements together
+GroupElements =
+    (
+        Coordinates? &
+        Group? &
+        Repeat? &
+        Clip?
+    )
+
+# coordinates are special in that they can contain everything a diagram can
+Coordinates = element coordinates {
+    attribute bbox {text},
+    attribute destination {text}?,
+    attribute aspect-ratio {text}?,
+    attribute preserve-y-range {"yes"|"no"}?,
+    (
+        DefinitionElements* &
+        GraphicalElements* &
+        GroupElements*
+    )
+}
+
+Group = element group {
+    attribute at {text}?,
+    attribute outline {text}?,
+    CommonAttributes,
+    (
+        DefinitionElements* &
+        GraphicalElements* &
+        GroupElements*
+    )
+}
+
+Repeat = element repeat {
+    attribute parameter {text},
+    attribute at {text}?,
+    CommonAttributes,
+    (
+        DefinitionElements* &
+        GraphicalElements* &
+        GroupElements*
+    )
+}
+
+Clip = element clip {
+    attribute at {text}?,
+    attribute shape {text},
+    CommonAttributes,
+    (
+        DefinitionElements* &
+        GraphicalElements* &
+        GroupElements*
+    )
+}
+
+# attributes and text for labels
+LabelAttributes = 
+    attribute alignment {text}?,
+    attribute offset {text}?,
+    attribute justify {"right" | "left" | "center"}?,
+    attribute interline {text}?,
+    attribute scale {text}?,
+    attribute rotate {text}?,
+    attribute clear-background {"yes"|"no"}?,
+    attribute background-margin {text}?
+
+Math = element m {text}
+Bold = element b {text & Italic*}
+Italic = element it {text & Bold*}
+Newline = element newline {empty}
+LabelElements = (
+    Math* &
+    Bold* &
+    Italic* &
+    Newline*
+)
+LabelText = (text | LabelElements*)
+
+Label = element label {
+    attribute at {text}?,
+    attribute anchor {text},
+    LabelAttributes,
+    LabelText+
+}
+
+# elements that can go inside a path
+PathElements = (
+    element moveto {
+        attribute point {text}
+    }* &
+    element rmoveto {
+        attribute point {text}
+    }* &
+    element lineto {
+        attribute point {text},
+        attribute decoration {text}?
+    }* &
+    element rlineto {
+        attribute point {text},
+        attribute decoration {text}?
+    }* &
+    element horizontal {
+        attribute distance {text},
+        attribute decoration {text}?
+    }* &
+    element vertical {
+        attribute distance {text},
+        attribute decoration {text}?
+    }* &
+    element cubic-bezier {
+        attribute controls {text}
+    }* &
+    element quadratic-bezier {
+        attribute controls {text}
+    }* &
+    element arc {
+        attribute center {text},
+        attribute radius {text},
+        attribute range {text},
+        attribute degrees {text}?
+    }* &
+    Graph* &
+    Parametric-Curve* &
+    Polygon* &
+    element repeat {
+        attribute parameter {text},
+        PathElements
+    }*
+)
+
+ShapeElements = (
+    Arc* &
+    Area-Between-Curves* &
+    Area-Under-Curve* &
+    Circle* &
+    Ellipse* &
+    Graph* &
+    Parametric-Curve* &
+    Path* &
+    Polygon* &
+    Rectangle* &
+    Shape*
+)
+
+# graphical elements can be stroked and possibly filled
+StrokeAttributes = 
+    attribute stroke {text}?,
+    attribute stroke-opacity {text}?,
+    attribute opacity {text}?,
+    attribute thickness {text}?,
+    attribute miterlimit {text}?,
+    attribute linejoin {text}?,
+    attribute linecap {text}?,
+    attribute dash {text}?,
+    attribute cliptobbox {"yes"|"no"}?,
+    attribute outline {"yes"|"no"}?
+
+FillAttributes =
+    StrokeAttributes,
+    attribute fill {text}?,
+    attribute fill-opacity {text}?,
+    attribute fill-rule {text}?
+
+# start defining the graphical elements
+GraphicalElements = 
+    (
+        Angle-Marker* &
+        Arc* &
+        Area-Between-Curves* &
+        Area-Under-Curve* &
+        Axes* &
+        Circle* &
+        Ellipse* &
+        Graph* &
+        Grid* &
+        Grid-Axes* &
+        Implicit-Curve* &
+        Label* &
+        Legend* &
+        Line* &
+        Network* &
+        Parametric-Curve* &
+        Path* &
+        Plot-DE-Solution* &
+        Point* &
+        Polygon* &
+        Rectangle* &
+        Riemann-Sum* &
+        Shape* &
+        Slope-Field* &
+        Tangent-line* &
+        Triangle* &
+        Vector*
+    )
+
+Angle-Marker = element angle-marker {
+    attribute at {text}?,
+    attribute points {text},
+    attribute radius {text}?,
+    attribute arrow {"yes"|"no"}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    LabelAttributes,
+    StrokeAttributes,
+    CommonAttributes,
+    LabelText?
+}
+
+Arc = element arc {
+    attribute at {text}?,
+    attribute points {text}?,
+    attribute center {text}?,
+    attribute range {text}?,
+    attribute radius {text},
+    attribute sector {"yes"|"no"}?,
+    attribute N {text}?,
+    attribute degrees {"yes"|"no"}?,
+    attribute arrows {text}?,
+    attribute reverse {"yes"|"no"}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Area-Between-Curves = element area-between-curves {
+    attribute at {text}?,
+    attribute function1 {text}?,
+    attribute function2 {text}?,
+    attribute functions {text}?,
+    attribute domain {text}?,
+    attribute N {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Area-Under-Curve = element area-under-curve {
+    attribute at {text}?,
+    attribute function {text},
+    attribute domain {text}?,
+    attribute N {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+# grids and axes
+Axes = element axes {
+    attribute at {text}?,
+    attribute hlabels {text}?,
+    attribute vlabels {text}?,
+    attribute xlabel {text}?,
+    attribute ylabel {text}?,
+    attribute arrows {text}?,
+    attribute decorations {"yes"|"no"}?,
+    attribute h-pi-format {"yes"|"no"}?,
+    attribute v-pi-format {"yes"|"no"}?,
+    attribute labels {"yes"|"no"}?,
+    attribute stroke {text}?,
+    attribute thickness {text}?,
+    CommonAttributes
+}
+
+Grid = element grid {
+    attribute at {text}?,
+    attribute spacings {text}?,
+    attribute hspacing {text}?,
+    attribute vspacing {text}?,
+    attribute basis {text}?,
+    attribute h-pi-format {"yes"|"no"}?,
+    attribute v-pi-format {"yes"|"no"}?,
+    attribute stroke {text}?,
+    attribute thickness {text}?,
+    CommonAttributes
+}
+
+Grid-Axes = element grid-axes {
+    attribute at {text}?,
+    attribute spacings {text}?,
+    attribute hspacing {text}?,
+    attribute vspacing {text}?,
+    attribute h-pi-format {"yes"|"no"}?,
+    attribute v-pi-format {"yes"|"no"}?,
+    attribute hlabels {text}?,
+    attribute vlabels {text}?,
+    attribute xlabel {text}?,
+    attribute ylabel {text}?,
+    attribute arrows {text}?,
+    attribute decorations {"yes"|"no"}?,
+    attribute labels {"yes"|"no"}?,
+    CommonAttributes
+}
+
+Circle = element circle {
+    attribute at {text}?,
+    attribute center {text},
+    attribute radius {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Ellipse = element ellipse {
+    attribute at {text}?,
+    attribute center {text},
+    attribute axes {text}?,
+    attribute rotate {text}?,
+    attribute degrees {text}?,
+    attribute N {text}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
+Graph = element graph {
+    attribute at {text}?,
+    attribute function {text},
+    attribute N {text}?,
+    attribute domain {text}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
+Implicit-Curve = element implicit-curve {
+    attribute at {text}?,
+    attribute function {text},
+    attribute k {text}?,
+    attribute depth {text}?,
+    attribute initial-depth {text}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
+Legend = element legend {
+    attribute at {text}?,
+    attribute anchor {text},
+    attribute alignment {text}?,
+    attribute vertical-skip {text}?,
+    attribute scale {text}?,
+    attribute stroke {text}?,
+    attribute opacity {text}?,
+    element item {
+        attribute ref {text},
+        LabelText+
+    }+}
+
+Line = element line {
+    attribute at {text}?,
+    attribute endpoints {text}?,
+    attribute p1 {text}?,
+    attribute p2 {text}?,
+    attribute endpoint-offsets {text}?,
+    attribute infinite {"yes"|"no"}?,
+    attribute arrows {text}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    attribute reverse {"yes"|"no"}?,
+    attribute additional-arrows {"yes"|"no"}?,
+    StrokeAttributes,
+    CommonAttributes    
+}
+
+Network = element network {
+    attribute at {text}?,
+    attribute graph {text}?,
+    attribute directed {"yes"|"no"}?,
+    attribute layout {text}?,
+    attribute seed {text}?,
+    attribute start {text}?,
+    attribute scale {text}?,
+    attribute rotate {text}?,
+    attribute edge-stroke {text}?,
+    attribute edge-thickness {text}?,
+    attribute edge-dash {text}?,
+    attribute node-fill {text}?,
+    attribute node-stroke {text}?,
+    attribute node-thickness {text}?,
+    attribute node-style {text}?,
+    attribute node-size {text}?,
+    attribute labels {"yes"|"no"}?,
+    (
+        element node {
+            attribute at {text}?,
+            attribute p {text}?,
+            attribute edges {text}?,
+            FillAttributes
+
+        }* &
+        element edge {
+            attribute at {text}?,
+            attribute vertices {text},
+            attribute weight {text}?,
+            StrokeAttributes
+        }*
+    ),
+    CommonAttributes
+}
+
+Parametric-Curve = element parametric-curve {
+    attribute at {text}?,
+    attribute function {text},
+    attribute domain {text},
+    attribute N {text}?,
+    attribute closed {"yes"|"no"}?,
+    attribute arrows {text}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    attribute reverse {"yes"|"no"}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Path = element path {
+    attribute at {text}?,
+    attribute start {text},
+    attribute closed {text}?,
+    attribute arrows {text}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    attribute reverse {"yes"|"no"}?,
+    attribute mid-arrow {"yes"|"no"}?,
+    FillAttributes,
+    CommonAttributes,
+    PathElements
+}
+
+Plot-DE-Solution = element plot-de-solution {
+    attribute at {text}?,
+    attribute solution {text}?,
+    attribute axes {text}?,
+    attribute arrow {"yes"|"no"}?,
+    attribute function {text}?,
+    attribute t0 {text}?,
+    attribute y0 {text}?,
+    attribute t1 {text}?,
+    attribute method {text}?,
+    attribute N {text}?,
+    attribute max-step {text}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
+Point = element point {
+    attribute p {text},
+    attribute at {text}?,
+    attribute style {text}?,
+    attribute size {text}?,
+    LabelAttributes,
+    FillAttributes,
+    CommonAttributes,
+    LabelText?
+}
+
+Polygon = element polygon {
+    attribute at {text}?,
+    attribute points {text},
+    attribute parameter {text}?,
+    attribute corner-radius {text}?,
+    attribute arrows {text}?,
+    attribute closed {"yes"|"no"}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Rectangle = element rectangle {
+    attribute at {text}?,
+    attribute lower-left {text}?,
+    attribute center {text}?,
+    attribute dimensions {text}?,
+    attribute rotate {text}?,
+    attribute corner-radius {text}?,
+    FillAttributes,
+    CommonAttributes    
+}
+
+Riemann-Sum = element riemann-sum {
+    attribute at {text}?,
+    attribute function {text},
+    attribute N {text},
+    attribute domain {text}?,
+    attribute rule {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Shape = element shape {
+    attribute at {text}?,
+    attribute shape {text}?,
+    attribute shapes {text}?,
+    attribute operation {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Slope-Field = element slope-field {
+    attribute at {text}?,
+    attribute function {text},
+    attribute arrows {"yes"|"no"}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    attribute system {"yes"|"no"}?,
+    attribute spacings {text}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
+Tangent-line = element tangent-line {
+    attribute at {text}?,
+    attribute function {text},
+    attribute point {text},
+    attribute domain {text}?,
+    attribute infinite {"yes"|"no"}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
+Triangle = element triangle {
+    attribute at {text}?,
+    attribute vertices {text},
+    attribute angle-markers {"yes"|"no"}?,
+    attribute labels {text}?,
+    attribute show-vertices {"yes"|"no"}?,
+    attribute point-fill {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Vector = element vector {
+    attribute at {text}?,
+    attribute v {text},
+    attribute tail {text}?,
+    attribute scale {text}?,
+    attribute head-location {text}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
+}
