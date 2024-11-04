@@ -6,8 +6,8 @@
     <slope-field at="slope-field" function="f" arrows="yes" outline="yes"/>
     <group at="solutions" outline="tactile">
       <repeat parameter="k=-4..4">
-	<plot-de-solution id="solution" function="f" t0="0" y0="k"
-			  domain="[0,4]" stroke="orange" />
+	<plot-de-solution at="solution" function="f" t0="0" y0="k"
+			  t1="4" stroke="orange" />
 	<point at="initial-value" p="(0,k)" size="4" fill="orange" />
       </repeat>
     </group>

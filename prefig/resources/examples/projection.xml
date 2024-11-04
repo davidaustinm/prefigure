@@ -10,13 +10,13 @@
 
     <group at="line-L">
       <line p1="(0,0)" p2="v" infinite="yes" stroke="blue" thickness="2"/>
-      <label p="(4.4,2.5)">
+      <label anchor="(4.4,2.5)">
 	<m>L</m>
       </label>
     </group>
 
     <group at="vector-bperp">
-      <label p="midpoint(b,bhat)" alignment="ne" clear-background="yes">
+      <label anchor="midpoint(b,bhat)" alignment="ne" clear-background="yes">
 	<m>{\mathbf b}^\perp</m>
       </label>
       <vector v="bperp" tail="bhat" stroke="gray"/>
@@ -24,21 +24,21 @@
 
     <group at="vector-b">
       <vector v="b"/>
-      <label p="b" alignment="nw">
+      <label anchor="b" alignment="nw">
 	<m>{\mathbf b}</m>
       </label>
     </group>
 
     <group at="vector-bhat">
       <vector v="bhat" stroke="red" />
-      <label p="bhat" alignment="se">
+      <label anchor="bhat" alignment="se">
 	<m>\widehat{\mathbf b}</m>
       </label>
     </group>
 
     <group at="vector-v">
       <vector v="v"/>
-      <label p="v" alignment="se">
+      <label anchor="v" alignment="se">
 	<m>{\mathbf v}</m>
       </label>
     </group>

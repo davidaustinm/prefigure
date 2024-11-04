@@ -57,8 +57,9 @@ def circle(element, diagram, parent, outline_status):
 
 def finish_outline(element, diagram, parent):
     parent = add_label(element, diagram, parent)
-    for children in parent:
-        children.attrib.pop('id')
+    for child in parent:
+        if child.get('id', None) is not None:
+            child.attrib.pop('id')
 
     diagram.finish_outline(element,
                            element.get('stroke'),
@@ -362,8 +363,9 @@ def angle(element, diagram, parent, outline_status):
         if element.get('id', 'none') == parent.get('id'):
             element.attrib.pop('id')
         parent.append(arc)
-        for children in parent:
-            children.attrib.pop('id')
+        for child in parent:
+            if child.get('id', None) is not None:
+                child.attrib.pop('id')
 
 def add_label(element, diagram, parent):
     # Is there a label associated with the marker?
