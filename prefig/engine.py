@@ -160,7 +160,7 @@ def validate_source(xml_file):
 
     # iterate through the diagrams we have found
     for num, diagram in enumerate(all_diagrams):
-
+        tactile_attr_dict = {}
         # strip out the namespace, if one is present
         for elem in diagram.getiterator():
             # Skip comments and processing instructions,
@@ -171,6 +171,14 @@ def validate_source(xml_file):
             ):
                 # Remove a namespace URI in the element's name
                 elem.tag = ET.QName(elem).localname
+
+                # save and remove attributes that begin with 'tactile-' 
+                tactile_attrs = {}
+                for attr, value in elem.attrib.items():
+                    if attr.startswith('tactile-'):
+                        tactile_attrs[attr[8:]] = value
+                        elem.attrib.pop(attr)
+                tactile_attr_dict[elem] = tactile_attrs
 
         # now validate
         try:
@@ -193,11 +201,10 @@ def validate_source(xml_file):
                     isinstance(elem, ET._Comment)
                     or isinstance(elem, ET._ProcessingInstruction)
             ):
-                for attr, value in elem.attrib.items():
-                    if attr.startswith('tactile-'):
-                        key = attr[8:]
-                        elem.set(key, value)
-                        elem.attrib.pop(attr)
+                tactile_attrs = tactile_attr_dict[elem]
+                for attr, value in tactile_attrs.items():
+                    elem.set(attr, value)
+                    
         # now validate
         try:
             schema.assertValid(diagram)
