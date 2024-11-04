@@ -121,6 +121,14 @@ prefig build --help.  Here is a summary of the available commands.
 
     creates a PNG.  Add the `-b` switch to `build` the diagram first.
 
+5. To validate PreFigure source against the PreFigure XML schema, use
+
+    ```
+    prefig validate foo.xml
+    ```
+
+
+
 You may wish to perform the following steps to set up your authoring environment (these are automatically performed in a codespace):
 
 1. To initialize your local installation, use
