@@ -83,20 +83,32 @@ def point(element, diagram, parent, outline_status = None):
         diagram.add_outline(element, shape, parent)
         finish_outline(element, diagram, parent)
     else:
+        original_parent = parent
         parent = add_label(element, diagram, parent)
+        parent.append(shape)
+
+        # no label has been added if the parent hasn't changed
+        if original_parent == parent:
+            return
+
+        # if there is a label, then the id is on the outer <g> element
+        # so we need to remove it from the children
         if element.get('id', 'none') == parent.get('id'):
             element.attrib.pop('id')
-        parent.append(shape)
         for child in parent:
             if child.get('id', None) is not None:
                 child.attrib.pop('id')
 
 
 def finish_outline(element, diagram, parent):
+    original_parent = parent
     parent = add_label(element, diagram, parent)
-    for child in parent:
-        if child.get('id', None) is not None:
-            children.attrib.pop('id')
+
+    # if we've added a label, remove the id's from element under the parent <g>
+    if original_parent != parent:
+        for child in parent:
+            if child.get('id', None) is not None:
+                child.attrib.pop('id')
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),

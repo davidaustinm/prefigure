@@ -56,10 +56,15 @@ def circle(element, diagram, parent, outline_status):
         parent.append(circle)
 
 def finish_outline(element, diagram, parent):
+    original_parent = parent
     parent = add_label(element, diagram, parent)
-    for child in parent:
-        if child.get('id', None) is not None:
-            child.attrib.pop('id')
+
+    # if the parent has changed, then we've added a label
+    # and need to remove the id's below the parent
+    if original_parent != parent:
+        for child in parent:
+            if child.get('id', None) is not None:
+                child.attrib.pop('id')
 
     diagram.finish_outline(element,
                            element.get('stroke'),
@@ -359,10 +364,16 @@ def angle(element, diagram, parent, outline_status):
         diagram.add_outline(element, arc, parent, outline_width=4)
         finish_outline(element, diagram, parent)
     else:
+        original_parent = parent
         parent = add_label(element, diagram, parent)
+        parent.append(arc)
+
+        if original_parent == parent:
+            # no label has been added so we're done
+            return
+        # if a label has been added, then remove the id's below parent <g>
         if element.get('id', 'none') == parent.get('id'):
             element.attrib.pop('id')
-        parent.append(arc)
         for child in parent:
             if child.get('id', None) is not None:
                 child.attrib.pop('id')

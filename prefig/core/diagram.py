@@ -21,12 +21,9 @@ class Diagram:
 
         # create the XML tree for the svg output
         svg_uri = "http://www.w3.org/2000/svg"
-        xlink_uri = "http://www.w3.org/1999/xlink"
         xml_uri = "http://www.w3/org/1999/xml"
-        self.href = ET.QName(xlink_uri, "href")
 
         nsmap = {None: svg_uri,
-                 'xlink': xlink_uri,
                  'xml': xml_uri}
         self.root = ET.Element("svg", nsmap = nsmap)
 
@@ -362,7 +359,7 @@ class Diagram:
             'fill': fill,
             'stroke-width': str(int(width) + outline_width),
             'stroke': 'white',
-            self.href: r'#' + outline_id
+            'href': r'#' + outline_id
         }
         )
         # We need to be careful with arrow heads.  The references to
@@ -386,7 +383,7 @@ class Diagram:
             'stroke-width': str(thickness),
             'stroke': str(stroke),
             'stroke-dasharray': element.get('dash', 'none'),
-            self.href: r'#' + element.get('id') + '-outline'
+            'href': r'#' + element.get('id') + '-outline'
         }
         )
         # labeled points and angle markers are in a <g> with the 
