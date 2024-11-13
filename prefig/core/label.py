@@ -10,11 +10,9 @@ from . import utilities as util
 from . import CTM
 from . import user_namespace as un
 import tempfile
-try:
-    import cairo
-except:
-    print('Error importing Python package cairo, which is required for non-mathemaical labels.')
-    print('See the PreFigure installation instructions at https://prefigure.org')
+
+# Flag to detect whether cairo has been loaded
+cairo_loaded = False
 
 # These are tags that can occur in a label
 label_tags = {'it', 'b', 'newline'}
@@ -90,20 +88,6 @@ def get_alignment_from_direction(direction):
 
 nemeth_on =  '⠸⠩ '
 nemeth_off = '⠸⠱ '
-
-# We use pycairo to measure the dimensions of svg text labels
-# so we need a cairo context.  This is not needed for tactiles diagrams
-
-try:
-    surface = cairo.SVGSurface(None, 200, 200)
-    context = cairo.Context(surface)
-    context.select_font_face('sans')
-    font_size = 14
-    context.set_font_size(font_size)
-    cairo_context = context
-except:
-    # If cairo is not installed, we've already given a warning so we'll keep going
-    pass
 
 # Now we'll place a label into a diagram.  Labels are created by
 # mathjax so we're going to put all the labels into an HTML file
@@ -524,6 +508,12 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
                 if text is not None:
                     text = text.strip()
                     if len(text) > 0:
+                        # Now we have some plain text so we need cairo
+                        # We will import cairo and initialize, if possible
+                        # If not, we simply return without placing this label
+                        cairo_init()
+                        if not cairo_loaded:
+                            return
                         new_row.append(mk_text_element(text,
                                                        element[1],
                                                        label_group))
@@ -536,11 +526,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
         text_elements[num] = new_row
 
     # let's go through each row and find the dimensions
-    cairo_context.select_font_face('sans',
-                                   cairo.FontSlant.NORMAL,
-                                   cairo.FontWeight.NORMAL
-                                   )
-    space = cairo_context.text_extents(' ')[4]
+    space = 4.45 # width of space in SVG text determined from pycairo
     interline = un.valid_eval(label.get('interline', '3'))
     text_dimensions = []
     for num, row in enumerate(text_elements):
@@ -687,6 +673,34 @@ def mk_m_element(m_tag, label_tree, label_group):
     below = -dim_dict['style']
     return [insert, width, above, below]
 
+
+def cairo_init():
+    global cairo_loaded
+    global cairo
+    global cairo_context
+    if cairo_loaded:
+        return
+
+    # We use pycairo to measure the dimensions of svg text labels
+    # so we need a cairo context.  This is not needed for tactiles diagrams
+    try:
+        import cairo
+    except:
+        print('Error importing Python package cairo, which is required for non-mathemaical labels.')
+        print('See the PreFigure installation instructions at https://prefigure.org')
+        print('The rest of the diagram will still be built')
+        return
+
+    # Great.  We have cairo so now we set the flag and construct the context
+    cairo_loaded = True
+    
+    global cairo_context
+    surface = cairo.SVGSurface(None, 200, 200)
+    context = cairo.Context(surface)
+    context.select_font_face('sans')
+    font_size = 14
+    context.set_font_size(font_size)
+    cairo_context = context
 
 # add a caption to a tactile diagram in the upper-left corner
 #   e.g. "Figure 2.3.4"

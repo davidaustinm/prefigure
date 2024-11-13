@@ -89,7 +89,12 @@ def pdf(
     output_file = build_path.parent / (build_path.stem + '.pdf')
     pdf_args = ['-a','-d',dpi,'-p',dpi,'-f','pdf','-o']
     pdf_args = ['rsvg-convert'] + pdf_args + [output_file,build_path]
-    subprocess.run(pdf_args)
+
+    try:
+        subprocess.run(pdf_args)
+    except:
+        print("PreFigure PDF conversion failed.  Is rsvg-convert available?")
+        print("See the installation instructions athttps://prefigure.org")
 
     if not standalone:
         os.remove(build_path)
@@ -134,8 +139,14 @@ def png(
 #    log.info(f'Converting {build_path} to PDF')
     output_file = build_path.parent / (build_path.stem + '.png')
 
-    import cairosvg
-    cairosvg.svg2png(url=str(build_path), write_to=str(output_file))
+    # we use rsvg-convert to make a PNG with dpi=300
+    png_args = ['-a','-d', str(300),'-p', str(300),'-f','png','-o']
+    png_args = ['rsvg-convert'] + png_args + [output_file,build_path]
+    try:
+        subprocess.run(png_args)
+    except:
+        print("PreFigure PNG conversion failed.  Is rsvg-convert available?")
+        print("See the installation instructions at https://prefigure.org")
 
     if not standalone:
         os.remove(build_path)

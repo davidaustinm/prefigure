@@ -122,6 +122,8 @@ class Legend:
         for li in self.element:
             key, label = self.li_dict[li]
             label_dims = self.diagram.get_label_dims(label)
+            if label_dims is None:  # this label probably has plain text
+                continue
             height += label_dims[1] + interline
             label_width = max(label_width, label_dims[0])
         height += outer_padding - interline
@@ -160,6 +162,8 @@ class Legend:
         for li in self.element:
             key, label = self.li_dict[li]
             label_dims = self.diagram.get_label_dims(label)
+            if label_dims is None:
+                continue
             label_group = self.diagram.get_label_group(label)[0]
             tform = CTM.translatestr(label_x, y)
             label_group.set('transform', tform)

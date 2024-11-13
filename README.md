@@ -1,8 +1,8 @@
 # PreFigure
 
-PreFigure is a Python package for authoring mathematical diagrams.  Following the [PreTeXt](https://pretextbook.org/) paradigm, an author creates an XML description of a diagram that PreFigure converts into an image file suitable for including in a text document.  By default, PreFigure will create an SVG image that can be included in, say, an HTML document. However, PreFigure prioritizes the creation of accessible diagrams so that annotations can be added that enable a screen reader to easily navigate the diagram.  Tactile diagrams can also be created from the same XML source.
+PreFigure is a Python package for authoring mathematical diagrams.  Following the [PreTeXt](https://pretextbook.org/) paradigm, an author writes an XML description of a diagram that PreFigure converts into an image file suitable for including in a text document.  By default, PreFigure will create an SVG image that can be included in, say, an HTML document. However, PreFigure prioritizes the creation of accessible diagrams so that annotations can be added that enable a screen reader to easily navigate the diagram.  Tactile diagrams can also be created from the same XML source.
 
-More information, including detailed documentation, is available from the [PreFigure homepage](https://prefigure.org).
+PreFigure diagrams can now be authored inside a PreTeXt document.  More information, including detailed documentation, is available from the [PreFigure homepage](https://prefigure.org).
 
 ## Using PreFigure
 
@@ -13,9 +13,9 @@ You may author and compile PreFigure diagrams in either of two environments:
 
 ## Local Installation
 
-PreFigure may be installed locally as a Python package in the usual way using `pip`.  However, there are a few details that require your attention.
+PreFigure may be installed locally as a Python package in the usual way using `pip`.  However, there are a few additional details that require your attention.
 
-1. PreFigure assumes the Python version specified in `pyproject.toml`, which is currently 3.10.  You may check your local Python version with one of the two commands below
+1. PreFigure assumes Python version 3.8.5 or higher.  You may check your local Python version with one of the two commands below
 
     ```
     python -V
@@ -25,12 +25,12 @@ PreFigure may be installed locally as a Python package in the usual way using `p
     python3 -V
     ```
 
-2. You are encouraged to install `liblouis`, which enables the creation of non-mathematical braille labels in tactile diagrams.  PreFigure can still create non-tactile diagrams without this package installed though you will see a non-fatal warning message when you compile diagrams.
+2. You are encouraged to install `liblouis`, which enables the creation of non-mathematical braille labels in tactile diagrams.  PreFigure can still create diagrams without this package installed though you will see a non-fatal warning message when you compile a tactile diagram and any requested labels will not appear in the diagram.
 
-    On a linux machine, use your package manager to install
+    On a linux machine, use your package manager to install `python3-louis`.  Ubuntu users can use
 
     ```
-    python3-louis
+    apt get python3-louis
     ```
 
     while on a Mac, you will want
@@ -43,9 +43,15 @@ PreFigure may be installed locally as a Python package in the usual way using `p
 
     Within a Python interpreter, you should then be able to `import louis` without an error.
 
-3. You are encouraged to install an [additional library](https://pycairo.readthedocs.io/en/latest/getting_started.html) to support the Pycairo package.  This may not be essential for your local machine, but there is no harm in performing this step and it will guarantee that PreFigure has access to a reqiured package.
+3. You are encouraged to install an [additional library](https://pycairo.readthedocs.io/en/latest/getting_started.html) to support the `pycairo` package.  This may not be essential for your local machine, but there is no harm in performing this step.  The `pycairo` package is needed to produce labels having plain text (rather than mathematics).  If you are not able to install `pycairo`, you will still be able to build PreFigure diagrams, but any labels with plain text will not appear.
 
-4. You are now ready to install PreFigure with 
+4. You are now ready to install PreFigure with
+
+    ```
+    pip install prefig[pycairo]
+    ```
+
+    If this fails, it is due to the `pycairo` dependency so you can instead install PreFigure without `pycairo` using
 
     ```
     pip install prefig
@@ -57,7 +63,7 @@ PreFigure may be installed locally as a Python package in the usual way using `p
     apt install nodejs
     ```
 
-6. For creating tactile graphics to be embossed, you are encouraged to install `rsvg-convert`, which PreFigure uses to convert SVGs into PDFs.  On a Ubuntu, you can say
+6. For creating tactile graphics to be embossed, you are encouraged to install `rsvg-convert`, which PreFigure uses to convert SVGs into PDFs.  On Ubuntu, you can say
 
     ```
     apt install librsvg2-bin
@@ -68,6 +74,8 @@ PreFigure may be installed locally as a Python package in the usual way using `p
     ```
     brew install librsvg
     ```
+
+7. Once installed, the command `prefig init` will install MathJax and the Braille29 font needed to tactile diagrams.  If you do not perform this step, MathJax will be automatically installed when you first build a diagram with mathematical labels.
 
 ## Usage
 
