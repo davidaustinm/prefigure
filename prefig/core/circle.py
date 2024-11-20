@@ -2,6 +2,7 @@ import lxml.etree as ET
 import math
 import numpy as np
 import copy
+import logging
 from . import user_namespace as un
 from . import utilities as util
 from . import math_utilities as math_util
@@ -9,14 +10,24 @@ from . import CTM
 from . import arrow
 from . import label
 
+log = logging.getLogger('prefigure')
+
 # Add graphical elements related to circles
 def circle(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
         finish_outline(element, diagram, parent)
         return
 
-    center = un.valid_eval(element.get('center'))
-    radius = un.valid_eval(element.get('radius', '1'))
+    try:
+        center = un.valid_eval(element.get('center'))
+    except:
+        log.error(f"Error in <circle> parsing center={element.get('center')}")
+        return
+    try:
+        radius = un.valid_eval(element.get('radius', '1'))
+    except:
+        log.error(f"Error in <circle> parsing radius={element.get('radius')}")
+        return
 
     # We could use an SVG ellipse, but we're going to use a path for
     # unions and intersections
@@ -77,8 +88,17 @@ def ellipse(element, diagram, parent, outline_status):
         finish_outline(element, diagram, parent)
         return
 
-    center = un.valid_eval(element.get('center'))
-    axes_length = un.valid_eval(element.get('axes', '(1,1)'))
+    try:
+        center = un.valid_eval(element.get('center'))
+    except:
+        log.error(f"Error in <ellipse> parsing center={element.get('center')}")
+        return
+    try:
+        axes_length = un.valid_eval(element.get('axes', '(1,1)'))
+    except:
+        log.error(f"Error in <ellipse> parsing axes={element.get('axes')}")
+        return
+
     rotate = un.valid_eval(element.get('rotate', '0'))
     if element.get('degrees', 'yes') == 'no':
         rotate = math.degrees(rotate)
@@ -135,8 +155,13 @@ def arc(element, diagram, parent, outline_status):
     element.set('thickness', element.get('thickness','2'))
 
     if element.get('points', None) is not None:
-        points = element.get('points')
-        points = un.valid_eval(points)
+        try:
+            points = element.get('points')
+            points = un.valid_eval(points)
+        except:
+            log.error(f"Error in <arc> parsing points={element.get('points')}")
+            return
+
         center = points[1]
         v = points[0] - points[1]
         u = points[2] - points[1]
@@ -147,9 +172,22 @@ def arc(element, diagram, parent, outline_status):
         angular_range = (start, stop)
         element.set('degrees', 'yes')
     else:
-        center = un.valid_eval(element.get('center'))
-        angular_range = un.valid_eval(element.get('range'))
-    radius = un.valid_eval(element.get('radius'))
+        try:
+            center = un.valid_eval(element.get('center'))
+        except:
+            log.error(f"Error in <arc> parsing center={element.get('center')}")
+            return
+        try:
+            angular_range = un.valid_eval(element.get('range'))
+        except:
+            log.error(f"Error in <arc> parsing range={element.get('range')}")
+            return
+
+    try:
+        radius = un.valid_eval(element.get('radius'))
+    except:
+        log.error(f"Error in <arc> parsing radius={element.get('radius')}")
+        return
     sector = element.get('sector', 'no') == 'yes'
 
     if element.get('degrees', 'yes') == 'no':
@@ -174,7 +212,11 @@ def arc(element, diagram, parent, outline_status):
 #    arc.set('type', 'arc')
     util.cliptobbox(arc, element, diagram)
 
-    arrows = int(element.get('arrows', '0'))
+    try:
+        arrows = int(element.get('arrows', '0'))
+    except:
+        log.warning("Arrows attribute in <arc> must be an integer")
+        arrows = 0
     forward = 'marker-end'
     backward = 'marker-start'
     if element.get('reverse', 'no') == 'yes':
@@ -248,15 +290,27 @@ def angle(element, diagram, parent, outline_status):
 
     points = element.get('points', None)
     if points is None:
-        p = un.valid_eval(element.get('p'))
-        p1 = un.valid_eval(element.get('p1'))
-        p2 = un.valid_eval(element.get('p2'))
+        try:
+            p = un.valid_eval(element.get('p'))
+            p1 = un.valid_eval(element.get('p1'))
+            p2 = un.valid_eval(element.get('p2'))
+        except:
+            log.error("Error in <angle-marker> parsing attributes p, p1, or p2")
+            return
     else:
-        points = un.valid_eval(points)
+        try:
+            points = un.valid_eval(points)
+        except:
+            log.error(f"Error in <angle-marker> parseing points={element.get('points')}")
+            return
         p = points[1]
         p1 = points[0]
         p2 = points[2]
-    radius = un.valid_eval(element.get('radius','30'))
+    try:
+        radius = un.valid_eval(element.get('radius','30'))
+    except:
+        log.error(f"Error in <angle-marker> parsing radius={element.get('radius')}")
+        return
 
     # is this a right angle
     u = math_util.normalize(p1 - p)

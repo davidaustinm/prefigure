@@ -1,12 +1,14 @@
 import os
-import sys
 import lxml.etree as ET
 import numpy as np
+import logging
 from . import tags
 from . import user_namespace as un
 from . import utilities as util
 from . import CTM
 from . import label
+
+log = logging.getLogger('prefigure')
 
 class Diagram:
     def __init__(self, diagram_element, filename,
@@ -93,8 +95,7 @@ class Diagram:
     def get_label_dims(self, element):
         dims = self.label_dims.get(element, None)
         if dims is None:
-            print(f"Cannot find dimensions for {element}")
-            return
+            log.error(f"Cannot find dimensions for a label")
         return dims
 
     def add_id(self, element, id = None):
@@ -131,22 +132,38 @@ class Diagram:
     # transform a point into SVG coordinates
     def transform(self, p):
         ctm, b = self.ctm_stack[-1]
-        return ctm.transform(p)
+        try:
+            return ctm.transform(p)
+        except:
+            log.error(f"Unable to apply coordinate transform to {p}")
+            return np.array([0,0])
 
     def inverse_transform(self, p):
         ctm, b = self.ctm_stack[-1]
-        return ctm.inverse_transform(p)
+        try:
+            return ctm.inverse_transform(p)
+        except:
+            log.error(f"Unable to apply inverse coordinate transform to {p}")
+            return np.array([0,0])
 
     def begin_figure(self):
         # set up the dimensions of the diagram in SVG coordinates
         dims = self.diagram_element.get('dimensions')
-        if dims is None:
-            width = un.valid_eval(self.diagram_element.get('width'))
-            height = un.valid_eval(self.diagram_element.get('height'))
-        else:
-            width, height = un.valid_eval(dims)
+        try:
+            if dims is None:
+                width = un.valid_eval(self.diagram_element.get('width'))
+                height = un.valid_eval(self.diagram_element.get('height'))
+            else:
+                width, height = un.valid_eval(dims)
+        except:
+            log.error("Unable to parse the dimensions of this diagram")
+            return
 
-        margins = un.valid_eval(self.diagram_element.get('margins', '[0,0,0,0]'))
+        try:
+            margins = un.valid_eval(self.diagram_element.get('margins', '[0,0,0,0]'))
+        except:
+            log.error("Unable to parse margins={element.get('margins')}")
+            return
         if not isinstance(margins, np.ndarray):
             margins = [margins] * 4
 
@@ -226,10 +243,14 @@ class Diagram:
         basename = os.path.basename(self.filename)[:-4] + suffix
         output_dir = os.path.join(input_dir, 'output')
         out = os.path.join(output_dir, basename)
-        if not os.path.exists(output_dir):
-            os.mkdir(output_dir)
-        with ET.xmlfile(out + '.svg', encoding='utf-8') as xf:
-            xf.write(self.root, pretty_print=True)
+        try:
+            if not os.path.exists(output_dir):
+                os.mkdir(output_dir)
+            with ET.xmlfile(out + '.svg', encoding='utf-8') as xf:
+                xf.write(self.root, pretty_print=True)
+        except:
+            log.error(f"Unable to write SVG at {out+'.svg'}")
+            return
 
         if self.annotations_root is not None:
             diagram = ET.Element('diagram')
@@ -239,7 +260,11 @@ class Diagram:
                 output_file = out + '.xml'
             else:
                 output_file = out + '-annotations.xml'
-            et.write(output_file, pretty_print=True)
+            try:
+                et.write(output_file, pretty_print=True)
+            except:
+                log.error(f"Unable to write annotations in {output_file}")
+                return
         else:
             try:
                 os.remove(out+'.xml')
@@ -282,8 +307,12 @@ class Diagram:
             for attr, value in child.items():
                 if attr.startswith(prefix):
                     child.set(attr[len(prefix):], value)
-
-            tags.parse_element(child, self, root, outline_status)
+            try:
+                tags.parse_element(child, self, root, outline_status)
+            except Exception as e:
+                log.error(f"Error in parsing element {child.tag}")
+                log.error(str(e))
+                return
             if (
                     child.get('annotate', 'no') == 'yes' and
                     outline_status != 'add_outline'
@@ -383,7 +412,7 @@ class Diagram:
             'stroke-width': str(thickness),
             'stroke': str(stroke),
             'stroke-dasharray': element.get('dash', 'none'),
-            'href': r'#' + element.get('id') + '-outline'
+            'href': r'#' + element.get('id', 'none') + '-outline'
         }
         )
         # labeled points and angle markers are in a <g> with the 
@@ -403,8 +432,8 @@ class Diagram:
 
     def initialize_annotations(self):
         if self.annotations_root is not None:
-            print('Annotations need to be in a single tree')
-            sys.exit()
+            log.error('Annotations need to be in a single tree')
+            return
 
         self.annotations_root = ET.Element('annotations')
 
@@ -458,5 +487,5 @@ class Diagram:
             if path.get('id', None) == shape_id:
                 return path
 
-        print(f"We cannot find a <shape> with @id = {shape_id}")
+        log.error(f"We cannot find a <shape> with id={shape_id}")
         return None

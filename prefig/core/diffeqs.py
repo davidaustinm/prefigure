@@ -1,19 +1,35 @@
 import numpy as np
 import lxml.etree as ET
 import sys
+import logging
 import scipy.integrate
 from . import user_namespace as un
 from . import utilities as util
 from . import arrow
 
+log = logging.getLogger('prefigure')
+
 def de_solve(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
         return
 
-    f = un.valid_eval(element.get('function'))
+    try:
+        f = un.valid_eval(element.get('function'))
+    except:
+        log.error(f"Error in ODE solver:  cannot retrieve function={element.get('function')}")
+        return
 
-    t0 = un.valid_eval(element.get('t0'))
-    y0 = un.valid_eval(element.get('y0'))
+    try:
+        t0 = un.valid_eval(element.get('t0'))
+    except:
+        log.error(f"Error in ODE solver:  cannot retrieve t0={element.get('t0')}")
+        return
+    try:
+        y0 = un.valid_eval(element.get('y0'))
+    except:
+        log.error(f"Error in ODE solver:  cannot retrieve y0={element.get('y0')}")
+        return
+
     if not isinstance(y0, np.ndarray):
         y0 = np.array([y0])
 
@@ -43,12 +59,10 @@ def de_solve(element, diagram, parent, outline_status):
         
     solution = np.stack((solution.t, *solution.y))
 
-    try:
-        name = element.get('name')
-    except KeyError:
-        print('The solution to a differential equation needs a name.  In', 
-              element.get('id', '[element not named]'))
-        sys.exit()
+    name = element.get('name', None)
+    if name is None:
+        log.error(f"Error in ODE solver setting name={element.get('name')}")
+        return
     un.enter_namespace(name, solution)
 
 def plot_de_solution(element, diagram, parent, outline_status):
@@ -59,16 +73,25 @@ def plot_de_solution(element, diagram, parent, outline_status):
         element.set('name', '__de_solution')
         de_solve(element, diagram, parent, None)
         solution = un.valid_eval('__de_solution')
-    else:   
-        solution = un.valid_eval(element.get('solution'))
+    else:
+        try:
+            solution = un.valid_eval(element.get('solution'))
+        except:
+            log.error(f"Error in <plot-de-solution> finding solution={element.get('solution')}")
+            return
 
     # The author can specify which quantities to plot through the axes attribute
     # We'll just treat this as a string and break out the quantities on
     # the x and y axes.  By default, the axes are t and y, which would be apppropriate
     # for a single ODE.  For a system, phase portraits can be constructed using
     # axes='(y0, y1)', for instance, as the axes
-    axes = element.get('axes', '(t,y)'). strip()[1: -1].split(',')
-    x_axis, y_axis = [a.strip() for a in axes]
+
+    try:
+        axes = element.get('axes', '(t,y)'). strip()[1: -1].split(',')
+        x_axis, y_axis = [a.strip() for a in axes]
+    except:
+        log.error(f"Error in <plot-de-solution> setting axes={element.get('axes')}")
+        return
 
     if x_axis.startswith('y'):
         axis0 = solution[int(x_axis[1:])+1]

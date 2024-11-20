@@ -4,10 +4,13 @@ import lxml.etree as ET
 import shapely
 import numpy as np
 import re
+import logging
 from . import user_namespace as un
 from . import utilities as util
 from . import math_utilities as math_util
 from . import tags
+
+log = logging.getLogger('prefigure')
 
 # these are the tags that can define shapes
 allowed_shapes = {
@@ -29,7 +32,7 @@ def define(element, diagram, parent, outline_status):
         return
     for child in element:
         if child.tag not in allowed_shapes:
-            print(f"{child.tag} does not define a shape")
+            log.error(f"In <define-shapes>, {child.tag} does not define a shape")
             continue
         if child.get('at', None) is not None:
             child.set('id', child.get('at'))
@@ -55,7 +58,7 @@ def shape(element, diagram, parent, outline_status):
     if reference is None:
         reference = element.get('shape', None)
         if reference is None:
-            print('A <shape> tag needs a @shape or @shapes attribute')
+            log.error('A <shape> tag needs a @shape or @shapes attribute')
             return
 
     shape_refs = [r.strip() for r in reference.split(',')]
@@ -63,7 +66,7 @@ def shape(element, diagram, parent, outline_status):
     for ref in shape_refs:
         shapes.append(diagram.recall_shape(ref))
         if shapes[-1] is None:
-            print(f"{ref} is not a reference to a shape")
+            log.error(f"{ref} is not a reference to a shape")
             shapes.pop(-1)
 
     operation = element.get('operation', None)
@@ -80,33 +83,34 @@ def shape(element, diagram, parent, outline_status):
         if operation == 'convex-hull':
             style = 'linestring'
 
+        log.info(f"Applying shape operation {operation}")
         geometries = [build_shapely_geom(path,style=style) for path in paths]
         for geom, ref in zip(geometries, shape_refs):
             if not geom.is_valid:
-                print(f"The shape {ref} is not a valid shapely geometry")
-                print(f"  Perhaps it is not defined by a simple curve")
-                print(f"  See the shapely documentation for the operation: {operation}")
+                log.error(f"The shape {ref} is not a valid shapely geometry")
+                log.error(f"  Perhaps it is not defined by a simple curve")
+                log.error(f"  See the shapely documentation for the operation: {operation}")
                 return
         if operation == 'intersection':
             if len(paths) < 2:
-                print('Intersections require more than one shape')
+                log.error('Intersections require more than one shape')
                 return
             result = shapely.intersection_all(geometries)
         if operation == 'union':
             if len(paths) < 2:
-                print('Unions require more than one shape')
+                log.error('Unions require more than one shape')
                 return
             result = shapely.union_all(geometries)
         if operation == 'difference':
             if len(paths) != 2:
-                print('Differences require exactly two shapes')
+                log.error('Differences require exactly two shapes')
                 return
             result = shapely.difference(geometries[0],
                                         geometries[1])
         if (operation == 'symmetric-difference' or
             operation == 'sym-diff'):
             if len(paths) < 2:
-                print('Symmetric differences require more than one shape')
+                log.error('Symmetric differences require more than one shape')
                 return
             result = shapely.symmetric_difference_all(geometries)
             operation = 'symmetric difference'
@@ -117,7 +121,7 @@ def shape(element, diagram, parent, outline_status):
             operation = 'convex hull'
             
         if shapely.is_empty(result):
-            print(f"The {operation} defined by {reference} is empty")
+            log.warning(f"The {operation} defined by {reference} is empty")
             return
 
         if isinstance(result, shapely.MultiPolygon):
@@ -200,7 +204,7 @@ def build_shapely_geom(path, N=30, style=None):
                 polygons.append(shapely.LineString(points))
             points = []
             continue
-        print(f"PreFigure did not recognize the token {token} when building shapely geometry")
+        log.warning(f"Unrecognized token {token} when building shapely geometry")
     if len(points) > 0:
         if style is None:
             polygons.append(shapely.Polygon(points))

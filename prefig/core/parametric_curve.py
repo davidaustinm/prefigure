@@ -1,17 +1,29 @@
 ## Add a graphical element describing a parametric curve
 
 import lxml.etree as ET
+import logging
 from . import user_namespace as un
 from . import utilities as util
 from . import arrow
+
+log = logging.getLogger('prefigure')
 
 def parametric_curve(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
         finish_outline(element, diagram, parent)
         return
 
-    f = un.valid_eval(element.get('function'))
-    domain = un.valid_eval(element.get('domain'))
+    try:
+        f = un.valid_eval(element.get('function'))
+    except:
+        log.error(f"Error in <parametric-curve> defining function={element.get('function')}")
+        return
+    try:
+        domain = un.valid_eval(element.get('domain'))
+    except:
+        log.error(f"Error in <parametric-curve> defining domain={element.get('domain')}")
+        return
+
     N = int(element.get('N', '100'))
 
     t = domain[0]

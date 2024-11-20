@@ -3,6 +3,7 @@ import sys
 import re
 import math
 import inspect
+import logging
 from pathlib import Path
 import numpy as np
 import lxml.etree as ET
@@ -10,6 +11,8 @@ from . import utilities as util
 from . import CTM
 from . import user_namespace as un
 import tempfile
+
+log = logging.getLogger('prefigure')
 
 # Flag to detect whether cairo has been loaded
 cairo_loaded = False
@@ -157,7 +160,11 @@ def label(element, diagram, parent, outline_status = None):
 # Allow substitutions from the user namespace
 def evaluate_text(text):
     tokens = re.split(r"(\${[^}]*})", text)
-    return ''.join([str(un.valid_eval(token[2:-1])) if token.startswith('${') else token for token in tokens])
+    try:
+        return ''.join([str(un.valid_eval(token[2:-1])) if token.startswith('${') else token for token in tokens])
+    except:
+        log.error(f"Error in label evaluating {text}")
+        return ""
 
 def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     # if there are no labels, there's nothing to do
@@ -190,13 +197,20 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     mj_dir_str = str(mj_dir)
 
     if not (mj_dir / 'mj-sre-page.js').exists():
+        log.info("MathJax installation not found so we will install it")
         from .. import scripts
-        scripts.install_mj.main()
-            
+        success = scripts.install_mj.main()
+        if not success:
+            log.error("Cannot create labels without MathJax")
+            return
 
     mj_command = 'node {}/mj-sre-page.js --{} {} {} > {}'.format(mj_dir_str, format, options, mj_input, mj_output)
-
-    os.system(mj_command)
+    log.debug("Using MathJax to produce mathematical labels")
+    try:
+        os.system(mj_command)
+    except:
+        log.error("Production of mathematical labels with MathJax was unsuccessful")
+        return
     label_tree = ET.parse(mj_output)
 
     # for braille output, we'll create a group to hold all the labels
@@ -206,9 +220,9 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
             global louis
             import louis
         except:
-            print('Failed to import louis so we cannot make braille labels')
-            print('See the installation instructions at https://prefigure.org')
-            print('The rest of the diagram will still be built.')
+            log.warning('Failed to import louis so we cannot make braille labels')
+            log.warning('See the installation instructions at https://prefigure.org')
+            log.warning('The rest of the diagram will still be built.')
             return
         background_group = ET.SubElement(root, 'g')
         background_group.set('id', 'background-group')
@@ -237,19 +251,31 @@ def position_braille_label(element, diagram, ctm,
 
     # Determine the anchor point p and then adjust it using
     # the alignment and offset
-    if element.get('user-coords', 'yes') == 'yes':
-        p = ctm.transform(un.valid_eval(element.get('p')))
-    else:
-        p = un.valid_eval(element.get('p'))
+    try:
+        if element.get('user-coords', 'yes') == 'yes':
+            p = ctm.transform(un.valid_eval(element.get('p')))
+        else:
+            p = un.valid_eval(element.get('p'))
+    except:
+        log.error(f"Error in label parsing anchor={element.get('p')}")
+        return
     alignment = util.get_attr(element, 'alignment', 'center')
-    displacement = braille_displacement[alignment]
+    try:
+        displacement = braille_displacement[alignment]
+    except:
+        log.error(f"Unknown alignment in label: {alignment}")
+        return
 
     # TODO:  improve automatic tactile offsets
     offset = util.get_attr(element, 'abs-offset', 'none')
     if offset == 'none':
         offset = [8*(displacement[0] + 0.5), 8*(displacement[1]+0.5)]
     else:
-        offset = un.valid_eval(offset)
+        try:
+            offset = un.valid_eval(offset)
+        except:
+            log.error(f"Error in label parsing abs-offset")
+            return
 
     offset = [o + 6*np.sign(o) for o in offset]
     if displacement[0] == 0:
@@ -274,7 +300,11 @@ def position_braille_label(element, diagram, ctm,
         offset = [-10, 12]
 
     if element.get('offset', None) is not None:
-        relative_offset = un.valid_eval(element.get('offset'))
+        try:
+            relative_offset = un.valid_eval(element.get('offset'))
+        except:
+            log.error(f"Error in label parsing offset={element.get('offset')}")
+            return
         offset = [offset[0] + relative_offset[0],
                   offset[1] + relative_offset[1]]
 
@@ -295,7 +325,7 @@ def position_braille_label(element, diagram, ctm,
             row.append([el.text, 'it'])
             for child in el:
                 if child.tag != 'b':
-                    print(f"<{child.tag}> is not allowed inside a <it>")
+                    log.error(f"<{child.tag}> is not allowed inside a <it>")
                     continue
                 row.append([child.text, 'it'])
                 row.append([child.tail, 'it'])
@@ -304,7 +334,7 @@ def position_braille_label(element, diagram, ctm,
             row.append([el.text, 'b'])
             for child in el:
                 if child.tag != 'it':
-                    print(f"<{child.tag}> is not allowed inside a <b>")
+                    log.error(f"<{child.tag}> is not allowed inside a <b>")
                     continue
                 row.append([child.text, 'b'])
                 row.append([child.tail, 'b'])
@@ -356,14 +386,17 @@ def position_braille_label(element, diagram, ctm,
                 row_text += braille_text
             else:
                 m_tag_id = el.get('id')
-
-                div = label_tree.xpath("//html/body/div[@id = '{}']".format(m_tag_id))[0]
-
+                try:
+                    div = label_tree.xpath("//html/body/div[@id = '{}']".format(m_tag_id))[0]
+                except:
+                    log.error("Error retrieving a mathematical label")
+                    log.error("  Perhaps it was not created due to an earlier error")
+                    return
                 try:
                     insert = div.xpath('mjx-data/mjx-braille')[0]
                 except IndexError:
-                    print('Error in processing label, possibly a LaTeX error: ' + div.text)
-                    sys.exit()
+                    log.error(f"Error in processing label, possibly a LaTeX error: {div.text}")
+                    continue
                 row_text += insert.text
                 if len(row) > 0:
                     row_text += space
@@ -436,21 +469,37 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
     # Determine the anchor point p and then adjust it using
     # the alignment and offset
     # TODO:  improve auto offsets
-    if element.get('user-coords', 'yes') == 'yes':
-        p = ctm.transform(un.valid_eval(element.get('p')))
-    else:
-        p = un.valid_eval(element.get('p'))
+    try:
+        if element.get('user-coords', 'yes') == 'yes':
+            p = ctm.transform(un.valid_eval(element.get('p')))
+        else:
+            p = un.valid_eval(element.get('p'))
+    except:
+        log.error(f"Error in label parsing anchor={element.get('p')}")
+        return
     alignment = util.get_attr(element, 'alignment', 'center')
-    displacement = alignment_displacement[alignment]
+    try:
+        displacement = alignment_displacement[alignment]
+    except:
+        log.error(f"Unknown alignment in label: {alignment}")
+        return
 
     offset = util.get_attr(element, 'abs-offset', 'none')
     if offset == 'none':
         offset = [8*(displacement[0] + 0.5), 8*(displacement[1]-0.5)]
     else:
-        offset = un.valid_eval(offset)
+        try:
+            offset = un.valid_eval(offset)
+        except:
+            log.error(f"Error in label parsing abs-offset={element.get('abs-offset')}")
+            return
 
     if element.get('offset', None) is not None:
-        relative_offset = un.valid_eval(element.get('offset'))
+        try:
+            relative_offset = un.valid_eval(element.get('offset'))
+        except:
+            log.error(f"Error in label parsing offset={element.get('offset')}")
+            return
         offset = [offset[0] + relative_offset[0],
                   offset[1] + relative_offset[1]]
 
@@ -482,7 +531,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
             row.append((el.text, it_font_face))
             for child in el:
                 if child.tag != 'b':
-                    print(f"<{child.tag}> is not allowed inside a <it>")
+                    log.error(f"<{child.tag}> is not allowed inside a <it>")
                     continue
                 row.append((child.text, it_b_font_face))
                 row.append((child.tail, it_font_face))
@@ -491,7 +540,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
             row.append((el.text, b_font_face))
             for child in el:
                 if child.tag != 'it':
-                    print(f"<{child.tag}> is not allowed inside a <b>")
+                    log.error(f"<{child.tag}> is not allowed inside a <b>")
                     continue
                 row.append((child.text, it_b_font_face))
                 row.append((child.tail, b_font_face))
@@ -534,6 +583,8 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
         above = [0]
         below = [0]
         for el in row:
+            if el is None:
+                continue
             width += el[1]
             above.append(el[2])
             below.append(el[3])
@@ -566,6 +617,8 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
         if justify == 'right':
             x_location = width - row_width
         for el in row:
+            if el is None:
+                continue
             component = el[0]
             component.set('x', util.float2str(x_location))
             x_location += el[1] + space
@@ -651,8 +704,8 @@ def mk_m_element(m_tag, label_tree, label_group):
         insert = div.xpath('mjx-data/mjx-container/svg:svg',
                            namespaces=ns)[0]
     except IndexError:
-        print('Error in processing label, possibly a LaTeX error: ' + div.text)
-        sys.exit()
+        log.error(f"Error in processing label, possibly a LaTeX error: {div.text}")
+        return None
 
     # Express dimensions in px for rsvg-convert
     dim_dict = {}
@@ -686,9 +739,9 @@ def cairo_init():
     try:
         import cairo
     except:
-        print('Error importing Python package cairo, which is required for non-mathemaical labels.')
-        print('See the PreFigure installation instructions at https://prefigure.org')
-        print('The rest of the diagram will still be built')
+        log.warning('Error importing Python package cairo, which is required for non-mathemaical labels.')
+        log.warning('See the PreFigure installation instructions at https://prefigure.org')
+        log.warning('The rest of the diagram will still be built')
         return
 
     # Great.  We have cairo so now we set the flag and construct the context

@@ -1,9 +1,11 @@
 import subprocess
 import sys
 import os
+import logging
 from pathlib import Path
 import shutil
 
+log = logging.getLogger('prefigure')
 
 def main():
     prefig_root = Path(__file__).parent.parent
@@ -21,14 +23,14 @@ def main():
     # on Windows and linux
     wd = os.getcwd()
     os.chdir(destination)
-    print(f"Installing MathJax libraries in {destination}")
+    log.info(f"Installing MathJax libraries in {destination}")
     try:
         subprocess.run(["npm", "install"]) #, f"--prefix={destination}"])
     except:
-        print("MathJax installation failed.  Is npm installed on your system?")
-        sys.exit()
+        log.error("MathJax installation failed.  Is npm installed on your system?")
+        return False
     os.chdir(wd)
-
+    return True
         
 if __name__ == "__main__":
     main()

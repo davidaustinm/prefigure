@@ -1,6 +1,7 @@
 import lxml.etree as ET
 import copy
 import numpy as np
+import logging
 from . import user_namespace as un
 from . import utilities as util
 from . import tags
@@ -8,6 +9,7 @@ from . import label
 from . import point
 from . import CTM
 
+log = logging.getLogger('prefigure')
 
 # This feels a little hack-y and I'm somewhat ambivalent about legends
 # as they may not be a good practice for tactile diagrams.
@@ -30,7 +32,11 @@ class Legend:
         # let's get some basic data about the legend
         # self.def_anchor holds the SVG coordinates of the anchor
         anchor_str = element.get('anchor', '(bbox[2],bbox[3])')
-        user_anchor = un.valid_eval(anchor_str)
+        try:
+            user_anchor = un.valid_eval(anchor_str)
+        except:
+            log.error(f"Error in <legend> evaluating anchor={anchor_str}")
+            return
         self.def_anchor = diagram.transform(user_anchor)
         
         alignment = element.get('alignment')
@@ -52,7 +58,7 @@ class Legend:
         dummy_group = ET.Element('g')
         for num, li in enumerate(element):
             if li.tag != 'item':
-                print(f"{li.tag} is not allowed inside a <legend>")
+                log.warning(f"{li.tag} is not allowed inside a <legend>")
                 continue
 
             # first we'll create the label
@@ -71,7 +77,7 @@ class Legend:
             search = f'//*[@id="{ref}"]'
             references = diagram.diagram_element.xpath(search)
             if len(references) != 1:
-                print(f"{ref} should refer to exactly one element")
+                log.warning(f"{ref} should refer to exactly one element")
                 continue
             key = references[0]
             if key.tag == 'point':
@@ -84,7 +90,7 @@ class Legend:
                 fill =  key.get('fill')
                 if fill is None or fill == 'none':
                     key_el = ET.Element('line')
-                    key_el.set('stroke', key.get('stroke'))
+                    key_el.set('stroke', key.get('stroke', 'none'))
                     dash = key.get('dash', None)
                     if dash is not None:
                         key_el.set('stroke-dasharray', dash)
@@ -92,7 +98,7 @@ class Legend:
                     key = key_el
                 else:
                     key_el = ET.Element('point')
-                    key_el.set('stroke', key.get('stroke'))
+                    key_el.set('stroke', key.get('stroke', 'none'))
                     key_el.set('fill', fill)
                     key_el.set('style', key.get('style', 'box'))
                     key_el.set('size', '5')
@@ -114,7 +120,11 @@ class Legend:
         # We're doing this at the very end so the diagram.ctm is the default
         outer_padding = 5
         center_padding = 10
-        interline = un.valid_eval(self.element.get('vertical-skip', '7'))
+        try:
+            interline = un.valid_eval(self.element.get('vertical-skip', '7'))
+        except:
+            log.warning(f"Error in <legend> evaluating vertical-skip={element.get('vertical-skip')}")
+            vertical_skip = 7
         height = outer_padding
         label_width = 0
 
@@ -123,6 +133,9 @@ class Legend:
             key, label = self.li_dict[li]
             label_dims = self.diagram.get_label_dims(label)
             if label_dims is None:  # this label probably has plain text
+                log.warning("There is a missing label in a <legend>")
+                log.warning("  This is probably due to including plain text without access to pycairo")
+                log.warning("  See PreFigure installation instructions at https://prefigure.org")
                 continue
             height += label_dims[1] + interline
             label_width = max(label_width, label_dims[0])
@@ -163,6 +176,8 @@ class Legend:
             key, label = self.li_dict[li]
             label_dims = self.diagram.get_label_dims(label)
             if label_dims is None:
+                log.warning("There is a missing label in a <legend>")
+                log.warning("  This was likely detected earlier")
                 continue
             label_group = self.diagram.get_label_group(label)[0]
             tform = CTM.translatestr(label_x, y)
@@ -228,7 +243,13 @@ class Legend:
         # Find dimensions of the bounding box
         for li in self.element:
             key, label = self.li_dict[li]
-            label_dims = self.diagram.get_label_dims(label)
+            try:
+                label_dims = self.diagram.get_label_dims(label)
+            except:
+                log.warning("Error finding a label in a <legend>")
+                log.warning("  Is liblouis installed?")
+                log.warning("  See PreFigure installation instructions at https://prefigure.org")
+                continue
             height += label_dims[1] + interline
             label_width = max(label_width, label_dims[0])
         height += outer_padding - interline
@@ -272,7 +293,10 @@ class Legend:
         y = outer_padding
         for num, li in enumerate(self.element):
             key, label = self.li_dict[li]
-            label_dims = self.diagram.get_label_dims(label)
+            try:
+                label_dims = self.diagram.get_label_dims(label)
+            except:
+                continue
             label_group = self.diagram.get_label_group(label)[0]
             label_x = gap * round(label_x/gap)
             y = gap * round(y/gap)

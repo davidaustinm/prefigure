@@ -1,9 +1,12 @@
 import sys
 import argparse
 import importlib
+import logging
 import lxml.etree as ET
 from . import diagram
 from . import user_namespace
+
+log = logging.getLogger('prefigure')
 
 # This function does the main work of constructing a diagram.
 # This can be called from outside the project to allow, say,
@@ -15,16 +18,44 @@ def mk_diagram(element, format, publication,
     diag = diagram.Diagram(element, filename, diagram_number, 
                            format, output, publication,
                            standalone)
-    diag.begin_figure()
-    diag.parse()
-    diag.place_labels()
-    diag.end_figure()
+    log.debug("Initializing PreFigure diagram")
+    try:
+        diag.begin_figure()
+    except:
+        log.error("There was a problem initializing the PreFigure diagram")
+        log.error("Debugging information is available with 'prefig -vv build filename'")
+        return
+    log.debug("Processing PreFigure elements")
+    try:
+        diag.parse()
+    except:
+        log.error("There was a problem parsing a PreFigure element")
+        log.error("Debugging information is available with 'prefig -vv build filename'")
+        return
+    log.debug("Positioning labels")
+    try:
+        diag.place_labels()
+    except:
+        log.error("There was a problem placing the labels in the diagram")
+        log.error("Debugging information is available with 'prefig -vv build filename'")
+        return
+    log.debug("Writing the diagram and any annotations")
+    try:
+        diag.end_figure()
+    except:
+        log.error("There was a problem finishing the diagram")
+        log.error("Debugging information is available with 'prefig -vv build filename'")
+        return
 
 def parse(filename, format, pub_file, standalone):
     # Load the publication file, if there is one
     ns = {'pf': 'https://prefigure.org'}
     if pub_file is not None:
-        publication = ET.parse(pub_file)
+        try:
+            publication = ET.parse(pub_file)
+        except:
+            log.error(f"Unable to parse publication file {pub_file}")
+            return
         pubs_with_ns = publication.xpath('//pf:prefigure', namespaces=ns)
         pubs_without_ns = publication.xpath('//prefigure', namespaces=ns)
         try:
@@ -34,7 +65,7 @@ def parse(filename, format, pub_file, standalone):
                     continue
                 child.tag = ET.QName(child).localname
         except IndexError:
-            print('Publication file should have a <prefigure> element')
+            log.warning('Publication file should have a <prefigure> element')
             publication = None
     else:
         publication = None
@@ -73,7 +104,7 @@ def check_duplicate_handles(element, handles):
         for id in [id1, id2]:
             if id is not None:
                 if id in handles:
-                    print(f"Duplicate handle: {id}.  Unexpected behavior could result.")
+                    log.warning(f"Duplicate handle: {id}.  Unexpected behavior could result.")
                 else:
                     handles.add(id)
         check_duplicate_handles(child, handles)

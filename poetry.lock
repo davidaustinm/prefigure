@@ -15,6 +15,20 @@ files = [
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
+name = "click-log"
+version = "0.4.0"
+description = "Logging integration for Click"
+optional = false
+python-versions = "*"
+files = [
+    {file = "click-log-0.4.0.tar.gz", hash = "sha256:3970f8570ac54491237bcdb3d8ab5e3eef6c057df29f8c3d1151a51a9c23b975"},
+    {file = "click_log-0.4.0-py2.py3-none-any.whl", hash = "sha256:a43e394b528d52112af599f2fc9e4b7cf3c15f94e53581f74fa6867e68c91756"},
+]
+
+[package.dependencies]
+click = "*"
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -584,4 +598,4 @@ pycairo = ["pycairo"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.5"
-content-hash = "7210e7e01aefd0dd1cccdadcb42e3ff07c4c9af1b8176ede95823adb862f0058"
+content-hash = "6378374fc22e183677fa3719f3f7c482be6e5d860bd01188bd8cbae812f676ef"

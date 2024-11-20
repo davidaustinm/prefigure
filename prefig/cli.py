@@ -1,13 +1,23 @@
 import click
+import click_log
 import os
+import sys
 import psutil
 import shutil
 import subprocess
 import time
+import logging
 import webbrowser
 from pathlib import Path
 from . import core
 from . import engine
+
+# the log is configured inside engine and will be available now
+log = logging.getLogger('prefigure')
+log.handlers.clear()
+click_handler = logging.StreamHandler(sys.stdout)
+click_handler.setFormatter(click_log.ColorFormatter())
+log.addHandler(click_handler)
 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -15,7 +25,13 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 @click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS)
 @click.pass_context
-def main(ctx):
+@click.option(
+    '-v',
+    '--verbose',
+    count=True,
+    help='-v for information and -vv for debugging'
+)
+def main(ctx, verbose):
     '''
     This is the command line interface to PreFigure 
 
@@ -24,6 +40,10 @@ def main(ctx):
     For help with a specific command, append --help to the command,
     e.g. prefig build --help
     '''
+    if verbose == 1:
+        log.setLevel(logging.INFO)
+    elif verbose > 1:
+        log.setLevel(logging.DEBUG)
     if ctx.invoked_subcommand is None:
         click.echo("Run `prefig --help` for help.")
 
@@ -32,7 +52,9 @@ def main(ctx):
     help="Initializes the local installation of PreFigure"
 )
 def init():
-    click.echo('Initializing PreFigure installation')
+    log_level = log.getEffectiveLevel()
+    log.setLevel(log_level)
+    log.info('Initializing PreFigure installation')
 
     prefig_root = Path(__file__).parent
     destination = prefig_root / "core" / "mj_sre"
@@ -49,15 +71,15 @@ def init():
     # on Windows and linux
     wd = os.getcwd()
     os.chdir(destination)
-    click.echo(f"Installing MathJax libraries in {destination}")
+    log.info(f"Installing MathJax libraries in {destination}")
     try:
         subprocess.run(["npm", "install"]) #, f"--prefix={destination}"])
     except:
-        click.echo("MathJax installation failed.  Is npm installed on your system?")
-        return
+        log.warning("MathJax installation failed.  Is npm installed on your system?")
+        log.setLevel(log_level)
     os.chdir(wd)
 
-    click.echo("Installing the Braille29 font")
+    log.info("Installing the Braille29 font")
     home = Path(os.path.expanduser('~'))
     source = prefig_root / 'resources' / 'fonts'
     shutil.copytree(
@@ -68,18 +90,21 @@ def init():
 
     try:
         subprocess.run(['fc-cache', '-f'])
-        click.echo("Successfully installed the Braille29 font")
+        log.info("Successfully installed the Braille29 font")
     except:
-        click.echo("Unable to install the Braille29 font")
+        log.warning("Unable to install the Braille29 font")
 
-    click.echo("PreFigure initialization is complete")
+    log.info("PreFigure initialization is complete")
+    log.setLevel(log_level)
 
 
 @main.command(
     help="Sets up a new PreFigure project"
 )
 def new():
-    click.echo("Setting up new PreFigure project")
+    log_level = log.getEffectiveLevel()
+    log.setLevel(logging.INFO)
+    log.info("Setting up new PreFigure project")
 
     prefig_root = Path(__file__).parent
     source = prefig_root / 'resources' / 'diagcess'
@@ -100,13 +125,16 @@ def new():
     )
 
     os.makedirs(cwd / 'source', exist_ok = True)
+    log.setLevel(log_level)
 
     
 @main.command(
     help="Installs PreFigure examples in current directory"
 )
 def examples():
-    click.echo("Installing PreFigure examples into current directory")
+    log_level = log.getEffectiveLevel()
+    log.setLevel(logging.INFO)
+    log.info("Installing PreFigure examples into current directory")
 
     prefig_root = Path(__file__).parent
     source = prefig_root / 'resources' / 'examples'
@@ -117,6 +145,8 @@ def examples():
         cwd / 'examples',
         dirs_exist_ok = True
     )
+
+    log.setLevel(log_level)
 
 
 @main.command(
@@ -296,6 +326,9 @@ def png(
 )
 def view(filename, ignore_annotations, restart_server, port):
     # Let's look for the diagcess tools, possibly in a parent directory
+    log_level = log.getEffectiveLevel()
+    log.setLevel(logging.INFO)
+
     cwd = Path(os.getcwd())
     dirs = [cwd] + list(cwd.parents)
     diagcess_dir = None
@@ -333,7 +366,7 @@ def view(filename, ignore_annotations, restart_server, port):
     try:
         os.chdir(path.parent)
     except:
-        print(f"There is no directory {path.parent}")
+        log.warning(f"There is no directory {path.parent}")
         return
 
     for dir, dirs, files in os.walk(os.getcwd()):
@@ -341,7 +374,7 @@ def view(filename, ignore_annotations, restart_server, port):
         if path.name in files:
             view_path = path.parent / dir / path.name
     if view_path is None:
-        click.echo(f'Unable to find {filename}')
+        log.warning(f'Unable to find {filename}')
         return
 
     # We are going to start the server from the home directory
@@ -369,7 +402,7 @@ def view(filename, ignore_annotations, restart_server, port):
         # Don't worry about annotations so just open the SVG in a browser
         file_rel_path = os.path.relpath(view_path, home_dir)
         url = f'{url_preamble}/{file_rel_path}'
-        print(f'Opening webpage in {SECONDS} seconds at {url}')
+        log.info(f'Opening webpage in {SECONDS} seconds at {url}')
         time.sleep(SECONDS)
         webbrowser.open(url)
     else:
@@ -381,9 +414,10 @@ def view(filename, ignore_annotations, restart_server, port):
         ## TODO:  what is diagcess_rel_path is empty?
         url = f'{url_preamble}/{diagcess_rel_path}?mole={file_rel_path}'
         SECONDS = 2
-        print(f'Opening diagcess in {SECONDS} seconds at {url}')
+        log.info(f'Opening diagcess in {SECONDS} seconds at {url}')
         time.sleep(SECONDS)
         webbrowser.open(url)
+    log.setLevel(log_level)
 
         
 def find_active_server(port, restart):
@@ -395,12 +429,13 @@ def find_active_server(port, restart):
             if len(connections) > 0:
                 active_port = str(connections[0].laddr.port)
                 if restart or active_port != port:
-                    print('Restarting server')
+                    log.info('Restarting server')
                     proc.terminate()
                     return None
                 return active_port
         except:
             pass
+    log.warning("Unable to restart server")
     return None
 
 @main.command(

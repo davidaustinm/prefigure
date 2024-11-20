@@ -7,9 +7,24 @@ import logging
 import lxml.etree as ET
 
 # We're going to include some basic functions here so they can be
-# called from an import
+# called either from the standalone CLI or from within PreTeXt
 
-#log = logging.getLogger('ptxlogger')
+# First we set up logging.  Unless requested, we won't report a lot
+log = logging.getLogger('prefigure')
+log.setLevel(logging.WARNING)
+
+# Now set up the format of log messgaes
+console = logging.StreamHandler()
+log_format = logging.Formatter('PreFigure: %(levelname)-8s: %(message)s')
+console.setFormatter(log_format)
+log.addHandler(console)
+
+# are we inside PreTeXt?  If so, we check its verbosity level of log messages
+ptx_log_name = 'ptxlogger'
+if ptx_log_name in logging.Logger.manager.loggerDict:
+    ptx_log = logging.getLogger('ptx_log_name')
+    if ptx_log.getEffectiveLevel() == logging.DEBUG:
+        log.setLevel(logging.DEBUG)
 
 def build(
         format,
@@ -18,15 +33,14 @@ def build(
         ignore_publication=False,
         standalone=False
 ):
+    pub_requested = not ignore_publication and publication is not None
     path = Path(filename)
     if path.suffix != '.xml':
         filename = str(path.parent / (path.stem + '.xml'))
 
-#    log.info(f'Building from PreFigure source {filename}')
-
     # We're going to look for a publication, possibly in a parent directory
     # unless we're told to ignore any publication file
-    if ignore_publication:
+    if ignore_publication and publication is None:
         publication = None
     else:
         if publication is None:
@@ -35,11 +49,22 @@ def build(
             pub_name = publication
         cwd = Path(os.getcwd())
         dirs = [cwd] + list(cwd.parents)
+        pub_file_found = False
         for dir in dirs:
             pub = dir / pub_name
             if pub.exists():
                 publication = pub
+                log.info(f"Applying PreFigure publication file {publication}")
+                pub_file_found = True
                 break
+        if publication is None or not pub_file_found:
+            publication = None
+            if pub_requested:
+                log.warning("PreFigure publication file not found")
+            else:
+                log.info("No PreFigure publication file applied.")
+
+    log.info(f"Building from PreFigure source {filename}")
 
     core.parse.parse(filename, format, publication, standalone)
     return filename
@@ -75,17 +100,17 @@ def pdf(
             if filename_str in files:
                 build_path = dir / filename
         if build_path is None:
-#            log.debug(f'Unable to find {filename}')
+            log.debug(f"Unable to find {filename}")
             return
 
     dpi = str(dpi)
     executable = shutil.which('rsvg-convert')
     if executable is None:
-#        log.debug('rsvg-convert is required to create PDFs.')
-#        log.debug('See the installation instructions at https://prefigure.org')
+        log.debug("rsvg-convert is required to create PDFs.")
+        log.debug("See the installation instructions at https://prefigure.org")
         return
     
-#    log.info(f'Converting {build_path} to PDF')
+    log.info(f"Converting {build_path} to PDF")
     output_file = build_path.parent / (build_path.stem + '.pdf')
     pdf_args = ['-a','-d',dpi,'-p',dpi,'-f','pdf','-o']
     pdf_args = ['rsvg-convert'] + pdf_args + [output_file,build_path]
@@ -93,8 +118,8 @@ def pdf(
     try:
         subprocess.run(pdf_args)
     except:
-        print("PreFigure PDF conversion failed.  Is rsvg-convert available?")
-        print("See the installation instructions athttps://prefigure.org")
+        log.error("PreFigure PDF conversion failed.  Is rsvg-convert available?")
+        log.error("See the installation instructions athttps://prefigure.org")
 
     if not standalone:
         os.remove(build_path)
@@ -133,10 +158,10 @@ def png(
             if filename_str in files:
                 build_path = dir / filename
         if build_path is None:
-#            log.debug(f'Unable to find {filename}')
+            log.debug(f"Unable to find {filename}")
             return
 
-#    log.info(f'Converting {build_path} to PDF')
+    log.info(f"Converting {build_path} to PDF")
     output_file = build_path.parent / (build_path.stem + '.png')
 
     # we use rsvg-convert to make a PNG with dpi=300
@@ -145,8 +170,8 @@ def png(
     try:
         subprocess.run(png_args)
     except:
-        print("PreFigure PNG conversion failed.  Is rsvg-convert available?")
-        print("See the installation instructions at https://prefigure.org")
+        log.error("PreFigure PNG conversion failed.  Is rsvg-convert available?")
+        log.error("See the installation instructions at https://prefigure.org")
 
     if not standalone:
         os.remove(build_path)
@@ -157,13 +182,22 @@ def png(
             pass
 
 def validate_source(xml_file):
+    log_level = log.getEffectiveLevel()
+    log.setLevel(logging.INFO)
     # we first load the RelaxNG schema
     engine_dir = Path(__file__).parent
     schema_rng = engine_dir / "resources" / "schema" / "pf_schema.rng"
     schema = ET.RelaxNG(file=schema_rng)
 
+    log.info(f"Validating {xml_file} with PreFigure schema {schema_rng}")
+
     # now load the XML file and look for diagrams either in a pf namespace or no
-    tree = ET.parse(xml_file)
+    try:
+        tree = ET.parse(xml_file)
+    except:
+        log.error(f"Could not load {xml_file}")
+        log.setLevel(log_level)
+        return
     ns = {'pf':'https://prefigure.org'}
     pf_diagrams = tree.xpath('//pf:diagram', namespaces=ns)
     diagrams = tree.xpath('//diagram')
@@ -195,14 +229,14 @@ def validate_source(xml_file):
         try:
             schema.assertValid(diagram)
             if len(all_diagrams) == 1:
-                print("Diagram is valid for SVG production")
+                log.info("Diagram is valid for SVG production")
             else:
-                print(f"diagram {num+1} is valid for SVG production")
+                log.warning(f"diagram {num+1} is valid for SVG production")
         except:
             if len(all_diagrams) == 1:
-                print("Diagram failed validation for SVG production")
+                log.info("Diagram failed validation for SVG production")
             else:
-                print(f"diagram {num+1} failed validation for SVG production")
+                log.warning(f"diagram {num+1} failed validation for SVG production")
 
     # now validate tactile diagram
     for diagram in all_diagrams:
@@ -220,12 +254,13 @@ def validate_source(xml_file):
         try:
             schema.assertValid(diagram)
             if len(all_diagrams) == 1:
-                print("Diagram is valid for tactile production")
+                log.info("Diagram is valid for tactile production")
             else:
-                print(f"diagram {num+1} is valid for tactile production")
+                log.warning(f"diagram {num+1} is valid for tactile production")
         except:
             if len(all_diagrams) == 1:
-                print("Diagram failed validation for tactile production")
+                log.info("Diagram failed validation for tactile production")
             else:
-                print(f"diagram {num+1} failed validation for tactile production")
+                log.warning(f"diagram {num+1} failed validation for tactile production")
                 
+    log.setLevel(log_level)

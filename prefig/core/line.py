@@ -1,10 +1,13 @@
 import lxml.etree as ET
 import numpy as np
 import math
+import logging
 from . import utilities as util
 from . import math_utilities as math_util
 from . import user_namespace as un
 from . import arrow
+
+log = logging.getLogger('prefigure')
 
 # Process a line XML element into an SVG line element
 def line(element, diagram, parent, outline_status):
@@ -14,11 +17,23 @@ def line(element, diagram, parent, outline_status):
 
     endpts = element.get('endpoints', None)
     if endpts is None:
-        p1 = un.valid_eval(element.get('p1'))
-        p2 = un.valid_eval(element.get('p2'))
+        try:
+            p1 = un.valid_eval(element.get('p1'))
+        except:
+            log.error(f"Error in <line> parsing p1={element.get('p1')}")
+            return
+        try:
+            p2 = un.valid_eval(element.get('p2'))
+        except:
+            log.error(f"Error in <line> parsing p2={element.get('p2')}")
+            return
     else:
-        p1, p2 = un.valid_eval(endpts
-                               )
+        try:
+            p1, p2 = un.valid_eval(endpts)
+        except:
+            log.error(f"Error in <line> parsing endpoints={element.get('endpoints')}")
+            return
+
     endpoint_offsets = None
     if element.get('infinite', 'no') == 'yes':
         p1, p2 = infinite_line(p1, p2, diagram)
@@ -27,7 +42,11 @@ def line(element, diagram, parent, outline_status):
     else:
         endpoint_offsets = element.get('endpoint-offsets', None)
         if endpoint_offsets is not None:
-            endpoint_offsets = un.valid_eval(endpoint_offsets)
+            try:
+                endpoint_offsets = un.valid_eval(endpoint_offsets)
+            except:
+                log.error(f"Error in <line> parsing endpoint-offsets={element.get('endpoint-offsets')}")
+                return
 
     line = mk_line(p1, p2, diagram, element.get('id', None), 
                    endpoint_offsets=endpoint_offsets)
@@ -83,7 +102,6 @@ def line(element, diagram, parent, outline_status):
             arrow_width=element.get('arrow-width', None),
             arrow_angles=element.get('arrow-angles', None)
         )
-
         
     util.cliptobbox(line, element, diagram)
 

@@ -1,5 +1,6 @@
 import ast
 import math
+import logging
 import numpy as np
 from . import math_utilities
 from . import calculus
@@ -12,6 +13,8 @@ from .math_utilities import *
 # parse an author-generated expression and check that it only uses
 # safe python operations.  We also replace any lists or tuples with
 # equivalent numpy arrays
+
+logger = logging.getLogger('prefigure')
 
 inf = np.inf
 
@@ -65,11 +68,11 @@ def validate_node(node, args=None):
     if isinstance(node, ast.Dict):
         for key in node.keys:
             if not validate_node(key):
-                print(f'Illegal key in dictionary: {key}')
+                logger.error(f'Illegal key in dictionary: {key}')
                 return False
         for value in node.values:
             if not validate_node(value):
-                print(f'Illegal value in dictionary: {value}')
+                logger.error(f'Illegal value in dictionary: {value}')
                 return False
         return True
     if isinstance(node, ast.BinOp):
@@ -83,7 +86,9 @@ def validate_node(node, args=None):
     if isinstance(node, ast.Call):
         if node.func.id in functions:
             return all([validate_node(arg, args) for arg in node.args])
+        logger.error(f"Unknown function in evaluation: {node.func.id}")
         return False
+    logger.error(f"Unrecognized construction in evaluation")
     return False
 
 # Validate an expression by sending the AST's root to validate_node
@@ -96,6 +101,7 @@ def validate(s, args=None):
 # will be called from other parts of the project.
 def valid_eval(s, name=None, substitution=True):
     if s is None:
+        logger.error(f"Evaluating an empty object.")
         raise SyntaxError(f'Evaluating an empty object.  Perhaps there is a required attribute that is missing')
     if substitution:
         s = s.replace('^', '**')
@@ -118,6 +124,7 @@ def valid_eval(s, name=None, substitution=True):
             globals()[name] = transform_eval(cmd)
             return globals()[name]
         else:
+            logger.error(f"Unsafe function definition: {expr}")
             raise SyntaxError(f'Unsafe function definition: {expr}')
         return
     # otherwise, it's just an expression
@@ -129,11 +136,16 @@ def valid_eval(s, name=None, substitution=True):
                 globals()[name] = value
             return value
         else:
+            logger.error(f"Unsafe definition: {s}")
             raise SyntaxError(f'Unsafe definition: {s}')
 
 # used in a definition tag
 def define(expression, substitution=True):
-    left, right = [side.strip() for side in expression.split("=")]
+    try:
+        left, right = [side.strip() for side in expression.split("=")]
+    except:
+        logger.error(f"Unrecognized definition: {expression}")
+        return
     if left.find('(') > 0:
         valid_eval(expression, substitution=substitution)
     else:

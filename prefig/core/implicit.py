@@ -1,9 +1,12 @@
 ## Add a graphical element for implicit curves
 
 import lxml.etree as ET
+import logging
 from . import user_namespace as un
 from . import utilities as util
 from .import math_utilities as m_util
+
+log = logging.getLogger('prefigure')
 
 # add an implicit curve to a diagram
 def implicit_curve(element, diagram, parent, outline_status):
@@ -103,10 +106,18 @@ class ImplicitCurve():
         util.set_attr(element, 'thickness', '2')
 
         self.bbox = diagram.bbox()
-        f = un.valid_eval(element.get('function'))
-        k = un.valid_eval(element.get('k', '0'))
-        self.depth = int(un.valid_eval(element.get('depth', '8')))
-        self.initialdepth = int(un.valid_eval(element.get('initial-depth','4')))
+        try:
+            f = un.valid_eval(element.get('function'))
+        except:
+            log.error(f"Error in <implict-curve> retrieving function={element.get('function')}")
+            return
+        try:
+            k = un.valid_eval(element.get('k', '0'))
+            self.depth = int(un.valid_eval(element.get('depth', '8')))
+            self.initialdepth = int(un.valid_eval(element.get('initial-depth','4')))
+        except:
+            log.error("Error in <implict-curve> retrieving data, either k, depth, or initial-depth")
+            return
         self.levelset = LevelSet(f, k)
         self.k = k
 

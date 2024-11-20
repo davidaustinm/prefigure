@@ -1,6 +1,7 @@
 import lxml.etree as ET
 import math
 import re
+import logging
 import numpy as np
 from . import utilities as util
 from . import user_namespace as un
@@ -9,6 +10,7 @@ from . import line
 from . import arrow
 from . import CTM
 
+log = logging.getLogger('prefigure')
 
 # These tags can appear in an <axes> or <grid-axes>
 axes_tags = {'xlabel', 'ylabel'}
@@ -72,7 +74,11 @@ def grid(element, diagram, parent, outline_status):
     v_pi_format = element.get('v-pi-format', 'no') == 'yes'
     
     if spacings is not None:
-        rx, ry = un.valid_eval(spacings)
+        try:
+            rx, ry = un.valid_eval(spacings)
+        except:
+            log.error(f"Error in <grid> parsing spacings={element.get('spacings')}")
+            return
     else:
         rx = element.get('hspacing')
         if rx is None:
@@ -167,10 +173,6 @@ def get_pi_text(x):
 
 # Add a graphical element for axes.  All the axes sit inside a group
 # There are a number of options to add: labels, tick marks, etc
-# TODO:  rethink logic of options
-# TODO:  add labels
-# TODO:  handle cases where axis is outside bbox
-# TODO:  Matt's request for boundaries
 position_tolerance = 1e-10
 def axes(element, diagram, parent, outline_status):
     stroke = element.get('stroke', 'black')
@@ -245,7 +247,11 @@ def axes(element, diagram, parent, outline_status):
     v_line_el.set('stroke-width', thickness)
     axes.append(v_line_el)
 
-    arrows = int(element.get('arrows', '0'))
+    try:
+        arrows = int(element.get('arrows', '0'))
+    except:
+        log.error(f"Error in <axes> parsing arrows={element.get('arrows')}")
+        arrows = 0
     if arrows > 0:
         arrow.add_arrowhead_to_path(diagram, 'marker-end', h_line_el)
         arrow.add_arrowhead_to_path(diagram, 'marker-end', v_line_el)
@@ -253,7 +259,7 @@ def axes(element, diagram, parent, outline_status):
         arrow.add_arrowhead_to_path(diagram, 'marker-start', h_line_el)
         arrow.add_arrowhead_to_path(diagram, 'marker-start', v_line_el)
 
-    if element.get('labels') == 'no':
+    if element.get('labels', 'yes') == 'no':
         return
 
     hticks = element.get('hticks', None)
@@ -267,7 +273,11 @@ def axes(element, diagram, parent, outline_status):
         hlabels = find_label_positions((bbox[0], bbox[2]),
                                        pi_format = h_pi_format)
     else:
-        hlabels = un.valid_eval(hlabels)
+        try:
+            hlabels = un.valid_eval(hlabels)
+        except:
+            log.error(f"Error in <axes> parsing hlabels={hlabels}")
+            return
         if h_pi_format:
             hlabels = 1/math.pi * hlabels
 
@@ -283,7 +293,11 @@ def axes(element, diagram, parent, outline_status):
     else:
         ticksize = (3, 3)
     if hticks is not None:
-        hticks = un.valid_eval(hticks)
+        try:
+            hticks = un.valid_eval(hticks)
+        except:
+            log.error(f"Error in <axes> parsing hticks={hticks}")
+            return
         x = hticks[0]
         tick_direction = 1
         if top_labels:
@@ -353,7 +367,11 @@ def axes(element, diagram, parent, outline_status):
         vlabels = find_label_positions((bbox[1], bbox[3]),
                                        pi_format = v_pi_format)
     else:
-        vlabels = un.valid_eval(vlabels)
+        try:
+            vlabels = un.valid_eval(vlabels)
+        except:
+            log.error(f"Error in <axes> parsing vlabels={vlabels}")
+            return
         if v_pi_format:
             vlabels = 1/math.pi * vlabels
             
@@ -365,7 +383,11 @@ def axes(element, diagram, parent, outline_status):
     diagram.add_id(g_vticks)
 
     if vticks is not None:
-        vticks = un.valid_eval(vticks)
+        try:
+            vticks = un.valid_eval(vticks)
+        except:
+            log.error(f"Error in <axes> parsing vticks={vticks}")
+            return
         y = vticks[0]
         tick_direction = 1
         if right_labels:
@@ -469,14 +491,14 @@ def grid_axes(element, diagram, parent, outline_status):
     )
 
     group_annotation = ET.Element('annotation')
-    group_annotation.set('id', 'grid-axes')
+    group_annotation.set('ref', 'grid-axes')
     group_annotation.set('text', 'The coordinate grid and axes')
     diagram. add_default_annotation(group_annotation)
 
     grid(element, diagram, group, outline_status)
 
     annotation = ET.Element('annotation')
-    annotation.set('id', 'grid')
+    annotation.set('ref', 'grid')
     annotation.set('text', 'The coordinate grid')
     group_annotation.append(annotation)
 
@@ -500,7 +522,7 @@ def grid_axes(element, diagram, parent, outline_status):
     axes(el, diagram, group, outline_status)
 
     annotation = ET.Element('annotation')
-    annotation.set('id', 'axes')
+    annotation.set('ref', 'axes')
     annotation.set('text', 'The coordinate axes')
     group_annotation.append(annotation)
 
@@ -509,7 +531,11 @@ def grid_with_basis(element, diagram, parent, basis, outline_status):
     if outline_status == 'finish_outline':
         finish_outline(element, diagram, parent)
         return
-    v1, v2 = un.valid_eval(basis)
+    try:
+        v1, v2 = un.valid_eval(basis)
+    except:
+        log.error(f"Error in <grid> parsing basis={basis}")
+        return
 
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')

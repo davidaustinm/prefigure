@@ -1,7 +1,10 @@
+import logging
 from . import user_namespace as un
 from . import utilities as util
 from . import calculus
 from . import line
+
+log = logging.getLogger('prefigure')
 
 # Add a graphical element representing the tangent line to a graph
 def tangent(element, diagram, parent, outline_status):
@@ -10,8 +13,18 @@ def tangent(element, diagram, parent, outline_status):
         return
 
     # set up the linear function describing the tangent line
-    function = un.valid_eval(element.get('function'))
-    a = un.valid_eval(element.get('point'))
+    try:
+        function = un.valid_eval(element.get('function'))
+    except:
+        log.error(f"Error retrieving tangent-line attribute @function={element.get('function')}")
+        return
+
+    try:
+        a = un.valid_eval(element.get('point'))
+    except:
+        log.error(f"Error parsing tangent-line attribute @point={element.get('point')}")
+        return
+
     y0 = function(a)
     m = calculus.derivative(function, a)
 
@@ -20,7 +33,7 @@ def tangent(element, diagram, parent, outline_status):
 
     # determine the interval over which we'll draw the tangent line
     bbox = diagram.bbox()
-    domain = element.get('domain')
+    domain = element.get('domain', None)
     if domain is None:
         domain = [bbox[0], bbox[2]]
     else: 

@@ -1,16 +1,23 @@
 import lxml.etree as ET
+import logging
 from . import user_namespace as un
 import copy
 from . import group
 from . import label
 
+log = logging.getLogger('prefigure')
+
 # Allows a block of XML to repeat with a changing parameter
 
 def repeat(element, diagram, parent, outline_status):
-    parameter = element.get('parameter')
-    var, expr = parameter.split('=')
-    var = var.strip()
-    start, stop = map(un.valid_eval, expr.split('..'))
+    try:
+        parameter = element.get('parameter')
+        var, expr = parameter.split('=')
+        var = var.strip()
+        start, stop = map(un.valid_eval, expr.split('..'))
+    except:
+        log.error(f"Unable to parse parameter {parameter} in <repeat>")
+        return
 
     # we change this to a group element and then add the children
     # for each value of the parameter

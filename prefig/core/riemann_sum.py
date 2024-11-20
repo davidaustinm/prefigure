@@ -1,6 +1,9 @@
 import lxml.etree as ET
+import logging
 from . import user_namespace as un
 from . import utilities as util
+
+log = logging.getLogger('prefigure')
 
 # Add a graphical element describing a Riemann sum
 def riemann_sum(element, diagram, parent, outline_status):
@@ -14,15 +17,22 @@ def riemann_sum(element, diagram, parent, outline_status):
         domain = [bbox[0], bbox[2]]
     else:
         domain = un.valid_eval(domain)
+    try:
+        N = int(element.get('N'))
+    except:
+        log.error(f"Error in <riemann-sum> setting N={element.get('N')}")
+        return
+    try:
+        f = un.valid_eval(element.get('function'))
+    except:
+        log.error(f"Error in <riemann-sum> retrieving function={element.get('function')}")
+        return
 
-    N = int(element.get('N'))
-    f = un.valid_eval(element.get('function'))
     dx = (domain[1]-domain[0])/N
     rule = element.get('rule', 'left')
     rules = {'left': 0, 'right': 1, 'midpoint': 0.5}
     offset = rules[rule] * dx
     x = domain[0]
-
     cmds = []
 
     for i in range(N):
@@ -37,7 +47,6 @@ def riemann_sum(element, diagram, parent, outline_status):
             cmds.append('L ' + util.pt2str(p))
         cmds.append('Z')
         x += dx
-
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
         element.set('fill', 'lightgray')

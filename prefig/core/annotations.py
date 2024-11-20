@@ -1,4 +1,7 @@
 import lxml.etree as ET
+import logging
+
+log = logging.getLogger('prefigure')
 
 def annotations(element, diagram, parent, outline_status):
     # tactile diagrams have no annotations
@@ -19,6 +22,10 @@ def annotations(element, diagram, parent, outline_status):
         annotate(subelement, diagram)
 
 def annotate(element, diagram, parent = None):
+    if log.getEffectiveLevel() == logging.DEBUG:
+        tag = element.tag
+        log.debug(f"Processing annotation with ref={element.get('ref')}")
+
     if element.tag is ET.Comment:
         return
     if parent is None:
@@ -27,6 +34,8 @@ def annotate(element, diagram, parent = None):
     if element.get('ref', None) is not None:
         element.set('id', element.get('ref'))
         element.attrib.pop('ref')
+    else:
+        log.info(f"An annotation has an empty attribute ref")
     element.attrib.pop('annotate', None)
 
     # let's check to see if this is a reference to an annotation branch
@@ -38,7 +47,7 @@ def annotate(element, diagram, parent = None):
     # initialize this annotation
     annotation = ET.Element('annotation')
     diagram.add_annotation(annotation)
-    annotation.set('id', element.get('id'))
+    annotation.set('id', element.get('id', 'none'))
     
     active = False
 

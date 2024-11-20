@@ -1,4 +1,4 @@
-import sys
+import logging
 import lxml.etree as ET
 from . import annotations
 from . import area
@@ -70,24 +70,43 @@ tag_dict = {
     'vector': vector.vector
 }
 
+log = logging.getLogger('prefigure')
+
 # apply the processing function based on the XML element's tag
 
 def parse_element(element, diagram, root, outline_status = None):
     if element.tag is ET.Comment:
         return
     if path.is_path_tag(element.tag):
-        print(f"A <{element.tag}> tag can only occur inside a <path>")
+        log.warning(f"A <{element.tag}> tag can only occur inside a <path>")
         return
     if label.is_label_tag(element.tag):
-        print(f"A <{element.tag}> tag can only occur inside a <label>")
+        log.warning(f"A <{element.tag}> tag can only occur inside a <label>")
         return
     if grid_axes.is_axes_tag(element.tag):
-        print(f"A <{element.tag}> tag can only occur inside a <axes> or <grid-axes>")
+        log.warning(f"A <{element.tag}> tag can only occur inside a <axes> or <grid-axes>")
         return
         
     try:
         function = tag_dict[element.tag]
     except KeyError:
-        print('Unknown element tag: ' + element.tag)
-        sys.exit()
+        log.error('Unknown element tag: ' + element.tag)
+        return
+
+    if log.getEffectiveLevel() == logging.DEBUG:
+        tag = element.tag
+        if element.tag == 'definition':
+            if element.text is None:
+                log.error("PreFigure is ignoring an empty definition")
+                return
+            text = element.text.strip()
+            msg = f"Processing definition: {text}"
+        else:
+            msg = f"Processing element {element.tag}"
+            at = element.get('at', None)
+            if at is not None:
+                msg += f" with handle {at}"
+
+        log.debug(msg)
+
     function(element, diagram, root, outline_status)

@@ -2,11 +2,14 @@ import lxml.etree as ET
 import numpy as np
 import math
 import copy
+import logging
 from . import user_namespace as un
 from . import utilities
 from . import grid_axes
 from . import group
 from . import math_utilities as math_util
+
+log = logging.getLogger('prefigure')
 
 # Add a graphical element for slope fields
 def slope_field(element, diagram, parent, outline_status):
@@ -14,7 +17,11 @@ def slope_field(element, diagram, parent, outline_status):
         finish_outline(element, diagram, parent)
         return
 
-    f = un.valid_eval(element.get('function'))
+    try:
+        f = un.valid_eval(element.get('function'))
+    except:
+        log.error(f"Error retrieving slope-field function={element.get('function')}")
+        return
     bbox = diagram.bbox()
 
     # We're going to turn this element into a group and add lines to it
@@ -43,8 +50,12 @@ def slope_field(element, diagram, parent, outline_status):
     system = element.get('system', None) == 'yes'
     spacings = element.get('spacings', None)
     if spacings is not None:
-        spacings = un.valid_eval(spacings)
-        rx, ry = spacings
+        try:
+            spacings = un.valid_eval(spacings)
+            rx, ry = spacings
+        except:
+            log.error(f"Error parsing slope-field attribute @spacings={element.get('spacings')}")
+            return
     else:   
         rx = grid_axes.find_gridspacing((bbox[0], bbox[2]))
         ry = grid_axes.find_gridspacing((bbox[1], bbox[3]))

@@ -1,9 +1,12 @@
 import lxml.etree as ET
+import logging
 import math
 import numpy as np
 from . import utilities as util
 from . import CTM
 from . import user_namespace as un
+
+log = logging.getLogger('prefigure')
 
 # Form arrows to be used with a variety of graphical components
 # Arrowheads are created as markers and then added to paths
@@ -150,9 +153,17 @@ def add_arrowhead_marker(diagram,
                          arrow_width=None,
                          arrow_angles=None):
     if arrow_width is not None:
-        arrow_width = un.valid_eval(arrow_width)
+        try:
+            arrow_width = un.valid_eval(arrow_width)
+        except:
+            log.error(f"Error parsing arrow-width={arrow_width}")
+            return
     if arrow_angles is not None:
-        arrow_angles = un.valid_eval(arrow_angles)
+        try:
+            arrow_angles = un.valid_eval(arrow_angles)
+        except:
+            log.error(f"Error parsing arrow-angles={arrow_angles}")
+            return
     else:
         arrow_angles = (24, 60)
 

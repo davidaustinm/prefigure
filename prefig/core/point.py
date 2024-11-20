@@ -1,8 +1,11 @@
 import lxml.etree as ET
+import logging
 from . import user_namespace as un
 from . import utilities as util
 import copy
-from . import label        
+from . import label
+
+log = logging.getLogger('prefigure')
 
 # Add a graphical element describing a point
 def point(element, diagram, parent, outline_status = None):
@@ -13,7 +16,12 @@ def point(element, diagram, parent, outline_status = None):
         return
 
     # determine the location and size of the point from the XML element
-    p = diagram.transform(un.valid_eval(element.get('p')))
+    try:
+        p = diagram.transform(un.valid_eval(element.get('p')))
+    except:
+        log.error(f"Error in <point> defining p={element.get('p')}")
+        return
+
     if diagram.output_format() == 'tactile':
         element.set('size', element.get('size', '9'))
     else:

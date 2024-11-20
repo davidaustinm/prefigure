@@ -1,6 +1,7 @@
 ## Add a graphical element for an SVG path
 
 import lxml.etree as ET
+import logging
 import math
 from . import user_namespace as un
 from . import utilities as util
@@ -8,6 +9,8 @@ from . import math_utilities as math_util
 from . import arrow
 from . import CTM
 from . import tags
+
+log = logging.getLogger('prefigure')
 
 # These are the tags that can appear within a path
 path_tags = {'moveto',
@@ -43,18 +46,27 @@ def path(element, diagram, parent, outline_status):
     cmds = ["M"]
     start = element.get('start', None)
     if start is None:
-        print("A <path> element needs a @start attribute")
+        log.error("A <path> element needs a @start attribute")
         return
-    user_start = un.valid_eval(start)
+    try:
+        user_start = un.valid_eval(start)
+    except:
+        log.error(f"Error in <path> defining start={element.get('start')}")
+        return
     current_point = user_start
     start = diagram.transform(user_start)
     cmds.append(util.pt2str(start))
 
-    for child in element:
-        cmds, current_point = process_tag(child,
-                                          diagram,
-                                          cmds,
-                                          current_point)
+    try:
+        for child in element:
+            log.debug(f"Processing {child.tag} inside <path>")
+            cmds, current_point = process_tag(child,
+                                              diagram,
+                                              cmds,
+                                              current_point)
+    except:
+        log.error("Error in <path> processing subelements")
+        return
 
     if element.get('closed', 'no') == 'yes':
         cmds.append('Z')
@@ -114,15 +126,23 @@ graphical_tags = {'graph',
 
 def process_tag(child, diagram, cmds, current_point):
     if child.tag == "moveto":
-        user_point = un.valid_eval(child.get('point'))
-        point = diagram.transform(user_point)
+        try:
+            user_point = un.valid_eval(child.get('point'))
+            point = diagram.transform(user_point)
+        except:
+            log.error(f"Error in <moveto> defining point={child.get('point')}")
+            return
         cmds.append('M')
         cmds.append(util.pt2str(point))
         current_point = user_point
         return cmds, current_point
     
     if child.tag == "rmoveto":
-        user_point = un.valid_eval(child.get('point'))
+        try:
+            user_point = un.valid_eval(child.get('point'))
+        except:
+            log.error(f"Error in <rmoveto> defining point={child.get('point')}")
+            return
         current_point = current_point + user_point
         point = diagram.transform(current_point)
         cmds.append('M')
@@ -130,22 +150,34 @@ def process_tag(child, diagram, cmds, current_point):
         return cmds, current_point
     
     if child.tag == "horizontal":
-        distance = un.valid_eval(child.get('distance'))
+        try:
+            distance = un.valid_eval(child.get('distance'))
+        except:
+            log.error(f"Error in <horizontal> defining distance={child.get('distance')}")
+            return
         user_point = (current_point[0] + distance,
                       current_point[1])
         child.tag = 'lineto'
         child.set('point', util.pt2long_str(user_point,spacer=","))
             
     if child.tag == "vertical":
-        distance = un.valid_eval(child.get('distance'))
+        try:
+            distance = un.valid_eval(child.get('distance'))
+        except:
+            log.error(f"Error in <vertical> defining distance={child.get('distance')}")
+            return
         user_point = (current_point[0],
                       current_point[1] + distance)
         child.tag = 'lineto'
         child.set('point', util.pt2long_str(user_point,spacer=","))
             
     if child.tag == "rlineto":
-        user_point = un.valid_eval(child.get('point'))
-        user_point = current_point + user_point
+        try:
+            user_point = un.valid_eval(child.get('point'))
+            user_point = current_point + user_point
+        except:
+            log.error(f"Error in <rlineto> defining point={child.get('point')}")
+            return
         child.tag = "lineto"
         child.set('point', util.pt2long_str(user_point,spacer=","))
     
@@ -155,9 +187,12 @@ def process_tag(child, diagram, cmds, current_point):
                             diagram,
                             current_point,
                             cmds)
-
-        user_point = un.valid_eval(child.get('point'))
-        point = diagram.transform(user_point)
+        try:
+            user_point = un.valid_eval(child.get('point'))
+            point = diagram.transform(user_point)
+        except:
+            log.error(f"Error in <lineto> defining point={child.get('point')}")
+            return
         cmds.append('L')
         cmds.append(util.pt2str(point))
         current_point = user_point
@@ -165,15 +200,23 @@ def process_tag(child, diagram, cmds, current_point):
         
     if child.tag == "cubic-bezier":
         cmds.append('C')
-        user_control_pts = un.valid_eval(child.get('controls'))
-        control_pts= [diagram.transform(p) for p in user_control_pts]
+        try:
+            user_control_pts = un.valid_eval(child.get('controls'))
+            control_pts= [diagram.transform(p) for p in user_control_pts]
+        except:
+            log.error(f"Error in <cubic-bezier> defining controls={child.get('controls')}")
+            return
         cmds.append(' '.join([util.pt2str(p) for p in control_pts]))
         current_point = user_control_pts[-1]
         return cmds, current_point
     if child.tag == "quadratic-bezier":
         cmds.append('Q')
-        user_control_pts = un.valid_eval(child.get('controls'))
-        control_pts= [diagram.transform(p) for p in user_control_pts]
+        try:
+            user_control_pts = un.valid_eval(child.get('controls'))
+            control_pts= [diagram.transform(p) for p in user_control_pts]
+        except:
+            log.error(f"Error in <cubic-bezier> defining controls={child.get('controls')}")
+            return
         cmds.append(' '.join([util.pt2str(p) for p in control_pts]))
         current_point = user_control_pts[-1]
         return cmds, current_point
@@ -195,9 +238,13 @@ def process_tag(child, diagram, cmds, current_point):
         return cmds, current_point
     '''
     if child.tag == 'arc':
-        center = un.valid_eval(child.get('center'))
-        radius = un.valid_eval(child.get('radius'))
-        angular_range = un.valid_eval(child.get('range'))
+        try:
+            center = un.valid_eval(child.get('center'))
+            radius = un.valid_eval(child.get('radius'))
+            angular_range = un.valid_eval(child.get('range'))
+        except:
+            log.error("Error in <arc> defining data: @center, @radius, or @range")
+            return
         if child.get('degrees', 'yes') == 'yes':
             angular_range = [math.radians(a) for a in angular_range]
         N = 100
@@ -216,10 +263,14 @@ def process_tag(child, diagram, cmds, current_point):
         return cmds, current_point
 
     if child.tag == 'repeat':
-        parameter = child.get('parameter')
-        var, expr = parameter.split('=')
-        var = var.strip()
-        start, stop = map(un.valid_eval, expr.split('..'))
+        try:
+            parameter = child.get('parameter')
+            var, expr = parameter.split('=')
+            var = var.strip()
+            start, stop = map(un.valid_eval, expr.split('..'))
+        except:
+            log.error(f"Error in <repeat> defining parameter={child.get('parameter')}")
+            return
 
         for k in range(start, stop+1):
             k_str = str(k)
@@ -246,7 +297,7 @@ def process_tag(child, diagram, cmds, current_point):
         current_point = diagram.inverse_transform(final_point)
         return cmds, current_point
         
-    print('Unknown tag in <path>:', child.tag)
+    log.warning(f"Unknown tag in <path>: {child.tag}")
     return cmds, current_point
         
 def decorate(child, diagram, current_point, cmds):
@@ -263,10 +314,14 @@ def decorate(child, diagram, current_point, cmds):
     decoration_data = [d.strip() for d in decoration.split(';')]
     if decoration_data[0] == 'coil':
         # number, center, dimensions
-        data = [d.split('=') for d in decoration_data[1:]]
-        data = {k:v for k, v in data}
-        dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
-        location = un.valid_eval(data.get('center', '0.5'))
+        try:
+            data = [d.split('=') for d in decoration_data[1:]]
+            data = {k:v for k, v in data}
+            dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
+            location = un.valid_eval(data.get('center', '0.5'))
+        except:
+            log.error("Error processing decoration data for a coil")
+            return
         if data.get('number', None) is None:
             number = math.floor((length - dimensions[0]/2)/dimensions[0])
         else:
@@ -302,10 +357,14 @@ def decorate(child, diagram, current_point, cmds):
 
     if decoration_data[0] == 'zigzag':
         # number, location, dimensions
-        data = [d.split('=') for d in decoration_data[1:]]
-        data = {k:v for k, v in data}
-        dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
-        location = un.valid_eval(data.get('center', '0.5'))
+        try:
+            data = [d.split('=') for d in decoration_data[1:]]
+            data = {k:v for k, v in data}
+            dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
+            location = un.valid_eval(data.get('center', '0.5'))
+        except:
+            log.error("Error processing zigzag decoration data")
+            return
         if data.get('number', None) is None:
             number = math.floor((length - dimensions[0]/2)/dimensions[0])
         else:
@@ -341,10 +400,14 @@ def decorate(child, diagram, current_point, cmds):
 
     if decoration_data[0] == 'wave':
         # number, location, dimensions
-        data = [d.split('=') for d in decoration_data[1:]]
-        data = {k:v for k, v in data}
-        dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
-        location = un.valid_eval(data.get('center', '0.5'))
+        try:
+            data = [d.split('=') for d in decoration_data[1:]]
+            data = {k:v for k, v in data}
+            dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
+            location = un.valid_eval(data.get('center', '0.5'))
+        except:
+            log.error("Error in wave decoration data")
+            return
         if data.get('number', None) is None:
             number = math.floor((length - dimensions[0]/2)/dimensions[0])
         else:
@@ -379,10 +442,14 @@ def decorate(child, diagram, current_point, cmds):
         cmds += ['L', util.pt2str(ctm.transform((length, 0)))]
 
     if decoration_data[0] == 'capacitor':
-        data = [d.split('=') for d in decoration_data[1:]]
-        data = {k:v for k, v in data}
-        dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
-        location = un.valid_eval(data.get('center', '0.5'))
+        try:
+            data = [d.split('=') for d in decoration_data[1:]]
+            data = {k:v for k, v in data}
+            dimensions = un.valid_eval(data.get('dimensions', '(10,5)'))
+            location = un.valid_eval(data.get('center', '0.5'))
+        except:
+            log.error("Error in capacitor decoration data")
+            return
         x_mid = length * location
         x0 = x_mid - dimensions[0]/2
         x1 = x_mid + dimensions[0]/2

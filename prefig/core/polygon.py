@@ -3,6 +3,7 @@
 import lxml.etree as ET
 import numpy as np
 import copy
+import logging
 from . import user_namespace as un
 from . import utilities as util
 from . import math_utilities as math_util
@@ -11,6 +12,8 @@ from . import point
 from . import label
 from . import circle
 from . import group
+
+log = logging.getLogger('prefigure')
 
 # Process a polygon tag into a graphical component
 def polygon(element, diagram, parent, outline_status):
@@ -31,15 +34,23 @@ def polygon(element, diagram, parent, outline_status):
     parameter = element.get('parameter')
     points = element.get('points')
     if parameter is None:
-        points = un.valid_eval(points)
+        try:
+            points = un.valid_eval(points)
+        except:
+            log.error(f"Error in <polygon> evaluating points={element.get('points')}")
+            return
     else:
-        var, expr = parameter.split('=')
-        param_0, param_1 = map(un.valid_eval, expr.split('..'))
-        plot_points = []
-        for k in range(param_0, param_1+1):
-            un.valid_eval(str(k), var)
-            plot_points.append(un.valid_eval(points))
-        points = plot_points
+        try:
+            var, expr = parameter.split('=')
+            param_0, param_1 = map(un.valid_eval, expr.split('..'))
+            plot_points = []
+            for k in range(param_0, param_1+1):
+                un.valid_eval(str(k), var)
+                plot_points.append(un.valid_eval(points))
+            points = plot_points
+        except:
+            log.error(f"Error in <polygon> generating points")
+            return
 
     points = [diagram.transform(point) for point in points]
 
@@ -141,9 +152,13 @@ def triangle(element, diagram, parent, outline_status):
         return
     '''
 
-    vertices = un.valid_eval(element.get('vertices'))
+    try:
+        vertices = un.valid_eval(element.get('vertices'))
+    except:
+        log.error(f"Error in <triangle> evaluating vertices={element.get('vertices')}")
+        return
     if len(vertices) != 3:
-        print('Warning:  a <triangle> should have 3 vertices')
+        log.error('A <triangle> should have exactly 3 vertices')
         return
 
     # We're going to turn this into a group since we may be adding
@@ -178,6 +193,9 @@ def triangle(element, diagram, parent, outline_status):
     alignment_dict = {}
     if labels is not None:
         labels = [l.strip() for l in labels.split(',')]
+        if len(labels) < 3:
+            log.error(f"A triangle needs three labels: {element.get('labels')}")
+            return
         vertices = list(vertices)
         vertices += vertices[:2]
         vertices = np.array(vertices)

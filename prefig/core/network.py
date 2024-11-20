@@ -3,6 +3,7 @@ import networkx as nx
 import numpy as np
 import math
 import copy
+import logging
 from . import user_namespace as un
 from . import math_utilities as math_util
 from . import utilities as util
@@ -10,6 +11,8 @@ from . import coordinates
 from . import label
 from . import CTM
 from . import group
+
+log = logging.getLogger('prefigure')
 
 # Add a graphical element describing a network
 def network(element, diagram, parent, outline_status):
@@ -27,7 +30,7 @@ def network(element, diagram, parent, outline_status):
     if graph is not None:
         graph = un.valid_eval(graph)
         if not isinstance(graph, dict):
-            print("@graph attribute of a <network> element should be a dictionary")
+            log.error("@graph attribute of a <network> element should be a dictionary")
             return
         for key, value in graph.items():
             value = [str(v) for v in value]
@@ -103,7 +106,11 @@ def network(element, diagram, parent, outline_status):
 
     # finally, there may be <edge> subelements of <network> with decorations
     for edge in element.findall('edge'):
-        endpoints = un.valid_eval(edge.get('vertices'))
+        try:
+            endpoints = un.valid_eval(edge.get('vertices'))
+        except:
+            log.error(f"Error in <edge> evaluating vertices={element.get('vertices')}")
+            return
         p = str(endpoints[0])
         q = str(endpoints[1])
         if p == q:
@@ -156,7 +163,7 @@ def network(element, diagram, parent, outline_status):
         elif layout == 'bfs':
             start = element.get('start', None)
             if start is None:
-                print('bfs network layout needs a starting node')
+                log.error('bfs network layout needs a starting node')
                 return
             positions = nx.bfs_layout(G, start=start)
         elif layout == 'spectral':

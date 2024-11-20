@@ -1,6 +1,9 @@
 import lxml.etree as ET
+import logging
 from . import user_namespace as un
 from . import utilities as util
+
+log = logging.getLogger('prefigure')
 
 # Graph of a 1-variable function
 # We'll set up an SVG path element by sampling the graph
@@ -20,7 +23,12 @@ def graph(element, diagram, parent, outline_status = None):
         domain = un.valid_eval(domain)
 
     # retrieve the function from the namespace and generate points
-    f = un.valid_eval(element.get('function'))
+    try:
+        f = un.valid_eval(element.get('function'))
+    except SyntaxError as e:
+        log.error(f"Error retrieving function in graph: {str(e)}")
+        return
+
     N = int(element.get('N', 100))
     dx = (domain[1] - domain[0])/N
     x = domain[0]
@@ -44,8 +52,7 @@ def graph(element, diagram, parent, outline_status = None):
     attrib.update(
         {
             'd': ' '.join(cmds),
-            'fill': 'none',
-#            'type': 'function-graph'
+            'fill': 'none'
         }
     )
 

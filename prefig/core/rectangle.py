@@ -1,10 +1,13 @@
 ## Add a graphical element describing a rectangle
 
 import lxml.etree as ET
+import logging
 from . import user_namespace as un
 from . import utilities as util
 from . import math_utilities as math_util
 from . import CTM
+
+log = logging.getLogger('prefigure')
 
 # Process a rectangle tag
 def rectangle(element, diagram, parent, outline_status):
@@ -13,14 +16,18 @@ def rectangle(element, diagram, parent, outline_status):
         return
 
     # An author may specifiy either the lower-left corner or the center
-    ll = un.valid_eval(element.get('lower-left', '(0,0)'))
-    dims = un.valid_eval(element.get('dimensions', '(1,1)'))
-    center = element.get('center', None)
-    if center is not None:
-        center = un.valid_eval(center)
-        ll = center - 0.5 * dims
-    else:
-        center = ll + 0.5*dims
+    try:
+        ll = un.valid_eval(element.get('lower-left', '(0,0)'))
+        dims = un.valid_eval(element.get('dimensions', '(1,1)'))
+        center = element.get('center', None)
+        if center is not None:
+            center = un.valid_eval(center)
+            ll = center - 0.5 * dims
+        else:
+            center = ll + 0.5*dims
+    except:
+        log.error(f"Error parsing data in a <rectangle>")
+        return
     p0 = ll
     p1 = ll + dims
 
@@ -38,9 +45,6 @@ def rectangle(element, diagram, parent, outline_status):
     ]
                     ]
     
-    
-
-#    user_corners = [p0, (p1[0], p0[1]), p1, (p0[0], p1[1])]
     corners = [diagram.transform(c) for c in user_corners]
 
     radius = un.valid_eval(element.get('corner-radius', '0'))
@@ -77,7 +81,6 @@ def rectangle(element, diagram, parent, outline_status):
 
     util.set_attr(element, 'thickness', '2')
     util.add_attr(path, util.get_2d_attr(element))
-#    path.set('type', 'rectangle')
     util.cliptobbox(path, element, diagram)
 
     if outline_status == 'add_outline':

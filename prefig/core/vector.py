@@ -1,7 +1,10 @@
 import lxml.etree as ET
+import logging
 from . import user_namespace as un
 from . import utilities as util
 from . import arrow
+
+log = logging.getLogger('prefigure')
 
 # Add a graphical element describing a vector
 def vector(element, diagram, parent, outline_status):
@@ -12,7 +15,12 @@ def vector(element, diagram, parent, outline_status):
     # v describes the mathematical vector (displacement),
     # which is scaled by scale, tail is the location of 
     # the tail
-    v = un.valid_eval(element.get('v'))
+    try:
+        v = un.valid_eval(element.get('v'))
+    except:
+        log.error(f"Error parsing vector attribute @v={element.get('v')}")
+        return
+
     tail = un.valid_eval(element.get('tail', '[0,0]'))
     scale = un.valid_eval(element.get('scale', '1'))
     v = scale * v
