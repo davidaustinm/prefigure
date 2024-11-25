@@ -11,12 +11,18 @@ log = logging.getLogger('prefigure')
 # This function does the main work of constructing a diagram.
 # This can be called from outside the project to allow, say,
 # for generating assets in a pretext document
-def mk_diagram(element, format, publication, 
-               filename, diagram_number, standalone):
+def mk_diagram(element,
+               format,
+               publication,
+               filename,
+               suppress_caption,
+               diagram_number,
+               standalone):
+
     importlib.reload(user_namespace)
     output = None # add at a later date
     diag = diagram.Diagram(element, filename, diagram_number, 
-                           format, output, publication,
+                           format, output, publication, suppress_caption,
                            standalone)
     log.debug("Initializing PreFigure diagram")
     try:
@@ -47,7 +53,7 @@ def mk_diagram(element, format, publication,
         log.error("Debugging information is available with 'prefig -vv build filename'")
         return
 
-def parse(filename, format, pub_file, standalone):
+def parse(filename, format, pub_file, suppress_caption, standalone):
     # Load the publication file, if there is one
     ns = {'pf': 'https://prefigure.org'}
     if pub_file is not None:
@@ -94,7 +100,7 @@ def parse(filename, format, pub_file, standalone):
             diagram_number = None
             check_duplicate_handles(element, set())
             mk_diagram(element, format, publication,
-                       filename, diagram_number,
+                       filename, suppress_caption, diagram_number,
                        standalone)
 
 def check_duplicate_handles(element, handles):

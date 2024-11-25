@@ -760,9 +760,12 @@ def cairo_init():
 def caption(element, diagram, parent, outline_status):
     if diagram.output_format() != "tactile":  
         return
+    if diagram.caption_suppressed():
+        return
+    margins = diagram.get_margins()
     element.tag = 'label'
     element.set('alignment', 'ne')
-    element.set('offset', '(0,10)')
+    element.set('offset', f"(0,{margins[3]+20})")
     box = diagram.bbox()
     element.set('p', util.pt2str((box[0], box[3]), spacer=","))
     label(element, diagram, parent)

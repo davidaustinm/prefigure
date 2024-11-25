@@ -39,7 +39,7 @@ class Legend:
             return
         self.def_anchor = diagram.transform(user_anchor)
         
-        alignment = element.get('alignment')
+        alignment = element.get('alignment', 'c')
         if alignment == 'e':
             element.set('alignment', 'east')
         alignment = util.get_attr(element, 'alignment', 'c')
@@ -293,9 +293,8 @@ class Legend:
         y = outer_padding
         for num, li in enumerate(self.element):
             key, label = self.li_dict[li]
-            try:
-                label_dims = self.diagram.get_label_dims(label)
-            except:
+            label_dims = self.diagram.get_label_dims(label)
+            if label_dims is None:
                 continue
             label_group = self.diagram.get_label_group(label)[0]
             label_x = gap * round(label_x/gap)

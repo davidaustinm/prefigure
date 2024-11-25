@@ -11,14 +11,21 @@ from . import label
 log = logging.getLogger('prefigure')
 
 class Diagram:
-    def __init__(self, diagram_element, filename,
-                 diagram_number, format, output, publication,
+    def __init__(self,
+                 diagram_element,
+                 filename,
+                 diagram_number,
+                 format,
+                 output,
+                 publication,
+                 suppress_caption,
                  standalone):
         self.diagram_element = diagram_element
         self.filename = filename
         self.diagram_number = diagram_number
         self.format = format
         self.output = output
+        self.suppress_caption = suppress_caption
         self.standalone = standalone
 
         # create the XML tree for the svg output
@@ -85,6 +92,9 @@ class Diagram:
         
     def add_label(self, element, group):
         self.label_group_dict[element] = [group, self.ctm()]
+
+    def caption_suppressed(self):
+        return self.suppress_caption
 
     def get_label_group(self, element):
         return self.label_group_dict.get(element)
@@ -166,6 +176,7 @@ class Diagram:
             return
         if not isinstance(margins, np.ndarray):
             margins = [margins] * 4
+        self.margins = margins
 
         # tactile diagrams will be embossed on 11.5"x11" paper
         if self.format == 'tactile':
@@ -337,6 +348,9 @@ class Diagram:
 
     def ctm_bbox(self):
         return self.ctm_stack[-1]
+
+    def get_margins(self):
+        return self.margins
 
     def push_ctm(self, ctm_bbox):
         self.ctm_stack.append(ctm_bbox)

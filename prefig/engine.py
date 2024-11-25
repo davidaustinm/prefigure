@@ -31,6 +31,7 @@ def build(
         filename,
         publication=None,
         ignore_publication=False,
+        suppress_caption=False,
         standalone=False
 ):
     pub_requested = not ignore_publication and publication is not None
@@ -66,7 +67,11 @@ def build(
 
     log.info(f"Building from PreFigure source {filename}")
 
-    core.parse.parse(filename, format, publication, standalone)
+    core.parse.parse(filename,
+                     format,
+                     publication,
+                     suppress_caption,
+                     standalone)
     return filename
 
 

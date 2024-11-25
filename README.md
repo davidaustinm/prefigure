@@ -84,9 +84,20 @@ Once PreFigure is installed, help is available with
 ```
 prefig --help
 ```
+
 or, say,
+
 ```
-prefig build --help.  Here is a summary of the available commands.
+prefig build --help
+```
+
+Details of a requested operation may be obtained using the `-v` and `-vv` flags.  For instance,
+```
+prefig -vv build foo.xml
+```
+will print debugging information to the terminal.
+
+Here is a summary of PreFigure commands.
 ```
 
 1. PreFigure source files can be compiled into SVG images using one of the following two commands, with the first command creating a regular SVG file while the second produces a tactile version of    the diagram.

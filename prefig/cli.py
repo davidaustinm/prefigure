@@ -172,15 +172,23 @@ def examples():
     default=False,
     help="Ignore any publication file"
 )
+@click.option(
+    '-s',
+    "--suppress-caption",
+    is_flag=True,
+    default=False,
+    help="Suppress the creation of a diagram caption when creating tactile diagrams"
+)
 @click.argument(
     "filename",
     type=click.Path()
 )
-def build(format, publication, ignore_publication, filename):
+def build(format, publication, ignore_publication, suppress_caption, filename):
     return engine.build(format,
                         filename,
                         publication=publication,
                         ignore_publication=ignore_publication,
+                        suppress_caption=suppress_caption,
                         standalone=True)
 
 @main.command(

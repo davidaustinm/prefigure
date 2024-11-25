@@ -12,7 +12,7 @@
     <circle at="unit-circle" center="(0,0)" radius="1" stroke="blue"/>
     <repeat parameter="k=0..7">
       <point at="point" p="f(k)" alignment="alignments[k]">
-	<m>${labels[k]}</m>
+        <m>${labels[k]}</m>
       </point>
     </repeat>
   </coordinates>
