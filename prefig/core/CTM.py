@@ -1,8 +1,12 @@
 import numpy as np
-from . import math_utilities as math_util
-from . import utilities as util
+import logging
 import copy
 import math
+from . import math_utilities as math_util
+from . import utilities as util
+from . import user_namespace as un
+
+log = logging.getLogger('prefigure')
 
 # current transformation matrix:
 #   models a 2d affine coordinate transform using homogeneous coordinates.
@@ -57,6 +61,16 @@ class CTM:
             self.inverse = identity()
         else:
             self.ctm = ctm
+        self.ctm_stack = []
+
+    def push(self):
+        self.ctm_stack.append([self.ctm, self.inverse])
+
+    def pop(self):
+        if len(self.ctm_stack) == 0:
+            log.error("Attempt to restore an empty transform")
+            return
+        self.ctm, self.inverse = self.ctm_stack.pop(-1)
 
     def translate(self, x, y):
         m = translation(x, y)
@@ -86,8 +100,64 @@ class CTM:
         p.append(1)
         return np.array([math_util.dot(self.ctm[i], p) for i in range(2)])
 
-    def concat(self, m):
-        return CTM(concat(self.ctm, m))
-
     def copy(self):
         return copy.deepcopy(self) # CTM(copy.deepcopy(self.ctm))
+
+def transform_group(element, diagram, root, outline_status):
+    if outline_status != "finish_outline":
+        diagram.ctm().push()
+        element.tag = "group"
+
+    diagram.parse(element, root=root, outline_status=outline_status)
+
+    if outline_status != "finish_outline":
+        diagram.ctm().pop()
+
+def transform_translate(element, diagram, root, outline_status):
+    if outline_status == "finish_outline":
+        return
+    try:
+        p = un.valid_eval(element.get("by"))
+    except:
+        log.error(f"Error in <translate> parsing by={element.get('by')}")
+        return
+    diagram.ctm().translate(*p)
+
+def transform_rotate(element, diagram, root, outline_status):
+    if outline_status == "finish_outline":
+        return
+    try:
+        angle = un.valid_eval(element.get("by"))
+    except:
+        log.error(f"Error in <rotate> parsing by={element.get('by')}")
+        return
+    try:
+        p = un.valid_eval(element.get("about", "(0,0)"))
+    except:
+        log.error(f"Error in <rotate> parsing about={element.get('about')}")
+        return
+
+    if element.get("degrees", "yes") == "yes":
+        units = "deg"
+    else:
+        units = "rad"
+
+    ctm = diagram.ctm()
+    ctm.translate(*p)
+    ctm.rotate(angle, units=units)
+    ctm.translate(*(-p))
+
+def transform_scale(element, diagram, root, outline_status):
+    if outline_status == "finish_outline":
+        return
+    try:
+        s = un.valid_eval(element.get("by"))
+    except:
+        log.error(f"Error in <scale> parsing by={element.get('by')}")
+        return
+
+    ctm = diagram.ctm()
+    if isinstance(s, np.ndarray):
+        ctm.scale(*s)
+    else:
+        ctm.scale(s, s)

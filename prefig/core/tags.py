@@ -5,6 +5,7 @@ from . import area
 from . import clip
 from . import circle
 from . import coordinates
+from . import CTM
 from . import definition
 from . import diffeqs
 from . import graph
@@ -63,9 +64,13 @@ tag_dict = {
     'rectangle': rectangle.rectangle,
     'riemann-sum': riemann_sum.riemann_sum,
     'repeat': repeat.repeat,
+    'transform': CTM.transform_group,
+    'rotate': CTM.transform_rotate,
+    'scale': CTM.transform_scale,
     'shape': shape.shape,
     'slope-field': slope_field.slope_field,
     'tangent-line': tangent_line.tangent,
+    'translate': CTM.transform_translate,
     'triangle': polygon.triangle,
     'vector': vector.vector
 }

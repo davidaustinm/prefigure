@@ -2,6 +2,7 @@ import os
 import lxml.etree as ET
 import numpy as np
 import logging
+import copy
 from . import tags
 from . import user_namespace as un
 from . import utilities as util
@@ -91,7 +92,7 @@ class Diagram:
         self.legends.append(legend)
         
     def add_label(self, element, group):
-        self.label_group_dict[element] = [group, self.ctm()]
+        self.label_group_dict[element] = [group, copy.deepcopy(self.ctm())]
 
     def caption_suppressed(self):
         return self.suppress_caption

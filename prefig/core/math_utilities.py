@@ -58,6 +58,11 @@ def chi_cc(a, b, t):
         return 1
     return 0
 
+def rotate(v, theta):
+    c = math.cos(theta)
+    s = math.sin(theta)
+    return np.array([c*v[0]-s*v[1], s*v[0]+c*v[1]])
+
 def eulers_method(f, t0, y0, t1, N):
     h = (t1 - t0)/N
     if isinstance(y0, np.ndarray):

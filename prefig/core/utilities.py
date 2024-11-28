@@ -1,5 +1,6 @@
-from . import user_namespace as un
 import numpy as np
+from . import user_namespace as un
+from . import label
 
 colors = {'gray': r'#777', 'lightgray': r'#ccc', 'darkgray': r'#333'}
 
@@ -25,7 +26,9 @@ def get_attr(element, attr, default):
         return element.get(attr, default)
     
 def set_attr(element, attr, default):
-    element.set(attr, get_attr(element, attr, default))
+    value = get_attr(element, attr, default)
+    value = label.evaluate_text(value)
+    element.set(attr, value)
 
 def get_1d_attr(element):
     d = {}
