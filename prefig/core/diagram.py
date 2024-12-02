@@ -287,7 +287,18 @@ class Diagram:
                 os.remove(out+'-annotations.xml')
             except OSError:
                 pass
-                
+
+
+    # If we only want a string, we assemble the XML tree
+    # consisting of the SVG and annotations and return as a string
+    def end_figure_to_string(self):
+        prefigure_root = ET.Element("prefigure")
+        prefigure_root.append(self.root)
+        if self.annotations_root is not None:
+            diagram = ET.Element("diagram")
+            diagram.append(self.annotations_root)
+            prefigure_root.append(diagram)
+        return ET.tostring(prefigure_root, pretty_print=True)
 
     # Here we parse the children of the given XML element
     # Resulting SVG elements will be placed below root

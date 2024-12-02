@@ -17,7 +17,8 @@ def mk_diagram(element,
                filename,
                suppress_caption,
                diagram_number,
-               standalone):
+               standalone,
+               return_string=False):
 
     importlib.reload(user_namespace)
     output = None # add at a later date
@@ -47,7 +48,10 @@ def mk_diagram(element,
         return
     log.debug("Writing the diagram and any annotations")
     try:
-        diag.end_figure()
+        if return_string:
+            return diag.end_figure_to_string()
+        else:
+            diag.end_figure()
     except:
         log.error("There was a problem finishing the diagram")
         log.error("Debugging information is available with 'prefig -vv build filename'")

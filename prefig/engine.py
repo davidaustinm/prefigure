@@ -75,6 +75,25 @@ def build(
     return filename
 
 
+# Build from an input string and return a string formed from
+# an XML tree containing the SVG and annotation trees
+def build_from_string(format, input_string):
+    tree = ET.fromstring(input_string)
+    diagrams = tree.xpath('//diagram')
+    if len(diagrams) > 0:
+        output_string = core.parse.mk_diagram(
+            diagrams[0],
+            format,
+            None,     # publication file
+            "prefig", # filename needed for label generation
+            False,    # supress caption
+            None,     # diagram number
+            True,     # standalone = True since not in PreTeXt
+            return_string = True
+        )
+        return output_string
+    return ''
+
 def pdf(
         format,
         filename,
