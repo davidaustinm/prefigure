@@ -7,7 +7,8 @@ import logging
 import lxml.etree as ET
 
 # We're going to include some basic functions here so they can be
-# called either from the standalone CLI or from within PreTeXt
+# called from one of several environments, either the standalone CLI,
+# PreTeXt, or Pyodide
 
 # First we set up logging.  Unless requested, we won't report a lot
 log = logging.getLogger('prefigure')
@@ -26,13 +27,16 @@ if ptx_log_name in logging.Logger.manager.loggerDict:
     if ptx_log.getEffectiveLevel() == logging.DEBUG:
         log.setLevel(logging.DEBUG)
 
+
+# we make the default environment pretext so we don't need to change
+# the call from within pretext
 def build(
         format,
         filename,
         publication=None,
         ignore_publication=False,
         suppress_caption=False,
-        standalone=False
+        environment="pretext"
 ):
     pub_requested = not ignore_publication and publication is not None
     path = Path(filename)
@@ -71,13 +75,13 @@ def build(
                      format,
                      publication,
                      suppress_caption,
-                     standalone)
+                     environment)
     return filename
 
 
 # Build from an input string and return a string formed from
 # an XML tree containing the SVG and annotation trees
-def build_from_string(format, input_string):
+def build_from_string(format, input_string, environment="pyodide"):
     tree = ET.fromstring(input_string)
     diagrams = tree.xpath('//diagram')
     if len(diagrams) > 0:
@@ -88,7 +92,7 @@ def build_from_string(format, input_string):
             "prefig", # filename needed for label generation
             False,    # supress caption
             None,     # diagram number
-            True,     # standalone = True since not in PreTeXt
+            environment,
             return_string = True
         )
         return output_string
@@ -101,14 +105,15 @@ def pdf(
         publication=None,
         ignore_publication=False,
         dpi=72,
-        standalone=False
+        environment="pretext"
 ):
     build_path = None
     if build_first:
         filename = build(format,
                          filename,
                          publication=publication,
-                         ignore_publication=ignore_publication)
+                         ignore_publication=ignore_publication,
+                         environment=environment)
         filename = Path(filename)
         build_path = filename.parent / 'output' / (filename.stem + '.svg')
     else:
@@ -145,7 +150,7 @@ def pdf(
         log.error("PreFigure PDF conversion failed.  Is rsvg-convert available?")
         log.error("See the installation instructions athttps://prefigure.org")
 
-    if not standalone:
+    if environment == "pretext":
         os.remove(build_path)
         annotations = str(build_path.parent/build_path.stem) + '-annotations.xml'
         try:
@@ -159,14 +164,15 @@ def png(
         build_first=True,
         publication=None,
         ignore_publication=False,
-        standalone=False
+        environment="pretext"
 ):
     build_path = None
     if build_first:
         filename = build(format,
                          filename,
                          publication=publication,
-                         ignore_publication=ignore_publication)
+                         ignore_publication=ignore_publication,
+                         environment=environment)
         filename = Path(filename)
         build_path = filename.parent / 'output' / (filename.stem + '.svg')
     else:
@@ -197,7 +203,7 @@ def png(
         log.error("PreFigure PNG conversion failed.  Is rsvg-convert available?")
         log.error("See the installation instructions at https://prefigure.org")
 
-    if not standalone:
+    if environment == "pretext":
         os.remove(build_path)
         annotations = str(build_path.parent/build_path.stem) + '-annotations.xml'
         try:

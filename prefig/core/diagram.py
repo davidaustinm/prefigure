@@ -20,14 +20,16 @@ class Diagram:
                  output,
                  publication,
                  suppress_caption,
-                 standalone):
+                 environment):
         self.diagram_element = diagram_element
         self.filename = filename
         self.diagram_number = diagram_number
         self.format = format
         self.output = output
         self.suppress_caption = suppress_caption
-        self.standalone = standalone
+        self.environment = environment
+
+        label.init(self.format, self.environment)
 
         # create the XML tree for the svg output
         svg_uri = "http://www.w3.org/2000/svg"
@@ -84,9 +86,7 @@ class Diagram:
                 self.defaults[subelement.tag] = subelement
 
         if self.defaults.get('macros', None) is not None:
-            macros_div = ET.SubElement(self.label_html_body, 'div')
-            macros_div.set('id', 'latex-macros')
-            macros_div.text = '\({}\)'.format(self.defaults.get('macros').text)
+            label.add_macros(self.defaults.get('macros').text)
 
     def add_legend(self, legend):
         self.legends.append(legend)
@@ -268,10 +268,10 @@ class Diagram:
             diagram = ET.Element('diagram')
             diagram.append(self.annotations_root)
             et = ET.ElementTree(diagram)
-            if self.standalone:
-                output_file = out + '.xml'
-            else:
+            if self.environment == "pretext":
                 output_file = out + '-annotations.xml'
+            else:
+                output_file = out + '.xml'
             try:
                 et.write(output_file, pretty_print=True)
             except:

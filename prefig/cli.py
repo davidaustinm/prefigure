@@ -189,7 +189,7 @@ def build(format, publication, ignore_publication, suppress_caption, filename):
                         publication=publication,
                         ignore_publication=ignore_publication,
                         suppress_caption=suppress_caption,
-                        standalone=True)
+                        environment="pf_cli")
 
 @main.command(
     help="Convert the PreFigure SVG into a PDF"
@@ -248,7 +248,7 @@ def pdf(
         build_first=build_first,
         publication=publication,
         ignore_publication=ignore_publication,
-        standalone=True
+        environment="pf_cli"
     )
 
 @main.command(
@@ -300,7 +300,7 @@ def png(
         build_first=build_first,
         publication=publication,
         ignore_publication=ignore_publication,
-        standalone=True
+        environment="pf_cli"
     )
 
 @main.command(

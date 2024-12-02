@@ -10,12 +10,22 @@ import lxml.etree as ET
 from . import utilities as util
 from . import CTM
 from . import user_namespace as un
+from . import label_tools
 import tempfile
 
 log = logging.getLogger('prefigure')
 
-# Flag to detect whether cairo has been loaded
-cairo_loaded = False
+def init(format, environment):
+    global math_labels
+    global text_measurements
+    global braille_translator
+    if environment == "pf_cli" or environment == "pretext":
+        math_labels = label_tools.LocalMathLabels(format)
+    text_measurements = label_tools.CairoTextMeasurements()
+    braille_translator = label_tools.LocalLouisBrailleTranslator()
+
+def add_macros(macros):
+    math_labels.add_macros(macros)
 
 # These are tags that can occur in a label
 label_tags = {'it', 'b', 'newline'}
@@ -129,9 +139,12 @@ def label(element, diagram, parent, outline_status = None):
         math_text = '\({}\)'.format(math.text)
 
         # add the label's text to the HTML tree
+        math_labels.register_math_label(math_id, math_text)
+        '''
         div = ET.SubElement(diagram.label_html(), 'div')
         div.set('id', math_id)
         div.text = math_text
+        '''
 
         text += math_text
         plain_text += str(math_text)
@@ -171,58 +184,12 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
     if len(label_group_dict) == 0:
         return
 
-    # prepare the MathJax command
-    output_format = diagram.output_format()
-    filename = filename[:-4]
-    basename = os.path.basename(filename)
-    working_dir = tempfile.TemporaryDirectory()
-    mj_input = os.path.join(working_dir.name, basename) + '-labels.html'
-    mj_output = os.path.join(working_dir.name, basename) + '-' + output_format + '.html'
-
-    # write the HTML file
-    with ET.xmlfile(mj_input, encoding='utf-8') as xf:
-        xf.write(label_html_tree, pretty_print=True)
-
-    options = ''
-    if output_format == 'tactile':
-        format = 'braille'
-    else:
-        options = '--svgenhanced --depth deep'
-        format = 'svg'
-
-    # have MathJax process the HTML file and load the resulting
-    # SVG labels into label_tree 
-    path = Path(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
-    mj_dir = path.absolute() / 'mj_sre'
-    mj_dir_str = str(mj_dir)
-
-    if not (mj_dir / 'mj-sre-page.js').exists():
-        log.info("MathJax installation not found so we will install it")
-        from .. import scripts
-        success = scripts.install_mj.main()
-        if not success:
-            log.error("Cannot create labels without MathJax")
-            return
-
-    mj_command = 'node {}/mj-sre-page.js --{} {} {} > {}'.format(mj_dir_str, format, options, mj_input, mj_output)
-    log.debug("Using MathJax to produce mathematical labels")
-    try:
-        os.system(mj_command)
-    except:
-        log.error("Production of mathematical labels with MathJax was unsuccessful")
-        return
-    label_tree = ET.parse(mj_output)
+    math_labels.process_math_labels()
 
     # for braille output, we'll create a group to hold all the labels
     # and their clear backgrounds and add it at the end of the diagram
     if diagram.output_format() == 'tactile':
-        try:
-            global louis
-            import louis
-        except:
-            log.warning('Failed to import louis so we cannot make braille labels')
-            log.warning('See the installation instructions at https://prefigure.org')
-            log.warning('The rest of the diagram will still be built.')
+        if not braille_translator.initialized():
             return
         background_group = ET.SubElement(root, 'g')
         background_group.set('id', 'background-group')
@@ -235,20 +202,17 @@ def place_labels(diagram, filename, root, label_group_dict, label_html_tree):
 
         if diagram.output_format() == 'tactile':
             position_braille_label(label, diagram, ctm, background_group, 
-                                   braille_group, label_tree)
+                                   braille_group)
         else:
-            position_svg_label(label, diagram, ctm, group, label_tree)
-
-    working_dir.cleanup()
+            position_svg_label(label, diagram, ctm, group)
 
 # use this to retrieve elements from the mathjax output
 #        div = label_tree.xpath("//html/body/div[@id = '{}']".format(id))[0]
 
 def position_braille_label(element, diagram, ctm, 
-                           background_group, braille_group, label_tree):
+                           background_group, braille_group):
     group = ET.SubElement(braille_group, 'g')
     group.set('id', element.get('id'))
-
     # Determine the anchor point p and then adjust it using
     # the alignment and offset
     try:
@@ -353,6 +317,7 @@ def position_braille_label(element, diagram, ctm,
                     if len(text) > 0:
                         if (
                                 len(new_row) > 0 and
+                                len(new_row[-1]) > 1 and
                                 new_row[-1][1] == el[1]
                         ):
                             new_row[-1][0] += ' ' + text
@@ -363,11 +328,7 @@ def position_braille_label(element, diagram, ctm,
         text_elements[num] = new_row
 
     typeform_dict = {'plain':0, 'it':1, 'b':4}
-    space = louis.translateString(
-        ["braille-patterns.cti", "en-us-g2.ctb"],
-        ' ',
-        typeform=[0]
-    )
+    space = ' '
     # translate braille strings not in an <m>
     for num, row in enumerate(text_elements):
         row_text = ''
@@ -378,24 +339,17 @@ def position_braille_label(element, diagram, ctm,
                 if len(row) > 0:
                     text += ' '
                 typeform = [typeform_dict[el[1]]] * len(text)
-                braille_text = louis.translateString(
-                    ["braille-patterns.cti", "en-us-g2.ctb"],
+                braille_text = braille_translator.translate(
                     text,
-                    typeform=typeform
+                    typeform
                 )
+                if braille_text is None:
+                    continue
                 row_text += braille_text
             else:
                 m_tag_id = el.get('id')
-                try:
-                    div = label_tree.xpath("//html/body/div[@id = '{}']".format(m_tag_id))[0]
-                except:
-                    log.error("Error retrieving a mathematical label")
-                    log.error("  Perhaps it was not created due to an earlier error")
-                    return
-                try:
-                    insert = div.xpath('mjx-data/mjx-braille')[0]
-                except IndexError:
-                    log.error(f"Error in processing label, possibly a LaTeX error: {div.text}")
+                insert = math_labels.get_math_label(m_tag_id)
+                if insert is None:
                     continue
                 row_text += insert.text
                 if len(row) > 0:
@@ -462,7 +416,7 @@ def position_braille_label(element, diagram, ctm,
         y += interline
 
 
-def position_svg_label(element, diagram, ctm, group, label_tree):
+def position_svg_label(element, diagram, ctm, group):
     # We're going to put everything inside a group
     label_group = ET.Element('g')
 
@@ -503,15 +457,14 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
         offset = [offset[0] + relative_offset[0],
                   offset[1] + relative_offset[1]]
 
-
     # A label can have rows consisting of different components
     # comprised of text, with italics and bold, and <m> tags.
     # Our first task is to extract all of these components and measure them
 
-    std_font_face = ['sans', 14, 'normal', 'normal']
-    it_font_face =  ['sans', 14, 'italic', 'normal']
-    b_font_face  =  ['sans', 14, 'normal', 'bold']
-    it_b_font_face  =  ['sans', 14, 'italic', 'bold']
+    std_font_face = ['sans', 14, False, False]
+    it_font_face =  ['sans', 14, True, False]
+    b_font_face  =  ['sans', 14, False, True]
+    it_b_font_face  =  ['sans', 14, True, True]
 
     label = element
 
@@ -544,6 +497,7 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
                     continue
                 row.append((child.text, it_b_font_face))
                 row.append((child.tail, b_font_face))
+
         row.append((el.tail, std_font_face))
 
     # Let's make another pass through the elements removing
@@ -557,19 +511,17 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
                 if text is not None:
                     text = text.strip()
                     if len(text) > 0:
-                        # Now we have some plain text so we need cairo
-                        # We will import cairo and initialize, if possible
-                        # If not, we simply return without placing this label
-                        cairo_init()
-                        if not cairo_loaded:
-                            return
-                        new_row.append(mk_text_element(text,
-                                                       element[1],
-                                                       label_group))
+                        # Construct a text element
+                        text_el = mk_text_element(text,
+                                                  element[1],
+                                                  label_group)
+                        # This could be None if pycairo is not installed
+                        if text_el is None:
+                            continue
+                        new_row.append(text_el)
                 
             else: # otherwise it's an <m>
                 new_row.append(mk_m_element(element,
-                                            label_tree,
                                             label_group))
                 begin_space = True
         text_elements[num] = new_row
@@ -667,44 +619,30 @@ def position_svg_label(element, diagram, ctm, group, label_tree):
 #    group.set('type', 'label')
 
 
-def mk_text_element(text_str, font_face, label_group):
+def mk_text_element(text_str, font_data, label_group):
     text_el = ET.SubElement(label_group, 'text')
     text_el.text = text_str
-    text_el.set('font-family', font_face[0])
-    text_el.set('font-size', str(font_face[1]))
-    if font_face[2] == 'italic':
+    text_el.set('font-family', font_data[0])
+    text_el.set('font-size', str(font_data[1]))
+    if font_data[2]:
         text_el.set('font-style', 'italic')
-    if font_face[3] == 'bold':
+    if font_data[3]:
         text_el.set('font-weight', 'bold')
 
-    if font_face[2] == 'italic':
-        font_slant = cairo.FontSlant.ITALIC
-    else:
-        font_slant = cairo.FontSlant.NORMAL
-    if font_face[3] == 'bold':
-        font_weight = cairo.FontWeight.BOLD
-    else:
-        font_weight = cairo.FontWeight.NORMAL
-    cairo_context.select_font_face(font_face[0],
-                                   font_slant,
-                                   font_weight)
-    cairo_context.set_font_size(font_face[1])
-    extents = cairo_context.text_extents(text_str)
-    y_bearing = extents[1]
-    t_height  = extents[3]
-    xadvance  = extents[4]
-    return [text_el, xadvance, -y_bearing, t_height+y_bearing]
+    measurements = text_measurements.measure_text(
+        text_str,
+        font_data
+    )
+
+    if measurements is None:
+        return None
+    return [text_el] + measurements
 
 
-def mk_m_element(m_tag, label_tree, label_group):
+def mk_m_element(m_tag, label_group):
     m_tag_id = m_tag.get('id')
-    div = label_tree.xpath("//html/body/div[@id = '{}']".format(m_tag_id))[0]
-    ns = {'svg': 'http://www.w3.org/2000/svg'}
-    try:
-        insert = div.xpath('mjx-data/mjx-container/svg:svg',
-                           namespaces=ns)[0]
-    except IndexError:
-        log.error(f"Error in processing label, possibly a LaTeX error: {div.text}")
+    insert = math_labels.get_math_label(m_tag_id)
+    if insert is None:
         return None
 
     # Express dimensions in px for rsvg-convert
@@ -726,34 +664,6 @@ def mk_m_element(m_tag, label_tree, label_group):
     below = -dim_dict['style']
     return [insert, width, above, below]
 
-
-def cairo_init():
-    global cairo_loaded
-    global cairo
-    global cairo_context
-    if cairo_loaded:
-        return
-
-    # We use pycairo to measure the dimensions of svg text labels
-    # so we need a cairo context.  This is not needed for tactiles diagrams
-    try:
-        import cairo
-    except:
-        log.warning('Error importing Python package cairo, which is required for non-mathemaical labels.')
-        log.warning('See the PreFigure installation instructions at https://prefigure.org')
-        log.warning('The rest of the diagram will still be built')
-        return
-
-    # Great.  We have cairo so now we set the flag and construct the context
-    cairo_loaded = True
-    
-    global cairo_context
-    surface = cairo.SVGSurface(None, 200, 200)
-    context = cairo.Context(surface)
-    context.select_font_face('sans')
-    font_size = 14
-    context.set_font_size(font_size)
-    cairo_context = context
 
 # add a caption to a tactile diagram in the upper-left corner
 #   e.g. "Figure 2.3.4"
