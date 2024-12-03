@@ -172,6 +172,9 @@
       <optional>
         <ref name="Clip"/>
       </optional>
+      <optional>
+        <ref name="Transform"/>
+      </optional>
     </interleave>
   </define>
   <!-- coordinates are special in that they can contain everything a diagram can -->
@@ -202,6 +205,9 @@
         <zeroOrMore>
           <ref name="GroupElements"/>
         </zeroOrMore>
+        <zeroOrMore>
+          <ref name="TransformElements"/>
+        </zeroOrMore>
       </interleave>
     </element>
   </define>
@@ -224,6 +230,9 @@
         <zeroOrMore>
           <ref name="GroupElements"/>
         </zeroOrMore>
+        <zeroOrMore>
+          <ref name="TransformElements"/>
+        </zeroOrMore>
       </interleave>
     </element>
   </define>
@@ -243,6 +252,9 @@
         </zeroOrMore>
         <zeroOrMore>
           <ref name="GroupElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="TransformElements"/>
         </zeroOrMore>
       </interleave>
     </element>
@@ -264,8 +276,54 @@
         <zeroOrMore>
           <ref name="GroupElements"/>
         </zeroOrMore>
+        <ref name="TransformElements"/>
       </interleave>
     </element>
+  </define>
+  <define name="Transform">
+    <element name="transform">
+      <interleave>
+        <zeroOrMore>
+          <ref name="DefinitionElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GraphicalElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GroupElements"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="TransformElements"/>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="TransformElements">
+    <interleave>
+      <zeroOrMore>
+        <element name="translate">
+          <attribute name="by"/>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="rotate">
+          <attribute name="by"/>
+          <optional>
+            <attribute name="degrees">
+              <choice>
+                <value>yes</value>
+                <value>no</value>
+              </choice>
+            </attribute>
+          </optional>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="scale">
+          <attribute name="by"/>
+        </element>
+      </zeroOrMore>
+    </interleave>
   </define>
   <!-- attributes and text for labels -->
   <define name="LabelAttributes">
