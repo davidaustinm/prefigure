@@ -148,6 +148,7 @@ TransformElements = (
     }* &
     element rotate {
         attribute by {text},
+        attribute about {text}?,
         attribute degrees {"yes"|"no"}?
     }* &
     element scale {

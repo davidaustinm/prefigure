@@ -309,6 +309,9 @@
         <element name="rotate">
           <attribute name="by"/>
           <optional>
+            <attribute name="about"/>
+          </optional>
+          <optional>
             <attribute name="degrees">
               <choice>
                 <value>yes</value>

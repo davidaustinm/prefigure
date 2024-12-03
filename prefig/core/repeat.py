@@ -2,8 +2,10 @@ import lxml.etree as ET
 import logging
 from . import user_namespace as un
 import copy
+import numpy as np
 from . import group
 from . import label
+from . import utilities
 
 log = logging.getLogger('prefigure')
 
@@ -12,9 +14,16 @@ log = logging.getLogger('prefigure')
 def repeat(element, diagram, parent, outline_status):
     try:
         parameter = element.get('parameter')
-        var, expr = parameter.split('=')
-        var = var.strip()
-        start, stop = map(un.valid_eval, expr.split('..'))
+        fields = parameter.split('=')
+        if len(fields) == 2:
+            var, expr = fields
+            var = var.strip()
+            start, stop = map(un.valid_eval, expr.split('..'))
+            iterator = range(start, stop+1)
+        else:
+            fields = [f.strip() for f in parameter.split()]
+            var = fields[0]
+            iterator = un.valid_eval(fields[2])
     except:
         log.error(f"Unable to parse parameter {parameter} in <repeat>")
         return
@@ -28,12 +37,15 @@ def repeat(element, diagram, parent, outline_status):
     if id is not None:
         element.set('id', id)
 
-    for k in range(start, stop+1):
-        k_str = str(k)
+    for k in iterator:
+        if isinstance(k, np.ndarray):
+            k_str = utilities.np2str(k)
+        else:
+            k_str = str(k)
         un.valid_eval(k_str, var)
 
         definition = ET.SubElement(element, 'definition')
-        definition.text = var + '=' + str(k)
+        definition.text = var + '=' + k_str
         definition.set('id-suffix', definition.text)
 
         for child in element_cp:
