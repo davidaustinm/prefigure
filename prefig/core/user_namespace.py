@@ -45,9 +45,14 @@ class TransformList(ast.NodeTransformer):
 # Evaluate a safe expression after transforming the AST as above
 def transform_eval(expr):
     tree = ast.parse(expr, mode='eval')
-    tree = TransformList().visit(tree)
-    ast.fix_missing_locations(tree)
-    return eval(compile(tree, '', 'eval'))
+    transformed_tree = TransformList().visit(tree)
+    ast.fix_missing_locations(transformed_tree)
+    try:
+        return eval(compile(transformed_tree, '', 'eval'))
+    except ValueError:
+        # there is an inhomogeneous numpy array
+        # we've validated already so we'll just evaluate the original expr
+        return eval(expr)
 
 # validate an individual node inside an AST.  These are the allowed
 # python constructions.  This function will be called recursively on
