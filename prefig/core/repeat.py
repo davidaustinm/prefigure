@@ -15,11 +15,13 @@ def repeat(element, diagram, parent, outline_status):
     try:
         parameter = element.get('parameter')
         fields = parameter.split('=')
+        count = False  # keep track of how we are iterating
         if len(fields) == 2:
             var, expr = fields
             var = var.strip()
             start, stop = map(un.valid_eval, expr.split('..'))
             iterator = range(start, stop+1)
+            count = True
         else:
             fields = [f.strip() for f in parameter.split()]
             var = fields[0]
@@ -37,16 +39,21 @@ def repeat(element, diagram, parent, outline_status):
     if id is not None:
         element.set('id', id)
 
-    for k in iterator:
+    for num, k in enumerate(iterator):
         if isinstance(k, np.ndarray):
             k_str = utilities.np2str(k)
         else:
             k_str = str(k)
-        un.valid_eval(k_str, var)
+
+        un.enter_namespace(k_str, k)
+        if count:
+            suffix_str = var + "=" + k_str
+        else:
+            suffix_str = var + "=" + str(num)
 
         definition = ET.SubElement(element, 'definition')
         definition.text = var + '=' + k_str
-        definition.set('id-suffix', definition.text)
+        definition.set('id-suffix', suffix_str)
 
         for child in element_cp:
             definition.append(copy.deepcopy(child))
