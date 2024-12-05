@@ -305,6 +305,8 @@ def position_braille_label(element, diagram, ctm,
                     continue
                 row.append([child.text, 'b'])
                 row.append([child.tail, 'b'])
+        if el.tag == 'plain':
+            row.append([el.text, 'plain'])
         row.append([el.tail, 'plain'])
 
     # Let's make another pass through the elements removing
@@ -485,6 +487,9 @@ def position_svg_label(element, diagram, ctm, group):
             text_elements.append(row)
         if el.tag == 'm':
             row.append(el)
+            m_color = el.get('color', label_color)
+            if m_color is not None:
+                el.set('color', m_color)
         if el.tag == 'plain':
             p_color = el.get("color", None)
             row.append((el.text,
@@ -507,7 +512,6 @@ def position_svg_label(element, diagram, ctm, group):
                 row.append((child.tail,
                             font_face_sub_color(it_font_face, it_color))
                            )
-            row.append((el.tail, std_font_face))
         
         if el.tag == 'b':
             b_color = el.get("color", None)
