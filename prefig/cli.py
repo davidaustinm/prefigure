@@ -316,13 +316,6 @@ def png(
 )
 
 @click.option(
-    '-r',
-    '--restart_server',
-    is_flag=True,
-    default=False,
-    help="Restart server, if it is running"
-)
-@click.option(
     '-p',
     '--port',
     default='8345',
@@ -332,7 +325,7 @@ def png(
     "filename",
     type=str
 )
-def view(filename, ignore_annotations, restart_server, port):
+def view(filename, ignore_annotations, port):
     # Let's look for the diagcess tools, possibly in a parent directory
     log_level = log.getEffectiveLevel()
     log.setLevel(logging.INFO)

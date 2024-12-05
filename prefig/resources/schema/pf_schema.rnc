@@ -165,16 +165,19 @@ LabelAttributes =
     attribute scale {text}?,
     attribute rotate {text}?,
     attribute clear-background {"yes"|"no"}?,
-    attribute background-margin {text}?
+    attribute background-margin {text}?,
+    attribute color {text}?
 
-Math = element m {text}
-Bold = element b {text & Italic*}
-Italic = element it {text & Bold*}
+Math = element m {attribute color {text}? & text}
+Bold = element b {attribute color {text}? & text & Italic*}
+Italic = element it {attribute color {text}? & text & Bold*}
+Plain = element plain {attribute color{text}? & text}
 Newline = element newline {empty}
 LabelElements = (
     Math* &
     Bold* &
     Italic* &
+    Plain* &
     Newline*
 )
 LabelText = (text | LabelElements*)

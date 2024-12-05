@@ -155,7 +155,7 @@ class CairoTextMeasurements(AbstractTextMeasurements):
                           False: cairo.FontWeight.NORMAL}
 
     def measure_text(self, text, font_data):
-        font, font_size, italics, bold = font_data
+        font, font_size, italics, bold = font_data[:4]
         
         if not self.cairo_loaded:
             return None

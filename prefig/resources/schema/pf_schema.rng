@@ -365,15 +365,26 @@
     <optional>
       <attribute name="background-margin"/>
     </optional>
+    <optional>
+      <attribute name="color"/>
+    </optional>
   </define>
   <define name="Math">
     <element name="m">
-      <text/>
+      <interleave>
+        <optional>
+          <attribute name="color"/>
+        </optional>
+        <text/>
+      </interleave>
     </element>
   </define>
   <define name="Bold">
     <element name="b">
       <interleave>
+        <optional>
+          <attribute name="color"/>
+        </optional>
         <text/>
         <zeroOrMore>
           <ref name="Italic"/>
@@ -384,10 +395,23 @@
   <define name="Italic">
     <element name="it">
       <interleave>
+        <optional>
+          <attribute name="color"/>
+        </optional>
         <text/>
         <zeroOrMore>
           <ref name="Bold"/>
         </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Plain">
+    <element name="plain">
+      <interleave>
+        <optional>
+          <attribute name="color"/>
+        </optional>
+        <text/>
       </interleave>
     </element>
   </define>
@@ -406,6 +430,9 @@
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Italic"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Plain"/>
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Newline"/>

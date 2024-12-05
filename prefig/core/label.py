@@ -123,6 +123,17 @@ def label(element, diagram, parent, outline_status = None):
     if diagram.output_format() != 'tactile':
         parent.append(group)
 
+    # We go through all the text underneath this label and evaluate
+    for child in element.getiterator():
+        if not (
+                isinstance(child, ET._Comment)
+                or isinstance(child, ET._ProcessingInstruction)
+        ):
+            if child.text is not None:
+                child.text = evaluate_text(child.text)
+            if child.tail is not None:
+                child.tail = evaluate_text(child.tail)
+
     # We first go pull out the <m> tags and write them into
     # an HTML file to be processed by MathJax
     # We also want to know if the label is a single lower-case
@@ -130,26 +141,18 @@ def label(element, diagram, parent, outline_status = None):
     text = element.text
     if text is None:
         text = ''
-    else: element.text = evaluate_text(text)
     plain_text = text
     for math in element.findall('m'):
         diagram.add_id(math)
         math_id = math.get('id')
-        math.text = evaluate_text(math.text).strip()
         math_text = '\({}\)'.format(math.text)
 
         # add the label's text to the HTML tree
         math_labels.register_math_label(math_id, math_text)
-        '''
-        div = ET.SubElement(diagram.label_html(), 'div')
-        div.set('id', math_id)
-        div.text = math_text
-        '''
 
         text += math_text
         plain_text += str(math_text)
         if math.tail is not None:
-            math.tail = evaluate_text(math.tail)
             text += math.tail
             plain_text += str(math.tail)
     text = text.strip()
@@ -460,11 +463,13 @@ def position_svg_label(element, diagram, ctm, group):
     # A label can have rows consisting of different components
     # comprised of text, with italics and bold, and <m> tags.
     # Our first task is to extract all of these components and measure them
+    # These lists contain: font, size, italics, bold, color
+    label_color = element.get("color", None)
 
-    std_font_face = ['sans', 14, False, False]
-    it_font_face =  ['sans', 14, True, False]
-    b_font_face  =  ['sans', 14, False, True]
-    it_b_font_face  =  ['sans', 14, True, True]
+    std_font_face = ['sans', 14, False, False, label_color]
+    it_font_face =  ['sans', 14, True, False, label_color]
+    b_font_face  =  ['sans', 14, False, True, label_color]
+    it_b_font_face  =  ['sans', 14, True, True, label_color]
 
     label = element
 
@@ -480,23 +485,47 @@ def position_svg_label(element, diagram, ctm, group):
             text_elements.append(row)
         if el.tag == 'm':
             row.append(el)
+        if el.tag == 'plain':
+            p_color = el.get("color", None)
+            row.append((el.text,
+                        font_face_sub_color(std_font_face, p_color))
+                       )
         if el.tag == 'it':
-            row.append((el.text, it_font_face))
+            it_color = el.get("color", None)
+            row.append((el.text,
+                        font_face_sub_color(it_font_face, it_color))
+                       )
+
             for child in el:
                 if child.tag != 'b':
                     log.error(f"<{child.tag}> is not allowed inside a <it>")
                     continue
-                row.append((child.text, it_b_font_face))
-                row.append((child.tail, it_font_face))
+                b_color = child.get("color", it_color)
+                row.append((child.text,
+                            font_face_sub_color(it_b_font_face, b_color))
+                           )
+                row.append((child.tail,
+                            font_face_sub_color(it_font_face, it_color))
+                           )
+            row.append((el.tail, std_font_face))
         
         if el.tag == 'b':
-            row.append((el.text, b_font_face))
+            b_color = el.get("color", None)
+            row.append((el.text,
+                        font_face_sub_color(b_font_face, b_color))
+                       )
+
             for child in el:
                 if child.tag != 'it':
                     log.error(f"<{child.tag}> is not allowed inside a <b>")
                     continue
-                row.append((child.text, it_b_font_face))
-                row.append((child.tail, b_font_face))
+                it_color = child.get("color", b_color)
+                row.append((child.text,
+                            font_face_sub_color(it_b_font_face, it_color))
+                           )
+                row.append((child.tail,
+                            font_face_sub_color(b_font_face, b_color))
+                           )
 
         row.append((el.tail, std_font_face))
 
@@ -618,6 +647,12 @@ def position_svg_label(element, diagram, ctm, group):
     diagram.add_id(label_group, label.get('expr'))
 #    group.set('type', 'label')
 
+def font_face_sub_color(font_face, color):
+    if color is None:
+        return font_face
+    font_face = font_face[:]
+    font_face[4] = color
+    return font_face
 
 def mk_text_element(text_str, font_data, label_group):
     text_el = ET.SubElement(label_group, 'text')
@@ -628,6 +663,8 @@ def mk_text_element(text_str, font_data, label_group):
         text_el.set('font-style', 'italic')
     if font_data[3]:
         text_el.set('font-weight', 'bold')
+    if font_data[4] is not None:
+        text_el.set('fill', font_data[4])
 
     measurements = text_measurements.measure_text(
         text_str,
@@ -662,6 +699,15 @@ def mk_m_element(m_tag, label_group):
 
     above = dim_dict['height'] + dim_dict['style']
     below = -dim_dict['style']
+
+    color = m_tag.get("color", None)
+    if color is not None:
+        style = insert.get("style", "").rstrip()
+        if style.endswith(";"):
+            insert.set("style", style + f" color:{color}")
+        else:
+            insert.set("style", style + f"; color:{color}")
+
     return [insert, width, above, below]
 
 
