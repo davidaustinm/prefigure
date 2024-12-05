@@ -2,7 +2,7 @@ import click
 import click_log
 import os
 import sys
-import psutil
+import socket
 import shutil
 import subprocess
 import time
@@ -391,26 +391,26 @@ def view(filename, ignore_annotations, restart_server, port):
     else:
         home_dir = os.path.expanduser('~')
 
-    active_port = find_active_server(port, restart_server)
-    if active_port is None:
-        subprocess.Popen(
+    # we formerly used psutil to do this, now we use socket
+    # to check to see if the port is in use
+    if not port_in_use(port):
+        process = subprocess.Popen(
             ['python3', '-m', 'http.server', port, '-d', home_dir]
         )
-        active_port = port
-        
+    active_port = port
+
     if os.environ.get('CODESPACES'):
         url_preamble = f"https://{os.environ.get('CODESPACE_NAME')}-{active_port}.{os.environ.get('GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN')}"
     else:
         url_preamble = f"http://localhost:{active_port}"
     
-    SECONDS = 2
-
     # Does this figure have annotations
     if ignore_annotations or not view_path.with_suffix('.xml').exists():
         # Don't worry about annotations so just open the SVG in a browser
         file_rel_path = os.path.relpath(view_path, home_dir)
         url = f'{url_preamble}/{file_rel_path}'
-        log.info(f'Opening webpage in {SECONDS} seconds at {url}')
+        SECONDS = 1
+        log.info(f'Opening webpage in {SECONDS} second at {url}')
         time.sleep(SECONDS)
         webbrowser.open(url)
     else:
@@ -427,24 +427,14 @@ def view(filename, ignore_annotations, restart_server, port):
         webbrowser.open(url)
     log.setLevel(log_level)
 
-        
-def find_active_server(port, restart):
-    for proc in psutil.process_iter():
-        if not proc.name().startswith('python'):
-            continue
+
+def port_in_use(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            connections = proc.connections()
-            if len(connections) > 0:
-                active_port = str(connections[0].laddr.port)
-                if restart or active_port != port:
-                    log.info('Restarting server')
-                    proc.terminate()
-                    return None
-                return active_port
-        except:
-            pass
-    log.warning("Unable to restart server")
-    return None
+            s.bind(('127.0.0.1', int(port)))
+            return False
+        except OSError:
+            return True
 
 @main.command(
     help="Validate a PreFigure XML source file against the schema"
