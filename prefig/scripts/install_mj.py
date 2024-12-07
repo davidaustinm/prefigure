@@ -28,7 +28,7 @@ def main():
     npm_cmd = shutil.which("npm")
 
     try:
-        subprocess.run([npm_cmd, "install"]), "mathjax-full"])
+        subprocess.run([npm_cmd, "install"])
     except Exception as e:
         log.error("MathJax installation failed.  Is npm installed on your system?")
         # windows debug
