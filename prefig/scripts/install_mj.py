@@ -32,7 +32,9 @@ def main():
         
         
     try:
-        subprocess.run(["npm", "install", destination])
+        subprocess.run(["npm", "install", "mathjax-full"])
+        subprocess.run(["npm", "install", "speech-rule-engine"])
+        subprocess.run(["npm", "install", "yargs"])
     except Exception as e:
         log.error("MathJax installation failed.  Is npm installed on your system?")
         log.error(f"package.json exists = {os.path.exists('package.json')}")
