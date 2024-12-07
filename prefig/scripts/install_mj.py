@@ -25,18 +25,18 @@ def main():
     os.chdir(destination)
     log.info(f"Installing MathJax libraries in {destination}")
 
-    # windows debug
-    log.info(os.listdir())
-    log.info(f"npm is at {shutil.which("npm")}")
-    log.info(f"node is at {shutil.which("node")}")
-        
-        
+    npm_cmd = shutil.which("npm")
+
     try:
-        subprocess.run(["npm", "install", "mathjax-full"])
-        subprocess.run(["npm", "install", "speech-rule-engine"])
-        subprocess.run(["npm", "install", "yargs"])
+        subprocess.run([npm_cmd, "install"]), "mathjax-full"])
     except Exception as e:
         log.error("MathJax installation failed.  Is npm installed on your system?")
+        # windows debug
+        log.info(os.listdir())
+        log.info(f"npm is at {shutil.which("npm")}")
+        log.info(f"node is at {shutil.which("node")}")
+        
+        
         log.error(f"package.json exists = {os.path.exists('package.json')}")
         log.error(f"current directory = {os.getcwd()}")
         log.error(f"Listing again: {os.listdir()}")
