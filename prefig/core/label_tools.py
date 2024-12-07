@@ -140,9 +140,9 @@ class CairoTextMeasurements(AbstractTextMeasurements):
         try:
             import cairo
         except:
-            log.warning('Error importing Python package cairo, which is required for non-mathemaical labels.')
-            log.warning('See the PreFigure installation instructions at https://prefigure.org')
-            log.warning('The rest of the diagram will still be built')
+            log.info('Error importing Python package cairo, which is required for non-mathemaical labels.')
+            log.info('See the PreFigure installation instructions at https://prefigure.org')
+            log.info('The rest of the diagram will still be built')
             return
 
         log.info("cairo imported")
@@ -178,9 +178,9 @@ class LocalLouisBrailleTranslator(AbstractBrailleTranslator):
             global louis
             import louis
         except:
-            log.warning('Failed to import louis so we cannot make braille labels')
-            log.warning('See the installation instructions at https://prefigure.org')
-            log.warning('The rest of the diagram will still be built.')
+            log.info('Failed to import louis so we cannot make braille labels')
+            log.info('See the installation instructions at https://prefigure.org')
+            log.info('The rest of the diagram will still be built.')
             return
 
         log.info("louis imported")
