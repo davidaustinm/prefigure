@@ -43,6 +43,9 @@ def main():
         log.error("Standard output:", e.stdout)
         log.error("Standard error:", e.stderr)
         return False
+    except Exception as e:
+        log.error("MathJax installation failed.  Is npm installed on your system?")
+        log.error(f"Error: {str(e)}")
     
     os.chdir(wd)
     return True
