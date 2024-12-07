@@ -19,13 +19,14 @@ def test_prefigure():
         ])
 
     # build one of the diagrams and make sure it wrote the output
-    result = subprocess.run([
-        "prefig",
-        "-vv",
-        "build",
-        "examples/de-system.xml"
-    ])
-    if result.returncode != 0:
+    try:
+        result = subprocess.run([
+            "prefig",
+            "-vv",
+            "build",
+            "examples/de-system.xml"
+        ])
+    except:
         result = subprocess.run([
             "poetry",
             "run",
