@@ -25,7 +25,7 @@ def test_prefigure():
         "build",
         "examples/de-system.xml"
     ])
-    if result.return != 0:
+    if result.returncode != 0:
         result = subprocess.run([
             "poetry",
             "run",
