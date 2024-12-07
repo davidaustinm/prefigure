@@ -4,20 +4,12 @@ import os
 def test_prefigure():
     # copy examples into the current directory
     subprocess.run([
-        "python",
-        "-m",
-        "poetry",
-        "run",
         "prefig",
         "examples"
     ])
 
     # build one of the diagrams and make sure it wrote the output
     result = subprocess.run([
-        "python",
-        "-m",
-        "poetry",
-        "run",
         "prefig",
         "-vv",
         "build",
