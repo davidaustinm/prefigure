@@ -25,22 +25,18 @@ def main():
     os.chdir(destination)
     log.info(f"Installing MathJax libraries in {destination}")
 
+    # we'll try to find the path to npm, which is needed for windows testing
     npm_cmd = shutil.which("npm")
+    if npm_cmd is None:
+        npm_cmd = "npm"
 
     try:
         subprocess.run([npm_cmd, "install"])
     except Exception as e:
         log.error("MathJax installation failed.  Is npm installed on your system?")
         # windows debug
-        log.info(os.listdir())
-        log.info(f"npm is at {shutil.which("npm")}")
-        log.info(f"node is at {shutil.which("node")}")
-        
-        
-        log.error(f"package.json exists = {os.path.exists('package.json')}")
-        log.error(f"current directory = {os.getcwd()}")
-        log.error(f"Listing again: {os.listdir()}")
-        log.exception("Stack trace")
+        log.info(f"npm_cmd is at {npm_cmd}")
+#        log.exception("Stack trace")
         return False
     
     os.chdir(wd)
