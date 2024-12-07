@@ -134,7 +134,7 @@ def new():
 def examples():
     log_level = log.getEffectiveLevel()
     log.setLevel(logging.INFO)
-    log.info("Installing PreFigure examples into current directory")
+    log.info(f"Installing PreFigure examples into current directory {os.getcwd()}")
 
     prefig_root = Path(__file__).parent
     source = prefig_root / 'resources' / 'examples'
