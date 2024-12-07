@@ -24,6 +24,12 @@ def main():
     wd = os.getcwd()
     os.chdir(destination)
     log.info(f"Installing MathJax libraries in {destination}")
+
+    # windows debug
+    log.info(os.listdir())
+    log.info(f"npm is at {shutil.which("npm")}")
+        
+        
     try:
         subprocess.run(["npm", "install"]) #, f"--prefix={destination}"])
     except:
