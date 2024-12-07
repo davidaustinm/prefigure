@@ -35,6 +35,7 @@ def main():
         subprocess.run(["npm", "install"])
     except Exception as e:
         log.error("MathJax installation failed.  Is npm installed on your system?")
+        log.error(f"package.json exists = {os.path.exists('package.json')}")
         log.error(f"Listing again: {os.listdir()}")
         log.exception("Stack trace")
         return False
