@@ -32,7 +32,10 @@ def main():
         
         
     try:
-        subprocess.run(["npm", "install"]) #, f"--prefix={destination}"])
+        subprocess.run(["npm", "install"],
+                       capture_output=True,
+                       text=True,
+                       check=True) #, f"--prefix={destination}"])
     except subprocess.CalledProcessError as e:
         log.error("MathJax installation failed.  Is npm installed on your system?")
         log.error("Error:", e)
