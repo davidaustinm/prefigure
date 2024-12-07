@@ -19,6 +19,8 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '20'  # Replace with your desired Node.js version
+    - name: Install NPM Packages
+      run: npm install
     - name: Install poetry
       run: python -m pip install poetry
     - name: Initialize project
