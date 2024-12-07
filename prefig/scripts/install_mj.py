@@ -28,6 +28,7 @@ def main():
     # windows debug
     log.info(os.listdir())
     log.info(f"npm is at {shutil.which("npm")}")
+    log.info(f"node is at {shutil.which("node")}")
         
         
     try:
