@@ -7,7 +7,6 @@ from . import circle
 from . import coordinates
 from . import CTM
 from . import definition
-from . import diffeqs
 from . import graph
 from . import grid_axes
 from . import group
@@ -15,7 +14,6 @@ from . import implicit
 from . import label
 from . import legend
 from . import line
-from . import network
 from . import path
 from . import parametric_curve
 from . import point
@@ -23,7 +21,6 @@ from . import polygon
 from . import rectangle
 from . import riemann_sum
 from . import repeat
-from . import shape
 from . import slope_field
 from . import tangent_line
 from . import vector
@@ -42,9 +39,7 @@ tag_dict = {
     'circle': circle.circle,
     'clip': clip.clip,
     'coordinates': coordinates.coordinates,
-    'de-solve': diffeqs.de_solve,
     'definition': definition.definition,
-    'define-shapes': shape.define,
     'derivative': definition.derivative,
     'ellipse': circle.ellipse,
     'graph': graph.graph,
@@ -55,10 +50,8 @@ tag_dict = {
     'label': label.label,
     'legend': legend.legend,
     'line': line.line,
-    'network': network.network,
     'parametric-curve': parametric_curve.parametric_curve,
     'path': path.path,
-    'plot-de-solution': diffeqs.plot_de_solution,
     'point': point.point,
     'polygon': polygon.polygon,
     'rectangle': rectangle.rectangle,
@@ -67,7 +60,6 @@ tag_dict = {
     'transform': CTM.transform_group,
     'rotate': CTM.transform_rotate,
     'scale': CTM.transform_scale,
-    'shape': shape.shape,
     'slope-field': slope_field.slope_field,
     'tangent-line': tangent_line.tangent,
     'translate': CTM.transform_translate,
@@ -76,6 +68,19 @@ tag_dict = {
 }
 
 log = logging.getLogger('prefigure')
+
+try:
+    from . import diffeqs
+    from . import network
+    from . import shape
+    tag_dict['de-solve'] = diffeqs.de_solve
+    tag_dict['define-shapes'] = shape.define
+    tag_dict['network'] = network.network
+    tag_dict['plot-de-solution'] = diffeqs.plot_de_solution
+    tag_dict['shape'] = shape.shape
+except:
+    log.info("Unable to work with differential equations, networks, and shapes")
+    log.info("Most likely we are working in a wasm environment")
 
 # apply the processing function based on the XML element's tag
 

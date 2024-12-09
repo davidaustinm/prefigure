@@ -1,5 +1,4 @@
 import click
-import click_log
 import os
 import sys
 import socket
@@ -16,7 +15,12 @@ from . import engine
 log = logging.getLogger('prefigure')
 log.handlers.clear()
 click_handler = logging.StreamHandler(sys.stdout)
-click_handler.setFormatter(click_log.ColorFormatter())
+try:
+    import click_log
+    click_handler.setFormatter(click_log.ColorFormatter())
+except:
+    log.info("Unable to import click_log")
+
 log.addHandler(click_handler)
 
 
