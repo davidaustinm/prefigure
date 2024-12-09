@@ -189,6 +189,18 @@ Label = element label {
     LabelText+
 }
 
+XLabel = element xlabel {
+    attribute at {text}?,
+    LabelAttributes,
+    LabelText+
+}
+
+YLabel = element ylabel {
+    attribute at {text}?,
+    LabelAttributes,
+    LabelText+
+}
+
 # elements that can go inside a path
 PathElements = (
     element moveto {
@@ -360,10 +372,14 @@ Axes = element axes {
     attribute decorations {"yes"|"no"}?,
     attribute h-pi-format {"yes"|"no"}?,
     attribute v-pi-format {"yes"|"no"}?,
+    attribute h-frame {"bottom"|"top"}?,
+    attribute v-frame {"left"|"right"}?,
     attribute labels {"yes"|"no"}?,
     attribute stroke {text}?,
     attribute thickness {text}?,
-    CommonAttributes
+    CommonAttributes,
+    XLabel?,
+    YLabel?
 }
 
 Grid = element grid {
@@ -386,6 +402,8 @@ Grid-Axes = element grid-axes {
     attribute vspacing {text}?,
     attribute h-pi-format {"yes"|"no"}?,
     attribute v-pi-format {"yes"|"no"}?,
+    attribute h-frame {"bottom"|"top"}?,
+    attribute v-frame {"left"|"right"}?,
     attribute hlabels {text}?,
     attribute vlabels {text}?,
     attribute xlabel {text}?,
@@ -393,7 +411,9 @@ Grid-Axes = element grid-axes {
     attribute arrows {text}?,
     attribute decorations {"yes"|"no"}?,
     attribute labels {"yes"|"no"}?,
-    CommonAttributes
+    CommonAttributes,
+    XLabel?,
+    YLabel?    
 }
 
 Circle = element circle {
