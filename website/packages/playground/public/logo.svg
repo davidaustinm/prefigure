@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="diagram" width="430" height="310">
+  <defs>
+    <clipPath id="clipPath-0">
+      <rect x="5.0" y="5.0" width="420.0" height="300.0"/>
+    </clipPath>
+    <clipPath id="clipPath-1">
+      <rect x="5.0" y="5.0" width="420.0" height="300.0"/>
+    </clipPath>
+    <clipPath id="clipPath-2">
+      <rect x="170.0" y="65.0" width="60.0" height="60.0"/>
+    </clipPath>
+    <clipPath id="clipPath-3">
+      <rect x="228.5" y="65.0" width="36.0" height="60.0"/>
+    </clipPath>
+  </defs>
+  <g id="grid" stroke="#ccc" stroke-width="1">
+    <line id="line-0" x1="-10.0" y1="305.0" x2="-10.0" y2="5.0" type="vertical grid"/>
+    <line id="line-1" x1="20.0" y1="305.0" x2="20.0" y2="5.0" type="vertical grid"/>
+    <line id="line-2" x1="50.0" y1="305.0" x2="50.0" y2="5.0" type="vertical grid"/>
+    <line id="line-3" x1="80.0" y1="305.0" x2="80.0" y2="5.0" type="vertical grid"/>
+    <line id="line-4" x1="110.0" y1="305.0" x2="110.0" y2="5.0" type="vertical grid"/>
+    <line id="line-5" x1="140.0" y1="305.0" x2="140.0" y2="5.0" type="vertical grid"/>
+    <line id="line-6" x1="170.0" y1="305.0" x2="170.0" y2="5.0" type="vertical grid"/>
+    <line id="line-7" x1="200.0" y1="305.0" x2="200.0" y2="5.0" type="vertical grid"/>
+    <line id="line-8" x1="230.0" y1="305.0" x2="230.0" y2="5.0" type="vertical grid"/>
+    <line id="line-9" x1="260.0" y1="305.0" x2="260.0" y2="5.0" type="vertical grid"/>
+    <line id="line-10" x1="290.0" y1="305.0" x2="290.0" y2="5.0" type="vertical grid"/>
+    <line id="line-11" x1="320.0" y1="305.0" x2="320.0" y2="5.0" type="vertical grid"/>
+    <line id="line-12" x1="350.0" y1="305.0" x2="350.0" y2="5.0" type="vertical grid"/>
+    <line id="line-13" x1="380.0" y1="305.0" x2="380.0" y2="5.0" type="vertical grid"/>
+    <line id="line-14" x1="410.0" y1="305.0" x2="410.0" y2="5.0" type="vertical grid"/>
+    <line id="line-15" x1="5.0" y1="305.0" x2="425.0" y2="305.0" type="horizontal grid"/>
+    <line id="line-16" x1="5.0" y1="275.0" x2="425.0" y2="275.0" type="horizontal grid"/>
+    <line id="line-17" x1="5.0" y1="245.0" x2="425.0" y2="245.0" type="horizontal grid"/>
+    <line id="line-18" x1="5.0" y1="215.0" x2="425.0" y2="215.0" type="horizontal grid"/>
+    <line id="line-19" x1="5.0" y1="185.0" x2="425.0" y2="185.0" type="horizontal grid"/>
+    <line id="line-20" x1="5.0" y1="155.0" x2="425.0" y2="155.0" type="horizontal grid"/>
+    <line id="line-21" x1="5.0" y1="125.0" x2="425.0" y2="125.0" type="horizontal grid"/>
+    <line id="line-22" x1="5.0" y1="95.0" x2="425.0" y2="95.0" type="horizontal grid"/>
+    <line id="line-23" x1="5.0" y1="65.0" x2="425.0" y2="65.0" type="horizontal grid"/>
+    <line id="line-24" x1="5.0" y1="35.0" x2="425.0" y2="35.0" type="horizontal grid"/>
+    <line id="line-25" x1="5.0" y1="5.0" x2="425.0" y2="5.0" type="horizontal grid"/>
+  </g>
+  <path id="path-0" d="M 170.0 163.0L 170.0 237.0Q170.0 245.0 162.0 245.0L148.0 245.0Q140.0 245.0 140.0 237.0L140.0 43.0Q140.0 35.0 148.0 35.0L252.0 35.0Q260.0 35.0 260.0 43.0L260.0 147.0Q 260.0 155.0 252.0 155.0L 178.0 155.0Q 170.0 155.0 170.0 163.0Z" stroke="blue" stroke-width="4" fill="lightblue" type="polygon" clip-path="url(#clipPath-1)"/>
+  <path id="path-1" d="M 170.0 120.0L 170.0 70.0Q170.0 65.0 175.0 65.0L225.0 65.0Q230.0 65.0 230.0 70.0L230.0 120.0Q 230.0 125.0 225.0 125.0L 175.0 125.0Q 170.0 125.0 170.0 120.0Z" stroke="blue" stroke-width="4" fill="white" type="polygon" clip-path="url(#clipPath-1)"/>
+  <g clip-path="url(#clipPath-2)">
+    <g id="grid" stroke="#ccc" stroke-width="1">
+      <line id="line-26" x1="-10.0" y1="305.0" x2="-10.0" y2="5.0" type="vertical grid"/>
+      <line id="line-27" x1="20.0" y1="305.0" x2="20.0" y2="5.0" type="vertical grid"/>
+      <line id="line-28" x1="50.0" y1="305.0" x2="50.0" y2="5.0" type="vertical grid"/>
+      <line id="line-29" x1="80.0" y1="305.0" x2="80.0" y2="5.0" type="vertical grid"/>
+      <line id="line-30" x1="110.0" y1="305.0" x2="110.0" y2="5.0" type="vertical grid"/>
+      <line id="line-31" x1="140.0" y1="305.0" x2="140.0" y2="5.0" type="vertical grid"/>
+      <line id="line-32" x1="170.0" y1="305.0" x2="170.0" y2="5.0" type="vertical grid"/>
+      <line id="line-33" x1="200.0" y1="305.0" x2="200.0" y2="5.0" type="vertical grid"/>
+      <line id="line-34" x1="230.0" y1="305.0" x2="230.0" y2="5.0" type="vertical grid"/>
+      <line id="line-35" x1="260.0" y1="305.0" x2="260.0" y2="5.0" type="vertical grid"/>
+      <line id="line-36" x1="290.0" y1="305.0" x2="290.0" y2="5.0" type="vertical grid"/>
+      <line id="line-37" x1="320.0" y1="305.0" x2="320.0" y2="5.0" type="vertical grid"/>
+      <line id="line-38" x1="350.0" y1="305.0" x2="350.0" y2="5.0" type="vertical grid"/>
+      <line id="line-39" x1="380.0" y1="305.0" x2="380.0" y2="5.0" type="vertical grid"/>
+      <line id="line-40" x1="410.0" y1="305.0" x2="410.0" y2="5.0" type="vertical grid"/>
+      <line id="line-41" x1="5.0" y1="305.0" x2="425.0" y2="305.0" type="horizontal grid"/>
+      <line id="line-42" x1="5.0" y1="275.0" x2="425.0" y2="275.0" type="horizontal grid"/>
+      <line id="line-43" x1="5.0" y1="245.0" x2="425.0" y2="245.0" type="horizontal grid"/>
+      <line id="line-44" x1="5.0" y1="215.0" x2="425.0" y2="215.0" type="horizontal grid"/>
+      <line id="line-45" x1="5.0" y1="185.0" x2="425.0" y2="185.0" type="horizontal grid"/>
+      <line id="line-46" x1="5.0" y1="155.0" x2="425.0" y2="155.0" type="horizontal grid"/>
+      <line id="line-47" x1="5.0" y1="125.0" x2="425.0" y2="125.0" type="horizontal grid"/>
+      <line id="line-48" x1="5.0" y1="95.0" x2="425.0" y2="95.0" type="horizontal grid"/>
+      <line id="line-49" x1="5.0" y1="65.0" x2="425.0" y2="65.0" type="horizontal grid"/>
+      <line id="line-50" x1="5.0" y1="35.0" x2="425.0" y2="35.0" type="horizontal grid"/>
+      <line id="line-51" x1="5.0" y1="5.0" x2="425.0" y2="5.0" type="horizontal grid"/>
+    </g>
+    <path id="path-2" d="M 170.0 120.0L 170.0 70.0Q170.0 65.0 175.0 65.0L225.0 65.0Q230.0 65.0 230.0 70.0L230.0 120.0Q 230.0 125.0 225.0 125.0L 175.0 125.0Q 170.0 125.0 170.0 120.0Z" stroke="blue" stroke-width="4" fill="none" type="polygon" clip-path="url(#clipPath-1)"/>
+  </g>
+  <path id="path-3" d="M 215.0 208.0L 215.0 267.0Q215.0 275.0 207.0 275.0L193.0 275.0Q185.0 275.0 185.0 267.0L185.0 88.0Q185.0 80.0 193.0 80.0L282.0 80.0Q290.0 80.0 290.0 88.0L290.0 102.0Q290.0 110.0 282.0 110.0L223.0 110.0Q215.0 110.0 215.0 118.0L215.0 162.0Q215.0 170.0 223.0 170.0L267.0 170.0Q275.0 170.0 275.0 178.0L275.0 192.0Q 275.0 200.0 267.0 200.0L 223.0 200.0Q 215.0 200.0 215.0 208.0Z" stroke="red" stroke-width="4" fill="rgb(255,155,155)" type="polygon" clip-path="url(#clipPath-1)"/>
+  <g clip-path="url(#clipPath-3)">
+    <path id="path-4" d="M 170.0 163.0L 170.0 237.0Q170.0 245.0 162.0 245.0L148.0 245.0Q140.0 245.0 140.0 237.0L140.0 43.0Q140.0 35.0 148.0 35.0L252.0 35.0Q260.0 35.0 260.0 43.0L260.0 147.0Q 260.0 155.0 252.0 155.0L 178.0 155.0Q 170.0 155.0 170.0 163.0Z" stroke="blue" stroke-width="4" fill="lightblue" type="polygon" clip-path="url(#clipPath-1)"/>
+    <path id="path-5" d="M 170.0 120.0L 170.0 70.0Q170.0 65.0 175.0 65.0L225.0 65.0Q230.0 65.0 230.0 70.0L230.0 120.0Q 230.0 125.0 225.0 125.0L 175.0 125.0Q 170.0 125.0 170.0 120.0Z" stroke="blue" stroke-width="4" fill="none" type="polygon" clip-path="url(#clipPath-1)"/>
+  </g>
+  <path id="path-6" d="M 119.7 23.5 L 20.0 155.0 L 119.7 286.5" stroke="#777" stroke-width="10" stroke-linecap="round" fill="none" type="polygon" clip-path="url(#clipPath-1)"/>
+  <path id="path-7" d="M 310.3 23.5 L 410.0 155.0 L 310.3 286.5" stroke="#777" stroke-width="10" stroke-linecap="round" fill="none" type="polygon" clip-path="url(#clipPath-1)"/>
+</svg>

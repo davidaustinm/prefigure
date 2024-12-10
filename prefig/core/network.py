@@ -1,5 +1,9 @@
 import lxml.etree as ET
-import networkx as nx
+try:
+    import networkx as nx
+except:
+    from .compat import ErrorOnAccess
+    nx = ErrorOnAccess("networkx")
 import numpy as np
 import math
 import copy
