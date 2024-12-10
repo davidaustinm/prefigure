@@ -9,7 +9,6 @@ from . import (
     CTM,
     definition,
     diagram,
-    diffeqs,
     graph,
     grid_axes,
     group,
@@ -18,7 +17,6 @@ from . import (
     label_tools,
     line,
     math_utilities,
-    network,
     parametric_curve,
     parse,
     path,
@@ -27,7 +25,6 @@ from . import (
     rectangle,
     repeat,
     riemann_sum,
-    shape,
     slope_field,
     tags,
     tangent_line,
@@ -36,4 +33,15 @@ from . import (
     vector
 )
 
+import logging
+log = logging.getLogger("prefigure")
 
+try:
+    from . import (
+        diffeqs,
+        network,
+        shape
+    )
+except:
+    # We're probably in the pyodide environment.  We will report in tags
+    pass

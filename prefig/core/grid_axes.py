@@ -192,6 +192,7 @@ def axes(element, diagram, parent, outline_status):
     top_labels = False
     y_axis_location = 0
     y_axis_offsets = (0,0)
+    h_zero_include = False
     if bbox[1] * bbox[3] >= 0:
         if bbox[3] <= 0:
             top_labels = True
@@ -202,11 +203,24 @@ def axes(element, diagram, parent, outline_status):
             if abs(bbox[1]) > 1e-10:
                 y_axis_location = bbox[1]
                 y_axis_offsets = (5,0)
+
+    h_frame = element.get('h-frame', None)
+    if h_frame == 'bottom':
+        y_axis_location = bbox[1]
+        y_axis_offsets = (0,0)
+        h_zero_include = True
+    if h_frame == 'top':
+        y_axis_location = bbox[3]
+        y_axis_offsets = (0,0)
+        h_zero_include = True
+        top_labels = True
+
     y_axis_offsets = np.array(y_axis_offsets)
 
     right_labels = False
     x_axis_location = 0
     x_axis_offsets = (0,0)
+    v_zero_include = False
     if bbox[0] * bbox[2] >= 0:
         if bbox[2] <= 0:
             right_labels = True
@@ -217,8 +231,59 @@ def axes(element, diagram, parent, outline_status):
             if abs(bbox[0]) > 1e-10:
                 x_axis_location = bbox[0]
                 x_axis_offsets = (10,0)
+
+    v_frame = element.get('v-frame', None)
+    if v_frame == 'left':
+        x_axis_location = bbox[0]
+        x_axis_offsets = (0,0)
+        v_zero_include = True
+    if v_frame == 'right':
+        x_axis_location = bbox[2]
+        x_axis_offsets = (0,0)
+        v_zero_include = True
+        right_labels = True
+
     x_axis_offsets = np.array(x_axis_offsets)
     
+    try:
+        arrows = int(element.get('arrows', '0'))
+    except:
+        log.error(f"Error in <axes> parsing arrows={element.get('arrows')}")
+        arrows = 0
+
+    # process xlabel and ylabel
+    for child in element:
+        if child.tag == "xlabel":
+            child.tag = "label"
+            child.set("user-coords", "no")
+            anchor = diagram.transform((bbox[2], y_axis_location))
+            child.set("anchor", util.pt2str(anchor, spacer=","))
+            if child.get("alignment", None) is None:
+                child.set("alignment", "east")
+                if child.get("offset", None) is None:
+                    if arrows > 0:
+                        child.set("offset", "(2,0)")
+                    else:
+                        child.set("offset", "(1,0)")
+            label.label(child, diagram, parent)
+            continue
+        if child.tag == "ylabel":
+            child.tag = "label"
+            child.set("user-coords", "no")
+            anchor = diagram.transform((x_axis_location, bbox[3]))
+            child.set("anchor", util.pt2str(anchor, spacer=","))
+            if child.get("alignment", None) is None:
+                child.set("alignment", "north")
+                if child.get("offset", None) is None:
+                    if arrows > 0:
+                        child.set("offset", "(0,2)")
+                    else:
+                        child.set("offset", "(0,1)")
+            label.label(child, diagram, parent)
+            continue
+        log.info(f"{child.tag} element is not allowed inside a <label>")
+        continue
+
     decorations = element.get('decorations', 'yes')
 
     left_axis = diagram.transform((bbox[0], y_axis_location))
@@ -247,11 +312,6 @@ def axes(element, diagram, parent, outline_status):
     v_line_el.set('stroke-width', thickness)
     axes.append(v_line_el)
 
-    try:
-        arrows = int(element.get('arrows', '0'))
-    except:
-        log.error(f"Error in <axes> parsing arrows={element.get('arrows')}")
-        arrows = 0
     if arrows > 0:
         arrow.add_arrowhead_to_path(diagram, 'marker-end', h_line_el)
         arrow.add_arrowhead_to_path(diagram, 'marker-end', v_line_el)
@@ -287,6 +347,10 @@ def axes(element, diagram, parent, outline_status):
                              }
                              )
     diagram.add_id(g_hticks)
+
+    h_exclude = [bbox[0], bbox[2]]
+    if not h_zero_include:
+        h_exclude.append(0)
 
     if diagram.output_format() == 'tactile':
         ticksize = (18, 0)
@@ -324,7 +388,7 @@ def axes(element, diagram, parent, outline_status):
         if top_labels:
             tick_direction = -1
         while x <= hlabels[2]:
-            if any([abs(x*h_scale-p) < position_tolerance for p in [bbox[0], bbox[2],0]]):
+            if any([abs(x*h_scale-p) < position_tolerance for p in h_exclude]):
                 x += hlabels[1]
                 continue
 
@@ -382,6 +446,10 @@ def axes(element, diagram, parent, outline_status):
     g_vticks = ET.SubElement(axes, 'g')
     diagram.add_id(g_vticks)
 
+    v_exclude = [bbox[1], bbox[3]]
+    if not v_zero_include:
+        v_exclude.append(0)
+
     if vticks is not None:
         try:
             vticks = un.valid_eval(vticks)
@@ -414,7 +482,7 @@ def axes(element, diagram, parent, outline_status):
         if right_labels:
             tick_direction = -1
         while y <= vlabels[2]:
-            if any([abs(y*v_scale-p) < position_tolerance for p in [bbox[1], bbox[3], 0]]):
+            if any([abs(y*v_scale-p) < position_tolerance for p in v_exclude]):
                 y += vlabels[1]
                 continue
 
@@ -518,6 +586,12 @@ def grid_axes(element, diagram, parent, outline_status):
         el.set('h-pi-format', element.get('h-pi-format'))
     if element.get('v-pi-format') is not None:
         el.set('v-pi-format', element.get('v-pi-format'))
+    if element.get('h-frame') is not None:
+        el.set('h-frame', element.get('h-frame'))
+    if element.get('v-frame') is not None:
+        el.set('v-frame', element.get('v-frame'))
+    for child in element:
+        el.append(child)
         
     axes(el, diagram, group, outline_status)
 

@@ -459,6 +459,28 @@
       </oneOrMore>
     </element>
   </define>
+  <define name="XLabel">
+    <element name="xlabel">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <ref name="LabelAttributes"/>
+      <oneOrMore>
+        <ref name="LabelText"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="YLabel">
+    <element name="ylabel">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <ref name="LabelAttributes"/>
+      <oneOrMore>
+        <ref name="LabelText"/>
+      </oneOrMore>
+    </element>
+  </define>
   <!-- elements that can go inside a path -->
   <define name="PathElements">
     <interleave>
@@ -891,6 +913,22 @@
         </attribute>
       </optional>
       <optional>
+        <attribute name="h-frame">
+          <choice>
+            <value>bottom</value>
+            <value>top</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="v-frame">
+          <choice>
+            <value>left</value>
+            <value>right</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
         <attribute name="labels">
           <choice>
             <value>yes</value>
@@ -905,6 +943,12 @@
         <attribute name="thickness"/>
       </optional>
       <ref name="CommonAttributes"/>
+      <optional>
+        <ref name="XLabel"/>
+      </optional>
+      <optional>
+        <ref name="YLabel"/>
+      </optional>
     </element>
   </define>
   <define name="Grid">
@@ -980,6 +1024,22 @@
         </attribute>
       </optional>
       <optional>
+        <attribute name="h-frame">
+          <choice>
+            <value>bottom</value>
+            <value>top</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="v-frame">
+          <choice>
+            <value>left</value>
+            <value>right</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
         <attribute name="hlabels"/>
       </optional>
       <optional>
@@ -1011,6 +1071,12 @@
         </attribute>
       </optional>
       <ref name="CommonAttributes"/>
+      <optional>
+        <ref name="XLabel"/>
+      </optional>
+      <optional>
+        <ref name="YLabel"/>
+      </optional>
     </element>
   </define>
   <define name="Circle">

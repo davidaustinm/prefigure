@@ -1,6 +1,4 @@
 import numpy as np
-import scipy
-import scipy.special
 import math
 
 # introduce some useful mathematical operations
@@ -29,7 +27,9 @@ def roll(array):
     return np.roll(array, 1, axis=0)
 
 def choose(n,k):
-    return int(scipy.special.binom(n,k))
+    n = int(n)
+    k = int(k)
+    return math.comb(n, k)
 
 def append(input, item):
     l = list(input)

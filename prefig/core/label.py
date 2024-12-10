@@ -19,8 +19,8 @@ def init(format, environment):
     global math_labels
     global text_measurements
     global braille_translator
-    if environment == "pf_cli" or environment == "pretext":
-        math_labels = label_tools.LocalMathLabels(format)
+#    if environment == "pf_cli" or environment == "pretext":
+    math_labels = label_tools.LocalMathLabels(format)
     text_measurements = label_tools.CairoTextMeasurements()
     braille_translator = label_tools.LocalLouisBrailleTranslator()
 
