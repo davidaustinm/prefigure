@@ -1,5 +1,9 @@
 import click
-import click_log
+try:
+    import click_log
+except:
+    from .core.compat import ErrorOnAccess
+    click_log = ErrorOnAccess('click_log')
 import os
 import sys
 import socket
@@ -16,7 +20,11 @@ from . import engine
 log = logging.getLogger('prefigure')
 log.handlers.clear()
 click_handler = logging.StreamHandler(sys.stdout)
-click_handler.setFormatter(click_log.ColorFormatter())
+try:
+    click_handler.setFormatter(click_log.ColorFormatter())
+except AttributeError:
+    # If we cannot access click_log, we may be running in the browser. It's not an issue.
+    pass
 log.addHandler(click_handler)
 
 
