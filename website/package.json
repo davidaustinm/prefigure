@@ -1,0 +1,21 @@
+{
+    "name": "website",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Monorepo for PreFigure website and assets",
+    "workspaces": [
+        "packages/*"
+    ],
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "GPL-3.0-only",
+    "devDependencies": {
+        "prettier": "^3.4.2"
+    },
+    "prettier": {
+        "tabWidth": 4
+    }
+}
