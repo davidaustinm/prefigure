@@ -16,6 +16,7 @@ export interface PlaygroundModel {
     setStatus: Action<PlaygroundModel, "" | "loadingPyodide">;
     setErrorState: Action<PlaygroundModel, string>;
     loadPyodide: Thunk<PlaygroundModel>;
+    compile: Thunk<PlaygroundModel>;
 }
 
 export const playgroundModel: PlaygroundModel = {
@@ -50,7 +51,7 @@ export const playgroundModel: PlaygroundModel = {
     setPrefigVersion: action((state, payload) => {
         state.prefigVersion = payload;
     }),
-    loadPyodide: thunk(async (actions, _, helpers) => {
+    loadPyodide: thunk(async (actions) => {
         actions.setStatus("loadingPyodide");
         // Initialize Pyodide
         await compiler.init({
@@ -64,5 +65,17 @@ export const playgroundModel: PlaygroundModel = {
         );
         actions.setPrefigVersion(version);
         actions.setStatus("");
+    }),
+    compile: thunk(async (actions, _, { getState }) => {
+        const source = getState().source;
+        try {
+            const compiled = await compiler.compile("svg", source);
+            console.log(compiled);
+            actions.setCompiledSource(compiled);
+            actions.setErrorState("");
+        } catch (e) {
+            console.error(e);
+            actions.setErrorState(String(e));
+        }
     }),
 };

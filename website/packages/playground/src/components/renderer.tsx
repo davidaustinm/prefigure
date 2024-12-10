@@ -1,6 +1,13 @@
 import React from "react";
 import { useStoreActions, useStoreState } from "../state";
-import { Button, ButtonGroup, Nav, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
+import {
+    Button,
+    ButtonGroup,
+    Nav,
+    Spinner,
+    ToggleButton,
+    ToggleButtonGroup,
+} from "react-bootstrap";
 import { Download } from "react-bootstrap-icons";
 
 /**
@@ -9,9 +16,10 @@ import { Download } from "react-bootstrap-icons";
 export function Renderer() {
     const loadPyodide = useStoreActions((actions) => actions.loadPyodide);
     const status = useStoreState((state) => state.status);
+    const compiledSource = useStoreState((state) => state.compiledSource);
+    const compile = useStoreActions((actions) => actions.compile);
 
     React.useEffect(() => {
-        console.log("calling effect");
         loadPyodide();
     }, []);
 
@@ -26,11 +34,19 @@ export function Renderer() {
 
     return (
         <div className="render-frame">
-            <div className="render-content">The figure</div>
+            <div className="render-content">{compiledSource}</div>
             <Nav>
-                Render mode: <ButtonGroup>
-                    <ToggleButton id="toggle-visual" value={1} checked={true}>Visual</ToggleButton>
-                    <ToggleButton id="toggle-visual" value={2} checked={false}>Tactile</ToggleButton>
+                <Button variant="success" onClick={() => compile()}>
+                    Compile
+                </Button>
+                Render mode:{" "}
+                <ButtonGroup>
+                    <ToggleButton id="toggle-visual" value={1} checked={true}>
+                        Visual
+                    </ToggleButton>
+                    <ToggleButton id="toggle-visual" value={2} checked={false}>
+                        Tactile
+                    </ToggleButton>
                 </ButtonGroup>
                 <Button size="sm">
                     <Download /> Download
