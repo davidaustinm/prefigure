@@ -8,6 +8,7 @@ import {
     ToggleButton,
 } from "react-bootstrap";
 import { Download } from "react-bootstrap-icons";
+import { saveAs } from "file-saver";
 
 /**
  * Renders and displays the currently active PreFigure source code.
@@ -45,19 +46,21 @@ export function Renderer() {
                     compiledSource
                 )}
             </div>
-            <Nav>
+            <Nav className="render-toolbar">
                 <Button variant="success" onClick={() => compile()}>
                     Compile
                 </Button>
-                Render mode:{" "}
                 <ButtonGroup>
                     <ToggleButton
                         id="toggle-visual"
                         value={1}
                         checked={mode === "svg"}
                         active={mode === "svg"}
-                        variant={mode === "svg" ? "primary" : "outline-secondary"}
+                        variant={
+                            mode === "svg" ? "primary" : "outline-secondary"
+                        }
                         onClick={() => setMode("svg")}
+                        title="Render an SVG for visual display"
                     >
                         Visual
                     </ToggleButton>
@@ -66,13 +69,31 @@ export function Renderer() {
                         value={2}
                         checked={mode === "tactile"}
                         active={mode === "tactile"}
-                        variant={mode === "tactile" ? "primary" : "outline-secondary"}
+                        variant={
+                            mode === "tactile" ? "primary" : "outline-secondary"
+                        }
                         onClick={() => setMode("tactile")}
+                        title="Render an SVG suitable for embossing or tactile display"
                     >
                         Tactile
                     </ToggleButton>
                 </ButtonGroup>
-                <Button size="sm">
+                <Button
+                    size="sm"
+                    onClick={() => {
+                        if (!compiledSource.startsWith("<svg")) {
+                            throw new Error(
+                                "Cannot download non-SVG content: " +
+                                    compiledSource,
+                            );
+                        }
+
+                        const blob = new Blob([compiledSource], {
+                            type: "image/svg+xml",
+                        });
+                        saveAs(blob, "figure.svg");
+                    }}
+                >
                     <Download /> Download
                 </Button>
             </Nav>

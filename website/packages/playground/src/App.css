@@ -79,3 +79,10 @@ body,
     margin: 0;
     flex-basis: 0;
 }
+.render-toolbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    background-color: #f5f5f5;
+    border-top: 1px solid #e5e5e5;
+}
