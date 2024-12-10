@@ -8,6 +8,7 @@ export interface PlaygroundModel {
     source: string;
     compiledSource: string;
     status: "" | "loadingPyodide";
+    compileMode: "svg" | "tactile";
     prefigVersion: string;
     setPrefigVersion: Action<PlaygroundModel, string>;
     errorState: string;
@@ -15,24 +16,22 @@ export interface PlaygroundModel {
     setCompiledSource: Action<PlaygroundModel, string>;
     setStatus: Action<PlaygroundModel, "" | "loadingPyodide">;
     setErrorState: Action<PlaygroundModel, string>;
+    setCompileMode: Action<PlaygroundModel, "svg" | "tactile">;
     loadPyodide: Thunk<PlaygroundModel>;
     compile: Thunk<PlaygroundModel>;
 }
 
 export const playgroundModel: PlaygroundModel = {
-    source: `<diagram dimensions="(300,300)" margins="5">
-  <definition> f(x) = exp(x/3)*cos(x) </definition>
-  <definition> a = 1 </definition>
-  <coordinates bbox="(-4,-4,4,4)">
-    <grid-axes xlabel="x" ylabel="y"/>    
-    <graph function="f"/>
-    <tangent-line function="f" point="a"/>
-    <point p="(a,f(a))">
-      <m>(a,f(a))</m>
-    </point>
+    source: `<diagram dimensions="(300,180)" margins="5">
+  <coordinates bbox="(-5,0,5,6)">
+    <grid/>
+    <circle center="(-2,3.5)" radius="2" fill="blue" thickness="5"/>
+    <ellipse center="(2,3)" axes="(1,2)" stroke="red"
+	     rotate="pi/6" degrees="no"/>
   </coordinates>
 </diagram>`,
     compiledSource: "",
+    compileMode: "svg",
     errorState: "",
     status: "",
     prefigVersion: "",
@@ -51,6 +50,9 @@ export const playgroundModel: PlaygroundModel = {
     setPrefigVersion: action((state, payload) => {
         state.prefigVersion = payload;
     }),
+    setCompileMode: action((state, payload) => {
+        state.compileMode = payload;
+    }),
     loadPyodide: thunk(async (actions) => {
         actions.setStatus("loadingPyodide");
         // Initialize Pyodide
@@ -68,11 +70,12 @@ export const playgroundModel: PlaygroundModel = {
     }),
     compile: thunk(async (actions, _, { getState }) => {
         const source = getState().source;
+        const mode = getState().compileMode;
         try {
-            const compiled = await compiler.compile("svg", source);
-            console.log(compiled);
-            actions.setCompiledSource(compiled);
             actions.setErrorState("");
+            const compiled = await compiler.compile(mode, source);
+            console.log("Got compiled results", compiled);
+            actions.setCompiledSource(compiled.svg);
         } catch (e) {
             console.error(e);
             actions.setErrorState(String(e));

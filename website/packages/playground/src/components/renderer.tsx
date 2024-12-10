@@ -6,7 +6,6 @@ import {
     Nav,
     Spinner,
     ToggleButton,
-    ToggleButtonGroup,
 } from "react-bootstrap";
 import { Download } from "react-bootstrap-icons";
 
@@ -18,6 +17,8 @@ export function Renderer() {
     const status = useStoreState((state) => state.status);
     const compiledSource = useStoreState((state) => state.compiledSource);
     const compile = useStoreActions((actions) => actions.compile);
+    const mode = useStoreState((state) => state.compileMode);
+    const setMode = useStoreActions((actions) => actions.setCompileMode);
 
     React.useEffect(() => {
         loadPyodide();
@@ -34,17 +35,40 @@ export function Renderer() {
 
     return (
         <div className="render-frame">
-            <div className="render-content">{compiledSource}</div>
+            <div className="render-content">
+                {compiledSource.startsWith("<svg") ? (
+                    <div
+                        className="rendered-svg"
+                        dangerouslySetInnerHTML={{ __html: compiledSource }}
+                    ></div>
+                ) : (
+                    compiledSource
+                )}
+            </div>
             <Nav>
                 <Button variant="success" onClick={() => compile()}>
                     Compile
                 </Button>
                 Render mode:{" "}
                 <ButtonGroup>
-                    <ToggleButton id="toggle-visual" value={1} checked={true}>
+                    <ToggleButton
+                        id="toggle-visual"
+                        value={1}
+                        checked={mode === "svg"}
+                        active={mode === "svg"}
+                        variant={mode === "svg" ? "primary" : "outline-secondary"}
+                        onClick={() => setMode("svg")}
+                    >
                         Visual
                     </ToggleButton>
-                    <ToggleButton id="toggle-visual" value={2} checked={false}>
+                    <ToggleButton
+                        id="toggle-visual"
+                        value={2}
+                        checked={mode === "tactile"}
+                        active={mode === "tactile"}
+                        variant={mode === "tactile" ? "primary" : "outline-secondary"}
+                        onClick={() => setMode("tactile")}
+                    >
                         Tactile
                     </ToggleButton>
                 </ButtonGroup>

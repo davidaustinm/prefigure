@@ -77,11 +77,17 @@ export class PreFigureCompiler {
     /**
      * Compile the given PreFigure source and return the SVG string
      */
-    async compile(mode: "svg", source: string): Promise<string> {
+    async compile(
+        mode: "svg" | "tactile",
+        source: string,
+    ): Promise<{ svg: string; annotations: unknown }> {
         this._checkInit();
-        const result = await this.pyodide.runPython(`import prefig; prefig.engine.build_from_string("${mode}", ${JSON.stringify(source)})
+        const result = await this.pyodide.runPython(`
+import prefig
+prefig.engine.build_from_string("${mode}", ${JSON.stringify(source)})
         `);
-        return String(result);
+        const [svg, annotations] = result;
+        return { svg, annotations };
     }
 
     ///**
