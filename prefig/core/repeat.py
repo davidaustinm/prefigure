@@ -25,7 +25,7 @@ def repeat(element, diagram, parent, outline_status):
         else:
             fields = [f.strip() for f in parameter.split()]
             var = fields[0]
-            iterator = un.valid_eval(fields[2])
+            iterator = un.valid_eval(' '.join(fields[2:]))
     except:
         log.error(f"Unable to parse parameter {parameter} in <repeat>")
         return

@@ -83,6 +83,7 @@ def build(
 # an XML tree containing the SVG and annotation trees
 def build_from_string(format, input_string, environment="pyodide"):
     tree = ET.fromstring(input_string)
+    log.setLevel(logging.DEBUG)
     diagrams = tree.xpath('//diagram')
     if len(diagrams) > 0:
         output_string = core.parse.mk_diagram(

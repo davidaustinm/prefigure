@@ -30,7 +30,7 @@ class AbstractMathLabels(abc.ABC):
 
 class AbstractTextMeasurements(abc.ABC):
     @abc.abstractmethod
-    def measure_text(self, text, font, font_size, italics, bold):
+    def measure_text(self, text, font_data):
         pass
 
 class AbstractBrailleTranslator(abc.ABC):
@@ -50,6 +50,7 @@ class LocalMathLabels(AbstractMathLabels):
         body = ET.SubElement(html, 'body')
         self.html_tree = html
         self.html_body = body
+        self.labels_present = False
 
     def add_macros(self, macros):
         macros_div = ET.SubElement(self.html_body, 'div')
@@ -60,8 +61,11 @@ class LocalMathLabels(AbstractMathLabels):
         div = ET.SubElement(self.html_body, 'div')
         div.set('id', id)
         div.text = text
+        self.labels_present = True
 
     def process_math_labels(self):
+        if not self.labels_present:
+            return
         # prepare the MathJax command
         input_filename = "prefigure-labels.html"
         output_filename = f"prefigure-{self.format}.html"
@@ -199,4 +203,42 @@ class LocalLouisBrailleTranslator(AbstractBrailleTranslator):
         )
         
         
-        
+class PyodideTextMeasurements(AbstractTextMeasurements):
+    def __init__(self):
+        self.js_loaded = False
+        global js
+        try:
+            import js
+            log.info("js imported")
+            self.js_loaded = True
+        except:
+            from .compat import ErrorOnAccess
+            js = ErrorOnAccess("js")
+
+        js_code = '''
+        function js_measure_text(text) {
+        const canvas = document.createElement("canvas");
+        ctx = canvas.getContext("2d");
+        ctx.font = "14px sans";
+        const tm = ctx.measureText(text);
+        return [tm.width, tm.actualBoundingBoxAscent,tm.actualBoundingBoxDescent];
+        }
+        '''
+        try:
+            js.eval(js_code)
+            log.info("js_code evaluated")
+        except:
+            log.error("js_code evaluated")
+
+    def measure_text(self, text, font_data):
+        import json
+        text = json.dumps(text)
+        log.info('Called measure text')
+        try:
+            text_dims = js.eval(f"js_measure_text({text})").to_py()
+            log.info(f"text_dims found: {text_dims}")
+            log.error(f"type = {type(text_dims)}")
+        except Exception as e:
+            log.error(str(e))
+            log.error("text_dims not found")
+        return text_dims
