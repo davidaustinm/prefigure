@@ -61,9 +61,11 @@ jobs:
               run: |
                   mkdir -p ./website
                   cp -r ./website/packages/playground/dist/* ./website
+                  echo "These are the files that will be packaged"
+                  ls ./website
 
             - name: Package website deployment
-              uses: actions/upload-pages-artifact@v2
+              uses: actions/upload-pages-artifact@v3
               with:
                   name: website
                   path: ./website
@@ -77,4 +79,4 @@ jobs:
         steps:
             - name: Deploy to GitHub Pages
               id: website
-              uses: actions/deploy-pages@v2
+              uses: actions/deploy-pages@v4
