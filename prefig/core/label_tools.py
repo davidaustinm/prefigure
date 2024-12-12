@@ -210,7 +210,7 @@ class PyodideTextMeasurements(AbstractTextMeasurements):
             import prefigBrowserApi
             # `prefigBrowserApi` will return a JsProxy. We want a native python object,
             # so we convert it to a list.
-            metrics = list(prefigBrowserApi.measure_text(text, font_data))
+            metrics = prefigBrowserApi.measure_text(text, font_data).to_py()
             return metrics
         except Exception as e:
             log.error(str(e))
