@@ -1,4 +1,5 @@
 import { PyodideInterface, loadPyodide } from "pyodide";
+import { prefigBrowserApi } from "./compat-api";
 
 type Options = Parameters<typeof loadPyodide>[0];
 
@@ -37,13 +38,18 @@ export class PreFigureCompiler {
                 this.pyodide =
                     (await this._pyodide) || (await loadPyodide(options));
 
+                // Set up our global compatibility API so it can be imported from Python with `import prefigBrowserApi`
+                this.pyodide.registerJsModule(
+                    "prefigBrowserApi",
+                    prefigBrowserApi,
+                );
+
                 // We want to make sure to load the prefig package from the same location that we are loading all
                 // the other packages from. This is accessing the internal `._api` from pyodide and might break in the
                 // future.
                 const PREFIG_PATH =
                     ((this.pyodide as any)._api.config.indexURL as string) +
                     "prefig-0.2.11-py3-none-any.whl";
-                console.log({ PREFIG_PATH });
 
                 // Load all the dependencies
                 await this.pyodide.loadPackage([
@@ -80,6 +86,7 @@ export class PreFigureCompiler {
         source: string,
     ): Promise<{ svg: string; annotations: unknown }> {
         this._checkInit();
+
         const result = await this.pyodide.runPython(`
 import prefig
 prefig.engine.build_from_string("${mode}", ${JSON.stringify(source)})
@@ -87,5 +94,4 @@ prefig.engine.build_from_string("${mode}", ${JSON.stringify(source)})
         const [svg, annotations] = result;
         return { svg, annotations };
     }
-
 }

@@ -9,7 +9,6 @@ let compiler = new PreFigureCompiler();
 (window as any).comp = compiler;
 
 const worker = Comlink.wrap<typeof api>(new Worker());
-console.log(worker, Worker);
 //// Create a worker-based instance of the compiler
 (window as any).compWorker = worker.compiler;
 // The types seem to be wrong. We are not awaiting a promise here. Instead we have a proxy object
@@ -40,6 +39,7 @@ export const playgroundModel: PlaygroundModel = {
     <circle center="(-2,3.5)" radius="2" fill="blue" thickness="5"/>
     <ellipse center="(2,3)" axes="(1,2)" stroke="red"
 	     rotate="pi/6" degrees="no"/>
+    <label anchor="(3,1)">foo</label>
   </coordinates>
 </diagram>`,
     compiledSource: "",
@@ -90,7 +90,7 @@ export const playgroundModel: PlaygroundModel = {
         try {
             actions.setErrorState("");
             const compiled = await compiler.compile(mode, source);
-            console.log("Got compiled results", compiled);
+            // console.log("Got compiled results", compiled);
             actions.setCompiledSource(compiled.svg);
         } catch (e) {
             console.error(e);
