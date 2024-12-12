@@ -62,7 +62,7 @@ jobs:
                   mkdir -p ./website_dist
                   cp -r ./website/packages/playground/dist/* ./website_dist
                   echo "These are the files that will be packaged"
-                  ls ./website
+                  ls ./website_dist
 
             - name: Package website deployment
               uses: actions/upload-pages-artifact@v3
