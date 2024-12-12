@@ -1,8 +1,20 @@
 import { action, Action, Thunk, thunk } from "easy-peasy";
-import { PreFigureCompiler } from "./compiler";
+import { PreFigureCompiler } from "../worker/compiler";
+import * as Comlink from "comlink";
+import Worker from "../worker?worker";
+import type { api } from "../worker";
 
-const compiler = new PreFigureCompiler();
+// Make a local version of the compiler
+let compiler = new PreFigureCompiler();
 (window as any).comp = compiler;
+
+const worker = Comlink.wrap<typeof api>(new Worker());
+console.log(worker, Worker);
+//// Create a worker-based instance of the compiler
+(window as any).compWorker = worker.compiler;
+// The types seem to be wrong. We are not awaiting a promise here. Instead we have a proxy object
+// directly exposed to the main thread.
+compiler = worker.compiler as any as Awaited<typeof worker.compiler>;
 
 export interface PlaygroundModel {
     source: string;
@@ -56,8 +68,12 @@ export const playgroundModel: PlaygroundModel = {
     loadPyodide: thunk(async (actions) => {
         actions.setStatus("loadingPyodide");
         // Initialize Pyodide
+        const indexURL = new URL(
+            "./assets/pyodide",
+            window.location.href,
+        ).toString();
         await compiler.init({
-            indexURL: "./assets/pyodide",
+            indexURL,
         });
         // Import `prefig` once so that it is cached
         await compiler.pyodide?.runPythonAsync("import prefig");

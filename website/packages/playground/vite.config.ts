@@ -1,6 +1,5 @@
 import { PluginOption, defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { copyFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { viteStaticCopy } from "vite-plugin-static-copy";
@@ -15,7 +14,17 @@ const PYODIDE_EXCLUDE = [
 export default defineConfig({
     optimizeDeps: { exclude: ["pyodide"] },
     plugins: [react(), vitePluginPyodide()],
-    root: ".",
+    base: "./",
+    worker: {
+        format: "es",
+    },
+    build: {
+        rollupOptions: {
+            output: {
+                inlineDynamicImports: true,
+            },
+        },
+    },
 });
 
 function vitePluginPyodide(): PluginOption {
@@ -30,18 +39,16 @@ function vitePluginPyodide(): PluginOption {
             // Copy the wheels from pyodide_packages
             {
                 src: [
-                    join( "pyodide_packages", "**", "*.whl"),
-                    join( "pyodide_packages", "**", "*.zip"),
+                    join("pyodide_packages", "**", "*.whl"),
+                    join("pyodide_packages", "**", "*.zip"),
                 ],
                 dest: "assets/pyodide",
             },
             // Copy our currently build PreFigure wheel
             {
-                src: [
-                    join("../../../dist", "prefig-0.*.*-py3-none-any.whl"),
-                ],
+                src: [join("../../../dist", "prefig-0.*.*-py3-none-any.whl")],
                 dest: "assets/pyodide",
-            }
+            },
         ],
     });
 }
