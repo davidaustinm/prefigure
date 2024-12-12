@@ -65,7 +65,7 @@ jobs:
             - name: Package website deployment
               uses: actions/upload-pages-artifact@v2
               with:
-                  artifact-name: website
+                  name: website
                   path: ./website
 
     deploy:
