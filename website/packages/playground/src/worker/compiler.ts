@@ -23,7 +23,6 @@ export class PreFigureCompiler {
      * Initialize the compiler. This is safe to call multiple times.
      */
     async init(options: Options = {}) {
-        console.log("doing init")
         // Wait for any other initialization to finish
         await this.pyodideInitPromise;
         // Don't accidentally initialize a second time!
