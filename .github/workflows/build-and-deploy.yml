@@ -55,21 +55,20 @@ jobs:
                   cd website/
                   npm ci
                   cd ./packages/playground
-                  rm -rf dist
                   npm run build
             
             - name: Prepare for Github Pages
               run: |
-                  mkdir -p ./website
-                  cp -r ./website/packages/playground/dist/* ./website
+                  mkdir -p ./website_dist
+                  cp -r ./website/packages/playground/dist/* ./website_dist
                   echo "These are the files that will be packaged"
                   ls ./website
 
             - name: Package website deployment
               uses: actions/upload-pages-artifact@v3
               with:
-                  name: website
-                  path: ./website
+                  name: website_dist
+                  path: ./website_dist
 
     deploy:
         if: ${{ github.event_name == 'push' }}
@@ -79,5 +78,5 @@ jobs:
         needs: build
         steps:
             - name: Deploy to GitHub Pages
-              id: website
+              id: website_dist
               uses: actions/deploy-pages@v4
