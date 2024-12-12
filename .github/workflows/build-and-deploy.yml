@@ -54,7 +54,8 @@ jobs:
               run: |
                   cd website/
                   npm ci
-                  cd ./packages/playground 
+                  cd ./packages/playground
+                  rm -rf dist
                   npm run build
             
             - name: Prepare for Github Pages
