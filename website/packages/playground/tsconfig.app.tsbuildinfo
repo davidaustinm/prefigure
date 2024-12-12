@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/editor.tsx","./src/components/renderer.tsx","./src/state/index.ts","./src/state/model.ts","./src/state/store.ts","./src/worker/compiler.ts","./src/worker/index.ts"],"version":"5.7.2"}
+{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/editor.tsx","./src/components/renderer.tsx","./src/state/index.ts","./src/state/model.ts","./src/state/store.ts","./src/worker/compat-api.ts","./src/worker/compiler.ts","./src/worker/index.ts"],"version":"5.7.2"}
