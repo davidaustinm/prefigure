@@ -66,6 +66,7 @@ jobs:
 
             - name: Package website deployment
               uses: actions/upload-pages-artifact@v3
+              id: website_dist
               with:
                   name: website_dist
                   path: ./website_dist
