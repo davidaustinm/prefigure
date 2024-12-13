@@ -24,10 +24,11 @@ def init(format, environment):
 
     if environment == "pyodide":
         text_measurements = label_tools.PyodideTextMeasurements()
+        braille_translator = label_tools.PyodideBrailleTranslator()
     else:
         text_measurements = label_tools.CairoTextMeasurements()
+        braille_translator = label_tools.LocalLouisBrailleTranslator()
 
-    braille_translator = label_tools.LocalLouisBrailleTranslator()
 
 def add_macros(macros):
     math_labels.add_macros(macros)

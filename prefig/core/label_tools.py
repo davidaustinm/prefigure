@@ -201,8 +201,28 @@ class LocalLouisBrailleTranslator(AbstractBrailleTranslator):
             text,
             typeform=typeform
         )
-        
-        
+
+
+class PyodideBrailleTranslator(AbstractBrailleTranslator):
+    def __init__(self):
+        global prefigBrowserApi
+        import prefigBrowserApi
+
+    def initialized(self):
+        return True
+
+    def translate(self, text, typeform):
+        log.info('Called translate text')
+        try:
+            # `prefigBrowserApi` will return a JsProxy. We want a native python object,
+            # so we convert it to a list.
+            braille_string = prefigBrowserApi.translate_text(text, typeform).to_py()
+            return braille_string
+        except Exception as e:
+            log.error(str(e))
+            log.error("Error in translating text")
+
+
 class PyodideTextMeasurements(AbstractTextMeasurements):
     def measure_text(self, text, font_data):
         log.info('Called measure text')

@@ -20,6 +20,7 @@
         "comlink": "^4.4.2",
         "easy-peasy": "^6.0.5",
         "file-saver": "^2.0.5",
+        "liblouis": "^0.2.0",
         "pyodide": "^0.26.4",
         "react": "^18.3.1",
         "react-bootstrap-icons": "^1.11.5",
