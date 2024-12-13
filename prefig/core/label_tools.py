@@ -204,41 +204,14 @@ class LocalLouisBrailleTranslator(AbstractBrailleTranslator):
         
         
 class PyodideTextMeasurements(AbstractTextMeasurements):
-    def __init__(self):
-        self.js_loaded = False
-        global js
-        try:
-            import js
-            log.info("js imported")
-            self.js_loaded = True
-        except:
-            from .compat import ErrorOnAccess
-            js = ErrorOnAccess("js")
-
-        js_code = '''
-        function js_measure_text(text) {
-        const canvas = document.createElement("canvas");
-        ctx = canvas.getContext("2d");
-        ctx.font = "14px sans";
-        const tm = ctx.measureText(text);
-        return [tm.width, tm.actualBoundingBoxAscent,tm.actualBoundingBoxDescent];
-        }
-        '''
-        try:
-            js.eval(js_code)
-            log.info("js_code evaluated")
-        except:
-            log.error("js_code evaluated")
-
     def measure_text(self, text, font_data):
-        import json
-        text = json.dumps(text)
         log.info('Called measure text')
         try:
-            text_dims = js.eval(f"js_measure_text({text})").to_py()
-            log.info(f"text_dims found: {text_dims}")
-            log.error(f"type = {type(text_dims)}")
+            import prefigBrowserApi
+            # `prefigBrowserApi` will return a JsProxy. We want a native python object,
+            # so we convert it to a list.
+            metrics = prefigBrowserApi.measure_text(text, font_data).to_py()
+            return metrics
         except Exception as e:
             log.error(str(e))
             log.error("text_dims not found")
-        return text_dims
