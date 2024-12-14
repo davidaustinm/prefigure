@@ -31,19 +31,19 @@ export class PrefigBrowserApi {
         ];
     }
 
-    translate_text(text: string, typeform: number[]): string {
-        //const tables = ["tables/braille-patterns.cti", "tables/en-us-g2.ctb"];
-        const tables = "tables/en-us-g2.ctb";
-        try {
-  //          const unicode_result = translateString(tables, text);
-            const unicode_result = '';
-            console.log("Translated string", unicode_result);
-            return unicode_result
-        } catch(error) {
-            console.log("Error translating text:", error);
-            return '';
-        }
-    }
+    //translate_text(text: string, typeform: number[]): string {
+    //    //const tables = ["tables/braille-patterns.cti", "tables/en-us-g2.ctb"];
+    //    const tables = "tables/en-us-g2.ctb";
+    //    try {
+    //        //          const unicode_result = translateString(tables, text);
+    //        const unicode_result = "";
+    //        console.log("Translated string", unicode_result);
+    //        return unicode_result;
+    //    } catch (error) {
+    //        console.log("Error translating text:", error);
+    //        return "";
+    //    }
+    //}
 }
 
 export const prefigBrowserApi = new PrefigBrowserApi();
