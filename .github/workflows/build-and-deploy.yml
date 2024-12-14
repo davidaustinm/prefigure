@@ -53,6 +53,7 @@ jobs:
             - name: Run website tests
               run: |
                   cd website/
+                  npm ci
                   npm run test
 
             - name: Build website
