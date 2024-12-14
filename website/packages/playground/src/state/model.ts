@@ -66,7 +66,6 @@ export const playgroundModel: PlaygroundModel = {
         state.compileMode = payload;
     }),
     loadPyodide: thunk(async (actions) => {
-        return;
         actions.setStatus("loadingPyodide");
         // Initialize Pyodide
         const indexURL = new URL(

@@ -216,7 +216,7 @@ class PyodideBrailleTranslator(AbstractBrailleTranslator):
         try:
             # `prefigBrowserApi` will return a JsProxy. We want a native python object,
             # so we convert it to a list.
-            braille_string = prefigBrowserApi.translate_text(text, typeform).to_py()
+            braille_string = prefigBrowserApi.translate_text(text, typeform)
             return braille_string
         except Exception as e:
             log.error(str(e))
