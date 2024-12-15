@@ -11,7 +11,7 @@ export class PrefigBrowserApi {
     /**
      * Measure the extents of typeset text.
      */
-    measure_text(text: string, _font_data?: unknown) {
+    measure_text(text: string, font_string: string) {
         if (!this.offscreenCanvas) {
             this.offscreenCanvas = new OffscreenCanvas(200, 200);
         }
@@ -22,7 +22,7 @@ export class PrefigBrowserApi {
             }
         }
         // XXX replace this with proper data from `font_data`
-        this.ctx.font = "14px sans";
+        this.ctx.font = font_string;
 
         const tm = this.ctx.measureText(text);
         console.log("Measured text", text, tm);

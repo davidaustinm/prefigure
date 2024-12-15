@@ -241,7 +241,7 @@ def cleanup_str(string):
     tokens = []
     for t in string.split():
         for s in t.split(','):
-            if bool(re.search('\d', s)):
+            if bool(re.search(r'\d', s)):
                 x = float(s)
                 tokens.append(util.float2str(x))
                 continue

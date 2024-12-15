@@ -55,7 +55,7 @@ class LocalMathLabels(AbstractMathLabels):
     def add_macros(self, macros):
         macros_div = ET.SubElement(self.html_body, 'div')
         macros_div.set('id', 'latex-macros')
-        macros_div.text = '\({}\)'.format(macros)
+        macros_div.text = fr'\({macros}\)'
 
     def register_math_label(self, id, text):
         div = ET.SubElement(self.html_body, 'div')
@@ -197,7 +197,7 @@ class LocalLouisBrailleTranslator(AbstractBrailleTranslator):
         if not self.louis_loaded:
             return None
         return louis.translateString(
-            ["braille-patterns.cti", "en-us-g2.ctb"],
+            ["en-ueb-g2.ctb"],
             text,
             typeform=typeform
         )
@@ -230,7 +230,13 @@ class PyodideTextMeasurements(AbstractTextMeasurements):
             import prefigBrowserApi
             # `prefigBrowserApi` will return a JsProxy. We want a native python object,
             # so we convert it to a list.
-            metrics = prefigBrowserApi.measure_text(text, font_data).to_py()
+            font_string = ""
+            if font_data[2]:
+                font_string = "italic "
+            if font_data[3]:
+                font_string += "bold "
+            font_string += f"{str(font_data[1])}px {font_data[0]}"
+            metrics = prefigBrowserApi.measure_text(text, font_string).to_py()
             return metrics
         except Exception as e:
             log.error(str(e))

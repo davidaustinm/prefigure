@@ -151,7 +151,7 @@ def label(element, diagram, parent, outline_status = None):
     for math in element.findall('m'):
         diagram.add_id(math)
         math_id = math.get('id')
-        math_text = '\({}\)'.format(math.text)
+        math_text = fr'\({math.text}\)'
 
         # add the label's text to the HTML tree
         math_labels.register_math_label(math_id, math_text)

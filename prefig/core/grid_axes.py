@@ -141,34 +141,34 @@ def find_label_positions(coordinate_range, pi_format = False):
 def get_pi_text(x):
     if abs(abs(x) - 1) < 1e-10:
         if x < 0:
-            return '-\pi'
-        return '\pi'
+            return r'-\pi'
+        return r'\pi'
 
     if abs(x - round(x)) < 1e-10:
-        return str(round(x))+'\pi'
+        return str(round(x))+r'\pi'
     if abs(4*x - round(4*x)) < 1e-10:
         num = round(4*x)
         if num == -1:
-            return '-\pi/4'
+            return r'-\pi/4'
         if num == 1:
-            return '\pi/4'
+            return r'\pi/4'
         if num % 2 == 1:
-            return str(num)+'\pi/4'
+            return str(num)+r'\pi/4'
     if abs(2*x - round(2*x)) < 1e-10:
         num = round(2*x)
         if num == -1:
-            return '-\pi/2'
+            return r'-\pi/2'
         if num == 1:
-            return '\pi/2'
-        return str(num)+'\pi/2'
+            return r'\pi/2'
+        return str(num)+r'\pi/2'
     if abs(3*x - round(3*x)) < 1e-10:
         num = round(3*x)
         if num == -1:
-            return '-\pi/3'
+            return r'-\pi/3'
         if num == 1:
-            return '\pi/3'
-        return str(num)+'\pi/3'
-    return '{0:g}\pi'.format(x)
+            return r'\pi/3'
+        return str(num)+r'\pi/3'
+    return r'{0:g}\pi'.format(x)
     
 
 # Add a graphical element for axes.  All the axes sit inside a group
