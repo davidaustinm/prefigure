@@ -1,4 +1,13 @@
-import { action, Action, Thunk, thunk } from "easy-peasy";
+import {
+    action,
+    Action,
+    Thunk,
+    thunk,
+    Computed,
+    computed,
+    ThunkOn,
+    thunkOn,
+} from "easy-peasy";
 import { PreFigureCompiler } from "../worker/compiler";
 import * as Comlink from "comlink";
 import Worker from "../worker?worker";
@@ -18,18 +27,26 @@ compiler = worker.compiler as any as Awaited<typeof worker.compiler>;
 export interface PlaygroundModel {
     source: string;
     compiledSource: string;
-    status: "" | "loadingPyodide";
+    status: "" | "loadingPyodide" | "compiling";
     compileMode: "svg" | "tactile";
     prefigVersion: string;
     setPrefigVersion: Action<PlaygroundModel, string>;
     errorState: string;
     setSource: Action<PlaygroundModel, string>;
+    onSetSource: ThunkOn<PlaygroundModel>;
     setCompiledSource: Action<PlaygroundModel, string>;
-    setStatus: Action<PlaygroundModel, "" | "loadingPyodide">;
+    setStatus: Action<PlaygroundModel, "" | "loadingPyodide" | "compiling">;
     setErrorState: Action<PlaygroundModel, string>;
     setCompileMode: Action<PlaygroundModel, "svg" | "tactile">;
+    onSetCompileMode: ThunkOn<PlaygroundModel>;
     loadPyodide: Thunk<PlaygroundModel>;
     compile: Thunk<PlaygroundModel>;
+    needsCompile: Computed<PlaygroundModel, boolean>;
+    /**
+     * The state of the source code when it was last compiled.
+     */
+    lastCompileState: { source: string; mode: "svg" | "tactile" };
+    saveCompileState: Action<PlaygroundModel>;
 }
 
 export const playgroundModel: PlaygroundModel = {
@@ -47,6 +64,16 @@ export const playgroundModel: PlaygroundModel = {
     errorState: "",
     status: "",
     prefigVersion: "",
+    lastCompileState: { source: "", mode: "svg" },
+    needsCompile: computed(
+        (state) =>
+            state.source !== state.lastCompileState.source ||
+            state.compileMode !== state.lastCompileState.mode,
+    ),
+    saveCompileState: action((state, payload) => {
+        state.lastCompileState.source = state.source;
+        state.lastCompileState.mode = state.compileMode;
+    }),
     setSource: action((state, payload) => {
         state.source = payload;
     }),
@@ -89,12 +116,69 @@ export const playgroundModel: PlaygroundModel = {
         const mode = getState().compileMode;
         try {
             actions.setErrorState("");
+            actions.setStatus("compiling");
             const compiled = await compiler.compile(mode, source);
             // console.log("Got compiled results", compiled);
             actions.setCompiledSource(compiled.svg);
+            actions.saveCompileState();
         } catch (e) {
             console.error(e);
             actions.setErrorState(String(e));
+        } finally {
+            actions.setStatus("");
         }
     }),
+    /**
+     * Whenever the compile mode changes, we want to recompile as a side effect.
+     */
+    onSetCompileMode: thunkOn(
+        (actions, storeActions) => actions.setCompileMode,
+        (actions, target, { getState }) => {
+            if (getState().needsCompile) {
+                actions.compile();
+            }
+        },
+    ),
+    /**
+     * Whenever the source changes, we want to debounce and then recompile as a side effect.
+     */
+    onSetSource: thunkOn(
+        (actions, storeActions) => [actions.loadPyodide, actions.setSource],
+        async (actions, target, { getState }) => {
+            // Wait a maximum of 2 minutes if we are still loading pyodide
+            let timeStart = Date.now();
+            while (
+                getState().status === "loadingPyodide" &&
+                Date.now() - timeStart < 120000
+            ) {
+                await sleep(100);
+            }
+
+            // Debounce the compile
+            await sleep(500);
+
+            // Wait at most 1 second if we are compiling
+            timeStart = Date.now();
+            while (
+                getState().status === "compiling" &&
+                Date.now() - timeStart < 1000
+            ) {
+                await sleep(100);
+            }
+
+            // If we are still compiling or we no longer need to compile, give up
+            if (getState().status === "compiling" || !getState().needsCompile) {
+                return;
+            }
+            // Do the compile
+            await actions.compile();
+        },
+    ),
 };
+
+/**
+ * Returns a promise that sleeps for the requested time (in milliseconds).
+ */
+function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}

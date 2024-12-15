@@ -20,6 +20,7 @@ export function Renderer() {
     const compile = useStoreActions((actions) => actions.compile);
     const mode = useStoreState((state) => state.compileMode);
     const setMode = useStoreActions((actions) => actions.setCompileMode);
+    const needsCompile = useStoreState((state) => state.needsCompile);
 
     // We add `viewBox="..."` and `preserveAspectRatio="xMidYMid meet"` to the SVG to make sure it scales correctly
     // in our display region.
@@ -76,8 +77,13 @@ export function Renderer() {
                 )}
             </div>
             <Nav className="render-toolbar">
-                <Button variant="success" onClick={() => compile()}>
-                    Compile
+                <Button
+                    variant="success"
+                    style={{ flexBasis: 100 }}
+                    onClick={() => compile()}
+                    title={`Compile the PreFigure source code to an svg.${needsCompile ? " The source has changed since last being compiled." : ""}`}
+                >
+                    Compile{needsCompile ? "*" : ""}
                 </Button>
                 <ButtonGroup>
                     <ToggleButton
