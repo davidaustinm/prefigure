@@ -60,6 +60,7 @@ export class PreFigureCompiler {
                     "scipy",
                     "shapely",
                     "click",
+                    "networkx",
                     PREFIG_PATH,
                 ]);
             } catch (e) {
