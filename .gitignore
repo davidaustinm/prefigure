@@ -10,4 +10,6 @@ dev
 wasm
 *~
 .vscode
-.tsbuildinfo
+*.tsbuildinfo
+*.swp
+.vite

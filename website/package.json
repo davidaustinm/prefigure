@@ -8,12 +8,13 @@
     ],
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "npm run test -ws -- run"
     },
     "author": "",
     "license": "GPL-3.0-only",
     "devDependencies": {
-        "prettier": "^3.4.2"
+        "prettier": "^3.4.2",
+        "vitest": "^2.1.8"
     },
     "prettier": {
         "tabWidth": 4
