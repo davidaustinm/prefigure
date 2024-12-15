@@ -21,6 +21,35 @@ export function Renderer() {
     const mode = useStoreState((state) => state.compileMode);
     const setMode = useStoreActions((actions) => actions.setCompileMode);
 
+    // We add `viewBox="..."` and `preserveAspectRatio="xMidYMid meet"` to the SVG to make sure it scales correctly
+    // in our display region.
+    const sourceForDisplay = React.useMemo(() => {
+        if (!compiledSource.startsWith("<svg")) {
+            return compiledSource;
+        }
+
+        // Create a new XML parser
+        const parser = new DOMParser();
+        // Parse the SVG
+        const svg = parser.parseFromString(compiledSource, "image/svg+xml");
+        // Get the width and height attributes from the root SVG element
+        const width = svg.documentElement.getAttribute("width");
+        const height = svg.documentElement.getAttribute("height");
+        // Set the viewBox attribute to match the width and height
+        svg.documentElement.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        // Set the preserveAspectRatio attribute to make the SVG scale correctly
+        svg.documentElement.setAttribute(
+            "preserveAspectRatio",
+            "xMidYMid meet",
+        );
+        // Remove the width and height attributes
+        svg.documentElement.removeAttribute("width");
+        svg.documentElement.removeAttribute("height");
+
+        // Serialize the new SVG
+        return new XMLSerializer().serializeToString(svg.documentElement);
+    }, [compiledSource]);
+
     React.useEffect(() => {
         loadPyodide();
     }, []);
@@ -37,10 +66,10 @@ export function Renderer() {
     return (
         <div className="render-frame">
             <div className="render-content">
-                {compiledSource.startsWith("<svg") ? (
+                {sourceForDisplay.startsWith("<svg") ? (
                     <div
                         className="rendered-svg"
-                        dangerouslySetInnerHTML={{ __html: compiledSource }}
+                        dangerouslySetInnerHTML={{ __html: sourceForDisplay }}
                     ></div>
                 ) : (
                     compiledSource
