@@ -196,11 +196,13 @@ class LocalLouisBrailleTranslator(AbstractBrailleTranslator):
     def translate(self, text, typeform):
         if not self.louis_loaded:
             return None
+        if len(text) == 0:
+            return ""
         return louis.translateString(
             ["en-ueb-g2.ctb"],
             text,
             typeform=typeform
-        )
+        ).rstrip()
 
 
 class PyodideBrailleTranslator(AbstractBrailleTranslator):

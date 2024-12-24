@@ -28,6 +28,7 @@ class Diagram:
         self.output = output
         self.suppress_caption = suppress_caption
         self.environment = environment
+        self.caption = ""
 
         label.init(self.format, self.environment)
 
@@ -93,6 +94,9 @@ class Diagram:
         
     def add_label(self, element, group):
         self.label_group_dict[element] = [group, copy.deepcopy(self.ctm())]
+
+    def set_caption(self, text):
+        self.caption = text
 
     def caption_suppressed(self):
         return self.suppress_caption
@@ -179,33 +183,47 @@ class Diagram:
             margins = [margins] * 4
         self.margins = margins
 
+        ctm = CTM.CTM()
         # tactile diagrams will be embossed on 11.5"x11" paper
         if self.format == 'tactile':
-            aspect_ratio = height / width
-            pagemargin = 1 * 72
-            pagewidth = 11.5 * 72 - 2*pagemargin
-            pageheight = 11 * 72 - 2*pagemargin
-            if aspect_ratio * pagewidth <= pageheight:
-                width = pagewidth
-                height = aspect_ratio * pagewidth
-                margins = [pagemargin, (pageheight - height)/2 + pagemargin,
-                           pagemargin, (pageheight - height)/2 + pagemargin]
+            total_width = width + margins[0] + margins[2]
+            total_height = height + margins[1] + margins[3]
+            diagram_aspect = total_width / total_height
+            page_aspect = 10.5 / 8.8  # area available for graphics
+
+            if diagram_aspect >= page_aspect:
+                s = 756 / total_width
+                lly = s * total_height + 79.2
             else:
-                height = pageheight
-                width = pageheight / aspect_ratio
-                margins = [(pagewidth - width)/2 + pagemargin, pagemargin,
-                           (pagewidth - width)/2 + pagemargin, pagemargin]
+                s = 633.6 / total_height
+                lly = 712.8
+            ctm.translate(36, lly)
+            ctm.scale(s, -s)
+            ctm.translate(margins[0], margins[1])
+            self.root.set("width", "828")
+            self.root.set("height", "792")
 
-        w = width + margins[0]+margins[2]
-        h = height + margins[1]+margins[3]
-        self.root.set("width", str(w))
-        self.root.set("height", str(h))
+            # bounding rectangle
+            '''
+            rect = ET.SubElement(self.root, 'rect')
+            rect.set('x', '0')
+            rect.set('y', '0')
+            rect.set('width', '828')
+            rect.set('height', '792')
+            rect.set('stroke', 'black')
+            rect.set('fill', 'none')
+            '''
+        else:
+            w = width + margins[0]+margins[2]
+            h = height + margins[1]+margins[3]
+            self.root.set("width", str(w))
+            self.root.set("height", str(h))
 
-        # initialize the CTM and push it onto the CTM stack
-        ctm = CTM.CTM()
-        ctm.translate(0, height + margins[1] + margins[3])
-        ctm.scale(1,-1)
-        ctm.translate(margins[0], margins[1])
+            # initialize the CTM and push it onto the CTM stack
+            ctm.translate(0, height + margins[1] + margins[3])
+            ctm.scale(1,-1)
+            ctm.translate(margins[0], margins[1])
+
         bbox = [0,0,width,height]
         un.enter_namespace('bbox', bbox)
         self.ctm_stack = [[ctm, bbox]]
@@ -243,6 +261,27 @@ class Diagram:
 
         for legend in self.legends:
             legend.place_legend(self)
+
+        if self.format == 'tactile':
+            # first we'll place the caption
+            if len(self.caption) == 0:
+                caption = label.nemeth_on
+            else:
+                caption = self.caption + ' ' + label.nemeth_on
+            text_element = ET.SubElement(self.root, 'text')
+            text_element.text = caption
+            text_element.set("x", "36")
+            text_element.set("y", "50.4")
+            text_element.set('font-family', "Braille29")
+            text_element.set('font-size', "29px")
+
+            # add a nemeth off indicator at the bottom
+            text_element = ET.SubElement(self.root, 'text')
+            text_element.text = label.nemeth_off
+            text_element.set('x', '36')
+            text_element.set('y', '756')
+            text_element.set('font-family', "Braille29")
+            text_element.set('font-size', "29px")
         
     def end_figure(self):
         # form the output filenames

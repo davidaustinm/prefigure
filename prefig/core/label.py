@@ -354,6 +354,10 @@ def position_braille_label(element, diagram, ctm,
                     text,
                     typeform
                 )
+                if element.get('caption', 'no') == 'yes':
+                    if len(braille_text) == 0:
+                        braille_text = " "
+                    braille_text += nemeth_on
                 if braille_text is None:
                     continue
                 row_text += braille_text
@@ -724,16 +728,10 @@ def mk_m_element(m_tag, label_group):
 # add a caption to a tactile diagram in the upper-left corner
 #   e.g. "Figure 2.3.4"
 def caption(element, diagram, parent, outline_status):
-    if diagram.output_format() != "tactile":  
-        return
     if diagram.caption_suppressed():
         return
-    margins = diagram.get_margins()
-    element.tag = 'label'
-    element.set('alignment', 'ne')
-    element.set('offset', f"(0,{margins[3]+20})")
-    box = diagram.bbox()
-    element.set('p', util.pt2str((box[0], box[3]), spacer=","))
-    label(element, diagram, parent)
+    text = element.text
+    if text is None or len(text) == 0:
+        return
+    diagram.set_caption(text.strip())
 
-    
