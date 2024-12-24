@@ -33,6 +33,10 @@ def init(format, environment):
 def add_macros(macros):
     math_labels.add_macros(macros)
 
+nemeth_on =  '⠸⠩ '
+nemeth_off = '⠸⠱ '
+grade1_indicator = '⠰'
+
 # These are tags that can occur in a label
 label_tags = {'it', 'b', 'newline'}
 
@@ -90,7 +94,7 @@ braille_displacement = {
     'ha': [0, -1],     # horizontal axis label
     'hat': [0, 0],    # top horizontal axis label
     'va': [-1, -0.5],  # vertical axis label
-    'va': [0, -0.5],   # right vertical axis label
+    'var': [0, -0.5],   # right vertical axis label
     'xl': [-1, 0]
 }
 
@@ -104,9 +108,6 @@ def get_alignment_from_direction(direction):
     direction_angle = math.degrees(math.atan2(direction[1], direction[0]))
     align = round(direction_angle/45) % 8
     return alignment_circle[align]
-
-nemeth_on =  '⠸⠩ '
-nemeth_off = '⠸⠱ '
 
 # Now we'll place a label into a diagram.  Labels are created by
 # mathjax so we're going to put all the labels into an HTML file
@@ -142,26 +143,12 @@ def label(element, diagram, parent, outline_status = None):
 
     # We first go pull out the <m> tags and write them into
     # an HTML file to be processed by MathJax
-    # We also want to know if the label is a single lower-case
-    # letter so that we can add a letter indicator
-    text = element.text
-    if text is None:
-        text = ''
-    plain_text = text
     for math in element.findall('m'):
         diagram.add_id(math)
         math_id = math.get('id')
-        math_text = fr'\({math.text}\)'
 
         # add the label's text to the HTML tree
-        math_labels.register_math_label(math_id, math_text)
-
-        text += math_text
-        plain_text += str(math_text)
-        if math.tail is not None:
-            text += math.tail
-            plain_text += str(math.tail)
-    text = text.strip()
+        math_labels.register_math_label(math_id, math.text)
 
     align = util.get_attr(element, 'alignment', 'c')
     if align.startswith('2') or align == 'e':
@@ -171,13 +158,6 @@ def label(element, diagram, parent, outline_status = None):
     if element.get('anchor', None) is not None:
         element.set('p', element.get('anchor'))
     element.set('p', util.get_attr(element, 'p', '[0,0]'))
-
-    # if we're making a tactile diagram and the text is a single
-    # lower-case letter, we'll add a letter indicator in front
-    if diagram.output_format() == 'tactile' and len(plain_text) == 1:
-        char_distance = ord(plain_text[0]) - ord('a')
-        if char_distance >= 0 and char_distance < 26:
-            element.set('add-letter-indicator', 'yes')
 
 # Allow substitutions from the user namespace
 def evaluate_text(text):
@@ -266,7 +246,7 @@ def position_braille_label(element, diagram, ctm,
     if alignment == 'hat':
         offset = [-4*gap, 30]
     if alignment == 'va':
-        offset = [-30, 0]
+        offset = [-9, 0]  # tick mark is 9 units + another 9 per BANA
     if alignment == 'var':
         offset = [30, 0]
     if alignment == 'xl':  
@@ -343,32 +323,38 @@ def position_braille_label(element, diagram, ctm,
     # translate braille strings not in an <m>
     for num, row in enumerate(text_elements):
         row_text = ''
+        needs_grade1_indicator = False
         while len(row) > 0:
             el = row.pop(0)
             if isinstance(el, list):
                 text = el[0]
-                if len(row) > 0:
+                if len(row_text) > 0:
                     text += ' '
                 typeform = [typeform_dict[el[1]]] * len(text)
                 braille_text = braille_translator.translate(
                     text,
                     typeform
                 )
-                if element.get('caption', 'no') == 'yes':
-                    if len(braille_text) == 0:
-                        braille_text = " "
-                    braille_text += nemeth_on
                 if braille_text is None:
                     continue
                 row_text += braille_text
             else:
                 m_tag_id = el.get('id')
-                insert = math_labels.get_math_label(m_tag_id)
-                if insert is None:
+                # do we need grade1 indicator?
+                m_text = el.text.strip()
+                if len(m_text) == 1:
+                    char_distance = ord(m_text[0]) - ord('a')
+                    if char_distance >= 0 and char_distance < 26:
+                        needs_grade1_indicator = True
+                text = math_labels.get_math_label(m_tag_id)
+                if text is None:
                     continue
-                row_text += insert.text
-                if len(row) > 0:
+                if len(row_text) > 0:
                     row_text += space
+                row_text += text
+        # do we need to add a grade1 indicator
+        if len(row_text) == 1 and needs_grade1_indicator:
+            row_text = grade1_indicator + row_text
         text_elements[num] = row_text
 
     interline = 28.8  # 0.4 inches
@@ -430,6 +416,8 @@ def position_braille_label(element, diagram, ctm,
         text_element.set('font-size', "29px")
         y += interline
 
+def snap_to_embossing_grid(x):
+    return 3.6 * round(x/3.6)
 
 def position_svg_label(element, diagram, ctm, group):
     # We're going to put everything inside a group

@@ -174,8 +174,11 @@ class Diagram:
             log.error("Unable to parse the dimensions of this diagram")
             return
 
+        margins = self.diagram_element.get('margins', '[0,0,0,0]')
+        if self.format == 'tactile':
+            margins = self.diagram_element.get('tactile-margins', margins)
         try:
-            margins = un.valid_eval(self.diagram_element.get('margins', '[0,0,0,0]'))
+            margins = un.valid_eval(margins)
         except:
             log.error("Unable to parse margins={element.get('margins')}")
             return
@@ -194,9 +197,12 @@ class Diagram:
             if diagram_aspect >= page_aspect:
                 s = 756 / total_width
                 lly = s * total_height + 79.2
+                self.centerline = 378 + 36 # half of 756 + margin
             else:
                 s = 633.6 / total_height
                 lly = 712.8
+                self.centerline = s*total_width/2 + 36
+            self.bottomline = lly
             ctm.translate(36, lly)
             ctm.scale(s, -s)
             ctm.translate(margins[0], margins[1])
@@ -267,10 +273,17 @@ class Diagram:
             if len(self.caption) == 0:
                 caption = label.nemeth_on
             else:
+                self.caption = label.braille_translator.translate(
+                    self.caption,
+                    [0] * len(self.caption)
+                )
                 caption = self.caption + ' ' + label.nemeth_on
+
+            gap = 3.6  # space between embossing dots
+
             text_element = ET.SubElement(self.root, 'text')
             text_element.text = caption
-            text_element.set("x", "36")
+            text_element.set("x", "144")  # start in cell 7 per BANA, was 36
             text_element.set("y", "50.4")
             text_element.set('font-family', "Braille29")
             text_element.set('font-size', "29px")
@@ -279,7 +292,9 @@ class Diagram:
             text_element = ET.SubElement(self.root, 'text')
             text_element.text = label.nemeth_off
             text_element.set('x', '36')
-            text_element.set('y', '756')
+            y = self.bottomline + 12 * gap  # bottom of diagram + blank line
+            y = label.snap_to_embossing_grid(y)
+            text_element.set('y', util.float2str(y))
             text_element.set('font-family', "Braille29")
             text_element.set('font-size', "29px")
         

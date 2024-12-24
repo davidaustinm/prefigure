@@ -53,7 +53,7 @@ class Legend:
         # length of line as a key
         self.line_width = 24
         if self.tactile:
-            self.line_width = 45
+            self.line_width = 72  # one inch per BANA
 
         dummy_group = ET.Element('g')
         for num, li in enumerate(element):

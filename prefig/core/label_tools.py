@@ -60,7 +60,7 @@ class LocalMathLabels(AbstractMathLabels):
     def register_math_label(self, id, text):
         div = ET.SubElement(self.html_body, 'div')
         div.set('id', id)
-        div.text = text
+        div.text = fr'\({text}\)'
         self.labels_present = True
 
     def process_math_labels(self):
@@ -120,7 +120,8 @@ class LocalMathLabels(AbstractMathLabels):
                 return None
 
             try:
-                return div.xpath('mjx-data/mjx-braille')[0]
+                container = div.xpath('mjx-data/mjx-braille')[0]
+                return container.text
             except IndexError:
                 log.error(f"Error in processing label, possibly a LaTeX error: {div.text}")                
                 return None
