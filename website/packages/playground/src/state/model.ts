@@ -50,13 +50,16 @@ export interface PlaygroundModel {
 }
 
 export const playgroundModel: PlaygroundModel = {
-    source: `<diagram dimensions="(300,180)" margins="5">
-  <coordinates bbox="(-5,0,5,6)">
-    <grid/>
-    <circle center="(-2,3.5)" radius="2" fill="blue" thickness="5"/>
-    <ellipse center="(2,3)" axes="(1,2)" stroke="red"
-	     rotate="pi/6" degrees="no"/>
-    <label anchor="(3,1)">foo</label>
+    source: `<diagram dimensions="(300,300)" margins="5">
+  <definition>f(x)=2.5-x^2/2</definition>
+  <definition>a = 1</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes xlabel="x" ylabel="y"/>
+    <graph function="f"/>
+    <tangent-line function="f" point="a"/>
+    <point p="(a,f(a))" alignment="ne">
+      <m>(a,f(a))</m>
+    </point>
   </coordinates>
 </diagram>`,
     compiledSource: "",

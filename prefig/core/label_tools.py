@@ -136,7 +136,37 @@ class LocalMathLabels(AbstractMathLabels):
         except IndexError:
             log.error(f"Error in processing label, possibly a LaTeX error: {div.text}")
             return None
+
+
+class PyodideMathLabels(AbstractMathLabels):
+    def __init__(self, format):
+        global prefigBrowserApi
+        import prefigBrowserApi
+
+        self.format = format
+        self.text_label_dict = {}
+        self.math_label_dict = {}
         
+    def add_macros(self, macros):
+        pass
+
+    def register_math_label(self, id, text):
+        self.text_label_dict[id] = text
+
+    def process_math_labels(self):
+        for id, text in self.text_label_dict.items():
+            if self.format == "tactile":
+                insert = prefigBrowserApi.processBraille(text)
+            else:
+                svg = prefigBrowserApi.processMath(text)
+                container = ET.fromstring(svg)
+                insert = container.xpath('//svg:svg',
+                                     namespaces=ns)[0]
+            self.math_label_dict[id] = insert
+
+    def get_math_label(self, id):
+        return self.math_label_dict[id]
+
 
 class CairoTextMeasurements(AbstractTextMeasurements):
     def __init__(self):

@@ -20,15 +20,14 @@ def init(format, environment):
     global text_measurements
     global braille_translator
 
-    math_labels = label_tools.LocalMathLabels(format)
-
     if environment == "pyodide":
         text_measurements = label_tools.PyodideTextMeasurements()
         braille_translator = label_tools.PyodideBrailleTranslator()
+        math_labels = label_tools.PyodideMathLabels(format)
     else:
         text_measurements = label_tools.CairoTextMeasurements()
         braille_translator = label_tools.LocalLouisBrailleTranslator()
-
+        math_labels = label_tools.LocalMathLabels(format)
 
 def add_macros(macros):
     math_labels.add_macros(macros)
