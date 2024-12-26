@@ -5,11 +5,8 @@ import { TeX } from 'mathjax-full/js/input/tex.js';
 import { SVG } from 'mathjax-full/js/output/svg.js';
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor.js';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html.js';
-import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages.js';
-import { CHTML } from 'mathjax-full/js/output/chtml.js';
-
-// import { sre } from 'speech-rule-engine';
-
+import { SerializedMmlVisitor } from 'mathjax-full/js/core/MmlTree/SerializedMmlVisitor';
+import {Sre} from 'mathjax-full/js/a11y/sre.js';
 
 /**
  * This is the API used by PreFigure when running in the browser. It implements the necessary
@@ -18,16 +15,6 @@ import { CHTML } from 'mathjax-full/js/output/chtml.js';
 export class PrefigBrowserApi {
     offscreenCanvas: OffscreenCanvas | null = null;
     ctx: OffscreenCanvasRenderingContext2D | null = null;
-
-    constructor() {
-        /*
-        sre.setupEngine({
-            locale: 'nemeth',
-            domain: 'nemeth',
-            modality: 'braille',
-        });
-        */
-    }
 
     /**
      * Measure the extents of typeset text.
@@ -75,28 +62,39 @@ export class PrefigBrowserApi {
     }
 
     processBraille(expression: string): string {
-        return expression;
-        /*
         const adaptor = liteAdaptor();
         RegisterHTMLHandler(adaptor);
 
-        const tex = new TeX({ packages: AllPackages });
-        const chtml = new CHTML();
-        const mj = mathjax.document('', { InputJax: tex, OutputJax: chtml });
-
-        // Convert the expression to MathML
-        const mathml = adaptor.innerHTML(mj.convert(expression, { display: false, format: 'MathML' }));
-
-        // Use SRE to generate Braille output
-        const braille = mathjax.startup.sre.System.toSpeech(mathml, {
-          locale: 'nemeth',
-          domain: 'nemeth',
-          modality: 'braille',
+        const tex = new TeX();
+        const mj = mathjax.document('', { InputJax: tex });
+        const mathNode = mj.convert(expression, {
+            display: true, // Set to false for inline math
+            end: 'mathml', // Produce MathML output
         });
-        console.log(braille);
 
-        return braille;
+        const visitor = new SerializedMmlVisitor();
+        const mml = visitor.visitTree(mathNode);
+        console.log(mml);
+
+        /*
+        Sre.setupEngine({
+            locale: "nemeth",
+            modality: "braille"
+        });
+
+        const features = {
+            locale: "nemeth",
+            modality: "braille"
+        }
+
+        Sre.setupEngine(features)
+        .then(() => Sre.sreReady())
+        .then(() => console.log(Sre.toSpeech(mml)))
+        .catch(err => console.log(err));
+
         */
+        return expression;
+
     }
 
 }
