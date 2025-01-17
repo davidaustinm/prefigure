@@ -37,11 +37,17 @@ def define(element, diagram, parent, outline_status):
         if child.get('at', None) is not None:
             child.set('id', child.get('at'))
         dummy_parent = ET.Element('group')
+        # this is kind of a hack, but we only need to construct the shape
+        # so we stash the format temporarily in case we're building a
+        # tactile diagram and then restore it later
+        format = diagram.output_format()
+        diagram.set_output_format('svg')
         tags.parse_element(
             child,
             diagram,
             dummy_parent
         )
+        diagram.set_output_format(format)
         shape = dummy_parent.getchildren()[0]
         shape.attrib.pop('stroke', None)
         shape.attrib.pop('fill', None)
