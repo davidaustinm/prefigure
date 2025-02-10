@@ -306,6 +306,7 @@ GraphicalElements =
         Riemann-Sum* &
         Shape* &
         Slope-Field* &
+        Spline* &
         Tangent-line* &
         Triangle* &
         Vector*
@@ -626,6 +627,18 @@ Slope-Field = element slope-field {
     attribute system {"yes"|"no"}?,
     attribute spacings {text}?,
     StrokeAttributes,
+    CommonAttributes
+}
+
+Spline = element spline {
+    attribute at {text}?,
+    attribute points {text},
+    attribute parameter {text}?,
+    attribute arrows {text}?,
+    attribute closed {"yes"|"no"}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    FillAttributes,
     CommonAttributes
 }
 

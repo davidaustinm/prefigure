@@ -731,6 +731,9 @@
         <ref name="Slope-Field"/>
       </zeroOrMore>
       <zeroOrMore>
+        <ref name="Spline"/>
+      </zeroOrMore>
+      <zeroOrMore>
         <ref name="Tangent-line"/>
       </zeroOrMore>
       <zeroOrMore>
@@ -1594,6 +1597,36 @@
         <attribute name="spacings"/>
       </optional>
       <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Spline">
+    <element name="spline">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="points"/>
+      <optional>
+        <attribute name="parameter"/>
+      </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
+      <optional>
+        <attribute name="closed">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
     </element>
   </define>
