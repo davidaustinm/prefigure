@@ -632,8 +632,10 @@ Slope-Field = element slope-field {
 
 Spline = element spline {
     attribute at {text}?,
+    attribute bc {text}?,
     attribute points {text},
     attribute parameter {text}?,
+    attribute N {text}?,
     attribute arrows {text}?,
     attribute closed {"yes"|"no"}?,
     attribute arrow-width {text}?,

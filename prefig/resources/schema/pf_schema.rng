@@ -1605,9 +1605,15 @@
       <optional>
         <attribute name="at"/>
       </optional>
+      <optional>
+        <attribute name="bc"/>
+      </optional>
       <attribute name="points"/>
       <optional>
         <attribute name="parameter"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
       </optional>
       <optional>
         <attribute name="arrows"/>
