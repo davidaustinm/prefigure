@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from . import user_namespace as un
 
 # introduce some useful mathematical operations
 #   that are meant to be available to authors
@@ -79,4 +80,16 @@ def eulers_method(f, t0, y0, t1, N):
         else:
             points.append([t, y])
     return np.array(points)
+
+# dirac delta function to be used in solving ODEs
+def delta(t, a):
+    breaks = un.retrieve('__breaks')
+    if breaks is not None:
+        breaks.append(a)
+        return 0
+    delta_on = un.retrieve('__delta_on')
+    if np.isclose(t, a) and delta_on:
+        return 1
+
+    return 0
 

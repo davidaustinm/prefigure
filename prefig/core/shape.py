@@ -24,7 +24,8 @@ allowed_shapes = {
     'path',
     'polygon',
     'rectangle',
-    'shape'
+    'shape',
+    'spline'
 }
 
 def define(element, diagram, parent, outline_status):
