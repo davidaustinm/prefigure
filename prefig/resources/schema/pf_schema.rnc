@@ -204,18 +204,30 @@ YLabel = element ylabel {
 # elements that can go inside a path
 PathElements = (
     element moveto {
-        attribute point {text}
+        attribute point {text}?,
+        attribute distance {text}?,
+        attribute heading {text}?,
+        attribute degrees {"yes"|"no"}?
     }* &
     element rmoveto {
-        attribute point {text}
+        attribute point {text}?,
+        attribute distance {text}?,
+        attribute heading {text}?,
+        attribute degrees {"yes"|"no"}?        
     }* &
     element lineto {
         attribute point {text},
-        attribute decoration {text}?
+        attribute decoration {text}?,
+        attribute distance {text}?,
+        attribute heading {text}?,
+        attribute degrees {"yes"|"no"}?        
     }* &
     element rlineto {
         attribute point {text},
-        attribute decoration {text}?
+        attribute decoration {text}?,
+        attribute distance {text}?,
+        attribute heading {text}?,
+        attribute degrees {"yes"|"no"}?        
     }* &
     element horizontal {
         attribute distance {text},
@@ -240,6 +252,7 @@ PathElements = (
     Graph* &
     Parametric-Curve* &
     Polygon* &
+    Spline* &
     element repeat {
         attribute parameter {text},
         PathElements
@@ -257,7 +270,8 @@ ShapeElements = (
     Path* &
     Polygon* &
     Rectangle* &
-    Shape*
+    Shape* &
+    Spline*
 )
 
 # graphical elements can be stroked and possibly filled

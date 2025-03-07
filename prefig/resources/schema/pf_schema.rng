@@ -486,12 +486,44 @@
     <interleave>
       <zeroOrMore>
         <element name="moveto">
-          <attribute name="point"/>
+          <optional>
+            <attribute name="point"/>
+          </optional>
+          <optional>
+            <attribute name="distance"/>
+          </optional>
+          <optional>
+            <attribute name="heading"/>
+          </optional>
+          <optional>
+            <attribute name="degrees">
+              <choice>
+                <value>yes</value>
+                <value>no</value>
+              </choice>
+            </attribute>
+          </optional>
         </element>
       </zeroOrMore>
       <zeroOrMore>
         <element name="rmoveto">
-          <attribute name="point"/>
+          <optional>
+            <attribute name="point"/>
+          </optional>
+          <optional>
+            <attribute name="distance"/>
+          </optional>
+          <optional>
+            <attribute name="heading"/>
+          </optional>
+          <optional>
+            <attribute name="degrees">
+              <choice>
+                <value>yes</value>
+                <value>no</value>
+              </choice>
+            </attribute>
+          </optional>
         </element>
       </zeroOrMore>
       <zeroOrMore>
@@ -500,6 +532,20 @@
           <optional>
             <attribute name="decoration"/>
           </optional>
+          <optional>
+            <attribute name="distance"/>
+          </optional>
+          <optional>
+            <attribute name="heading"/>
+          </optional>
+          <optional>
+            <attribute name="degrees">
+              <choice>
+                <value>yes</value>
+                <value>no</value>
+              </choice>
+            </attribute>
+          </optional>
         </element>
       </zeroOrMore>
       <zeroOrMore>
@@ -507,6 +553,20 @@
           <attribute name="point"/>
           <optional>
             <attribute name="decoration"/>
+          </optional>
+          <optional>
+            <attribute name="distance"/>
+          </optional>
+          <optional>
+            <attribute name="heading"/>
+          </optional>
+          <optional>
+            <attribute name="degrees">
+              <choice>
+                <value>yes</value>
+                <value>no</value>
+              </choice>
+            </attribute>
           </optional>
         </element>
       </zeroOrMore>
@@ -556,6 +616,9 @@
         <ref name="Polygon"/>
       </zeroOrMore>
       <zeroOrMore>
+        <ref name="Spline"/>
+      </zeroOrMore>
+      <zeroOrMore>
         <element name="repeat">
           <attribute name="parameter"/>
           <ref name="PathElements"/>
@@ -597,6 +660,9 @@
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Shape"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Spline"/>
       </zeroOrMore>
     </interleave>
   </define>

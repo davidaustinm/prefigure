@@ -128,12 +128,20 @@ graphical_tags = {'graph',
 
 def process_tag(child, diagram, cmds, current_point):
     if child.tag == "moveto":
-        try:
-            user_point = un.valid_eval(child.get('point'))
-            point = diagram.transform(user_point)
-        except:
-            log.error(f"Error in <moveto> defining point={child.get('point')}")
-            return
+        if child.get('distance', None) is not None:
+            distance = un.valid_eval(child.get('distance'))
+            heading = un.valid_eval(child.get('heading', '0'))
+            if (child.get('degrees', 'yes')) == 'yes':
+                heading = math.radians(heading)
+            user_point = np.array([distance * math.cos(heading),
+                                   distance * math.sin(heading)])
+        else:
+            try:
+                user_point = un.valid_eval(child.get('point'))
+                point = diagram.transform(user_point)
+            except:
+                log.error(f"Error in <moveto> defining point={child.get('point')}")
+                return
         cmds.append('M')
         cmds.append(util.pt2str(point))
         current_point = user_point
