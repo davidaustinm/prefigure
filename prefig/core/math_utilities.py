@@ -2,6 +2,9 @@ import numpy as np
 import math
 from . import user_namespace as un
 
+import logging
+logger = logging.getLogger('prefigure')
+
 # introduce some useful mathematical operations
 #   that are meant to be available to authors
 
@@ -73,8 +76,8 @@ def eulers_method(f, t0, y0, t1, N):
     t = t0
     y = y0
     for _ in range(N):
-        t += h
         y += f(t, y) * h
+        t += h
         if isinstance(y, np.ndarray):
             points.append([t, *y])
         else:
