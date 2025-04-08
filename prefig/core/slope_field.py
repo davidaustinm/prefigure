@@ -85,15 +85,21 @@ def slope_field(element, diagram, parent, outline_status):
                         dx *= -1
                         dy *= -1
             else:
-                slope = f(x,y)
-                dx = rx[1]/4
-                dy = slope*dx
-                if abs(dy) > ry[1]/4:
+                dx = None
+                try:
+                    slope = f(x,y)
+                except ZeroDivisionError:
+                    dx = 0
                     dy = ry[1]/4
-                    dx = dy/slope
-                if dx < 0:
-                    dx *= -1
-                    dy *= -1
+                if dx is None:
+                    dx = rx[1]/4
+                    dy = slope*dx
+                    if abs(dy) > ry[1]/4:
+                        dy = ry[1]/4
+                        dx = dy/slope
+                    if dx < 0:
+                        dx *= -1
+                        dy *= -1
                 element.append(line)
             x0 = x - dx
             x1 = x + dx
