@@ -740,4 +740,4 @@ text = ["pycairo", "pycairo"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8.5"
-content-hash = "b6b696c5506d9a6b349114b27192aaf9636e24227d5319250b4224e9e2daf942"
+content-hash = "482ec45db7551b8880677b045c2edddcc359175d55b23b94c7dcd2081cc1ad05"
