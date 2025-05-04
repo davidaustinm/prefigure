@@ -67,6 +67,19 @@ def rotate(v, theta):
     s = math.sin(theta)
     return np.array([c*v[0]-s*v[1], s*v[0]+c*v[1]])
 
+def evaluate_bezier(controls, t):
+    dim = len(controls[0])
+    N = len(controls)
+    controls = np.array(controls)
+    sum = np.array([0.0] * dim)
+    if N == 3:
+        coefficients = [1,2,1]
+    else:
+        coefficients = [1,3,3,1]
+    for j in range(N):
+        sum += coefficients[j] * (1-t)**(N-j-1) * t**j * controls[j]
+    return sum
+
 def eulers_method(f, t0, y0, t1, N):
     h = (t1 - t0)/N
     if isinstance(y0, np.ndarray):

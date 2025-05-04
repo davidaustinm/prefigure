@@ -1,6 +1,7 @@
 import lxml.etree as ET
 import logging
 from . import user_namespace as un
+from . import math_utilities as math_util
 from . import utilities as util
 import copy
 from . import label
@@ -27,6 +28,7 @@ def point(element, diagram, parent, outline_status = None):
     else:
         element.set('size', element.get('size', '4'))
     size = util.get_attr(element, 'size', '1')
+    size_str = element.get('size', '1')
 
     # by default, we'll assume it's a circle but we can change that later
     shape = ET.Element('circle')
@@ -69,6 +71,25 @@ def point(element, diagram, parent, outline_status = None):
         d += 'M ' + util.pt2str((p[0], p[1]+size))
         d += 'L ' + util.pt2str((p[0], p[1]-size))
         shape.set('d', d)
+    if style == 'double-circle':
+        shape.tag = 'path'
+        r1 = size
+        indent = min(size/4, 9)
+        r2 = size - indent
+        if diagram.output_format() == 'tactile':
+            r2 = size - 9
+        size_str_2 = str(r2)
+        d = 'M ' + util.pt2str((p[0]-r1, p[1]))
+        d += 'A ' + size_str + ' ' + size_str + ' 0 0 0 '
+        d += util.pt2str((p[0]+r1,p[1])) + ' '
+        d += 'A ' + size_str + ' ' + size_str + ' 0 0 0 '
+        d += util.pt2str((p[0]-r1,p[1])) + ' Z '
+        d += 'M ' + util.pt2str((p[0]-r2, p[1]))
+        d += 'A ' + size_str_2 + ' ' + size_str_2 + ' 0 0 0 '
+        d += util.pt2str((p[0]+r2,p[1])) + ' '
+        d += 'A ' + size_str_2 + ' ' + size_str_2 + ' 0 0 0 '
+        d += util.pt2str((p[0]-r2,p[1])) + ' Z '
+        shape.set('d', d)
 
     if diagram.output_format() == 'tactile':
         fill = element.get('fill', None)
@@ -107,6 +128,20 @@ def point(element, diagram, parent, outline_status = None):
             if child.get('id', None) is not None:
                 child.attrib.pop('id')
 
+def inside(p, center, size, style, ctm, buffer=0):
+    p = ctm.transform(p)
+    center = ctm.transform(center)
+    p = p - center
+    if style == 'circle' or style == 'double-circle':
+        return math_util.length(p) < size + buffer
+    if style == 'box' or style == 'cross' or style == 'plus':
+        if style == 'cross' or style == 'plus':
+            size *= 1.4
+        return abs(p[0]) < size + buffer and abs(p[1]) < size + buffer
+    if style == 'diamond':
+        size *= 1.4
+        return abs(p[0]+p[1]) < size + buffer and abs(p[0]-p[1]) < size + buffer
+    return False
 
 def finish_outline(element, diagram, parent):
     original_parent = parent

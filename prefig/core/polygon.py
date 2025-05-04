@@ -177,7 +177,13 @@ def spline(element, diagram, parent, outline_status):
     cs = CubicSpline(t_vals, points, bc_type=bc)
 
     N = un.valid_eval(element.get('N', '100'))
-    t_vals = np.linspace(t_vals[0], t_vals[-1], N)
+    domain = element.get('domain', None)
+    if domain is not None:
+        domain = un.valid_eval(domain)
+        t_vals = np.linspace(domain[0], domain[1], N)
+        element.set('closed', 'no')
+    else:
+        t_vals = np.linspace(t_vals[0], t_vals[-1], N)
     curve = cs(t_vals)
     if isinstance(curve[0], np.ndarray) == False:
         curve = list(zip(t_vals, curve))

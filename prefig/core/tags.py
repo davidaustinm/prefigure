@@ -97,7 +97,7 @@ def parse_element(element, diagram, root, outline_status = None):
     if grid_axes.is_axes_tag(element.tag):
         log.warning(f"A <{element.tag}> tag can only occur inside a <axes> or <grid-axes>")
         return
-        
+
     try:
         function = tag_dict[element.tag]
     except KeyError:

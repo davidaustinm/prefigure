@@ -2,6 +2,9 @@ import lxml.etree as ET
 import numpy as np
 from . import user_namespace as un
 from . import utilities as util
+import logging
+
+log = logging.getLogger('prefigure')
 
 # process a coordinates element defining a coordinate
 #    system.  destination, which will usually be None,

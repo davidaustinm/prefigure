@@ -302,7 +302,8 @@ def axes(element, diagram, parent, outline_status):
     h_line_el.set('stroke', stroke)
 #    h_line_el.set('type', 'horizontal axis')
     h_line_el.set('stroke-width', thickness)
-    axes.append(h_line_el)
+    if element.get('axes', 'yes') == 'yes':
+        axes.append(h_line_el)
 
     bottom_axis = diagram.transform((x_axis_location, bbox[1]))
     top_axis = diagram.transform((x_axis_location, bbox[3]))
@@ -315,7 +316,8 @@ def axes(element, diagram, parent, outline_status):
     v_line_el.set('stroke', stroke)
 #    v_line_el.set('type', 'vertical axis')
     v_line_el.set('stroke-width', thickness)
-    axes.append(v_line_el)
+    if element.get('axes', 'yes') == 'yes':
+        axes.append(v_line_el)
 
     if arrows > 0:
         arrow.add_arrowhead_to_path(diagram, 'marker-end', h_line_el)
