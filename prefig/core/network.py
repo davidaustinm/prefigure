@@ -113,7 +113,7 @@ def network(element, diagram, parent, outline_status):
             
             vertices.sort()
             all_edges[tuple(vertices)] = all_edges.get(tuple(vertices), 0) + 1
-            
+
     # finally, there may be <edge> subelements of <network> with decorations
     for edge in element.findall('edge'):
         try:
@@ -142,6 +142,7 @@ def network(element, diagram, parent, outline_status):
         for i, e in enumerate(leaving_edges):
             if e is None:
                 leaving_edges[i] = edge
+                directed_edges[tuple(vertices)] = leaving_edges
                 placed = True
                 break
         if not placed and not directed:
@@ -150,6 +151,7 @@ def network(element, diagram, parent, outline_status):
             for i, e in enumerate(leaving_edges):
                 if e is None:
                     leaving_edges[i] = edge
+                    directed_edges[tuple(vertices)] = leaving_edges
                     placed = True
                     break
         if not placed:
@@ -159,9 +161,6 @@ def network(element, diagram, parent, outline_status):
             directed_edges[tuple(vertices)] = leaving_edges
             vertices.sort()
             all_edges[tuple(vertices)] = all_edges.get(tuple(vertices), 0) + 1
-
-        directed_edges[tuple(vertices)] = leaving_edges
-        
 
     # Use networkx to layout the graph if we need to
     auto_layout = False
@@ -594,16 +593,20 @@ def network(element, diagram, parent, outline_status):
             p.set('style', node.get('style', node_style))
 
         if labels:
-            label_text = handle
+            label_element = None
             if node is not None:
-                label_text = node.get('label', label_text)
-            l = ET.SubElement(node_group, 'label')
-            math_element = ET.SubElement(l, 'm')
-            math_element.text = label_text
-            l.set('p', '(' + util.pt2long_str(position, spacer=',') + ')')
-            l.set('alignment', 'center')
-            l.set('offset', '(0,0)')
-            l.set('clear-background', 'no')
+                if len(node) > 0 or len(node.text.strip()) > 0:
+                    label_element = copy.deepcopy(node)
+                    label_element.tag = 'label'
+                    node_group.append(label_element)
+            if label_element is None:
+                label_element = ET.SubElement(node_group, 'label')
+                math_element = ET.SubElement(label_element, 'm')
+                math_element.text = handle
+            label_element.set('p', '(' + util.pt2long_str(position, spacer=',') + ')')
+            label_element.set('alignment', 'center')
+            label_element.set('offset', '(0,0)')
+            label_element.set('clear-background', 'no')
 
     if auto_layout:
         coordinates.coordinates(element, diagram, parent, outline_status)
