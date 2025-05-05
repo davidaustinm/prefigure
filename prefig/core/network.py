@@ -595,7 +595,11 @@ def network(element, diagram, parent, outline_status):
         if labels:
             label_element = None
             if node is not None:
-                if len(node) > 0 or len(node.text.strip()) > 0:
+                if (
+                        len(node) > 0 or
+                        (node.text is not None and
+                         len(node.text.strip()) > 0)
+                ):
                     label_element = copy.deepcopy(node)
                     label_element.tag = 'label'
                     node_group.append(label_element)
