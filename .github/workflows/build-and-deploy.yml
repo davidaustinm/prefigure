@@ -36,6 +36,9 @@ jobs:
                   node-version: ${{ matrix.node-version }}
                   cache: "npm"
                   cache-dependency-path: ./website/package-lock.json
+
+            - name: Install ciaro deps
+              run: apt-get install libcairo2-dev
             
             - name: Set up Python
               uses: actions/setup-python@v3
