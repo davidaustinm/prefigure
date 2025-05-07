@@ -651,6 +651,8 @@ Spline = element spline {
     attribute parameter {text}?,
     attribute N {text}?,
     attribute arrows {text}?,
+    attribute domain {text}?,
+    attribute arrow-location {text}?,
     attribute closed {"yes"|"no"}?,
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,

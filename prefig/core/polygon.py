@@ -43,7 +43,8 @@ def parse_points(element):
     
 
 # Process a polygon tag into a graphical component
-def polygon(element, diagram, parent, outline_status, points = None):
+def polygon(element, diagram, parent,
+            outline_status, points = None, arrow_points = None):
     if outline_status == 'finish_outline':
         finish_outline(element, diagram, parent)
         return
@@ -109,6 +110,17 @@ def polygon(element, diagram, parent, outline_status, points = None):
                 cmds += 'L' + util.pt2str(p2)
             
         d = cmds
+
+    # This polygon may come from a spline and we'd like the arrow
+    # in another location.  In that case, we will append some points
+    # where we want the arrow
+    if arrow_points is not None:
+        arrow_points = [diagram.transform(p) for p in arrow_points]
+        arrow_d = [' M ' + util.pt2str(arrow_points[0])]
+        for p in arrow_points[1:]:
+            arrow_d.append('L ' + util.pt2str(p))
+        d += ' '.join(arrow_d)
+        
     path = ET.Element('path')
     diagram.add_id(path, element.get('id'))
     path.set('d', d)
@@ -188,7 +200,22 @@ def spline(element, diagram, parent, outline_status):
     if isinstance(curve[0], np.ndarray) == False:
         curve = list(zip(t_vals, curve))
     element.tag = 'polygon'
-    polygon(element, diagram, parent, outline_status, points=curve)
+
+    # we may want to move the arrow from the end of the spline to a
+    # location specified by arrow-location
+    arrow_curve = None
+    if element.get('arrows', '0') == '1':
+        location = element.get('arrow-location', None)
+        if location is not None:
+            location = un.valid_eval(location)
+            t0 = max(t_vals[0], location - 0.25)
+            arrow_t = np.linspace(t0, location, 10)
+            arrow_curve = cs(arrow_t)
+            if isinstance(arrow_curve[0], np.ndarray) == False:
+                arrow_curve = list(zip(arrow_t, arrow_curve))
+    
+    polygon(element, diagram, parent, outline_status,
+            points=curve, arrow_points = arrow_curve)
 
 def triangle(element, diagram, parent, outline_status):
     '''
