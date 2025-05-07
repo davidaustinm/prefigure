@@ -49,7 +49,7 @@ export class PreFigureCompiler {
                 // future.
                 const PREFIG_PATH =
                     ((this.pyodide as any)._api.config.indexURL as string) +
-                    "prefig-0.2.11-py3-none-any.whl";
+                    "prefig-0.2.14-py3-none-any.whl";
 
                 // Load all the dependencies
                 await this.pyodide.loadPackage([
