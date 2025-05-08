@@ -162,7 +162,7 @@ newState('PRETEXTACTION', STATE.PRETEXT + 10);
 //
 const renderActions = {
   //
-  //  An aciton to set up the pretext data array
+  //  An action to set up the pretext data array
   //  and enrich the MathML, if needed
   //
   pretext: action(STATE.PRETEXT, (math, doc, adaptor) => {
