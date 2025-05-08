@@ -1,12 +1,16 @@
 import { toBraille } from "./liblouis";
 
-import { mathjax } from 'mathjax-full/js/mathjax.js';
-import { TeX } from 'mathjax-full/js/input/tex.js';
-import { SVG } from 'mathjax-full/js/output/svg.js';
-import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor.js';
-import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html.js';
-import { SerializedMmlVisitor } from 'mathjax-full/js/core/MmlTree/SerializedMmlVisitor';
-import {Sre} from 'mathjax-full/js/a11y/sre.js';
+// XXX: We need this as a workaround for https://github.com/Speech-Rule-Engine/speech-rule-engine/issues/783
+// When speech-rule-engine is out of alpha/beta we might be able to use the designated imports
+// @ts-ignore
+import * as SRE from "speech-rule-engine/lib/sre";
+import { mathjax } from "mathjax-full/js/mathjax.js";
+import { TeX } from "mathjax-full/js/input/tex.js";
+import { SVG } from "mathjax-full/js/output/svg.js";
+import { liteAdaptor } from "mathjax-full/js/adaptors/liteAdaptor.js";
+import { RegisterHTMLHandler } from "mathjax-full/js/handlers/html.js";
+import { SerializedMmlVisitor } from "mathjax-full/js/core/MmlTree/SerializedMmlVisitor";
+import { MathDocument } from "mathjax-full/js/core/MathDocument";
 
 /**
  * This is the API used by PreFigure when running in the browser. It implements the necessary
@@ -15,6 +19,40 @@ import {Sre} from 'mathjax-full/js/a11y/sre.js';
 export class PrefigBrowserApi {
     offscreenCanvas: OffscreenCanvas | null = null;
     ctx: OffscreenCanvasRenderingContext2D | null = null;
+    mathDocumentSvg: MathDocument<any, any, any> | null = null;
+    mathDocumentMml: MathDocument<any, any, any> | null = null;
+    initFinished: Promise<void> = Promise.resolve();
+    adaptor = liteAdaptor();
+
+    constructor() {
+        let resolve: Function;
+        this.initFinished = new Promise((r) => {
+            resolve = r;
+        });
+
+        // Everything that needs asynchronous loading should happen in this block.
+        (async () => {
+            // Needed for MathJax
+            RegisterHTMLHandler(this.adaptor);
+            const tex = new TeX();
+            const svg = new SVG();
+            this.mathDocumentSvg = mathjax.document("", {
+                InputJax: tex,
+                OutputJax: svg,
+            });
+            this.mathDocumentMml = mathjax.document("", {
+                InputJax: tex,
+            });
+
+            await SRE.setupEngine({
+                locale: "nemeth",
+                modality: "braille",
+            });
+
+            // Don't forget to call this otherwise the engine will never be ready!
+            resolve!();
+        })();
+    }
 
     /**
      * Measure the extents of typeset text.
@@ -49,54 +87,40 @@ export class PrefigBrowserApi {
     }
 
     processMath(expression: string): string {
-        const adaptor = liteAdaptor();
-        RegisterHTMLHandler(adaptor);
+        if (!this.mathDocumentSvg) {
+            throw new Error(
+                "PrefigBrowserApi not correctly initialized (missing mathDocumentSvg)",
+            );
+        }
 
-        const tex = new TeX();
-        const svg = new SVG();
-        const mj = mathjax.document('', { InputJax: tex, OutputJax: svg });
-
-        const node = mj.convert(expression, { display: false });
-        const result = adaptor.outerHTML(node);
+        const node = this.mathDocumentSvg.convert(expression, {
+            display: false,
+        });
+        const result = this.adaptor.outerHTML(node);
         return result;
     }
 
     processBraille(expression: string): string {
-        const adaptor = liteAdaptor();
-        RegisterHTMLHandler(adaptor);
+        if (!this.mathDocumentMml) {
+            throw new Error(
+                "PrefigBrowserApi not correctly initialized (missing mathDocumentMml)",
+            );
+        }
 
-        const tex = new TeX();
-        const mj = mathjax.document('', { InputJax: tex });
-        const mathNode = mj.convert(expression, {
+        const mathNode = this.mathDocumentMml.convert(expression, {
             display: true, // Set to false for inline math
-            end: 'mathml', // Produce MathML output
+            end: "mathml", // Produce MathML output
         });
 
         const visitor = new SerializedMmlVisitor();
+        // A string containing a MathML version of the math
         const mml = visitor.visitTree(mathNode);
-        console.log(mml);
 
-        /*
-        Sre.setupEngine({
-            locale: "nemeth",
-            modality: "braille"
-        });
+        // A string containing braille version of the MathML
+        const braille = SRE.toSpeech(mml);
 
-        const features = {
-            locale: "nemeth",
-            modality: "braille"
-        }
-
-        Sre.setupEngine(features)
-        .then(() => Sre.sreReady())
-        .then(() => console.log(Sre.toSpeech(mml)))
-        .catch(err => console.log(err));
-
-        */
-        return expression;
-
+        return braille;
     }
-
 }
 
 export const prefigBrowserApi = new PrefigBrowserApi();
