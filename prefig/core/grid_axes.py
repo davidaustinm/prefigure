@@ -177,6 +177,7 @@ position_tolerance = 1e-10
 def axes(element, diagram, parent, outline_status):
     stroke = element.get('stroke', 'black')
     thickness = element.get('thickness', '2')
+    clear_background = element.get('clear-background', 'no') == 'yes'
 
     axes = ET.SubElement(parent, 'g',
                          attrib={
@@ -265,6 +266,8 @@ def axes(element, diagram, parent, outline_status):
                         child.set("offset", "(2,0)")
                     else:
                         child.set("offset", "(1,0)")
+            if clear_background:
+                child.set('clear-background', 'yes')
             label.label(child, diagram, parent)
             continue
         if child.tag == "ylabel":
@@ -279,6 +282,8 @@ def axes(element, diagram, parent, outline_status):
                         child.set("offset", "(0,2)")
                     else:
                         child.set("offset", "(0,1)")
+            if clear_background:
+                child.set('clear-background', 'yes')
             label.label(child, diagram, parent)
             continue
         log.info(f"{child.tag} element is not allowed inside a <label>")
@@ -297,7 +302,8 @@ def axes(element, diagram, parent, outline_status):
     h_line_el.set('stroke', stroke)
 #    h_line_el.set('type', 'horizontal axis')
     h_line_el.set('stroke-width', thickness)
-    axes.append(h_line_el)
+    if element.get('axes', 'yes') == 'yes':
+        axes.append(h_line_el)
 
     bottom_axis = diagram.transform((x_axis_location, bbox[1]))
     top_axis = diagram.transform((x_axis_location, bbox[3]))
@@ -310,7 +316,8 @@ def axes(element, diagram, parent, outline_status):
     v_line_el.set('stroke', stroke)
 #    v_line_el.set('type', 'vertical axis')
     v_line_el.set('stroke-width', thickness)
-    axes.append(v_line_el)
+    if element.get('axes', 'yes') == 'yes':
+        axes.append(v_line_el)
 
     if arrows > 0:
         arrow.add_arrowhead_to_path(diagram, 'marker-end', h_line_el)
@@ -413,7 +420,9 @@ def axes(element, diagram, parent, outline_status):
                 else:
                     xlabel.set('alignment', 'south')
                     xlabel.set('offset', '(0,-7)')
-            xlabel.set('clear-background', 'no')
+#            xlabel.set('clear-background', 'no')
+            if clear_background:
+                xlabel.set('clear-background', 'yes')
             label.label(xlabel, diagram, parent, outline_status)
 
             p = diagram.transform((x*h_scale,y_axis_location))
@@ -509,7 +518,9 @@ def axes(element, diagram, parent, outline_status):
                     ylabel.set('alignment', 'west')
                     ylabel.set('offset', '(-7,0)')
 
-            ylabel.set('clear-background', 'no')
+#            ylabel.set('clear-background', 'no')
+            if clear_background:
+                ylabel.set('clear-background', 'yes')
             label.label(ylabel, diagram, parent, outline_status)
             p = diagram.transform((x_axis_location, y*v_scale))
             line_el = line.mk_line((p[0]-tick_direction*ticksize[0], p[1]),

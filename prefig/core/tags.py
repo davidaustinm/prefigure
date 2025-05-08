@@ -61,6 +61,7 @@ tag_dict = {
     'rotate': CTM.transform_rotate,
     'scale': CTM.transform_scale,
     'slope-field': slope_field.slope_field,
+    'spline': polygon.spline,
     'tangent-line': tangent_line.tangent,
     'translate': CTM.transform_translate,
     'triangle': polygon.triangle,
@@ -96,7 +97,7 @@ def parse_element(element, diagram, root, outline_status = None):
     if grid_axes.is_axes_tag(element.tag):
         log.warning(f"A <{element.tag}> tag can only occur inside a <axes> or <grid-axes>")
         return
-        
+
     try:
         function = tag_dict[element.tag]
     except KeyError:

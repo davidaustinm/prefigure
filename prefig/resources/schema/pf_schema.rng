@@ -486,12 +486,44 @@
     <interleave>
       <zeroOrMore>
         <element name="moveto">
-          <attribute name="point"/>
+          <optional>
+            <attribute name="point"/>
+          </optional>
+          <optional>
+            <attribute name="distance"/>
+          </optional>
+          <optional>
+            <attribute name="heading"/>
+          </optional>
+          <optional>
+            <attribute name="degrees">
+              <choice>
+                <value>yes</value>
+                <value>no</value>
+              </choice>
+            </attribute>
+          </optional>
         </element>
       </zeroOrMore>
       <zeroOrMore>
         <element name="rmoveto">
-          <attribute name="point"/>
+          <optional>
+            <attribute name="point"/>
+          </optional>
+          <optional>
+            <attribute name="distance"/>
+          </optional>
+          <optional>
+            <attribute name="heading"/>
+          </optional>
+          <optional>
+            <attribute name="degrees">
+              <choice>
+                <value>yes</value>
+                <value>no</value>
+              </choice>
+            </attribute>
+          </optional>
         </element>
       </zeroOrMore>
       <zeroOrMore>
@@ -500,6 +532,20 @@
           <optional>
             <attribute name="decoration"/>
           </optional>
+          <optional>
+            <attribute name="distance"/>
+          </optional>
+          <optional>
+            <attribute name="heading"/>
+          </optional>
+          <optional>
+            <attribute name="degrees">
+              <choice>
+                <value>yes</value>
+                <value>no</value>
+              </choice>
+            </attribute>
+          </optional>
         </element>
       </zeroOrMore>
       <zeroOrMore>
@@ -507,6 +553,20 @@
           <attribute name="point"/>
           <optional>
             <attribute name="decoration"/>
+          </optional>
+          <optional>
+            <attribute name="distance"/>
+          </optional>
+          <optional>
+            <attribute name="heading"/>
+          </optional>
+          <optional>
+            <attribute name="degrees">
+              <choice>
+                <value>yes</value>
+                <value>no</value>
+              </choice>
+            </attribute>
           </optional>
         </element>
       </zeroOrMore>
@@ -556,6 +616,9 @@
         <ref name="Polygon"/>
       </zeroOrMore>
       <zeroOrMore>
+        <ref name="Spline"/>
+      </zeroOrMore>
+      <zeroOrMore>
         <element name="repeat">
           <attribute name="parameter"/>
           <ref name="PathElements"/>
@@ -597,6 +660,9 @@
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Shape"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Spline"/>
       </zeroOrMore>
     </interleave>
   </define>
@@ -729,6 +795,9 @@
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Slope-Field"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Spline"/>
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Tangent-line"/>
@@ -1594,6 +1663,48 @@
         <attribute name="spacings"/>
       </optional>
       <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Spline">
+    <element name="spline">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="bc"/>
+      </optional>
+      <attribute name="points"/>
+      <optional>
+        <attribute name="parameter"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
+      <optional>
+        <attribute name="domain"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-location"/>
+      </optional>
+      <optional>
+        <attribute name="closed">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles"/>
+      </optional>
+      <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
     </element>
   </define>

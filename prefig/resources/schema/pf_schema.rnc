@@ -204,18 +204,30 @@ YLabel = element ylabel {
 # elements that can go inside a path
 PathElements = (
     element moveto {
-        attribute point {text}
+        attribute point {text}?,
+        attribute distance {text}?,
+        attribute heading {text}?,
+        attribute degrees {"yes"|"no"}?
     }* &
     element rmoveto {
-        attribute point {text}
+        attribute point {text}?,
+        attribute distance {text}?,
+        attribute heading {text}?,
+        attribute degrees {"yes"|"no"}?        
     }* &
     element lineto {
         attribute point {text},
-        attribute decoration {text}?
+        attribute decoration {text}?,
+        attribute distance {text}?,
+        attribute heading {text}?,
+        attribute degrees {"yes"|"no"}?        
     }* &
     element rlineto {
         attribute point {text},
-        attribute decoration {text}?
+        attribute decoration {text}?,
+        attribute distance {text}?,
+        attribute heading {text}?,
+        attribute degrees {"yes"|"no"}?        
     }* &
     element horizontal {
         attribute distance {text},
@@ -240,6 +252,7 @@ PathElements = (
     Graph* &
     Parametric-Curve* &
     Polygon* &
+    Spline* &
     element repeat {
         attribute parameter {text},
         PathElements
@@ -257,7 +270,8 @@ ShapeElements = (
     Path* &
     Polygon* &
     Rectangle* &
-    Shape*
+    Shape* &
+    Spline*
 )
 
 # graphical elements can be stroked and possibly filled
@@ -306,6 +320,7 @@ GraphicalElements =
         Riemann-Sum* &
         Shape* &
         Slope-Field* &
+        Spline* &
         Tangent-line* &
         Triangle* &
         Vector*
@@ -626,6 +641,22 @@ Slope-Field = element slope-field {
     attribute system {"yes"|"no"}?,
     attribute spacings {text}?,
     StrokeAttributes,
+    CommonAttributes
+}
+
+Spline = element spline {
+    attribute at {text}?,
+    attribute bc {text}?,
+    attribute points {text},
+    attribute parameter {text}?,
+    attribute N {text}?,
+    attribute arrows {text}?,
+    attribute domain {text}?,
+    attribute arrow-location {text}?,
+    attribute closed {"yes"|"no"}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text}?,
+    FillAttributes,
     CommonAttributes
 }
 

@@ -3,6 +3,7 @@
 import lxml.etree as ET
 import logging
 import math
+import numpy as np
 from . import user_namespace as un
 from . import utilities as util
 from . import math_utilities as math_util
@@ -122,27 +123,44 @@ def path(element, diagram, parent, outline_status):
 # Here are some tags that we can append to a path        
 graphical_tags = {'graph',
                   'parametric-curve',
-                  'polygon'}
+                  'polygon',
+                  'spline'}
 
 def process_tag(child, diagram, cmds, current_point):
     if child.tag == "moveto":
-        try:
-            user_point = un.valid_eval(child.get('point'))
-            point = diagram.transform(user_point)
-        except:
-            log.error(f"Error in <moveto> defining point={child.get('point')}")
-            return
+        if child.get('distance', None) is not None:
+            distance = un.valid_eval(child.get('distance'))
+            heading = un.valid_eval(child.get('heading', '0'))
+            if (child.get('degrees', 'yes')) == 'yes':
+                heading = math.radians(heading)
+            user_point = np.array([distance * math.cos(heading),
+                                   distance * math.sin(heading)])
+        else:
+            try:
+                user_point = un.valid_eval(child.get('point'))
+                point = diagram.transform(user_point)
+            except:
+                log.error(f"Error in <moveto> defining point={child.get('point')}")
+                return
         cmds.append('M')
         cmds.append(util.pt2str(point))
         current_point = user_point
         return cmds, current_point
     
     if child.tag == "rmoveto":
-        try:
-            user_point = un.valid_eval(child.get('point'))
-        except:
-            log.error(f"Error in <rmoveto> defining point={child.get('point')}")
-            return
+        if child.get('distance', None) is not None:
+            distance = un.valid_eval(child.get('distance'))
+            heading = un.valid_eval(child.get('heading', '0'))
+            if (child.get('degrees', 'yes')) == 'yes':
+                heading = math.radians(heading)
+            user_point = np.array([distance * math.cos(heading),
+                                   distance * math.sin(heading)])
+        else:
+            try:
+                user_point = un.valid_eval(child.get('point'))
+            except:
+                log.error(f"Error in <rmoveto> defining point={child.get('point')}")
+                return
         current_point = current_point + user_point
         point = diagram.transform(current_point)
         cmds.append('M')
@@ -172,27 +190,48 @@ def process_tag(child, diagram, cmds, current_point):
         child.set('point', util.pt2long_str(user_point,spacer=","))
             
     if child.tag == "rlineto":
-        try:
-            user_point = un.valid_eval(child.get('point'))
-            user_point = current_point + user_point
-        except:
-            log.error(f"Error in <rlineto> defining point={child.get('point')}")
-            return
+        if child.get('distance', None) is not None:
+            distance = un.valid_eval(child.get('distance'))
+            heading = un.valid_eval(child.get('heading', '0'))
+            if (child.get('degrees', 'yes')) == 'yes':
+                heading = math.radians(heading)
+            user_point = np.array([distance * math.cos(heading),
+                                   distance * math.sin(heading)])
+        else:
+            try:
+                user_point = un.valid_eval(child.get('point'))
+            except:
+                log.error(f"Error in <rlineto> defining point={child.get('point')}")
+                return
+        user_point = current_point + user_point
         child.tag = "lineto"
         child.set('point', util.pt2long_str(user_point,spacer=","))
     
     if child.tag == "lineto":
+        if (
+                child.get('point', None) is None and
+                child.get('distance', None) is not None
+        ):
+            distance = un.valid_eval(child.get('distance'))
+            heading = un.valid_eval(child.get('heading', '0'))
+            if (child.get('degrees', 'yes')) == 'yes':
+                heading = math.radians(heading)
+            user_point = np.array([distance * math.cos(heading),
+                                   distance * math.sin(heading)])
+            child.set('point', util.pt2long_str(user_point,spacer=","))
+
         if child.get('decoration', None) is not None:
             return decorate(child,
                             diagram,
                             current_point,
                             cmds)
+
         try:
             user_point = un.valid_eval(child.get('point'))
-            point = diagram.transform(user_point)
         except:
             log.error(f"Error in <lineto> defining point={child.get('point')}")
             return
+        point = diagram.transform(user_point)
         cmds.append('L')
         cmds.append(util.pt2str(point))
         current_point = user_point

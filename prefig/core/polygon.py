@@ -4,6 +4,7 @@ import lxml.etree as ET
 import numpy as np
 import copy
 import logging
+from scipy.interpolate import CubicSpline
 from . import user_namespace as un
 from . import utilities as util
 from . import math_utilities as math_util
@@ -15,8 +16,35 @@ from . import group
 
 log = logging.getLogger('prefigure')
 
+def parse_points(element):
+    # We allow the vertices to be generated programmatically
+    parameter = element.get('parameter')
+    points = element.get('points')
+    if parameter is None:
+        try:
+            points = un.valid_eval(points)
+            return points
+        except:
+            log.error(f"Error in <polygon> evaluating points={element.get('points')}")
+            return None
+    else:
+        try:
+            var, expr = parameter.split('=')
+            param_0, param_1 = map(un.valid_eval, expr.split('..'))
+            plot_points = []
+            for k in range(param_0, param_1+1):
+                un.valid_eval(str(k), var)
+                plot_points.append(un.valid_eval(points))
+            points = plot_points
+            return points
+        except:
+            log.error(f"Error in <polygon> generating points")
+            return None
+    
+
 # Process a polygon tag into a graphical component
-def polygon(element, diagram, parent, outline_status):
+def polygon(element, diagram, parent,
+            outline_status, points = None, arrow_points = None):
     if outline_status == 'finish_outline':
         finish_outline(element, diagram, parent)
         return
@@ -30,30 +58,13 @@ def polygon(element, diagram, parent, outline_status):
     util.set_attr(element, 'fill', 'none')
     util.set_attr(element, 'thickness', '2')
 
-    # We allow the vertices to be generated programmatically
-    parameter = element.get('parameter')
-    points = element.get('points')
-    if parameter is None:
-        try:
-            points = un.valid_eval(points)
-        except:
-            log.error(f"Error in <polygon> evaluating points={element.get('points')}")
-            return
-    else:
-        try:
-            var, expr = parameter.split('=')
-            param_0, param_1 = map(un.valid_eval, expr.split('..'))
-            plot_points = []
-            for k in range(param_0, param_1+1):
-                un.valid_eval(str(k), var)
-                plot_points.append(un.valid_eval(points))
-            points = plot_points
-        except:
-            log.error(f"Error in <polygon> generating points")
+    if points is None:
+        points = parse_points(element)
+        if points is None:
             return
 
     points = [diagram.transform(point) for point in points]
-
+    
     radius = int(element.get('corner-radius', '0'))
     closed = element.get('closed', 'no')
     # Form an SVG path now that we have the vertices
@@ -99,6 +110,17 @@ def polygon(element, diagram, parent, outline_status):
                 cmds += 'L' + util.pt2str(p2)
             
         d = cmds
+
+    # This polygon may come from a spline and we'd like the arrow
+    # in another location.  In that case, we will append some points
+    # where we want the arrow
+    if arrow_points is not None:
+        arrow_points = [diagram.transform(p) for p in arrow_points]
+        arrow_d = [' M ' + util.pt2str(arrow_points[0])]
+        for p in arrow_points[1:]:
+            arrow_d.append('L ' + util.pt2str(p))
+        d += ' '.join(arrow_d)
+        
     path = ET.Element('path')
     diagram.add_id(path, element.get('id'))
     path.set('d', d)
@@ -139,6 +161,61 @@ def polygon(element, diagram, parent, outline_status):
 
     else:
         parent.append(path)
+
+def spline(element, diagram, parent, outline_status):
+    points = element.get('points', None)
+    if points is None:
+        log.error('A spline element needs a @points attribute')
+        return
+
+    points = parse_points(element)
+    if points is None:
+        return
+    t_vals = element.get('t-values', None)
+    if t_vals is None:
+        t_vals = list(range(len(points)))
+    else:
+        t_vals = un.valid_eval(t_vals)
+    if len(t_vals) != len(points):
+        log.error('The number of t values and points must be the same in a spline')
+        return
+
+    bc = element.get('bc-type', None)
+    if bc is None:
+        bc = 'not-a-knot'
+    if element.get('closed', 'no') == 'yes':
+        bc = 'periodic'
+
+    cs = CubicSpline(t_vals, points, bc_type=bc)
+
+    N = un.valid_eval(element.get('N', '100'))
+    domain = element.get('domain', None)
+    if domain is not None:
+        domain = un.valid_eval(domain)
+        t_vals = np.linspace(domain[0], domain[1], N)
+        element.set('closed', 'no')
+    else:
+        t_vals = np.linspace(t_vals[0], t_vals[-1], N)
+    curve = cs(t_vals)
+    if isinstance(curve[0], np.ndarray) == False:
+        curve = list(zip(t_vals, curve))
+    element.tag = 'polygon'
+
+    # we may want to move the arrow from the end of the spline to a
+    # location specified by arrow-location
+    arrow_curve = None
+    if element.get('arrows', '0') == '1':
+        location = element.get('arrow-location', None)
+        if location is not None:
+            location = un.valid_eval(location)
+            t0 = max(t_vals[0], location - 0.25)
+            arrow_t = np.linspace(t0, location, 10)
+            arrow_curve = cs(arrow_t)
+            if isinstance(arrow_curve[0], np.ndarray) == False:
+                arrow_curve = list(zip(arrow_t, arrow_curve))
+    
+    polygon(element, diagram, parent, outline_status,
+            points=curve, arrow_points = arrow_curve)
 
 def triangle(element, diagram, parent, outline_status):
     '''

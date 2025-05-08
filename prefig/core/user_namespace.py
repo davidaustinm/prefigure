@@ -17,6 +17,8 @@ from .math_utilities import *
 logger = logging.getLogger('prefigure')
 
 inf = np.inf
+__breaks = None
+__delta_on = False
 
 # Record built-in python functions and constants as allowed
 functions = {x for x in dir(math) + dir(math_utilities) if not "__" in x}.difference({'e', 'pi'})
@@ -169,3 +171,28 @@ def derivative(f, name):
 def enter_namespace(name, value):
     globals()[name] = value
     variables.add(name)
+
+def retrieve(name):
+    return globals()[name]
+
+def initialize_breaks():
+    global __breaks
+    __breaks = []
+
+def finish_breaks():
+    global __breaks
+    __breaks = None
+
+def measure_de_jump(f, t, y):
+    globals()['__delta_on'] = True
+    f1 = f(t, y)
+    globals()['__delta_on'] = False
+    f0 = f(t, y)
+    return f1 - f0
+
+def find_breaks(f, t, y):
+    initialize_breaks()
+    f(t, y)
+    breaks = __breaks
+    finish_breaks()
+    return breaks

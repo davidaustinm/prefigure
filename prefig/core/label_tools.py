@@ -203,7 +203,7 @@ class CairoTextMeasurements(AbstractTextMeasurements):
         y_bearing = extents[1]
         t_height  = extents[3]
         xadvance  = extents[4]
-        return [xadvance, -y_bearing, t_height+y_bearing]                       
+        return [xadvance, -y_bearing, t_height+y_bearing]
 
 class LocalLouisBrailleTranslator(AbstractBrailleTranslator):
     def __init__(self):

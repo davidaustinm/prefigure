@@ -134,6 +134,9 @@ class Diagram:
     def output_format(self):
         return self.format
 
+    def set_output_format(self, format):
+        self.format = format
+
     # get the HTML tree so that we can add text for labels
     def label_html(self):
         return self.label_html_body

@@ -1,5 +1,9 @@
 import numpy as np
 import math
+from . import user_namespace as un
+
+import logging
+logger = logging.getLogger('prefigure')
 
 # introduce some useful mathematical operations
 #   that are meant to be available to authors
@@ -63,6 +67,19 @@ def rotate(v, theta):
     s = math.sin(theta)
     return np.array([c*v[0]-s*v[1], s*v[0]+c*v[1]])
 
+def evaluate_bezier(controls, t):
+    dim = len(controls[0])
+    N = len(controls)
+    controls = np.array(controls)
+    sum = np.array([0.0] * dim)
+    if N == 3:
+        coefficients = [1,2,1]
+    else:
+        coefficients = [1,3,3,1]
+    for j in range(N):
+        sum += coefficients[j] * (1-t)**(N-j-1) * t**j * controls[j]
+    return sum
+
 def eulers_method(f, t0, y0, t1, N):
     h = (t1 - t0)/N
     if isinstance(y0, np.ndarray):
@@ -72,11 +89,23 @@ def eulers_method(f, t0, y0, t1, N):
     t = t0
     y = y0
     for _ in range(N):
-        t += h
         y += f(t, y) * h
+        t += h
         if isinstance(y, np.ndarray):
             points.append([t, *y])
         else:
             points.append([t, y])
     return np.array(points)
+
+# dirac delta function to be used in solving ODEs
+def delta(t, a):
+    breaks = un.retrieve('__breaks')
+    if breaks is not None:
+        breaks.append(a)
+        return 0
+    delta_on = un.retrieve('__delta_on')
+    if np.isclose(t, a) and delta_on:
+        return 1
+
+    return 0
 

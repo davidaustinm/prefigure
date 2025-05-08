@@ -35,29 +35,60 @@ def de_solve(element, diagram, parent, outline_status):
 
     t1 = diagram.bbox()[2]
     t1 = un.valid_eval(element.get('t1', str(t1)))
-
     N = un.valid_eval(element.get('N', '100'))
-    t = np.linspace(t0, t1, N)
-
     method = element.get('method', 'RK45')
 
+    max_step = None
     if element.get('max-step', None) is not None:
         max_step = un.valid_eval(element.get('max-step'))
 
-        solution = scipy.integrate.solve_ivp(f,
-                                             (t0, t1),
-                                             y0,
-                                             t_eval=t,
-                                             max_step=max_step,
-                                             method=method)
-    else:
-        solution = scipy.integrate.solve_ivp(f,
-                                             (t0, t1),
-                                             y0,
-                                             t_eval=t,
-                                             method=method)
+    # in case f contains delta functions, we will determine where those occur
+    breaks = un.find_breaks(f, t0, y0)
+    if len(breaks) > 0:
+        _breaks = []
+        for b in breaks:
+            if b >= t0 and b < t1:
+                _breaks.append(b)
+        breaks = _breaks
+    breaks.sort()
+    breaks.append(t1)
+
+    solution_t = None
+    solution_y = None
+
+    if len(breaks) > 0:
+        if np.isclose(t0, breaks[0]):
+            y0 = y0 + un.measure_de_jump(f, t0, y0)
+            breaks.pop(0)
+
+    while len(breaks) > 0:
+        next_t = breaks.pop(0)
+        t = np.linspace(t0, next_t, N)
+
+        if max_step is not None:
+            solution = scipy.integrate.solve_ivp(f,
+                                                 (t0, next_t),
+                                                 y0,
+                                                 t_eval=t,
+                                                 max_step=max_step,
+                                                 method=method)
+        else:
+            solution = scipy.integrate.solve_ivp(f,
+                                                 (t0, next_t),
+                                                 y0,
+                                                 t_eval=t,
+                                                 method=method)
+        t0 = next_t
+        y0 = solution.y.T[-1]
+        y0 = y0 + un.measure_de_jump(f, t0, y0)
+        if solution_t is None:
+            solution_t = solution.t
+            solution_y = solution.y
+        else:
+            solution_t = np.hstack((solution_t, solution.t))
+            solution_y = np.hstack((solution_y, solution.y))
         
-    solution = np.stack((solution.t, *solution.y))
+    solution = np.stack((solution_t, *solution_y))
 
     name = element.get('name', None)
     if name is None:
