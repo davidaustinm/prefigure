@@ -502,6 +502,7 @@ Network = element network {
     attribute at {text}?,
     attribute graph {text}?,
     attribute directed {"yes"|"no"}?,
+    attribute arrows {"end"|"middle"}?,
     attribute layout {text}?,
     attribute seed {text}?,
     attribute start {text}?,
@@ -521,14 +522,22 @@ Network = element network {
             attribute at {text}?,
             attribute p {text}?,
             attribute edges {text}?,
-            FillAttributes
+            attribute loop-orientation {text}?,
+            attribute style {text}?,
+            FillAttributes,
+            LabelAttributes,
+            LabelText?
 
         }* &
         element edge {
             attribute at {text}?,
             attribute vertices {text},
             attribute weight {text}?,
-            StrokeAttributes
+            attribute loop-scale {text}?,
+            attribute label-location {text}?,
+            StrokeAttributes,
+            LabelAttributes,
+            LabelText?
         }*
     ),
     CommonAttributes

@@ -1320,6 +1320,14 @@
         </attribute>
       </optional>
       <optional>
+        <attribute name="arrows">
+          <choice>
+            <value>end</value>
+            <value>middle</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
         <attribute name="layout"/>
       </optional>
       <optional>
@@ -1378,7 +1386,17 @@
             <optional>
               <attribute name="edges"/>
             </optional>
+            <optional>
+              <attribute name="loop-orientation"/>
+            </optional>
+            <optional>
+              <attribute name="style"/>
+            </optional>
             <ref name="FillAttributes"/>
+            <ref name="LabelAttributes"/>
+            <optional>
+              <ref name="LabelText"/>
+            </optional>
           </element>
         </zeroOrMore>
         <zeroOrMore>
@@ -1390,7 +1408,17 @@
             <optional>
               <attribute name="weight"/>
             </optional>
+            <optional>
+              <attribute name="loop-scale"/>
+            </optional>
+            <optional>
+              <attribute name="label-location"/>
+            </optional>
             <ref name="StrokeAttributes"/>
+            <ref name="LabelAttributes"/>
+            <optional>
+              <ref name="LabelText"/>
+            </optional>
           </element>
         </zeroOrMore>
       </interleave>
