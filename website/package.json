@@ -18,5 +18,8 @@
     },
     "prettier": {
         "tabWidth": 4
+    },
+    "dependencies": {
+        "speech-rule-engine": "^5.0.0-alpha.1"
     }
 }
