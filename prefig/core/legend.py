@@ -206,11 +206,7 @@ class Legend:
         
     def place_tactile_legend(self, diagram):
         # This is the same outline as above but works for tactile labels
-        try:
-            import louis
-        except ModuleNotFoundError:
-            return
-        
+
         # The labels in a tactile diagram have already been placed
         # in the SVG so we first need to remove them
         root = self.diagram.get_root()
