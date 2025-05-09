@@ -325,6 +325,7 @@ def network(element, diagram, parent, outline_status):
             edge_directions[handle_1] = directions
 
             path = ET.SubElement(edge_group, 'path')
+            path.set('at', 'edge-' + handle_0 + '-' + handle_1)
             if directed:
                 if mid_arrows:
                     path.set('mid-arrow', 'yes')
@@ -485,6 +486,7 @@ def network(element, diagram, parent, outline_status):
             loop_curves = [[node_position, P1, P2, P3], [P3, P4, P5, node_position]]
 
             path = ET.SubElement(edge_group, 'path')
+            path.set('at', 'loop-' + node)
             path.set('start', '('+util.pt2long_str(node_position, spacer=",")+')')
             if directed:
                 if mid_arrows:
@@ -580,7 +582,8 @@ def network(element, diagram, parent, outline_status):
         p = ET.SubElement(node_group, 'point')
         p.set('p', '(' + util.pt2long_str(position, spacer=',') + ')')
         p.set('size', node_size)
-
+        p.set('at', 'node-' + handle)
+        
         if node is None:
             p.set('fill', node_fill)
             p.set('stroke', node_stroke)
