@@ -1,4 +1,11 @@
 import lxml.etree as ET
+import math
+import numpy as np
+from . import CTM
+from . import user_namespace as un
+
+import logging
+log = logging.getLogger('prefigure')
 
 # add a group to the diagram for one of two possible reasons:
 # to group graphical components to be annotated as a group or 
@@ -23,4 +30,48 @@ def group(element, diagram, parent, outline_status):
 
     group = ET.SubElement(parent, 'g')
     diagram.add_id(group, element.get('id'))
+
+    transform = element.get('transform', None)
+    if transform is not None:
+        transform = transform.strip()
+        if transform.startswith('translate'):
+            index = transform.find('(')
+            vec = un.valid_eval(transform[index:])
+            diff = diagram.transform(vec) - diagram.transform((0,0))
+            t_string = CTM.translatestr(*diff)
+            group.set('transform', t_string)
+        if transform.startswith('reflect'):
+            index = transform.find('(')
+            A, B, C = un.valid_eval(transform[index:])
+            # is the line vertical
+            if np.isclose(B, 0):
+                p1 = np.array((C/A, 0))
+                p2 = np.array((C/A, 1))
+            else:
+                p1 = np.array((0,C/B))
+                p2 = np.array((1,(C-A)/B))
+            p1 = diagram.transform(p1)
+            p2 = diagram.transform(p2)
+            diff = p1 - p2
+            angle = math.degrees(math.atan2(diff[1],diff[0]))
+            t_string = CTM.translatestr(*p1)
+            t_string += ' ' + CTM.rotatestr(angle)
+            t_string += ' ' + CTM.scalestr(-1,1)
+            t_string += ' ' + CTM.rotatestr(-angle)
+            t_string += ' ' + CTM.translatestr(*(-p1))
+            group.set('transform', t_string)
+        if transform.startswith('rotate'):
+            index = transform.find('(')
+            data = un.valid_eval(transform[index:])
+            if isinstance(data, np.ndarray):
+                angle = data[0]
+                center = diagram.transform((data[1],data[2]))
+            else:
+                angle = data
+                center = diagram.transform((0,0))
+            t_string = CTM.translatestr(*center)
+            t_string += ' ' + CTM.rotatestr(angle)
+            t_string += ' ' + CTM.translatestr(*(-center))
+            group.set('transform', t_string)
+
     diagram.parse(element, group, outline_status)
