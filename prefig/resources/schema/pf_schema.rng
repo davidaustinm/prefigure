@@ -1523,6 +1523,12 @@
         </attribute>
       </optional>
       <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-location"/>
+      </optional>
+      <optional>
         <attribute name="function"/>
       </optional>
       <optional>

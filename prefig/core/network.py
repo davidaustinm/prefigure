@@ -301,8 +301,8 @@ def network(element, diagram, parent, outline_status):
             ctm = CTM.CTM()
             user_p0 = positions[handle_0]
             user_p1 = positions[handle_1]
-            p0 = diagram.transform(user_p0)
-            p1 = diagram.transform(user_p1)
+            p0 = future_ctm.transform(user_p0)
+            p1 = future_ctm.transform(user_p1)
             u = p1 - p0
             angle = math.atan2(u[1], u[0])
             length = math_util.length(u)
@@ -312,9 +312,9 @@ def network(element, diagram, parent, outline_status):
             c1 = ctm.transform((length/4, y))
             c2 = ctm.transform((3*length/4, y))
 
-            center = diagram.inverse_transform(center)
-            c1 = diagram.inverse_transform(c1)
-            c2 = diagram.inverse_transform(c2)
+            center = future_ctm.inverse_transform(center)
+            c1 = future_ctm.inverse_transform(c1)
+            c2 = future_ctm.inverse_transform(c2)
 
             directions = edge_directions.get(handle_0, [])
             directions.append(c1)

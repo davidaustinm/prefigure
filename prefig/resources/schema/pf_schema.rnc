@@ -576,6 +576,8 @@ Plot-DE-Solution = element plot-de-solution {
     attribute solution {text}?,
     attribute axes {text}?,
     attribute arrow {"yes"|"no"}?,
+    attribute arrow-width {text}?,
+    attribute arrow-location {text}?,
     attribute function {text}?,
     attribute t0 {text}?,
     attribute y0 {text}?,
