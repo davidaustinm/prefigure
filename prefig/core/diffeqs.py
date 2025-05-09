@@ -143,7 +143,6 @@ def plot_de_solution(element, diagram, parent, outline_status):
             cmds.append('L ' + util.pt2str(p))
         except StopIteration:
             break
-    d = ' '.join(cmds)
 
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
@@ -154,12 +153,41 @@ def plot_de_solution(element, diagram, parent, outline_status):
 
     path = ET.Element('path')
     diagram.add_id(path, element.get('id'))
-    path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
-#    path.set('type', 'parametric curve')
 
     if element.get('arrow', 'no') == 'yes':
-        arrow.add_arrowhead_to_path(diagram, 'marker-end', path)
+        arrow.add_arrowhead_to_path(
+            diagram,
+            'marker-end',
+            path,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
+        
+        # we may want to add an arrow in the middle of the trajector
+        arrow_location = element.get('arrow-location', None)
+        if arrow_location is not None:
+            arrow_location = un.valid_eval(arrow_location)
+            t_vals = solution[0]
+            if (
+                    arrow_location > t_vals[0] and
+                    arrow_location < t_vals[-1]
+            ):
+                curve = list(zip(axis0, axis1))
+                for index, t in enumerate(t_vals):
+                    if arrow_location > t:
+                        continue
+                    start = max(index - 5, 0)
+                    break
+                p = diagram.transform(curve[start])
+                cmds.append('M ' + util.pt2str(p))
+                for i in range(start, index+1):
+                    p = diagram.transform(curve[i])
+                    cmds.append('L ' + util.pt2str(p))
+    d = ' '.join(cmds)
+    path.set('d', d)
+                
+            
 
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
     util.cliptobbox(path, element, diagram)
