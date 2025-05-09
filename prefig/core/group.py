@@ -55,9 +55,9 @@ def group(element, diagram, parent, outline_status):
             diff = p1 - p2
             angle = math.degrees(math.atan2(diff[1],diff[0]))
             t_string = CTM.translatestr(*p1)
-            t_string += ' ' + CTM.rotatestr(angle)
-            t_string += ' ' + CTM.scalestr(-1,1)
             t_string += ' ' + CTM.rotatestr(-angle)
+            t_string += ' ' + CTM.scalestr(1,-1)
+            t_string += ' ' + CTM.rotatestr(angle)
             t_string += ' ' + CTM.translatestr(*(-p1))
             group.set('transform', t_string)
         if transform.startswith('rotate'):
