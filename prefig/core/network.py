@@ -297,7 +297,7 @@ def network(element, diagram, parent, outline_status):
         endpoints.sort()
         edge = tuple(endpoints)
         y = (all_edges[edge] - 1)/2 * spread
-        for edge in edges:
+        for num, edge in enumerate(edges):
             ctm = CTM.CTM()
             user_p0 = positions[handle_0]
             user_p1 = positions[handle_1]
@@ -324,8 +324,11 @@ def network(element, diagram, parent, outline_status):
             directions.append(c2)
             edge_directions[handle_1] = directions
 
+            handle = 'edge-' + handle_0 + '-' + handle_1
+            if len(edges) > 1:
+                handle += '-' + str(num)
             path = ET.SubElement(edge_group, 'path')
-            path.set('at', 'edge-' + handle_0 + '-' + handle_1)
+            path.set('at', handle)
             if directed:
                 if mid_arrows:
                     path.set('mid-arrow', 'yes')
@@ -486,7 +489,10 @@ def network(element, diagram, parent, outline_status):
             loop_curves = [[node_position, P1, P2, P3], [P3, P4, P5, node_position]]
 
             path = ET.SubElement(edge_group, 'path')
-            path.set('at', 'loop-' + node)
+            handle = 'loop-' + node
+            if len(loop_record) > 1:
+                handle += '-' + str(j)
+            path.set('at', handle)
             path.set('start', '('+util.pt2long_str(node_position, spacer=",")+')')
             if directed:
                 if mid_arrows:
