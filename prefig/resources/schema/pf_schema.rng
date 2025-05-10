@@ -1331,6 +1331,17 @@
         </attribute>
       </optional>
       <optional>
+        <attribute name="bipartite-set"/>
+      </optional>
+      <optional>
+        <attribute name="alignment">
+          <group>
+            <value>vertical</value>
+            <value>horizontal</value>
+          </group>
+        </attribute>
+      </optional>
+      <optional>
         <attribute name="layout"/>
       </optional>
       <optional>
