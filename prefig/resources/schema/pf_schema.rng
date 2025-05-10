@@ -219,6 +219,9 @@
       <optional>
         <attribute name="outline"/>
       </optional>
+      <optional>
+        <attribute name="transform"/>
+      </optional>
       <ref name="CommonAttributes"/>
       <interleave>
         <zeroOrMore>

@@ -102,6 +102,7 @@ Coordinates = element coordinates {
 Group = element group {
     attribute at {text}?,
     attribute outline {text}?,
+    attribute transform {text}?,
     CommonAttributes,
     (
         DefinitionElements* &
