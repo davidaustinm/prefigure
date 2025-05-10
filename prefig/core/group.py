@@ -67,9 +67,9 @@ def group(element, diagram, parent, outline_status):
         if transform.startswith('rotate'):
             index = transform.find('(')
             data = un.valid_eval(transform[index:])
-            if isinstance(data, np.ndarray):
+            if isinstance(data, tuple):
                 angle = data[0]
-                center = diagram.transform((data[1],data[2]))
+                center = diagram.transform(data[1])
             else:
                 angle = data
                 center = diagram.transform((0,0))
