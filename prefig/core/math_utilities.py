@@ -67,6 +67,9 @@ def rotate(v, theta):
     s = math.sin(theta)
     return np.array([c*v[0]-s*v[1], s*v[0]+c*v[1]])
 
+def zip_lists(a, b):
+    return list(zip(a, b))
+
 def evaluate_bezier(controls, t):
     dim = len(controls[0])
     N = len(controls)

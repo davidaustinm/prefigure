@@ -22,6 +22,7 @@ from . import (
     path,
     point,
     polygon,
+    read,
     rectangle,
     repeat,
     riemann_sum,

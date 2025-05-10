@@ -179,8 +179,8 @@ def network(element, diagram, parent, outline_status):
 
         layout = element.get('layout', None)
 
+        seed = int(element.get('seed', '1'))
         if layout is None or layout == 'spring':
-            seed = int(element.get('seed', '1'))
             positions = nx.spring_layout(G, seed=seed)
         elif layout == 'bfs':
             start = element.get('start', None)
@@ -190,7 +190,23 @@ def network(element, diagram, parent, outline_status):
             positions = nx.bfs_layout(G, start=start)
         elif layout == 'spectral':
             positions = nx.spectral_layout(G)
-
+        elif layout == 'circular':
+            positions = nx.circular_layout(G)
+        elif layout == 'random':
+            positions = nx.random_layout(G, seed=seed)
+        elif layout == 'planar':
+            positions = nx.planar_layout(G)
+        elif layout == 'bipartite':
+            alignment = element.get('alignment', 'horizontal')
+            bipartite_set = element.get('bipartite-set', None)
+            if bipartite_set is None:
+                log.error('A bipartite network needs a @bipartite-set attribute')
+                return
+            bipartite_set = un.valid_eval(bipartite_set)
+            bipartite_set = [str(n) for n in bipartite_set]
+            positions = nx.bipartite_layout(G,
+                                            bipartite_set,
+                                            align=alignment)
 
         # Now that we have the positions of the nodes, we will form the
         # graphical components.  First find the bounding box

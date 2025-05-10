@@ -18,6 +18,7 @@ from . import path
 from . import parametric_curve
 from . import point
 from . import polygon
+from . import read
 from . import rectangle
 from . import riemann_sum
 from . import repeat
@@ -54,9 +55,10 @@ tag_dict = {
     'path': path.path,
     'point': point.point,
     'polygon': polygon.polygon,
+    'read': read.read,
     'rectangle': rectangle.rectangle,
-    'riemann-sum': riemann_sum.riemann_sum,
     'repeat': repeat.repeat,
+    'riemann-sum': riemann_sum.riemann_sum,
     'transform': CTM.transform_group,
     'rotate': CTM.transform_rotate,
     'scale': CTM.transform_scale,
