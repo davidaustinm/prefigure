@@ -69,6 +69,9 @@ def cliptobbox(g_element, element, diagram):
 def float2str(x):
     return "%.1f" % x
 
+def float2longstr(x):
+    return "%.4f" % x
+
 def pt2str(p, spacer = ' ', paren=False):
     text = spacer.join(["%.1f" % c for c in p])
     if paren:

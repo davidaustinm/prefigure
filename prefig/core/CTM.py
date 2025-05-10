@@ -54,6 +54,11 @@ def scalestr(x, y):
 def rotatestr(theta):
     return 'rotate('+util.float2str(-theta)+')'
 
+def matrixstr(m):
+    return 'matrix(' + ','.join([
+        util.float2longstr(p) for p in [m[0][0], -m[1][0], -m[0][1], m[1][1], 0, 0]
+        ]) + ')'
+
 class CTM:
     def __init__(self, ctm = None):
         if ctm is None:
