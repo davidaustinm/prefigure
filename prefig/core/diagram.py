@@ -81,9 +81,17 @@ class Diagram:
         
 
         # read in defaults from publication file
+        self.external = None
         self.defaults = {}
         if publication is not None:
             for subelement in publication:
+                if subelement.tag == 'external-root':
+                    external = subelement.get('name', None)
+                    if external is not None:
+                        self.external = external
+                    else:
+                        log.warning('<external-root> in publication file needs a @name')
+                    continue
                 self.defaults[subelement.tag] = subelement
 
         if self.defaults.get('macros', None) is not None:
@@ -100,6 +108,9 @@ class Diagram:
 
     def caption_suppressed(self):
         return self.suppress_caption
+
+    def get_external(self):
+        return self.external
 
     def get_label_group(self, element):
         return self.label_group_dict.get(element)

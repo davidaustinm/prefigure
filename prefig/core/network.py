@@ -29,6 +29,9 @@ def network(element, diagram, parent, outline_status):
 
     # Is the network directed?
     directed = element.get('directed', 'no') == 'yes'
+    global_loop_scale = element.get('loop-scale', None)
+    if global_loop_scale is not None:
+        global_loop_scale = un.valid_eval(global_loop_scale)
 
     # Let's see if there is a dictionary defining the graph
     graph = element.get('graph', None)
@@ -488,11 +491,14 @@ def network(element, diagram, parent, outline_status):
             scale = (2-0.75*j)*node_size_f
             ctm.scale(scale, scale)
 
+            loop_scale = np.array([1,1])
+            if global_loop_scale is not None:
+                loop_scale = global_loop_scale
             if loop is not None:
-                loop_scale = loop.get('loop-scale', None)
-                if loop_scale is not None:
-                    loop_scale = un.valid_eval(loop_scale)
-                    ctm.scale(*loop_scale)
+                local_loop_scale = loop.get('loop-scale', None)
+                if local_loop_scale is not None:
+                    loop_scale = un.valid_eval(local_loop_scale)
+            ctm.scale(*loop_scale)
 
             alpha = 4/3
             P1 = ctm.transform((0,-alpha))

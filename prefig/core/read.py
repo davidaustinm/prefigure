@@ -17,7 +17,9 @@ def read(element, diagram, parent, outline_status):
     filetype = element.get('type', 'csv')
 
     csv_data = {}
-    with open(filename, newline='') as csvfile:
+    external_root = diagram.get_external()
+    input_name = external_root + '/' + filename
+    with open(input_name, newline='') as csvfile:
         reader = csv.reader(csvfile)
         headers = next(reader)
         for row in reader:

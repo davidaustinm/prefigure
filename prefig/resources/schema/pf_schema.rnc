@@ -506,6 +506,7 @@ Network = element network {
     attribute arrows {"end"|"middle"}?,
     attribute bipartite-set {text}?,
     attribute alignment {'vertical', 'horizontal'}?,
+    attribute loop-scale {text}?,
     attribute layout {text}?,
     attribute seed {text}?,
     attribute start {text}?,
