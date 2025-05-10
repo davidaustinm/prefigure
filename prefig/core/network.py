@@ -488,10 +488,11 @@ def network(element, diagram, parent, outline_status):
             scale = (2-0.75*j)*node_size_f
             ctm.scale(scale, scale)
 
-            loop_scale = loop.get('loop-scale', None)
-            if loop_scale is not None:
-                loop_scale = un.valid_eval(loop_scale)
-                ctm.scale(*loop_scale)
+            if loop is not None:
+                loop_scale = loop.get('loop-scale', None)
+                if loop_scale is not None:
+                    loop_scale = un.valid_eval(loop_scale)
+                    ctm.scale(*loop_scale)
 
             alpha = 4/3
             P1 = ctm.transform((0,-alpha))
@@ -563,8 +564,10 @@ def network(element, diagram, parent, outline_status):
                 path.set('dash', loop.get('dash', edge_dash))
 
             # does this loop have a label?
-            if len(loop) > 0 or (
+            if loop is not None and (
+                    len(loop) > 0 or (
                     loop.text is not None and len(loop.text.strip()) > 0
+                    )
             ):
                 label_location = un.valid_eval(loop.get('label-location', '0.5'))
                 if label_location < 0.5:
