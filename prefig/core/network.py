@@ -34,7 +34,7 @@ def network(element, diagram, parent, outline_status):
         global_loop_scale = un.valid_eval(global_loop_scale)
 
     # retrieve the label dictionary
-    label_predictionary = un.valid_eval(element.get('label-dictionary', {}))
+    label_predictionary = un.valid_eval(element.get('label-dictionary', '{}'))
     label_dictionary = {}
     for k, v in label_predictionary.items():
         label_dictionary[str(k)] = v
