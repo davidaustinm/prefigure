@@ -48,6 +48,7 @@ tag_dict = {
     'grid': grid_axes.grid,
     'grid-axes': grid_axes.grid_axes,
     'group': group.group,
+    'histogram': statistics.histogram,
     'implicit-curve': implicit.implicit_curve,
     'label': label.label,
     'legend': legend.legend,

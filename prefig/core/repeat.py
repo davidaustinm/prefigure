@@ -33,9 +33,12 @@ def repeat(element, diagram, parent, outline_status):
     # we change this to a group element and then add the children
     # for each value of the parameter
     element_cp = copy.deepcopy(element)
+    outline = element.get('outline')
     id = element.get('id')
     element.clear()
     element.tag = 'group'
+    if outline is not None:
+        element.set('outline', outline)
     if id is not None:
         element.set('id', id)
 
