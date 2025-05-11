@@ -31,7 +31,7 @@ def load_csv(element, diagram, filename, name):
 
     delimiter = element.get('delimiter',',')
     quotechar = element.get('quotechar',"'")
-    str_cols  = element.get('string-columns',[])
+    str_cols  = element.get('string-columns','[]')
     str_cols = un.valid_eval(str_cols)
     str_cols  = set(str_cols)
 
@@ -44,7 +44,10 @@ def load_csv(element, diagram, filename, name):
             for i, header in enumerate(headers):
                 header_list = csv_data.get(header, [])
                 if header not in str_cols:
-                    header_list.append(float(row[i]))
+                    try:
+                        header_list.append(float(row[i]))
+                    except:
+                        header_list.append(row[i])
                 else:
                     header_list.append(row[i])
                 csv_data[header] = header_list

@@ -10,32 +10,37 @@ import logging
 log = logging.getLogger('prefigure')
 
 def scatter(element, diagram, parent, outline_status):
+    points = None
     data = element.get('data', None)
-    if data is None:
-        log.error('A <scatter> needs a @data attribute')
-        return
-    data = un.retrieve(data)
+    if data is not None:
+        data = un.retrieve(data)
 
-    x_field = element.get('x', None)
-    if x_field is None:
-        log.error('A <scatter> needs an @x attribute')
-        return
+        x_field = element.get('x', None)
+        if x_field is None:
+            log.error('A <scatter> defined from a data source needs an @x attribute')
+            return
 
-    y_field = element.get('y', None)
-    if y_field is None:
-        log.error('A <scatter> needs a @y attribute')
-        return    
+        y_field = element.get('y', None)
+        if y_field is None:
+            log.error('A <scatter> defined from a data source needs a @y attribute')
+            return
 
-    filter = element.get('filter', None)
-    if filter is not None:
-        field, value = un.valid_eval(filter)
-        x_data = math_util.filter(data, x_field, field, value)
-        y_data = math_util.filter(data, y_field, field, value)
+        filter = element.get('filter', None)
+        if filter is not None:
+            field, value = un.valid_eval(filter)
+            x_data = math_util.filter(data, x_field, field, value)
+            y_data = math_util.filter(data, y_field, field, value)
+        else:
+            x_data = data[x_field]
+            y_data = data[y_field]
+
+        points = math_util.zip_lists(x_data, y_data)
     else:
-        x_data = data[x_field]
-        y_data = data[y_field]
-
-    points = math_util.zip_lists(x_data, y_data)
+        pts = element.get('points', None)
+        if pts is None:
+            log.error("A <scatter> needs with a @data or @points attribute")
+            return
+        points = un.valid_eval(pts)
     un.enter_namespace('__scatter_points', points)
 
     point_element = copy.deepcopy(element)
