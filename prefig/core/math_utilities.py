@@ -70,6 +70,10 @@ def rotate(v, theta):
 def zip_lists(a, b):
     return list(zip(a, b))
 
+def filter(df, a, b, value):
+    mask = df[b] == value
+    return df[a][mask]
+
 def evaluate_bezier(controls, t):
     dim = len(controls[0])
     N = len(controls)

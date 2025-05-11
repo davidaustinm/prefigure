@@ -27,6 +27,7 @@ from . import (
     repeat,
     riemann_sum,
     slope_field,
+    statistics,
     tags,
     tangent_line,
     user_namespace,

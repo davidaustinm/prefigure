@@ -23,6 +23,7 @@ from . import rectangle
 from . import riemann_sum
 from . import repeat
 from . import slope_field
+from . import statistics
 from . import tangent_line
 from . import vector
 
@@ -62,6 +63,7 @@ tag_dict = {
     'transform': CTM.transform_group,
     'rotate': CTM.transform_rotate,
     'scale': CTM.transform_scale,
+    'scatter': statistics.scatter,
     'slope-field': slope_field.slope_field,
     'spline': polygon.spline,
     'tangent-line': tangent_line.tangent,

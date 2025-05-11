@@ -76,9 +76,12 @@ class Legend:
             ref = label_el.get('ref')
             search = f'//*[@id="{ref}"]'
             references = diagram.diagram_element.xpath(search)
-            if len(references) != 1:
-                log.warning(f"{ref} should refer to exactly one element")
-                continue
+            if len(references) == 0:
+                search = f'//*[@at="{ref}"]'
+                references = diagram.diagram_element.xpath(search)
+                if len(references) == 0:
+                    log.warning(f"{ref} should refer to an element")
+                    continue
             key = references[0]
             if key.tag == 'point':
                 key = copy.deepcopy(key)
