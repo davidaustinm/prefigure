@@ -33,6 +33,12 @@ def network(element, diagram, parent, outline_status):
     if global_loop_scale is not None:
         global_loop_scale = un.valid_eval(global_loop_scale)
 
+    # retrieve the label dictionary
+    label_predictionary = un.valid_eval(element.get('label-dictionary', {}))
+    label_dictionary = {}
+    for k, v in label_predictionary.items():
+        label_dictionary[str(k)] = v
+    
     # Let's see if there is a dictionary defining the graph
     graph = element.get('graph', None)
     graph_dict = {}
@@ -640,7 +646,8 @@ def network(element, diagram, parent, outline_status):
             if label_element is None:
                 label_element = ET.SubElement(node_group, 'label')
                 math_element = ET.SubElement(label_element, 'm')
-                math_element.text = handle
+                label_text = label_dictionary.get(handle, handle)
+                math_element.text = label_text
             label_element.set('p', '(' + util.pt2long_str(position, spacer=',') + ')')
             label_element.set('alignment', 'center')
             label_element.set('offset', '(0,0)')
