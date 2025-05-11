@@ -521,6 +521,7 @@ Network = element network {
     attribute node-style {text}?,
     attribute node-size {text}?,
     attribute labels {"yes"|"no"}?,
+    attribute label-dictionary {text}?,
     (
         element node {
             attribute at {text}?,

@@ -505,8 +505,8 @@ class Diagram:
             'fill': str(fill),
             'stroke-width': str(thickness),
             'stroke': str(stroke),
-            'stroke-dasharray': element.get('dash', 'none'),
-            'href': r'#' + element.get('id', 'none') + '-outline'
+            'stroke-dasharray': element.get('dash', 'none')
+#            'href': r'#' + element.get('id', 'none') + '-outline'
         }
         )
         # labeled points and angle markers are in a <g> with the 
@@ -518,7 +518,9 @@ class Diagram:
         # We have to clean up the arrow heads.  The references to the
         # arrow heads are in the reusable so we'll retrieve them and
         # and include them with the use element.
-        reusable = self.get_reusable(element.get('id') + '-outline')
+        reuse_handle = element.get('id')+self.id_suffix[-1]+'-outline'
+        reusable = self.get_reusable(reuse_handle)
+        use.set('href', r'#' + reuse_handle)
         for marker in ['marker-start', 'marker-end', 'marker-mid']:
             if reusable.get(marker, 'none') != 'none':
                 use.set(marker, reusable.get(marker))

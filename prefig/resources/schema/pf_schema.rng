@@ -1391,6 +1391,9 @@
           </choice>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="label-dictionary"/>
+      </optional>
       <interleave>
         <zeroOrMore>
           <element name="node">
