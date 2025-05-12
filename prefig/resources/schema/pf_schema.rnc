@@ -47,7 +47,8 @@ DefinitionElements =
     Definition?,
     Derivative?,
     DE-Solution?,
-    Define-Shapes?
+    Define-Shapes?,
+    Read
 
 Definition = element definition {
     text,
@@ -73,6 +74,15 @@ DE-Solution = element de-solve {
 
 Define-Shapes = element define-shapes {
     ShapeElements+
+}
+
+Read = element read {
+    attribute filename {text},
+    attribute name {text},
+    attribute delimiter {text}?,
+    attribute quotechar {text}?,
+    attribute string-columns {text}?,
+    attribute type {text}
 }
 
 # the next elements group other elements together
@@ -307,6 +317,7 @@ GraphicalElements =
         Graph* &
         Grid* &
         Grid-Axes* &
+        Histogram* &
         Implicit-Curve* &
         Label* &
         Legend* &
@@ -319,6 +330,7 @@ GraphicalElements =
         Polygon* &
         Rectangle* &
         Riemann-Sum* &
+        Scatter* &
         Shape* &
         Slope-Field* &
         Spline* &
@@ -457,6 +469,19 @@ Graph = element graph {
     attribute N {text}?,
     attribute domain {text}?,
     StrokeAttributes,
+    CommonAttributes
+}
+
+Histogram = element histogram {
+    attribute at {text}?,
+    attribute data {text},
+    attribute min {text}?,
+    attribute max {text}?,
+    attribute bins {text}?,
+    attribute bin-text {text}?,
+    attribute annotate {"yes"|"no"}?,
+    attribute text {text}?,
+    FillAttributes,
     CommonAttributes
 }
 
@@ -635,6 +660,20 @@ Riemann-Sum = element riemann-sum {
     attribute N {text},
     attribute domain {text}?,
     attribute rule {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Scatter = element scatter {
+    attribute at {text}?,
+    attribute points {text}?,
+    attribute data {text}?,
+    attribute x {text}?,
+    attribute y {text}?,
+    attribute filter {text}?,
+    attribute point-text {text}?,
+    attribute annotate {"yes"|"no"}?,
+    attribute text {text}?,
     FillAttributes,
     CommonAttributes
 }

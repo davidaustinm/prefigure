@@ -107,6 +107,7 @@
     <optional>
       <ref name="Define-Shapes"/>
     </optional>
+    <ref name="Read"/>
   </define>
   <define name="Definition">
     <element name="definition">
@@ -155,6 +156,22 @@
       <oneOrMore>
         <ref name="ShapeElements"/>
       </oneOrMore>
+    </element>
+  </define>
+  <define name="Read">
+    <element name="read">
+      <attribute name="filename"/>
+      <attribute name="name"/>
+      <optional>
+        <attribute name="delimiter"/>
+      </optional>
+      <optional>
+        <attribute name="quotechar"/>
+      </optional>
+      <optional>
+        <attribute name="string-columns"/>
+      </optional>
+      <attribute name="type"/>
     </element>
   </define>
   <!-- the next elements group other elements together -->
@@ -758,6 +775,9 @@
         <ref name="Grid-Axes"/>
       </zeroOrMore>
       <zeroOrMore>
+        <ref name="Histogram"/>
+      </zeroOrMore>
+      <zeroOrMore>
         <ref name="Implicit-Curve"/>
       </zeroOrMore>
       <zeroOrMore>
@@ -792,6 +812,9 @@
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Riemann-Sum"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Scatter"/>
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Shape"/>
@@ -1199,6 +1222,39 @@
         <attribute name="domain"/>
       </optional>
       <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Histogram">
+    <element name="histogram">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="data"/>
+      <optional>
+        <attribute name="min"/>
+      </optional>
+      <optional>
+        <attribute name="max"/>
+      </optional>
+      <optional>
+        <attribute name="bins"/>
+      </optional>
+      <optional>
+        <attribute name="bin-text"/>
+      </optional>
+      <optional>
+        <attribute name="annotate">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="text"/>
+      </optional>
+      <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
     </element>
   </define>
@@ -1662,6 +1718,44 @@
       </optional>
       <optional>
         <attribute name="rule"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Scatter">
+    <element name="scatter">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="points"/>
+      </optional>
+      <optional>
+        <attribute name="data"/>
+      </optional>
+      <optional>
+        <attribute name="x"/>
+      </optional>
+      <optional>
+        <attribute name="y"/>
+      </optional>
+      <optional>
+        <attribute name="filter"/>
+      </optional>
+      <optional>
+        <attribute name="point-text"/>
+      </optional>
+      <optional>
+        <attribute name="annotate">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="text"/>
       </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
