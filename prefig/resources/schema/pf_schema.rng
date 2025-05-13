@@ -107,6 +107,7 @@
     <optional>
       <ref name="Define-Shapes"/>
     </optional>
+    <ref name="Read"/>
   </define>
   <define name="Definition">
     <element name="definition">
@@ -155,6 +156,22 @@
       <oneOrMore>
         <ref name="ShapeElements"/>
       </oneOrMore>
+    </element>
+  </define>
+  <define name="Read">
+    <element name="read">
+      <attribute name="filename"/>
+      <attribute name="name"/>
+      <optional>
+        <attribute name="delimiter"/>
+      </optional>
+      <optional>
+        <attribute name="quotechar"/>
+      </optional>
+      <optional>
+        <attribute name="string-columns"/>
+      </optional>
+      <attribute name="type"/>
     </element>
   </define>
   <!-- the next elements group other elements together -->
@@ -218,6 +235,9 @@
       </optional>
       <optional>
         <attribute name="outline"/>
+      </optional>
+      <optional>
+        <attribute name="transform"/>
       </optional>
       <ref name="CommonAttributes"/>
       <interleave>
@@ -755,6 +775,9 @@
         <ref name="Grid-Axes"/>
       </zeroOrMore>
       <zeroOrMore>
+        <ref name="Histogram"/>
+      </zeroOrMore>
+      <zeroOrMore>
         <ref name="Implicit-Curve"/>
       </zeroOrMore>
       <zeroOrMore>
@@ -789,6 +812,9 @@
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Riemann-Sum"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Scatter"/>
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Shape"/>
@@ -1199,6 +1225,39 @@
       <ref name="CommonAttributes"/>
     </element>
   </define>
+  <define name="Histogram">
+    <element name="histogram">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="data"/>
+      <optional>
+        <attribute name="min"/>
+      </optional>
+      <optional>
+        <attribute name="max"/>
+      </optional>
+      <optional>
+        <attribute name="bins"/>
+      </optional>
+      <optional>
+        <attribute name="bin-text"/>
+      </optional>
+      <optional>
+        <attribute name="annotate">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="text"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
   <define name="Implicit-Curve">
     <element name="implicit-curve">
       <optional>
@@ -1320,6 +1379,28 @@
         </attribute>
       </optional>
       <optional>
+        <attribute name="arrows">
+          <choice>
+            <value>end</value>
+            <value>middle</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="bipartite-set"/>
+      </optional>
+      <optional>
+        <attribute name="alignment">
+          <group>
+            <value>vertical</value>
+            <value>horizontal</value>
+          </group>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="loop-scale"/>
+      </optional>
+      <optional>
         <attribute name="layout"/>
       </optional>
       <optional>
@@ -1366,6 +1447,9 @@
           </choice>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="label-dictionary"/>
+      </optional>
       <interleave>
         <zeroOrMore>
           <element name="node">
@@ -1378,7 +1462,17 @@
             <optional>
               <attribute name="edges"/>
             </optional>
+            <optional>
+              <attribute name="loop-orientation"/>
+            </optional>
+            <optional>
+              <attribute name="style"/>
+            </optional>
             <ref name="FillAttributes"/>
+            <ref name="LabelAttributes"/>
+            <optional>
+              <ref name="LabelText"/>
+            </optional>
           </element>
         </zeroOrMore>
         <zeroOrMore>
@@ -1390,7 +1484,17 @@
             <optional>
               <attribute name="weight"/>
             </optional>
+            <optional>
+              <attribute name="loop-scale"/>
+            </optional>
+            <optional>
+              <attribute name="label-location"/>
+            </optional>
             <ref name="StrokeAttributes"/>
+            <ref name="LabelAttributes"/>
+            <optional>
+              <ref name="LabelText"/>
+            </optional>
           </element>
         </zeroOrMore>
       </interleave>
@@ -1493,6 +1597,12 @@
             <value>no</value>
           </choice>
         </attribute>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-location"/>
       </optional>
       <optional>
         <attribute name="function"/>
@@ -1608,6 +1718,44 @@
       </optional>
       <optional>
         <attribute name="rule"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Scatter">
+    <element name="scatter">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="points"/>
+      </optional>
+      <optional>
+        <attribute name="data"/>
+      </optional>
+      <optional>
+        <attribute name="x"/>
+      </optional>
+      <optional>
+        <attribute name="y"/>
+      </optional>
+      <optional>
+        <attribute name="filter"/>
+      </optional>
+      <optional>
+        <attribute name="point-text"/>
+      </optional>
+      <optional>
+        <attribute name="annotate">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="text"/>
       </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>

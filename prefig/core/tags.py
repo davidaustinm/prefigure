@@ -18,10 +18,12 @@ from . import path
 from . import parametric_curve
 from . import point
 from . import polygon
+from . import read
 from . import rectangle
 from . import riemann_sum
 from . import repeat
 from . import slope_field
+from . import statistics
 from . import tangent_line
 from . import vector
 
@@ -46,6 +48,7 @@ tag_dict = {
     'grid': grid_axes.grid,
     'grid-axes': grid_axes.grid_axes,
     'group': group.group,
+    'histogram': statistics.histogram,
     'implicit-curve': implicit.implicit_curve,
     'label': label.label,
     'legend': legend.legend,
@@ -54,12 +57,14 @@ tag_dict = {
     'path': path.path,
     'point': point.point,
     'polygon': polygon.polygon,
+    'read': read.read,
     'rectangle': rectangle.rectangle,
-    'riemann-sum': riemann_sum.riemann_sum,
     'repeat': repeat.repeat,
+    'riemann-sum': riemann_sum.riemann_sum,
     'transform': CTM.transform_group,
     'rotate': CTM.transform_rotate,
     'scale': CTM.transform_scale,
+    'scatter': statistics.scatter,
     'slope-field': slope_field.slope_field,
     'spline': polygon.spline,
     'tangent-line': tangent_line.tangent,

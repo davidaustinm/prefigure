@@ -35,6 +35,10 @@ def rotation(theta, units="deg"):
     s = math.sin(theta)
     return [[c,-s,0],[s,c,0]]
 
+def build_matrix(matrix):
+    return [[matrix[0][0], matrix[0][1], 0],
+            [matrix[1][0], matrix[1][1], 0]]
+
 def matrix2str(m):
     return 'matrix(' + ','.join([str(c) for c in m[0]+m[1]]) + ')'
 
@@ -53,6 +57,11 @@ def scalestr(x, y):
 
 def rotatestr(theta):
     return 'rotate('+util.float2str(-theta)+')'
+
+def matrixstr(m):
+    return 'matrix(' + ','.join([
+        util.float2longstr(p) for p in [m[0][0], -m[1][0], -m[0][1], m[1][1], 0, 0]
+        ]) + ')'
 
 class CTM:
     def __init__(self, ctm = None):
@@ -88,6 +97,15 @@ class CTM:
         m = rotation(theta, units)
         self.ctm = concat(self.ctm, m)
         minv = rotation(-theta, units)
+        self.inverse = concat(minv, self.inverse)
+
+    def apply_matrix(self, matrix):
+        m = build_matrix(matrix)
+        self.ctm = concat(self.ctm, m)
+        det = matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0]
+        inv = [[matrix[1][1]/det, -matrix[0][1]/det],
+               [-matrix[1][0]/det, matrix[0][0]/det]]
+        minv = build_matrix(inv)
         self.inverse = concat(minv, self.inverse)
 
     def inverse_transform(self, p):

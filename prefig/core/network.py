@@ -29,7 +29,16 @@ def network(element, diagram, parent, outline_status):
 
     # Is the network directed?
     directed = element.get('directed', 'no') == 'yes'
+    global_loop_scale = element.get('loop-scale', None)
+    if global_loop_scale is not None:
+        global_loop_scale = un.valid_eval(global_loop_scale)
 
+    # retrieve the label dictionary
+    label_predictionary = un.valid_eval(element.get('label-dictionary', '{}'))
+    label_dictionary = {}
+    for k, v in label_predictionary.items():
+        label_dictionary[str(k)] = v
+    
     # Let's see if there is a dictionary defining the graph
     graph = element.get('graph', None)
     graph_dict = {}
@@ -179,8 +188,8 @@ def network(element, diagram, parent, outline_status):
 
         layout = element.get('layout', None)
 
+        seed = int(element.get('seed', '1'))
         if layout is None or layout == 'spring':
-            seed = int(element.get('seed', '1'))
             positions = nx.spring_layout(G, seed=seed)
         elif layout == 'bfs':
             start = element.get('start', None)
@@ -190,7 +199,23 @@ def network(element, diagram, parent, outline_status):
             positions = nx.bfs_layout(G, start=start)
         elif layout == 'spectral':
             positions = nx.spectral_layout(G)
-
+        elif layout == 'circular':
+            positions = nx.circular_layout(G)
+        elif layout == 'random':
+            positions = nx.random_layout(G, seed=seed)
+        elif layout == 'planar':
+            positions = nx.planar_layout(G)
+        elif layout == 'bipartite':
+            alignment = element.get('alignment', 'horizontal')
+            bipartite_set = element.get('bipartite-set', None)
+            if bipartite_set is None:
+                log.error('A bipartite network needs a @bipartite-set attribute')
+                return
+            bipartite_set = un.valid_eval(bipartite_set)
+            bipartite_set = [str(n) for n in bipartite_set]
+            positions = nx.bipartite_layout(G,
+                                            bipartite_set,
+                                            align=alignment)
 
         # Now that we have the positions of the nodes, we will form the
         # graphical components.  First find the bounding box
@@ -297,12 +322,12 @@ def network(element, diagram, parent, outline_status):
         endpoints.sort()
         edge = tuple(endpoints)
         y = (all_edges[edge] - 1)/2 * spread
-        for edge in edges:
+        for num, edge in enumerate(edges):
             ctm = CTM.CTM()
             user_p0 = positions[handle_0]
             user_p1 = positions[handle_1]
-            p0 = diagram.transform(user_p0)
-            p1 = diagram.transform(user_p1)
+            p0 = future_ctm.transform(user_p0)
+            p1 = future_ctm.transform(user_p1)
             u = p1 - p0
             angle = math.atan2(u[1], u[0])
             length = math_util.length(u)
@@ -312,9 +337,9 @@ def network(element, diagram, parent, outline_status):
             c1 = ctm.transform((length/4, y))
             c2 = ctm.transform((3*length/4, y))
 
-            center = diagram.inverse_transform(center)
-            c1 = diagram.inverse_transform(c1)
-            c2 = diagram.inverse_transform(c2)
+            center = future_ctm.inverse_transform(center)
+            c1 = future_ctm.inverse_transform(c1)
+            c2 = future_ctm.inverse_transform(c2)
 
             directions = edge_directions.get(handle_0, [])
             directions.append(c1)
@@ -324,7 +349,11 @@ def network(element, diagram, parent, outline_status):
             directions.append(c2)
             edge_directions[handle_1] = directions
 
+            handle = 'edge-' + handle_0 + '-' + handle_1
+            if len(edges) > 1:
+                handle += '-' + str(num)
             path = ET.SubElement(edge_group, 'path')
+            path.set('at', handle)
             if directed:
                 if mid_arrows:
                     path.set('mid-arrow', 'yes')
@@ -468,10 +497,14 @@ def network(element, diagram, parent, outline_status):
             scale = (2-0.75*j)*node_size_f
             ctm.scale(scale, scale)
 
-            loop_scale = loop.get('loop-scale', None)
-            if loop_scale is not None:
-                loop_scale = un.valid_eval(loop_scale)
-                ctm.scale(*loop_scale)
+            loop_scale = np.array([1,1])
+            if global_loop_scale is not None:
+                loop_scale = global_loop_scale
+            if loop is not None:
+                local_loop_scale = loop.get('loop-scale', None)
+                if local_loop_scale is not None:
+                    loop_scale = un.valid_eval(local_loop_scale)
+            ctm.scale(*loop_scale)
 
             alpha = 4/3
             P1 = ctm.transform((0,-alpha))
@@ -485,6 +518,10 @@ def network(element, diagram, parent, outline_status):
             loop_curves = [[node_position, P1, P2, P3], [P3, P4, P5, node_position]]
 
             path = ET.SubElement(edge_group, 'path')
+            handle = 'loop-' + node
+            if len(loop_record) > 1:
+                handle += '-' + str(j)
+            path.set('at', handle)
             path.set('start', '('+util.pt2long_str(node_position, spacer=",")+')')
             if directed:
                 if mid_arrows:
@@ -539,8 +576,10 @@ def network(element, diagram, parent, outline_status):
                 path.set('dash', loop.get('dash', edge_dash))
 
             # does this loop have a label?
-            if len(loop) > 0 or (
+            if loop is not None and (
+                    len(loop) > 0 or (
                     loop.text is not None and len(loop.text.strip()) > 0
+                    )
             ):
                 label_location = un.valid_eval(loop.get('label-location', '0.5'))
                 if label_location < 0.5:
@@ -580,7 +619,8 @@ def network(element, diagram, parent, outline_status):
         p = ET.SubElement(node_group, 'point')
         p.set('p', '(' + util.pt2long_str(position, spacer=',') + ')')
         p.set('size', node_size)
-
+        p.set('at', 'node-' + handle)
+        
         if node is None:
             p.set('fill', node_fill)
             p.set('stroke', node_stroke)
@@ -606,7 +646,8 @@ def network(element, diagram, parent, outline_status):
             if label_element is None:
                 label_element = ET.SubElement(node_group, 'label')
                 math_element = ET.SubElement(label_element, 'm')
-                math_element.text = handle
+                label_text = label_dictionary.get(handle, handle)
+                math_element.text = label_text
             label_element.set('p', '(' + util.pt2long_str(position, spacer=',') + ')')
             label_element.set('alignment', 'center')
             label_element.set('offset', '(0,0)')

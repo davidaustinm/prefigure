@@ -66,15 +66,17 @@ export function Renderer() {
 
     return (
         <div className="render-frame">
-            <div className="render-content">
-                {sourceForDisplay.startsWith("<svg") ? (
-                    <div
-                        className="rendered-svg"
-                        dangerouslySetInnerHTML={{ __html: sourceForDisplay }}
-                    ></div>
-                ) : (
-                    compiledSource
-                )}
+            <div className="render-buffer">
+                <div className="render-content">
+                    {sourceForDisplay.startsWith("<svg") ? (
+                        <div
+                            className="rendered-svg"
+                            dangerouslySetInnerHTML={{ __html: sourceForDisplay }}
+                        ></div>
+                    ) : (
+                        compiledSource
+                    )}
+                </div>
             </div>
             <Nav className="render-toolbar">
                 <Button

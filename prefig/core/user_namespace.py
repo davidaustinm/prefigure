@@ -22,6 +22,8 @@ __delta_on = False
 
 # Record built-in python functions and constants as allowed
 functions = {x for x in dir(math) + dir(math_utilities) if not "__" in x}.difference({'e', 'pi'})
+functions.add('max')
+functions.add('min')
 variables = {'e', 'pi', 'inf'}
 
 # Transforms an AST by wrapping any List or Tuple inside a numpy array

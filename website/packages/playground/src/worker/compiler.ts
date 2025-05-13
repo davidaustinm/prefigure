@@ -38,6 +38,9 @@ export class PreFigureCompiler {
                 this.pyodide =
                     (await this._pyodide) || (await loadPyodide(options));
 
+                // There may be some MathJax etc. setup that needs to be done
+                await prefigBrowserApi.initFinished;
+
                 // Set up our global compatibility API so it can be imported from Python with `import prefigBrowserApi`
                 this.pyodide.registerJsModule(
                     "prefigBrowserApi",

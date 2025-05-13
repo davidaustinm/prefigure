@@ -81,9 +81,17 @@ class Diagram:
         
 
         # read in defaults from publication file
+        self.external = None
         self.defaults = {}
         if publication is not None:
             for subelement in publication:
+                if subelement.tag == 'external-root':
+                    external = subelement.get('name', None)
+                    if external is not None:
+                        self.external = external
+                    else:
+                        log.warning('<external-root> in publication file needs a @name')
+                    continue
                 self.defaults[subelement.tag] = subelement
 
         if self.defaults.get('macros', None) is not None:
@@ -100,6 +108,9 @@ class Diagram:
 
     def caption_suppressed(self):
         return self.suppress_caption
+
+    def get_external(self):
+        return self.external
 
     def get_label_group(self, element):
         return self.label_group_dict.get(element)
@@ -494,8 +505,8 @@ class Diagram:
             'fill': str(fill),
             'stroke-width': str(thickness),
             'stroke': str(stroke),
-            'stroke-dasharray': element.get('dash', 'none'),
-            'href': r'#' + element.get('id', 'none') + '-outline'
+            'stroke-dasharray': element.get('dash', 'none')
+#            'href': r'#' + element.get('id', 'none') + '-outline'
         }
         )
         # labeled points and angle markers are in a <g> with the 
@@ -507,7 +518,9 @@ class Diagram:
         # We have to clean up the arrow heads.  The references to the
         # arrow heads are in the reusable so we'll retrieve them and
         # and include them with the use element.
-        reusable = self.get_reusable(element.get('id') + '-outline')
+        reuse_handle = element.get('id')+self.id_suffix[-1]+'-outline'
+        reusable = self.get_reusable(reuse_handle)
+        use.set('href', r'#' + reuse_handle)
         for marker in ['marker-start', 'marker-end', 'marker-mid']:
             if reusable.get(marker, 'none') != 'none':
                 use.set(marker, reusable.get(marker))

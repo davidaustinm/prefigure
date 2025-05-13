@@ -47,7 +47,8 @@ DefinitionElements =
     Definition?,
     Derivative?,
     DE-Solution?,
-    Define-Shapes?
+    Define-Shapes?,
+    Read
 
 Definition = element definition {
     text,
@@ -73,6 +74,15 @@ DE-Solution = element de-solve {
 
 Define-Shapes = element define-shapes {
     ShapeElements+
+}
+
+Read = element read {
+    attribute filename {text},
+    attribute name {text},
+    attribute delimiter {text}?,
+    attribute quotechar {text}?,
+    attribute string-columns {text}?,
+    attribute type {text}
 }
 
 # the next elements group other elements together
@@ -102,6 +112,7 @@ Coordinates = element coordinates {
 Group = element group {
     attribute at {text}?,
     attribute outline {text}?,
+    attribute transform {text}?,
     CommonAttributes,
     (
         DefinitionElements* &
@@ -306,6 +317,7 @@ GraphicalElements =
         Graph* &
         Grid* &
         Grid-Axes* &
+        Histogram* &
         Implicit-Curve* &
         Label* &
         Legend* &
@@ -318,6 +330,7 @@ GraphicalElements =
         Polygon* &
         Rectangle* &
         Riemann-Sum* &
+        Scatter* &
         Shape* &
         Slope-Field* &
         Spline* &
@@ -459,6 +472,19 @@ Graph = element graph {
     CommonAttributes
 }
 
+Histogram = element histogram {
+    attribute at {text}?,
+    attribute data {text},
+    attribute min {text}?,
+    attribute max {text}?,
+    attribute bins {text}?,
+    attribute bin-text {text}?,
+    attribute annotate {"yes"|"no"}?,
+    attribute text {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
 Implicit-Curve = element implicit-curve {
     attribute at {text}?,
     attribute function {text},
@@ -502,6 +528,10 @@ Network = element network {
     attribute at {text}?,
     attribute graph {text}?,
     attribute directed {"yes"|"no"}?,
+    attribute arrows {"end"|"middle"}?,
+    attribute bipartite-set {text}?,
+    attribute alignment {'vertical', 'horizontal'}?,
+    attribute loop-scale {text}?,
     attribute layout {text}?,
     attribute seed {text}?,
     attribute start {text}?,
@@ -516,19 +546,28 @@ Network = element network {
     attribute node-style {text}?,
     attribute node-size {text}?,
     attribute labels {"yes"|"no"}?,
+    attribute label-dictionary {text}?,
     (
         element node {
             attribute at {text}?,
             attribute p {text}?,
             attribute edges {text}?,
-            FillAttributes
+            attribute loop-orientation {text}?,
+            attribute style {text}?,
+            FillAttributes,
+            LabelAttributes,
+            LabelText?
 
         }* &
         element edge {
             attribute at {text}?,
             attribute vertices {text},
             attribute weight {text}?,
-            StrokeAttributes
+            attribute loop-scale {text}?,
+            attribute label-location {text}?,
+            StrokeAttributes,
+            LabelAttributes,
+            LabelText?
         }*
     ),
     CommonAttributes
@@ -567,6 +606,8 @@ Plot-DE-Solution = element plot-de-solution {
     attribute solution {text}?,
     attribute axes {text}?,
     attribute arrow {"yes"|"no"}?,
+    attribute arrow-width {text}?,
+    attribute arrow-location {text}?,
     attribute function {text}?,
     attribute t0 {text}?,
     attribute y0 {text}?,
@@ -619,6 +660,20 @@ Riemann-Sum = element riemann-sum {
     attribute N {text},
     attribute domain {text}?,
     attribute rule {text}?,
+    FillAttributes,
+    CommonAttributes
+}
+
+Scatter = element scatter {
+    attribute at {text}?,
+    attribute points {text}?,
+    attribute data {text}?,
+    attribute x {text}?,
+    attribute y {text}?,
+    attribute filter {text}?,
+    attribute point-text {text}?,
+    attribute annotate {"yes"|"no"}?,
+    attribute text {text}?,
     FillAttributes,
     CommonAttributes
 }
