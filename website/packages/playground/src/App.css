@@ -71,12 +71,21 @@ body,
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    background-color:#ddd;
+}
+.render-buffer {
+    flex-grow:1;
+    overflow:auto;
+    padding: 0px;
+    margin: 20px;
+    flex-basis: 0;
+    background-color:#ffffff;
 }
 .render-content {
     flex-grow: 1;
     overflow: auto;
-    padding: 0;
     margin: 0;
+    padding: 0px;
     flex-basis: 0;
 }
 .render-toolbar {
