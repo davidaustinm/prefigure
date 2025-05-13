@@ -1,6 +1,7 @@
 import React from "react";
 import { Container, Navbar, Nav, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./font.css";
 import "./App.css";
 import { SourceEditor } from "./components/editor";
 import { Renderer } from "./components/renderer";
