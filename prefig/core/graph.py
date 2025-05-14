@@ -33,12 +33,23 @@ def graph(element, diagram, parent, outline_status = None):
     dx = (domain[1] - domain[0])/N
     x = domain[0]
     cmds = []
+    next_cmd = 'M'
+    upper = 2*bbox[3] - bbox[1]
+    lower = 2*bbox[1] - bbox[3]
     for _ in range(N+1):
+        try:
+            y = f(x)
+        except:
+            next_cmd = 'M'
+            x += dx
+            continue
+        if y > upper or y < lower:
+            next_cmd = 'M'
+            x += dx
+            continue
         p = diagram.transform((x, f(x)))
-        if len(cmds) == 0:
-            cmds = ['M', util.pt2str(p)]
-        else:
-            cmds += ['L', util.pt2str(p)]
+        cmds += [next_cmd, util.pt2str(p)]
+        next_cmd = 'L'
         x += dx
 
     # now set up the attributes
