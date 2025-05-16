@@ -8,6 +8,7 @@ from . import user_namespace as un
 from . import utilities as util
 from . import CTM
 from . import label
+from . import math_utilities as math_util
 
 log = logging.getLogger('prefigure')
 
@@ -29,6 +30,8 @@ class Diagram:
         self.suppress_caption = suppress_caption
         self.environment = environment
         self.caption = ""
+
+        math_util.set_diagram(self)
 
         label.init(self.format, self.environment)
 

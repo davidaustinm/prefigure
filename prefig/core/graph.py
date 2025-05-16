@@ -2,6 +2,7 @@ import lxml.etree as ET
 import logging
 from . import user_namespace as un
 from . import utilities as util
+from . import arrow
 
 log = logging.getLogger('prefigure')
 
@@ -21,6 +22,20 @@ def graph(element, diagram, parent, outline_status = None):
         domain = [bbox[0], bbox[2]]
     else:
         domain = un.valid_eval(domain)
+
+    # if there are arrows, we need to pull the domain in by two pixels
+    # so that the arrows don't go outside the domain
+    arrows = int(element.get('arrows', '0'))
+    if arrows > 0:
+        end = diagram.transform((domain[1], 0))
+        end[0] -= 2
+        new_domain = diagram.inverse_transform(end)
+        domain[1] = new_domain[0]
+    if arrows == 2:
+        begin = diagram.transform((domain[0],0))
+        begin[0] += 2
+        new_domain = diagram.inverse_transform(begin)
+        domain[0] = new_domain[0]
 
     # retrieve the function from the namespace and generate points
     try:
@@ -152,6 +167,28 @@ def graph(element, diagram, parent, outline_status = None):
     )
 
     path = ET.Element('path', attrib = attrib)
+
+    arrows = int(element.get('arrows', '0'))
+    forward = 'marker-end'
+    backward = 'marker-start'
+    if element.get('reverse', 'no') == 'yes':
+        forward, backward = backward, forward
+    if arrows > 0:
+        arrow.add_arrowhead_to_path(
+            diagram,
+            forward,
+            path,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
+    if arrows > 1:
+        arrow.add_arrowhead_to_path(
+            diagram,
+            backward,
+            path,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
 
     # By default, we clip the graph to the bounding box
     if element.get('cliptobbox') is None:

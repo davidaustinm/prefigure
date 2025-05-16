@@ -31,6 +31,10 @@ def tangent(element, diagram, parent, outline_status):
     def tangent(x):
         return y0 + m*(x-a)
 
+    name = element.get('name', None)
+    if name is not None:
+        un.enter_namespace(name, tangent)
+
     # determine the interval over which we'll draw the tangent line
     bbox = diagram.bbox()
     domain = element.get('domain', None)
