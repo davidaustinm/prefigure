@@ -1,0 +1,25 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>theta=radians(80)</definition>
+  <definition>p=(cos(theta),sin(theta))</definition>
+  <definition>q=(cos(theta),-sin(theta))</definition>
+  <definition>origin=(0,0)</definition>
+  <definition>one=(1,0)</definition>
+  <coordinates bbox="(-1.5,-1.5,1.5,1.5)">
+    <grid-axes decorations="no"/>
+    <polygon points="(one,origin,p)" stroke="red"/>
+    <polygon points="(one,origin,q)" stroke="red"/>
+    <circle center="(0,0)" radius="1" stroke="blue"/>
+    <point p="p">
+      <m>(\cos(\theta),\sin(\theta))</m>
+    </point>
+    <point p="q" alignment="se">
+      <m>(\cos(\theta),-\sin(\theta))</m>
+    </point>
+    <angle-marker points="(one,origin,p)" stroke="black">
+      <m>\theta</m>
+    </angle-marker>
+    <angle-marker points="(q,origin,one)" stroke="black">
+      <m>-\theta</m>
+    </angle-marker>
+  </coordinates>
+</diagram>

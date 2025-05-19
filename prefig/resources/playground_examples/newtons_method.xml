@@ -1,0 +1,23 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(x)=7-(x+1)^2/2</definition>
+  <definition>x0 = 1</definition>
+  <coordinates bbox="(-8,-8,8,8)">
+    <grid-axes xlabel="x" ylabel="y"/>
+    <graph function="f"/>
+    <tangent-line function="f" point="x0" name="tan"/>
+    <point p="(x0,f(x0))" alignment="se"/>
+    <definition>x1 = intersect(tan,-1)</definition>
+
+    <repeat parameter="x in (x0, x1)">
+      <line endpoints="((x,0),(x,0))" 
+        endpoint-offsets="((0,-3),(0,3))"
+        stroke="black"/>
+    </repeat>
+    <label anchor="(x0,0)" alignment="north">
+      <m>x_0</m>
+    </label>
+    <label anchor="(x1,0)" alignment="ne">
+      <m>x_1</m>
+    </label>
+  </coordinates>
+</diagram>

@@ -1,0 +1,28 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>v1 = (2,1)</definition>
+  <definition>v2 = (-1,1)</definition>
+  <definition>a=3</definition>
+  <definition>b=2</definition>
+  <definition>w=a*v1+b*v2</definition>
+  <coordinates bbox="(-3,-3,8,8)">
+    <axes decorations="no"/>
+    <grid basis="(v1,v2)" stroke="lightgray"/>
+    <group outline="tactile">
+      <vector v="v1" stroke="blue"/>
+      <vector v="v2" stroke="blue"/>
+      <vector v="w" stroke="red"/>
+    </group>
+    <label anchor="v1" alignment="e" 
+      clear-background="yes" offset="(5,0)">
+      <m>{\mathbf v}_1</m>
+    </label>
+    <label anchor="v2" alignment="n"
+      clear-background="yes" offset="(0,5)">
+      <m>{\mathbf v}_2</m>
+    </label>
+    <label anchor="w" alignment="n"
+      clear-background="yes" offset="(0,5)">
+      <m>${a}{\mathbf v}_1+${b}{\mathbf v}_2</m>
+    </label>
+  </coordinates>
+</diagram>

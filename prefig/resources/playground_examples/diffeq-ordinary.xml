@@ -1,0 +1,15 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(t,y) = t-y</definition>
+  <coordinates bbox="[-4,-4,4,4]">
+    <grid at="grid"/>
+    <axes at="axes" xlabel="t" ylabel="y"/>
+    <slope-field at="slope-field" function="f" outline="yes"/>
+    <group at="solutions" outline="tactile">
+      <repeat parameter="k=-4..4">
+        <plot-de-solution at="solution" function="f" t0="0" y0="k"
+                          t1="4" stroke="orange" />
+        <point at="initial-value" p="(0,k)" size="4" fill="orange" />
+      </repeat>
+    </group>
+  </coordinates>
+</diagram>

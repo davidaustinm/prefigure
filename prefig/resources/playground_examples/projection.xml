@@ -1,0 +1,37 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>v=(2,1)</definition>
+  <definition>b=(2,4)</definition>
+  <definition>bhat=dot(v,b)/dot(v,v)* v</definition>
+  <definition>bperp=b- bhat</definition>
+
+  <coordinates bbox="[-1,-1,5,5]">
+    <grid-axes at="grid-axes"/>
+
+    <line p1="(0,0)" p2="v" infinite="yes" stroke="blue" thickness="2"/>
+    <label anchor="(4.4,2.5)">
+      <m>L</m>
+    </label>
+
+    <label anchor="midpoint(b,bhat)" alignment="ne" 
+      clear-background="yes">
+      <m>{\mathbf b}^\perp</m>
+    </label>
+    <vector v="bperp" tail="bhat" stroke="gray"/>
+
+    <vector v="b"/>
+    <label anchor="b" alignment="nw">
+      <m>{\mathbf b}</m>
+    </label>
+
+    <vector v="bhat" stroke="red" />
+    <label anchor="bhat" alignment="se">
+      <m>\widehat{\mathbf b}</m>
+    </label>
+
+    <vector v="v"/>
+    <label anchor="v" alignment="se">
+      <m>{\mathbf v}</m>
+    </label>
+
+  </coordinates>
+</diagram>

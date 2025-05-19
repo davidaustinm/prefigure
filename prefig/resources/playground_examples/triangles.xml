@@ -1,0 +1,10 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <grid-axes decorations="no"/>
+    <triangle vertices="((1,1),(3,2),(1,5))" labels="A,B,C"
+	      show-vertices="yes" point-fill="orange" />
+    <definition>vertices=((4,4), (8,1),(7,8))</definition>
+    <triangle vertices="vertices" labels="D,E,F"
+	      angle-markers="yes"/>
+  </coordinates>
+</diagram>

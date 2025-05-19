@@ -1,0 +1,26 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>x1=1</definition>
+  <definition>x2=4</definition>
+  <definition>y1=1</definition>
+  <definition>y2=5</definition>
+  <definition>p=(x1,y1)</definition>
+  <definition>q=(x2,y2)</definition>
+  <definition>r=(x2,y1)</definition>
+  <coordinates bbox="(-1,-1,6,6)">
+    <axes decorations="no" xlabel="x" ylabel="y"/>
+    <group outline="none">
+      <polygon points="(p,r,q)" stroke="red"/>
+      <angle-marker points="(r,p,q)" stroke="black">
+        <m>\theta</m>
+      </angle-marker>
+      <line endpoints="(p, q)"
+        stroke="blue" infinite="yes"/>
+    </group>
+    <label anchor="((x1+x2)/2,y1)" alignment="south">
+      <m>\Delta x</m>
+    </label>
+    <label anchor="(x2,(y1+y2)/2)" alignment="east">
+      <m>\Delta y</m>
+    </label>
+  </coordinates>
+</diagram>

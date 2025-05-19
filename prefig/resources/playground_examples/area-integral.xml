@@ -1,0 +1,24 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(x)=sin(x)</definition>
+  <definition>g(x)=cos(x)</definition>
+  <definition>a=intersect((f,g),1)</definition>
+  <definition>b=intersect((f,g),4)</definition>
+  <coordinates bbox="(-1,-1.5,5,1.5)">
+    <grid-axes decorations="no"/>
+    <area-between-curves functions="(f,g)" domain="(a,b)"
+      fill="lightgray"/>
+    <graph function="f"/>
+    <graph function="g"/>
+    <line endpoints="((a,0),(a,0))"
+      endpoint-offsets="((0,-3),(0,3))"/>
+    <label anchor="(a,0)" alignment="south" offset="(0,-4)">
+      <m>a</m>
+    </label>
+    <line endpoints="((b,0),(b,0))"
+      endpoint-offsets="((0,-3),(0,3))"/>
+    <label anchor="(b,0)" alignment="north" offset="(0,4)">
+      <m>b</m>
+    </label>
+
+  </coordinates>
+</diagram>

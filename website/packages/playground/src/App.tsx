@@ -19,7 +19,7 @@ function App() {
                         PreFigure Playground
                     </Navbar.Brand>
                     <Nav className="me-auto">
-                        <Nav.Link href="https://github.com/davidaustinm/prefigure/tree/main/prefig/resources/examples" target="_blank">Examples</Nav.Link>
+                        <Nav.Link href="https://github.com/davidaustinm/prefigure/tree/main/prefig/resources/playground_examples" target="_blank">Examples</Nav.Link>
                         <Nav.Link href="https://prefigure.org" target="_blank">About</Nav.Link>
                     </Nav>
                     <Nav.Item className="text-light small">
