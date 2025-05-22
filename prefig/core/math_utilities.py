@@ -74,6 +74,9 @@ def rotate(v, theta):
     s = math.sin(theta)
     return np.array([c*v[0]-s*v[1], s*v[0]+c*v[1]])
 
+def deriv(f, a):
+    return calculus.derivative(f, a)
+
 def zip_lists(a, b):
     return list(zip(a, b))
 
@@ -123,8 +126,23 @@ def delta(t, a):
 
     return 0
 
+def line_intersection(lines):
+    p1, p2 = [np.array(c) for c in lines[0]]
+    q1, q2 = [np.array(c) for c in lines[1]]
+
+    diff = p2-p1
+    normal = [-diff[1], diff[0]]
+
+    v = q2 - q1
+    denom = dot(normal, v)
+    if abs(denom) < 1e-10:
+        bbox = diagram.bbox()
+        return np.array([(bbox[0]+bbox[2])/2, (bbox[1]+bbox[3])/2])
+    t = dot(normal, q1-p1) / denom
+    return q1 - t*v
+
 # find the intersection of two graphs or the zero of just one
-def intersect(functions, seed):
+def intersect(functions, seed=None):
     bbox = diagram.bbox()
     width = bbox[2] - bbox[0]
     height = bbox[3] - bbox[1]
@@ -133,8 +151,20 @@ def intersect(functions, seed):
     upper = bbox[3] + height
     lower = bbox[1] - height
 
+    # we want to allow for some flexibility. We can find the intersection
+    # of
+    # -- two graphs f(x), g(x):  intersect((f,g), seed)
+    # -- zero of f(x):           intersect(f, seed)
+    # -- solve f(x) = y:         intersect((f, y), seed)
+    # -- two lines:              intersect((p1,p2),(q1,q2),seed)
     if isinstance(functions, np.ndarray):
-        f = lambda x: functions[0](x) - functions[1](x)
+        if isinstance(functions[0], np.ndarray):
+            return line_intersection(functions)
+        try:
+            y_value = float(functions[1])
+            f = lambda x: functions[0](x) - y_value
+        except:
+            f = lambda x: functions[0](x) - functions[1](x)
     else:
         f = functions
 
