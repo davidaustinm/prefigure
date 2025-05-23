@@ -97,5 +97,6 @@ def finish_outline(element, diagram, parent):
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),
-                           element.get('fill', 'none'),
+#                           element.get('fill', 'none'),
+                           'none',
                            parent)

@@ -521,7 +521,11 @@ class Diagram:
         # We have to clean up the arrow heads.  The references to the
         # arrow heads are in the reusable so we'll retrieve them and
         # and include them with the use element.
-        reuse_handle = element.get('id')+self.id_suffix[-1]+'-outline'
+        element_id = element.get('id')
+        if element_id.endswith(self.id_suffix[-1]):
+            reuse_handle = element_id + '-outline'
+        else:
+            reuse_handle = element.get('id')+self.id_suffix[-1]+'-outline'
         reusable = self.get_reusable(reuse_handle)
         use.set('href', r'#' + reuse_handle)
         for marker in ['marker-start', 'marker-end', 'marker-mid']:
