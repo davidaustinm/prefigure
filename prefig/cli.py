@@ -347,21 +347,6 @@ def view(filename, ignore_annotations, port):
             diagcess_dir = dir
             break
 
-    # if we didn't find the diagcess tools, we'll install them here
-    if diagcess_dir is None:
-        prefig_root = Path(__file__).parent
-        source = prefig_root / 'resources' / 'diagcess'
-        cwd = Path(os.getcwd())
-    
-        shutil.copytree(
-            source,
-            cwd,
-            dirs_exist_ok = True
-        )
-        diagcess_dir = cwd
-
-    diagcess_file = diagcess_dir / 'diagcess.html'
-
     # Now we'll look for the output SVG file to view
     # If we're given an xml file, we'll modify the filename
     if filename.endswith('.xml'):
@@ -378,12 +363,26 @@ def view(filename, ignore_annotations, port):
         log.warning(f"There is no directory {path.parent}")
         return
 
-    for dir, dirs, files in os.walk(os.getcwd()):
-        files = set(files)
-        if path.name in files:
-            view_path = path.parent / dir / path.name
+    # we're going to look for file to view in the current directory first
+    cwd_files = os.listdir('.')
+    if path.name in cwd_files:
+        view_path = path.parent / path.name
+    else:
+        # now we'll look in output
+        if 'output' in cwd_files:
+            cwd_files = os.listdir('output')
+            if path.name in cwd_files:
+                view_path = path.parent / 'output' / path.name
+
+    # if we still didn't find it, descend the file structure
     if view_path is None:
-        log.warning(f'Unable to find {filename}')
+        for dir, dirs, files in os.walk(os.getcwd()):
+            files = set(files)
+            if path.name in files:
+                view_path = path.parent / dir / path.name
+
+    if view_path is None:
+        log.error(f'Unable to find {filename}')
         return
 
     # We are going to start the server from the home directory
@@ -416,6 +415,22 @@ def view(filename, ignore_annotations, port):
         webbrowser.open(url)
     else:
         # There are annotations so we'll open with diagcess
+
+        # if we didn't find the diagcess tools, we'll install them here
+        if diagcess_dir is None:
+            prefig_root = Path(__file__).parent
+            source = prefig_root / 'resources' / 'diagcess'
+            cwd = Path(os.getcwd())
+
+            shutil.copytree(
+                source,
+                cwd,
+                dirs_exist_ok = True
+            )
+            diagcess_dir = cwd
+
+        diagcess_file = diagcess_dir / 'diagcess.html'
+
         file_rel_path = os.path.relpath(view_path, diagcess_dir)
         file_rel_path = file_rel_path[:-4]
         diagcess_rel_path = os.path.relpath(diagcess_file, home_dir)

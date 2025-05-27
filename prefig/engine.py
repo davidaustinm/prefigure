@@ -40,7 +40,7 @@ def build(
 ):
     pub_requested = not ignore_publication and publication is not None
     path = Path(filename)
-    if path.suffix != '.xml':
+    if path.suffix == '':
         filename = str(path.parent / (path.stem + '.xml'))
 
     # We're going to look for a publication, possibly in a parent directory
@@ -121,23 +121,35 @@ def pdf(
         filename = Path(filename)
     
     if filename.suffix != '.svg':
-        filename = filename.parent / (filename.name + '.svg')
+        filename = filename.parent / (filename.stem + '.svg')
 
     if build_path is None:
         filename_str = str(filename)
-        for dir, dirs, files in os.walk(os.getcwd()):
-            files = set(files)
-            if filename_str in files:
-                build_path = dir / filename
+
+        # fist look in current directory
+        cwd_files = os.listdir('.')
+        if filename_str in cwd_files:
+            build_path = filename
+        else:
+            if 'output' in cwd_files:
+                output_files = os.listdir('output')
+                if filename_str in output_files:
+                    build_path = 'output' / filename
+
         if build_path is None:
-            log.debug(f"Unable to find {filename}")
+            for dir, dirs, files in os.walk(os.getcwd()):
+                files = set(files)
+                if filename_str in files:
+                    build_path = dir / filename
+        if build_path is None:
+            log.error(f"Unable to find {filename}")
             return
 
     dpi = str(dpi)
     executable = shutil.which('rsvg-convert')
     if executable is None:
-        log.debug("rsvg-convert is required to create PDFs.")
-        log.debug("See the installation instructions at https://prefigure.org")
+        log.error("rsvg-convert is required to create PDFs.")
+        log.error("See the installation instructions at https://prefigure.org")
         return
     
     log.info(f"Converting {build_path} to PDF")
@@ -184,12 +196,25 @@ def png(
 
     if build_path is None:
         filename_str = str(filename)
-        for dir, dirs, files in os.walk(os.getcwd()):
-            files = set(files)
-            if filename_str in files:
-                build_path = dir / filename
+        # look first in current directory
+        cwd_files = os.listdir('.')
+        if filename_str in cwd_files:
+            build_path = filename
+        else:
+            # now look in output
+            if 'output' in cwd_files:
+                output_files = os.listdir('output')
+                if filename_str in output_files:
+                    build_path = 'output' / filename
+
+        # we still haven't found it so descend in the file system
         if build_path is None:
-            log.debug(f"Unable to find {filename}")
+            for dir, dirs, files in os.walk(os.getcwd()):
+                files = set(files)
+                if filename_str in files:
+                    build_path = dir / filename
+        if build_path is None:
+            log.error(f"Unable to find {filename}")
             return
 
     log.info(f"Converting {build_path} to PDF")
