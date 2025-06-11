@@ -18,6 +18,9 @@ def set_diagram(d):
 def dot(u, v):
     return np.dot(np.array(u), np.array(v))
 
+def distance(p, q):
+    return length(np.array(p) - np.array(q))
+
 def length(u):
     return np.linalg.norm(np.array(u))
 

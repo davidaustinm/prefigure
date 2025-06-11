@@ -376,6 +376,8 @@ Area-Between-Curves = element area-between-curves {
     attribute functions {text}?,
     attribute domain {text}?,
     attribute N {text}?,
+    attribute coordinates {"polar"|"cartesian"}?,
+    attribute domain-degrees {"yes"|"no"}?,
     FillAttributes,
     CommonAttributes
 }
@@ -385,6 +387,8 @@ Area-Under-Curve = element area-under-curve {
     attribute function {text},
     attribute domain {text}?,
     attribute N {text}?,
+    attribute coordinates {"polar"|"cartesian"}?,
+    attribute domain-degrees {"yes"|"no"}?,
     FillAttributes,
     CommonAttributes
 }
@@ -420,6 +424,8 @@ Grid = element grid {
     attribute v-pi-format {"yes"|"no"}?,
     attribute stroke {text}?,
     attribute thickness {text}?,
+    attribute coordinates {text}?,
+    attribute spacing-degrees {"yes"|"no"}?,
     CommonAttributes
 }
 
@@ -468,6 +474,10 @@ Graph = element graph {
     attribute function {text},
     attribute N {text}?,
     attribute domain {text}?,
+    attribute coordinates {"polar"|"coordinates"}?,
+    attribute domain-degress {"yes"|"no"}?,
+    attribute closed {"yes"|"no"}?,
+    attribute fill {text}?,
     StrokeAttributes,
     CommonAttributes
 }

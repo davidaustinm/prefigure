@@ -942,6 +942,22 @@
       <optional>
         <attribute name="N"/>
       </optional>
+      <optional>
+        <attribute name="coordinates">
+          <choice>
+            <value>polar</value>
+            <value>cartesian</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="domain-degrees">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
     </element>
@@ -957,6 +973,22 @@
       </optional>
       <optional>
         <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="coordinates">
+          <choice>
+            <value>polar</value>
+            <value>cartesian</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="domain-degrees">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
       </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
@@ -1084,6 +1116,17 @@
       </optional>
       <optional>
         <attribute name="thickness"/>
+      </optional>
+      <optional>
+        <attribute name="coordinates"/>
+      </optional>
+      <optional>
+        <attribute name="spacing-degrees">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
       </optional>
       <ref name="CommonAttributes"/>
     </element>
@@ -1220,6 +1263,33 @@
       </optional>
       <optional>
         <attribute name="domain"/>
+      </optional>
+      <optional>
+        <attribute name="coordinates">
+          <choice>
+            <value>polar</value>
+            <value>coordinates</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="domain-degress">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="closed">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="fill"/>
       </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>

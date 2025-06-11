@@ -1,5 +1,7 @@
 import lxml.etree as ET
 import logging
+import math
+from . import math_utilities as math_util
 from . import user_namespace as un
 from . import utilities as util
 from . import arrow
@@ -15,23 +17,27 @@ def graph(element, diagram, parent, outline_status = None):
         finish_outline(element, diagram, parent)
         return
 
+    polar = element.get('coordinates', 'cartesian') == 'polar'
     # by default, the domain is the width of the bounding box
     bbox = diagram.bbox()
     domain = element.get('domain')
     if domain is None:
-        domain = [bbox[0], bbox[2]]
+        if polar:
+            domain = [0, 2*math.pi]
+        else:
+            domain = [bbox[0], bbox[2]]
     else:
         domain = un.valid_eval(domain)
 
     # if there are arrows, we need to pull the domain in by two pixels
     # so that the arrows don't go outside the domain
     arrows = int(element.get('arrows', '0'))
-    if arrows > 0:
+    if arrows > 0 and not polar:
         end = diagram.transform((domain[1], 0))
         end[0] -= 2
         new_domain = diagram.inverse_transform(end)
         domain[1] = new_domain[0]
-    if arrows == 2:
+    if arrows == 2 and not polar:
         begin = diagram.transform((domain[0],0))
         begin[0] += 2
         new_domain = diagram.inverse_transform(begin)
@@ -43,6 +49,78 @@ def graph(element, diagram, parent, outline_status = None):
     except SyntaxError as e:
         log.error(f"Error retrieving function in graph: {str(e)}")
         return
+
+    N = int(element.get('N', '100'))
+    if polar:
+        cmds = polar_path(element, diagram, f, domain, N)
+    else:
+        cmds = cartesian_path(element, diagram, f, domain, N)
+
+    # now set up the attributes
+    util.set_attr(element, 'thickness', '2')
+    util.set_attr(element, 'stroke', 'blue')
+    if diagram.output_format() == 'tactile':
+        element.set('stroke', 'black')
+
+    attrib = {'id': diagram.find_id(element, element.get('id'))}
+    attrib.update(util.get_1d_attr(element))
+    attrib.update(
+        {
+            'd': ' '.join(cmds),
+            'fill': 'none'
+        }
+    )
+    if polar and element.get('fill', None) is not None:
+        attrib['fill'] = element.get('fill')
+
+    path = ET.Element('path', attrib = attrib)
+
+    arrows = int(element.get('arrows', '0'))
+    forward = 'marker-end'
+    backward = 'marker-start'
+    if element.get('reverse', 'no') == 'yes':
+        forward, backward = backward, forward
+    if arrows > 0:
+        arrow.add_arrowhead_to_path(
+            diagram,
+            forward,
+            path,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
+    if arrows > 1:
+        arrow.add_arrowhead_to_path(
+            diagram,
+            backward,
+            path,
+            arrow_width=element.get('arrow-width', None),
+            arrow_angles=element.get('arrow-angles', None)
+        )
+
+    # By default, we clip the graph to the bounding box
+    if element.get('cliptobbox') is None:
+        element.set('cliptobbox', 'yes')
+    util.cliptobbox(path, element, diagram)
+
+    # Finish up handling any requested outlines
+    if outline_status == 'add_outline':
+        diagram.add_outline(element, path, parent)
+        return
+
+    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+        diagram.add_outline(element, path, parent)
+        finish_outline(element, diagram, parent)
+    else:
+        parent.append(path)
+
+def finish_outline(element, diagram, parent):
+    diagram.finish_outline(element,
+                           element.get('stroke'),
+                           element.get('thickness'),
+                           element.get('fill', 'none'),
+                           parent)
+
+def cartesian_path(element, diagram, f, domain, N):
 
     # The graphing routine is relatively straightforward.
     # We just walk across the horizontal axis and connect points with lines
@@ -59,7 +137,7 @@ def graph(element, diagram, parent, outline_status = None):
     # and last_visible, which tells us whether the last point plotted is
     # in the viewing window
 
-    N = int(element.get('N', 100))
+    bbox = diagram.bbox()
     dx = (domain[1] - domain[0])/N
     x = domain[0]
     cmds = []
@@ -151,66 +229,37 @@ def graph(element, diagram, parent, outline_status = None):
         else:
             last_visible = False
 
-    # now set up the attributes
-    util.set_attr(element, 'thickness', '2')
-    util.set_attr(element, 'stroke', 'blue')
-    if diagram.output_format() == 'tactile':
-        element.set('stroke', 'black')
+    return cmds
 
-    attrib = {'id': diagram.find_id(element, element.get('id'))}
-    attrib.update(util.get_1d_attr(element))
-    attrib.update(
-        {
-            'd': ' '.join(cmds),
-            'fill': 'none'
-        }
-    )
+def polar_path(element, diagram, f, domain, N):
+    bbox = diagram.bbox()
+    center = math_util.midpoint(bbox[:2], bbox[2:])
+    R = math_util.distance(center, bbox[2:])
+    
+    if element.get('domain-degrees', 'no') == 'yes':
+        domain = [math.radians(d) for d in domain]
+    t = domain[0]
+    dt = (domain[1] - domain[0])/N
+    polar_cmds = []
+    next_cmd = 'M'
+    for _ in range(N+1):
+        try:
+            r = f(t)
+        except:
+            next_cmd = 'M'
+            t += dt
+            continue
 
-    path = ET.Element('path', attrib = attrib)
+        p = (r*math.cos(t), r*math.sin(t))
+        if math_util.distance(p, center) > 2*R:
+            next_cmd = 'M'
+            t += dt
+            continue
+        polar_cmds.append(next_cmd)
+        polar_cmds.append(util.pt2str(diagram.transform(p)))
+        next_cmd = 'L'
+        t += dt
+    if element.get('closed', 'no') == 'yes':
+        polar_cmds.append('Z')
 
-    arrows = int(element.get('arrows', '0'))
-    forward = 'marker-end'
-    backward = 'marker-start'
-    if element.get('reverse', 'no') == 'yes':
-        forward, backward = backward, forward
-    if arrows > 0:
-        arrow.add_arrowhead_to_path(
-            diagram,
-            forward,
-            path,
-            arrow_width=element.get('arrow-width', None),
-            arrow_angles=element.get('arrow-angles', None)
-        )
-    if arrows > 1:
-        arrow.add_arrowhead_to_path(
-            diagram,
-            backward,
-            path,
-            arrow_width=element.get('arrow-width', None),
-            arrow_angles=element.get('arrow-angles', None)
-        )
-
-    # By default, we clip the graph to the bounding box
-    if element.get('cliptobbox') is None:
-        element.set('cliptobbox', 'yes')
-    util.cliptobbox(path, element, diagram)
-
-    # Finish up handling any requested outlines
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
-        diagram.add_outline(element, path, parent)
-        finish_outline(element, diagram, parent)
-    else:
-        parent.append(path)
-
-def finish_outline(element, diagram, parent):
-    diagram.finish_outline(element,
-                           element.get('stroke'),
-                           element.get('thickness'),
-                           element.get('fill', 'none'),
-                           parent)
-
-
+    return polar_cmds

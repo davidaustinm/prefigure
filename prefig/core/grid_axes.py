@@ -3,6 +3,7 @@ import math
 import re
 import logging
 import numpy as np
+from . import math_utilities as math_util
 from . import utilities as util
 from . import user_namespace as un
 from . import label
@@ -73,9 +74,12 @@ def grid(element, diagram, parent, outline_status):
     h_pi_format = element.get('h-pi-format', 'no') == 'yes'
     v_pi_format = element.get('v-pi-format', 'no') == 'yes'
     
+    coordinates = element.get('coordinates', 'cartesian')
+    hspacings_set = False
     if spacings is not None:
         try:
             rx, ry = un.valid_eval(spacings)
+            hspacings_set = True
         except:
             log.error(f"Error in <grid> parsing spacings={element.get('spacings')}")
             return
@@ -85,24 +89,86 @@ def grid(element, diagram, parent, outline_status):
             rx = find_gridspacing((bbox[0], bbox[2]), h_pi_format) 
         else:
             rx = un.valid_eval(rx)
+            hspacings_set = True
 
-        ry = element.get('vspacing')
-        if ry is None:
-            ry = find_gridspacing((bbox[1], bbox[3]), v_pi_format)
+        if coordinates == 'polar':
+            ry = [0, math.pi/6, 2*math.pi]
         else:
-            ry = un.valid_eval(ry)
+            ry = element.get('vspacing')
+            if ry is None:
+                ry = find_gridspacing((bbox[1], bbox[3]), v_pi_format)
+            else:
+                ry = un.valid_eval(ry)
 
+    if coordinates == 'polar':
+        id = diagram.get_clippath()
+        grid.set('clip-path', r'url(#{})'.format(id))
+        
+        bbox = list(diagram.bbox())
+        endpoints = []
+        for _ in range(4):
+            endpoints.append(bbox[:2])
+            bbox = bbox[1:] + [bbox[0]]
+        R = max([math_util.length(p) for p in endpoints])
+        if hspacings_set:
+            R = rx[2]
+        r = rx[1]
+        N = 100
+        dt = 2*math.pi/N
+        while r <= R:
+            circle = ET.SubElement(grid, 'path')
+            t = 0
+            cmds = ['M']
+            point = diagram.transform([r*math.cos(t), r*math.sin(t)])
+            cmds.append(util.pt2str(point))
+            for _ in range(N):
+                t += dt
+                cmds.append('L')
+                point = diagram.transform([r*math.cos(t), r*math.sin(t)])
+                cmds.append(util.pt2str(point))
+            cmds.append('Z')
+            circle.set('d', ' '.join(cmds))
+            circle.set('fill', 'none')
+            r += rx[1]
+
+        if element.get('spacing-degrees', 'no') == 'yes':
+            ry = [math.radians(t) for t in ry]
+        t = ry[0]
+        while t <= ry[2]:
+            direction = np.array([math.cos(t), math.sin(t)])
+            intersection_times = []
+            vert, horiz =  np.isclose(direction, np.array([0,0]))
+            if not vert:
+                intersection_times.append(bbox[0]/direction[0])
+                intersection_times.append(bbox[2]/direction[0])
+            if not horiz:
+                intersection_times.append(bbox[1]/direction[1])
+                intersection_times.append(bbox[3]/direction[1])
+            intersection_time = max(intersection_times)
+            if hspacings_set:
+                intersection_time = R
+            if intersection_time > 0:
+                line_el = ET.SubElement(grid, 'line')
+                start = diagram.transform((0,0))
+                end = diagram.transform(intersection_time*direction)
+                line_el.set('x1', util.float2str(start[0]))
+                line_el.set('y1', util.float2str(start[1]))
+                line_el.set('x2', util.float2str(end[0]))
+                line_el.set('y2', util.float2str(end[1]))
+
+            t += ry[1]
+        return
+
+    # now we'll just build a plain rectangular grid
     x = rx[0]
     while x <= rx[2]:
         line_el = line.mk_line((x,bbox[1]), (x,bbox[3]), diagram)
-#        line_el.set('type', 'vertical grid')
         grid.append(line_el)
         x += rx[1]
 
     y = ry[0]
     while y <= ry[2]:
         line_el = line.mk_line((bbox[0], y), (bbox[2], y), diagram)
-#        line_el.set('type', 'horizontal grid')
         grid.append(line_el)
         y += ry[1]
 
@@ -518,7 +584,6 @@ def axes(element, diagram, parent, outline_status):
                     ylabel.set('alignment', 'west')
                     ylabel.set('offset', '(-7,0)')
 
-#            ylabel.set('clear-background', 'no')
             if clear_background:
                 ylabel.set('clear-background', 'yes')
             label.label(ylabel, diagram, parent, outline_status)
@@ -527,7 +592,6 @@ def axes(element, diagram, parent, outline_status):
                                    (p[0]+tick_direction*ticksize[1], p[1]),
                                    diagram,
                                    user_coords=False)
-#            line_el.set('type', 'tick on vertical axis')
             g_vticks.append(line_el)
             y += vlabels[1]
 
@@ -601,6 +665,16 @@ def grid_axes(element, diagram, parent, outline_status):
         el.set('h-frame', element.get('h-frame'))
     if element.get('v-frame') is not None:
         el.set('v-frame', element.get('v-frame'))
+    if element.get('clear-background') is not None:
+        el.set('clear-background', element.get('clear-background'))
+    if element.get('labels') is not None:
+        el.set('labels', element.get('labels'))
+    if element.get('stroke') is not None:
+        el.set('stroke', element.get('stroke'))
+    if element.get('thickness') is not None:
+        el.set('thickness', element.get('thickness'))
+    if element.get('arrows') is not None:
+        el.set('arrows', element.get('arrows'))
     for child in element:
         el.append(child)
         
