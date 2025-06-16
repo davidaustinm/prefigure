@@ -23,21 +23,20 @@ def main():
     # on Windows and linux
     wd = os.getcwd()
     os.chdir(destination)
-    log.info(f"Installing MathJax libraries in {destination}")
 
     # we'll try to find the path to npm, which is needed for windows testing
     npm_cmd = shutil.which("npm")
     if npm_cmd is None:
-        npm_cmd = "npm"
-
-    try:
-        subprocess.run([npm_cmd, "install"])
-    except Exception as e:
-        log.error("MathJax installation failed.  Is npm installed on your system?")
-        # windows debug
-        log.info(f"npm_cmd is at {npm_cmd}")
-#        log.exception("Stack trace")
-        return False
+        log.error("Cannot find npm to install MathJax for PreFigure")
+    else:
+        log.info(f"Installing MathJax libraries in {destination}")
+        try:
+            subprocess.run([npm_cmd, "install"])
+        except Exception as e:
+            log.error("MathJax installation failed.  Is npm installed on your system?")
+            # windows debug
+            log.info(f"npm_cmd is at {npm_cmd}")
+            return False
     
     os.chdir(wd)
     return True

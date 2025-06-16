@@ -79,12 +79,17 @@ def init():
     # on Windows and linux
     wd = os.getcwd()
     os.chdir(destination)
-    log.info(f"Installing MathJax libraries in {destination}")
-    try:
-        subprocess.run(["npm", "install"]) #, f"--prefix={destination}"])
-    except:
-        log.warning("MathJax installation failed.  Is npm installed on your system?")
-        log.setLevel(log_level)
+
+    npm_cmd = shutil.which("npm")
+    if npm_cmd is None:
+        log.error("Cannot find npm to install MathJax for PreFigure")
+    else:
+        log.info(f"Installing MathJax libraries in {destination}")
+        try:
+            subprocess.run([npm_cmd, "install"]) #, f"--prefix={destination}"])
+        except:
+            log.warning("MathJax installation failed.  Is npm installed on your system?")
+            log.setLevel(log_level)
     os.chdir(wd)
 
     log.info("Installing the Braille29 font")
