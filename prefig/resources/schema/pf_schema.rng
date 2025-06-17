@@ -826,6 +826,9 @@
         <ref name="Spline"/>
       </zeroOrMore>
       <zeroOrMore>
+        <ref name="Tick-Mark"/>
+      </zeroOrMore>
+      <zeroOrMore>
         <ref name="Tangent-line"/>
       </zeroOrMore>
       <zeroOrMore>
@@ -1214,6 +1217,30 @@
       </optional>
       <optional>
         <ref name="YLabel"/>
+      </optional>
+    </element>
+  </define>
+  <define name="Tick-Mark">
+    <element name="tick-mark">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="location"/>
+      <optional>
+        <attribute name="axis"/>
+      </optional>
+      <optional>
+        <attribute name="stroke"/>
+      </optional>
+      <optional>
+        <attribute name="size"/>
+      </optional>
+      <optional>
+        <attribute name="thickness"/>
+      </optional>
+      <ref name="LabelAttributes"/>
+      <optional>
+        <ref name="LabelText"/>
       </optional>
     </element>
   </define>

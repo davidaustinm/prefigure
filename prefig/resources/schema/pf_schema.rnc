@@ -334,6 +334,7 @@ GraphicalElements =
         Shape* &
         Slope-Field* &
         Spline* &
+        Tick-Mark* &
         Tangent-line* &
         Triangle* &
         Vector*
@@ -448,6 +449,17 @@ Grid-Axes = element grid-axes {
     CommonAttributes,
     XLabel?,
     YLabel?    
+}
+
+Tick-Mark = element tick-mark {
+    attribute at {text}?,
+    attribute location {text},
+    attribute axis {text}?,
+    attribute stroke {text}?,
+    attribute size {text}?,
+    attribute thickness {text}?,
+    LabelAttributes,
+    LabelText?
 }
 
 Circle = element circle {

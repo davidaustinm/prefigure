@@ -678,6 +678,9 @@ def tick_mark(element, diagram, parent, outline_status):
                                (p[0]+tick_direction*size[1], p[1]),
                                diagram,
                                user_coords=False)
+
+    thickness = element.get('thickness', '2')
+    line_el.set('stroke-width', thickness)
     stroke = element.get('stroke', 'black')
     if tactile:
         stroke = 'black'
