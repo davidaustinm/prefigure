@@ -61,6 +61,7 @@ tag_dict = {
     'rectangle': rectangle.rectangle,
     'repeat': repeat.repeat,
     'riemann-sum': riemann_sum.riemann_sum,
+    'tick-mark': grid_axes.tick_mark,
     'transform': CTM.transform_group,
     'rotate': CTM.transform_rotate,
     'scale': CTM.transform_scale,

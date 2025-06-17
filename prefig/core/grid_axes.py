@@ -3,6 +3,7 @@ import math
 import re
 import logging
 import numpy as np
+import copy
 from . import math_utilities as math_util
 from . import utilities as util
 from . import user_namespace as un
@@ -26,6 +27,12 @@ grid_delta = {2: 0.1, 3: 0.25, 4: 0.25, 5: 0.5,
               6: 0.5, 7: 0.5, 8: 0.5, 9: 0.5, 10: 0.5,
               11: 0.5, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 
               17: 1, 18: 1, 19: 1, 20: 1 }
+
+x_axis_location = 0
+y_axis_location = 0
+ticksize = (3, 3)
+top_labels = False
+right_labels = False
 
 def find_gridspacing(coordinate_range, pi_format=False):
     if pi_format:
@@ -256,7 +263,9 @@ def axes(element, diagram, parent, outline_status):
     util.cliptobbox(axes, element, diagram)
     ctm, bbox = diagram.ctm_bbox()
 
+    global top_labels
     top_labels = False
+    global y_axis_location
     y_axis_location = 0
     y_axis_offsets = (0,0)
     h_zero_include = False
@@ -284,7 +293,9 @@ def axes(element, diagram, parent, outline_status):
 
     y_axis_offsets = np.array(y_axis_offsets)
 
+    global right_labels
     right_labels = False
+    global x_axis_location
     x_axis_location = 0
     x_axis_offsets = (0,0)
     v_zero_include = False
@@ -425,10 +436,17 @@ def axes(element, diagram, parent, outline_status):
     if not h_zero_include:
         h_exclude.append(0)
 
+    h_tick_direction = 1
+    if top_labels:
+        h_tick_direction = -1
+    v_tick_direction = 1
+    if right_labels:
+        v_tick_direction = -1
+
+    global ticksize
     if diagram.output_format() == 'tactile':
         ticksize = (18, 0)
-    else:
-        ticksize = (3, 3)
+
     if hticks is not None:
         try:
             hticks = un.valid_eval(hticks)
@@ -621,6 +639,95 @@ def axes(element, diagram, parent, outline_status):
         if arrows > 0:
             el.set('offset', '(2,-2)')
         label.label(el, diagram, parent, outline_status)
+
+def tick_mark(element, diagram, parent, outline_status):
+    # tick marks are in the background so there's no need to worry
+    # about the outline_status
+
+    axis = element.get('axis', 'horizontal')
+    tactile = diagram.output_format() == 'tactile'
+    location = un.valid_eval(element.get('location', '0'))
+    if not isinstance(location, np.ndarray):
+        if axis == 'horizontal':
+            location = (location, y_axis_location)
+        else:
+            location = (x_axis_location, location)
+    p = diagram.transform(location)
+
+    # ticksize is globally defined but we can change it
+    global ticksize
+    size = ticksize
+    if tactile:
+        size = (18,0)
+    else:
+        if element.get('size', None) is not None:
+            size = un.valid_eval(element.get('size'))
+
+    tick_direction = 1
+    if axis == 'horizontal':
+        if top_labels:
+            tick_direction = -1
+        line_el = line.mk_line((p[0], p[1]+tick_direction*size[0]),
+                               (p[0], p[1]-tick_direction*size[1]),
+                               diagram,
+                               user_coords=False)
+    else:
+        if right_labels:
+            tick_direction = -1
+        line_el = line.mk_line((p[0]-tick_direction*size[0], p[1]),
+                               (p[0]+tick_direction*size[1], p[1]),
+                               diagram,
+                               user_coords=False)
+    stroke = element.get('stroke', 'black')
+    if tactile:
+        stroke = 'black'
+    line_el.set('stroke', stroke)
+    parent.append(line_el)
+
+    try:
+        el_text = element.text.strip()
+    except:
+        el_text = None
+    if el_text is not None and (len(el_text) > 0 or len(element) > 0):
+        el_copy = copy.deepcopy(element)
+        if axis == 'horizontal':
+            if tactile:
+                if top_labels:
+                    align = 'hat'
+                    off = '(0,0)'
+                else:
+                    align = 'ha'
+                    off = '(0,0)'
+            else:
+                if top_labels:
+                    align = 'north'
+                    off = '(0,7)'
+                else:
+                    align = 'south'
+                    off = '(0,-7)'
+        else:
+            if tactile:
+                if right_labels:
+                    align = 'east'
+                    off = '(25,0)'
+                else:
+                    align = 'va'
+                    off = '(-25,0)'
+            else:
+                if right_labels:
+                    align = 'east'
+                    off = '(7,0)'
+                else:
+                    align = 'west'
+                    off = '(-7,0)'
+
+        if el_copy.get('alignment', None) is None:
+            el_copy.set('alignment', align)
+        if el_copy.get('offset', None) is None:
+            el_copy.set('offset', off)
+        el_copy.set("user-coords", "no")
+        el_copy.set("anchor", util.pt2str(p, spacer=","))
+        label.label(el_copy, diagram, parent, outline_status)
 
 
 # Adds both a grid and axes with spacings found automatically
