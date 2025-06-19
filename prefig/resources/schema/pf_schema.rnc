@@ -407,9 +407,11 @@ Axes = element axes {
     attribute v-pi-format {"yes"|"no"}?,
     attribute h-frame {"bottom"|"top"}?,
     attribute v-frame {"left"|"right"}?,
-    attribute labels {"yes"|"no"}?,
     attribute stroke {text}?,
     attribute thickness {text}?,
+    attribute tick-size {text}?,
+    attribute axes {"horizontal"|"vertical"}?,
+    attribute bounding-box {"yes"|"no"}?,
     CommonAttributes,
     XLabel?,
     YLabel?
@@ -445,7 +447,9 @@ Grid-Axes = element grid-axes {
     attribute ylabel {text}?,
     attribute arrows {text}?,
     attribute decorations {"yes"|"no"}?,
-    attribute labels {"yes"|"no"}?,
+    attribute tick-size {text}?,
+    attribute axes {"horizontal"|"vertical"}?,
+    attribute bounding-box {"yes"|"no"}?,
     CommonAttributes,
     XLabel?,
     YLabel?    

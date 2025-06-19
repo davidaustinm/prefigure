@@ -1059,18 +1059,29 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="labels">
+        <attribute name="stroke"/>
+      </optional>
+      <optional>
+        <attribute name="thickness"/>
+      </optional>
+      <optional>
+        <attribute name="tick-size"/>
+      </optional>
+      <optional>
+        <attribute name="axes">
+          <choice>
+            <value>horizontal</value>
+            <value>vertical</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="bounding-box">
           <choice>
             <value>yes</value>
             <value>no</value>
           </choice>
         </attribute>
-      </optional>
-      <optional>
-        <attribute name="stroke"/>
-      </optional>
-      <optional>
-        <attribute name="thickness"/>
       </optional>
       <ref name="CommonAttributes"/>
       <optional>
@@ -1204,7 +1215,18 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="labels">
+        <attribute name="tick-size"/>
+      </optional>
+      <optional>
+        <attribute name="axes">
+          <choice>
+            <value>horizontal</value>
+            <value>vertical</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="bounding-box">
           <choice>
             <value>yes</value>
             <value>no</value>
