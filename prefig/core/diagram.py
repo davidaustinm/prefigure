@@ -75,6 +75,9 @@ class Diagram:
         # stack for managing bounding boxes and clipping
         self.clippaths = []
 
+        # stack for managing scales of coordinate systems
+        self.scale_stack = []
+
         # list for legends
         self.legends = []
 
@@ -250,6 +253,7 @@ class Diagram:
         bbox = [0,0,width,height]
         un.enter_namespace('bbox', bbox)
         self.ctm_stack = [[ctm, bbox]]
+        self.scale_stack = [['linear', 'linear']]
 
         # initialize the SVG element 'defs' and add the clipping path
         self.defs = ET.SubElement(self.root, 'defs')
@@ -271,6 +275,15 @@ class Diagram:
 
     def pop_clippath(self):
         self.clippaths.pop(-1)
+
+    def push_scales(self, scales):
+        self.scale_stack.append(scales)
+
+    def pop_scales(self):
+        self.scale_stack.pop(-1)
+
+    def get_scales(self):
+        return self.scale_stack[-1]
 
     def get_clippath(self):
         return self.clippaths[-1]

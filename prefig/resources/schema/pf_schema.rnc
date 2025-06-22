@@ -429,6 +429,7 @@ Grid = element grid {
     attribute thickness {text}?,
     attribute coordinates {text}?,
     attribute spacing-degrees {"yes"|"no"}?,
+    attribute scales {"linear"|"semilogx"|"semilogy"|"loglog"}?,
     CommonAttributes
 }
 

@@ -1,6 +1,7 @@
 import lxml.etree as ET
 import logging
 import math
+import numpy as np
 from . import math_utilities as math_util
 from . import user_namespace as un
 from . import utilities as util
@@ -121,6 +122,9 @@ def finish_outline(element, diagram, parent):
                            parent)
 
 def cartesian_path(element, diagram, f, domain, N):
+    scale = diagram.get_scales()[0]
+    if scale:
+        return log_path(element, diagram, f, domain, N)
 
     # The graphing routine is relatively straightforward.
     # We just walk across the horizontal axis and connect points with lines
@@ -229,6 +233,18 @@ def cartesian_path(element, diagram, f, domain, N):
         else:
             last_visible = False
 
+    return cmds
+
+def log_path(element, diagram, f, domain, N):
+    x0 = np.log10(domain[0])
+    x1 = np.log10(domain[1])
+    x_values = np.logspace(x0, x1, N+1)
+    cmds = []
+    next_cmd = 'M'
+    for x in x_values:
+        p = diagram.transform((x, f(x)))
+        cmds += [next_cmd, util.pt2str(p)]
+        next_cmd = 'L'
     return cmds
 
 def polar_path(element, diagram, f, domain, N):

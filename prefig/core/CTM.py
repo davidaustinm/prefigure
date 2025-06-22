@@ -71,6 +71,10 @@ class CTM:
         else:
             self.ctm = ctm
         self.ctm_stack = []
+        self.scale_x = lambda x: x
+        self.scale_y = lambda y: y
+        self.inv_scale_x = lambda x: x
+        self.inv_scale_y = lambda y: y
 
     def push(self):
         self.ctm_stack.append([self.ctm, self.inverse])
@@ -80,6 +84,14 @@ class CTM:
             log.error("Attempt to restore an empty transform")
             return
         self.ctm, self.inverse = self.ctm_stack.pop(-1)
+
+    def set_log_x(self):
+        self.scale_x = lambda x: np.log10(x)
+        self.inv_scale_x = lambda x: 10**x
+
+    def set_log_y(self):
+        self.scale_y = lambda y: np.log10(y)
+        self.inv_scale_y = lambda y: 10**y
 
     def translate(self, x, y):
         m = translation(x, y)
@@ -111,12 +123,15 @@ class CTM:
     def inverse_transform(self, p):
         p = list(p).copy()
         p.append(1)
-        return np.array([math_util.dot(self.inverse[i], p) for i in range(2)])
+        inv_point = [math_util.dot(self.inverse[i], p) for i in range(2)]
+        return np.array([self.inv_scale_x(inv_point[0]),
+                         self.inv_scale_y(inv_point[1])])
 
     def transform(self, p):
-        p = list(p).copy()
+        p = [self.scale_x(p[0]), self.scale_y(p[1])]
         p.append(1)
-        return np.array([math_util.dot(self.ctm[i], p) for i in range(2)])
+        transformed_point = [math_util.dot(self.ctm[i], p) for i in range(2)]
+        return np.array(transformed_point)
 
     def copy(self):
         return copy.deepcopy(self) # CTM(copy.deepcopy(self.ctm))

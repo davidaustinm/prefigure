@@ -51,6 +51,57 @@ def find_label_positions(coordinate_range, pi_format = False):
         x1 = dx * math.floor(coordinate_range[1]/dx+1e-10)
     return (x0, dx, x1)
 
+def find_log_positions(r):
+    # argument r could have
+    #   three arguments if user supplied
+    #   two arguments if not
+    # each range 10^j -> 10^j+1 could have 1, 2, 5, 10, or 1/n lines
+    x0 = np.log10(r[0])
+    x1 = np.log10(r[-1])
+    if len(r) == 3:
+        if r[1] < 1:
+            spacing = r[1]
+        elif r[1] < 2:
+            spacing = 1
+        elif r[1] < 4:
+            spacing = 2
+        elif r[1] < 7:
+            spacing = 5
+        else:
+            spacing = 10
+    else:
+        width = abs(x1 - x0)
+        if width < 1.5:
+            spacing = 2
+        elif width <= 10:
+            spacing = 1
+        else:
+            spacing = 5/width
+
+    x0 = math.floor(x0)
+    x1 = math.ceil(x1)
+    positions = []
+    if spacing <= 1:
+        gap = round(1/spacing)
+        x = x0
+        while x <= x1:
+            positions.append(10**x)
+            x += gap
+    else:
+        if spacing == 2:
+            intermediate = [1,5]
+        elif spacing == 5:
+            intermediate = [1,2,4,6,8]
+        elif spacing == 10:
+            intermediate = [1,2,3,4,5,6,7,8,9]
+        else:
+            intermediate = [1]
+        x = x0
+        while x <= x1:
+            positions += [10**x*c for c in intermediate]
+            x += 1
+    return positions
+
 # find a string representation of x*pi
 def get_pi_text(x):
     if abs(abs(x) - 1) < 1e-10:
@@ -133,7 +184,7 @@ class Axes():
             log.error(f"Error in <axes> parsing arrows={element.get('arrows')}")
             self.arrows = 0
 
-        self.position_axes(element)
+        self.position_axes(element, diagram)
         self.apply_axis_labels(element, diagram, parent)
 
         if element.get('bounding-box', 'no') == 'yes':
@@ -160,7 +211,8 @@ class Axes():
             self.v_labels(element, diagram, parent)
 
 
-    def position_axes(self, element):
+    def position_axes(self, element, diagram):
+        scales = diagram.get_scales()
         self.y_axis_location = 0
         self.y_axis_offsets = (0,0)
         self.h_zero_include = False
@@ -187,6 +239,9 @@ class Axes():
             self.h_zero_include = True
             self.top_labels = True
 
+        if scales[1] == 'log':
+            self.y_axis_offsets = (0,0)
+            self.h_zero_include = True
         self.y_axis_offsets = np.array(self.y_axis_offsets)
 
         # which locations will not get ticks or labels 
@@ -225,6 +280,10 @@ class Axes():
             self.x_axis_offsets = (0,0)
             self.v_zero_include = True
             self.right_labels = True
+
+        if scales[1] == 'log':
+            self.x_axis_offsets = (0,0)
+            self.v_zero_include = True
 
         self.x_axis_offsets = np.array(self.x_axis_offsets)
 
@@ -359,11 +418,24 @@ class Axes():
         except:
             log.error(f"Error in <axes> parsing hticks={hticks}")
             return
-        x = hticks[0]
-        while x <= hticks[2]:
-            if any([abs(x-p) < self.position_tolerance for p in self.h_exclude]):
-                x += hticks[1]
+
+        scale = diagram.get_scales()[0]
+        if scale == 'log':
+            x_positions = find_log_positions(hticks)
+        else:
+            N = round( (hticks[2] - hticks[0]) / hticks[1])
+            x_positions = np.linspace(hticks[0], hticks[2], N+1)
+
+        for x in x_positions:
+            if x < self.bbox[0] or x > self.bbox[2]:
                 continue
+            if scale == 'log':
+                avoid = [abs(np.log10(x) - np.log10(p)) for p in self.h_exclude]
+            else:
+                avoid = [abs(x - p) for p in self.h_exclude]
+            if any([dist < self.position_tolerance for dist in avoid]):
+                continue
+
             p = diagram.transform((x,self.y_axis_location))
             line_el = line.mk_line((p[0],
                                     p[1]+self.h_tick_direction*self.ticksize[0]),
@@ -372,7 +444,6 @@ class Axes():
                                    diagram,
                                    user_coords=False)
             self.h_tick_group.append(line_el)
-            x += hticks[1]
                     
 
     def vertical_ticks(self, element, diagram):
@@ -388,12 +459,24 @@ class Axes():
         except:
             log.error(f"Error in <axes> parsing vticks={vticks}")
             return
-        y = vticks[0]
 
-        while y <= vticks[2]:
-            if any([abs(y-p) < self.position_tolerance for p in self.v_exclude]):
-                y += vticks[1]
+        scale = diagram.get_scales()[1]
+        if scale == 'log':
+            y_positions = find_log_positions(vticks)
+        else:
+            N = round( (vticks[2] - vticks[0]) / vticks[1])
+            y_positions = np.linspace(vticks[0], vticks[2], N+1)
+
+        for y in y_positions:
+            if y < self.bbox[1] or y > self.bbox[3]:
                 continue
+            if scale == 'log':
+                avoid = [abs(np.log10(y) - np.log10(p)) for p in self.v_exclude]
+            else:
+                avoid = [abs(y - p) for p in self.v_exclude]
+            if any([dist < self.position_tolerance for dist in avoid]):
+                continue
+
             p = diagram.transform((self.x_axis_location, y))
             line_el = line.mk_line((p[0]-self.v_tick_direction*self.ticksize[0],
                                     p[1]),
@@ -411,14 +494,26 @@ class Axes():
             return
 
         h_exclude = self.h_exclude[:]
-        
+
+        scale = diagram.get_scales()[0]
         if hlabels is None:
-            hlabels = find_label_positions((self.bbox[0], self.bbox[2]),
-                                           pi_format = self.h_pi_format)
+            if scale == 'log':
+                h_positions = find_log_positions((self.bbox[0],
+                                                       self.bbox[2]))
+            else:
+                hlabels = find_label_positions((self.bbox[0], self.bbox[2]),
+                                               pi_format = self.h_pi_format)
+                N = round( (hlabels[2] - hlabels[0]) / hlabels[1])
+                h_positions = np.linspace(hlabels[0], hlabels[2], N+1)
             h_exclude += [self.bbox[0], self.bbox[2]]
         else:
             try:
                 hlabels = un.valid_eval(hlabels)
+                if scale == 'log':
+                    h_positions = find_log_positions(hlabels)
+                else:
+                    N = round( (hlabels[2] - hlabels[0]) / hlabels[1])
+                    h_positions = np.linspace(hlabels[0], hlabels[2], N+1)
             except:
                 log.error(f"Error in <axes> parsing hlabels={hlabels}")
                 return
@@ -429,19 +524,36 @@ class Axes():
         if self.h_pi_format:
             h_scale = math.pi
 
-        x = hlabels[0]
-
         if self.h_tick_group.getparent() is None:
             self.axes.append(self.h_tick_group)
 
-        while x <= hlabels[2]:
-            if any([abs(x*h_scale-p) < self.position_tolerance for p in h_exclude]):
-                x += hlabels[1]
+        for x in h_positions:
+            if x < self.bbox[0] or x > self.bbox[2]:
+                continue
+            if scale == 'log':
+                avoid = [abs(np.log10(x*h_scale) - np.log10(p)) for p in h_exclude]
+            else:
+                avoid = [abs(x*h_scale - p) for p in h_exclude]
+            if any([dist < self.position_tolerance for dist in avoid]):
                 continue
 
             xlabel = ET.Element('label')
             math_element = ET.SubElement(xlabel, 'm')
-            math_element.text = r'\text{'+'{0:g}'.format(x)+'}'
+            if scale == 'log':
+                x_text = np.log10(x)
+                frac = x_text % 1.0
+                prefix = round(10**frac)
+                if prefix != 1:
+                    x_exp = math.floor(x_text)
+                    prefix = str(prefix)
+                    begin = prefix + r'\cdot10^{'
+                else:
+                    x_exp = x_text
+                    begin = r'10^{'
+                math_element.text = begin+'{0:g}'.format(x_exp)+'}'
+                xlabel.set('scale', '0.8')
+            else:
+                math_element.text = r'\text{'+'{0:g}'.format(x)+'}'
             if self.h_pi_format:
                 math_element.text = get_pi_text(x)
 
@@ -474,21 +586,32 @@ class Axes():
 
             self.h_tick_group.append(line_el)
 
-            x += hlabels[1]
-
     def v_labels(self, element, diagram, parent):
         vlabels = element.get('vlabels')
         if self.decorations == "no" and vlabels is None:
             return
 
         v_exclude = self.v_exclude[:]
+
+        scale = diagram.get_scales()[1]
         if vlabels is None:
-            vlabels = find_label_positions((self.bbox[1], self.bbox[3]),
-                                           pi_format = self.v_pi_format)
+            if scale == 'log':
+                v_positions = find_log_positions((self.bbox[1], self.bbox[3]))
+            else:
+                vlabels = find_label_positions((self.bbox[1], self.bbox[3]),
+                                               pi_format = self.v_pi_format)
+                N = round( (vlabels[2] - vlabels[0]) / vlabels[1])
+                v_positions = np.linspace(vlabels[0], vlabels[2], N+1)
+
             v_exclude += [self.bbox[1], self.bbox[3]]
         else:
             try:
                 vlabels = un.valid_eval(vlabels)
+                if scale == 'log':
+                    v_positions = find_log_positions(vlabels)
+                else:
+                    N = round( (vlabels[2] - vlabels[0]) / vlabels[1])
+                    v_positions = np.linspace(vlabels[0], vlabels[2], N+1)
             except:
                 log.error(f"Error in <axes> parsing vlabels={vlabels}")
                 return
@@ -503,15 +626,34 @@ class Axes():
         if self.v_tick_group.getparent() is None:
             self.axes.append(self.v_tick_group)
 
-        y = vlabels[0]
-        while y <= vlabels[2]:
-            if any([abs(y*v_scale-p) < self.position_tolerance for p in v_exclude]):
-                y += vlabels[1]
+        for y in v_positions:
+            if y < self.bbox[1] or y > self.bbox[3]:
+                continue
+
+            if scale == 'log':
+                avoid = [abs(np.log10(y*v_scale) - np.log10(p)) for p in v_exclude]
+            else:
+                avoid = [abs(y*v_scale - p) for p in v_exclude]
+            if any([dist < self.position_tolerance for dist in avoid]):
                 continue
 
             ylabel = ET.Element('label')
             math_element = ET.SubElement(ylabel, 'm')
-            math_element.text = r'\text{'+'{0:g}'.format(y)+'}'
+            if scale == 'log':
+                y_text = np.log10(y)
+                frac = y_text % 1.0
+                prefix = round(10**frac)
+                if prefix != 1:
+                    y_exp = math.floor(y_text)
+                    prefix = str(prefix)
+                    begin = prefix + r'\cdot10^{'
+                else:
+                    y_exp = y_text
+                    begin = r'10^{'
+                math_element.text = begin+'{0:g}'.format(y_exp)+'}'
+                ylabel.set('scale', '0.8')
+            else:
+                math_element.text = r'\text{'+'{0:g}'.format(y)+'}'
             if self.v_pi_format:
                 math_element.text = get_pi_text(y)
             # process as a math number
@@ -542,7 +684,6 @@ class Axes():
                                    diagram,
                                    user_coords=False)
             self.v_tick_group.append(line_el)
-            y += vlabels[1]
 
 
 def tick_mark(element, diagram, parent, outline_status):
@@ -563,7 +704,7 @@ def tick_mark(element, diagram, parent, outline_status):
         x_axis_location = axes_object.x_axis_location
         top_labels = axes_object.top_labels
         right_labels = axes_object.right_labels
-        
+
     if not isinstance(location, np.ndarray):
         if axis == 'horizontal':
             location = (location, y_axis_location)

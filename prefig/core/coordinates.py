@@ -27,6 +27,7 @@ def coordinates(element, diagram, root, outline_status):
     dest_dy *= -1
 
     bbox = un.valid_eval(element.get('bbox'))
+
     if element.get('aspect-ratio', None) is not None:
         ratio = un.valid_eval(element.get('aspect-ratio'))
         if element.get('preserve-y-range', 'no') == 'yes':
@@ -58,15 +59,41 @@ def coordinates(element, diagram, root, outline_status):
     clip_box.set('height', util.float2str(height))
     diagram.push_clippath(clippath)
 
+    scales = element.get('scales', 'linear')
+    if scales == 'linear':
+        scales = ['linear', 'linear']
+    elif scales == 'semilogx':
+        scales = ['log', 'linear']
+    elif scales == 'semilogy':
+        scales = ['linear', 'log']
+    elif scales == 'loglog':
+        scales = ['log', 'log']
+    else:
+        scales = ['linear', 'linear']
+
     ctm = ctm.copy()
+    diagram.push_scales(scales)
+    scaled_bbox = bbox.copy()
+    if scales[0] == 'log':
+        scaled_bbox[0] = np.log10(scaled_bbox[0])
+        scaled_bbox[2] = np.log10(scaled_bbox[2])
+        ctm.set_log_x()
+    if scales[1] == 'log':
+        scaled_bbox[1] = np.log10(scaled_bbox[1])
+        scaled_bbox[3] = np.log10(scaled_bbox[3])
+        ctm.set_log_y()
+
     ctm.translate(destination[0], destination[1])
-    ctm.scale( (destination[2]-destination[0])/float(bbox[2]-bbox[0]),
-               (destination[3]-destination[1])/float(bbox[3]-bbox[1]) )
-    ctm.translate(-bbox[0], -bbox[1])
-    bbox_str = '['+','.join([str(b) for b in bbox])+']'
+    ctm.scale( (destination[2]-destination[0]) /
+               float(scaled_bbox[2]-scaled_bbox[0]),
+               (destination[3]-destination[1]) /
+               float(scaled_bbox[3]-scaled_bbox[1]) )
+    ctm.translate(-scaled_bbox[0], -scaled_bbox[1])
+    bbox_str = '['+','.join([str(b) for b in scaled_bbox])+']'
     un.valid_eval(bbox_str, 'bbox')
 
     diagram.push_ctm([ctm, bbox])
     diagram.parse(element, root, outline_status)
     diagram.pop_ctm()
     diagram.pop_clippath()
+    diagram.pop_scales()

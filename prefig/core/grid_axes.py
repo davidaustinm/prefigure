@@ -50,7 +50,66 @@ def find_gridspacing(coordinate_range, pi_format=False):
         x1 = dx * math.floor(coordinate_range[1]/dx+1e-10)
     if pi_format:
         return (x0*math.pi, dx*math.pi, x1*math.pi)
-    return (x0, dx, x1)
+    return [x0, dx, x1]
+
+def find_log_positions(r):
+    # argument r could have
+    #   three arguments if user supplied
+    #   two arguments if not
+    # each range 10^j -> 10^j+1 could have 1, 2, 5, 10, or 1/n lines
+    x0 = np.log10(r[0])
+    x1 = np.log10(r[-1])
+    if len(r) == 3:
+        if r[1] < 1:
+            spacing = r[1]
+        elif r[1] < 2:
+            spacing = 1
+        elif r[1] < 4:
+            spacing = 2
+        elif r[1] < 7:
+            spacing = 5
+        else:
+            spacing = 10
+    else:
+        width = abs(x1 - x0)
+        if width < 1.5:
+            spacing = 10
+        elif width < 3:
+            spacing = 5
+        elif width < 5:
+            spacing = 2
+        elif width <= 10:
+            spacing = 1
+        else:
+            spacing = 10/width
+
+    x0 = math.floor(x0)
+    x1 = math.ceil(x1)
+    positions = []
+    if spacing <= 1:
+        gap = round(1/spacing)
+        x = x0
+        while x <= x1:
+            positions.append(10**x)
+            x += gap
+    else:
+        if spacing == 2:
+            intermediate = [1,5]
+        elif spacing == 5:
+            intermediate = [1,2,4,6,8]
+        elif spacing == 10:
+            intermediate = [1,2,3,4,5,6,7,8,9]
+        else:
+            intermediate = [1]
+        x = x0
+        while x <= x1:
+            positions += [10**x*c for c in intermediate]
+            x += 1
+    return positions
+
+def find_linear_positions(r):
+    N = round((r[2] - r[0]) / r[1])
+    return np.linspace(r[0], r[2], N+1)
 
 # Add a graphical element for a grid.  All the grid lines sit inside a group
 def grid(element, diagram, parent, outline_status):
@@ -77,6 +136,7 @@ def grid(element, diagram, parent, outline_status):
     v_pi_format = element.get('v-pi-format', 'no') == 'yes'
     
     coordinates = element.get('coordinates', 'cartesian')
+    scales = diagram.get_scales()
     hspacings_set = False
     if spacings is not None:
         try:
@@ -88,9 +148,17 @@ def grid(element, diagram, parent, outline_status):
     else:
         rx = element.get('hspacing')
         if rx is None:
-            rx = find_gridspacing((bbox[0], bbox[2]), h_pi_format) 
+            if scales[0] == 'log':
+                x_positions = find_log_positions((bbox[0], bbox[2]))
+            else:
+                rx = find_gridspacing((bbox[0], bbox[2]), h_pi_format)
+                x_positions = find_linear_positions(rx)
         else:
             rx = un.valid_eval(rx)
+            if scales[0] == 'log':
+                x_positions = find_log_positions(rx)
+            else:
+                x_positions = find_linear_positions(rx)
             hspacings_set = True
 
         if coordinates == 'polar':
@@ -98,9 +166,17 @@ def grid(element, diagram, parent, outline_status):
         else:
             ry = element.get('vspacing')
             if ry is None:
-                ry = find_gridspacing((bbox[1], bbox[3]), v_pi_format)
+                if scales[1] == 'log':
+                    y_positions = find_log_positions((bbox[1], bbox[3]))
+                else:
+                    ry = find_gridspacing((bbox[1], bbox[3]), v_pi_format)
+                    y_positions = find_linear_positions(ry)
             else:
                 ry = un.valid_eval(ry)
+                if scales[1] == 'log':
+                    y_positions = find_log_positions(ry)
+                else:
+                    y_positions = find_linear_positions(ry)
 
     if coordinates == 'polar':
         id = diagram.get_clippath()
@@ -162,17 +238,17 @@ def grid(element, diagram, parent, outline_status):
         return
 
     # now we'll just build a plain rectangular grid
-    x = rx[0]
-    while x <= rx[2]:
+    for x in x_positions:
+        if x < bbox[0] or x > bbox[2]:
+            continue
         line_el = line.mk_line((x,bbox[1]), (x,bbox[3]), diagram)
         grid.append(line_el)
-        x += rx[1]
 
-    y = ry[0]
-    while y <= ry[2]:
+    for y in y_positions:
+        if y < bbox[1] or y > bbox[3]:
+            continue
         line_el = line.mk_line((bbox[0], y), (bbox[2], y), diagram)
         grid.append(line_el)
-        y += ry[1]
 
 
 # Adds both a grid and axes with spacings found automatically

@@ -1142,6 +1142,16 @@
           </choice>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="scales">
+          <choice>
+            <value>linear</value>
+            <value>semilogx</value>
+            <value>semilogy</value>
+            <value>loglog</value>
+          </choice>
+        </attribute>
+      </optional>
       <ref name="CommonAttributes"/>
     </element>
   </define>
