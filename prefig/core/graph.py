@@ -122,8 +122,8 @@ def finish_outline(element, diagram, parent):
                            parent)
 
 def cartesian_path(element, diagram, f, domain, N):
-    scale = diagram.get_scales()[0]
-    if scale:
+    scales = diagram.get_scales()
+    if scales[0] == 'log':
         return log_path(element, diagram, f, domain, N)
 
     # The graphing routine is relatively straightforward.
