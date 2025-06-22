@@ -236,12 +236,17 @@ def cartesian_path(element, diagram, f, domain, N):
     return cmds
 
 def log_path(element, diagram, f, domain, N):
+    log_y = diagram.get_scales()[1] == 'log'
     x0 = np.log10(domain[0])
     x1 = np.log10(domain[1])
     x_values = np.logspace(x0, x1, N+1)
     cmds = []
     next_cmd = 'M'
     for x in x_values:
+        y = f(x)
+        if y < 0 and log_y:
+            next_cmd = 'M'
+            continue
         p = diagram.transform((x, f(x)))
         cmds += [next_cmd, util.pt2str(p)]
         next_cmd = 'L'

@@ -1,4 +1,6 @@
 import logging
+import lxml.etree as ET
+import numpy as np
 from . import user_namespace as un
 from . import utilities as util
 from . import calculus
@@ -43,19 +45,38 @@ def tangent(element, diagram, parent, outline_status):
     else: 
         domain = un.valid_eval(domain)
 
-    # find the endpoints of the tangent line
+    scales = diagram.get_scales()
     x1, x2 = domain
-    y1 = tangent(x1)
-    y2 = tangent(x2)
-    p1 = (x1, y1)
-    p2 = (x2, y2)
-    if element.get('infinite') == 'yes' or element.get('domain') is None:
-        p1, p2 = line.infinite_line(p1, p2, diagram)
-    if p1 is None:
-        return
+    if scales[0] == 'linear' and scales[1] == 'linear':
+        # find the endpoints of the tangent line
+        y1 = tangent(x1)
+        y2 = tangent(x2)
+        p1 = (x1, y1)
+        p2 = (x2, y2)
+        if element.get('infinite') == 'yes' or element.get('domain') is None:
+            p1, p2 = line.infinite_line(p1, p2, diagram)
+        if p1 is None:
+            return
 
-    # construct the graphical line element from those points and attributes
-    line_el = line.mk_line(p1, p2, diagram, element.get('id'))
+        # construct the graphical line element from those points and attributes
+        line_el = line.mk_line(p1, p2, diagram, element.get('id'))
+
+    else:
+        line_el = ET.Element('path')
+        if scales[0] == 'log':
+            x_positions = np.logspace(np.log10(x1), np.log(x2), 101)
+        else:
+            x_positions = np.linspace(x1, x2, 101)
+        cmds = []
+        next_cmd = 'M'
+        for x in x_positions:
+            y = tangent(x)
+            if y < 0 and scales[1] == 'log':
+                next_cmd = 'M'
+                continue
+            cmds += [next_cmd, util.pt2str(diagram.transform((x, y)))]
+            next_cmd = 'L'
+        line_el.set('d', ' '.join(cmds))
 
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
@@ -64,7 +85,6 @@ def tangent(element, diagram, parent, outline_status):
     util.set_attr(element, 'thickness', '2')
 
     util.add_attr(line_el, util.get_1d_attr(element))
-#    line_el.set('type', 'tangent line')
     element.set('cliptobbox', 'yes')
     util.cliptobbox(line_el, element, diagram)
 
