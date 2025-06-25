@@ -122,9 +122,9 @@ def finish_outline(element, diagram, parent):
                            parent)
 
 def cartesian_path(element, diagram, f, domain, N):
-    scales = diagram.get_scales()
-    if scales[0] == 'log':
-        return log_path(element, diagram, f, domain, N)
+    # Sometimes we encounter a divide by zero when building a graph
+    # These are safe to ignore since they return an nan
+    np.seterr(divide="ignore")
 
     # The graphing routine is relatively straightforward.
     # We just walk across the horizontal axis and connect points with lines
@@ -141,16 +141,34 @@ def cartesian_path(element, diagram, f, domain, N):
     # and last_visible, which tells us whether the last point plotted is
     # in the viewing window
 
+    scales = diagram.get_scales()
+    if scales[0] == 'log':
+        x_positions = np.logspace(np.log10(domain[0]),
+                                  np.log10(domain[1]),
+                                  N+1)
+    else:
+        x_positions = np.linspace(domain[0], domain[1], N+1)
+
     bbox = diagram.bbox()
     dx = (domain[1] - domain[0])/N
     x = domain[0]
     cmds = []
     next_cmd = 'M'
-    height = (bbox[3] - bbox[1])
-    upper = bbox[3] + height
-    lower = bbox[1] - height
+    if scales[1] == 'log':
+        bottom = np.log10(bbox[1])
+        top = np.log10(bbox[3])
+        lower = 10**(bottom - 3)
+        upper = 10**(top + 3)
+    else:
+        height = (bbox[3] - bbox[1])
+        upper = bbox[3] + height
+        lower = bbox[1] - height
     last_visible = False
-    for _ in range(N+1):
+    for i, x in enumerate(x_positions):
+        if i > 0:
+            dx = x - x_positions[i-1]
+        else:
+            dx = 0
         try:
             y = f(x)
         except:

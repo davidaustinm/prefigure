@@ -145,7 +145,7 @@ def line_intersection(lines):
     return q1 - t*v
 
 # find the intersection of two graphs or the zero of just one
-def intersect(functions, seed=None):
+def intersect(functions, seed=None, interval=None):
     bbox = diagram.bbox()
     width = bbox[2] - bbox[0]
     height = bbox[3] - bbox[1]
@@ -171,6 +171,9 @@ def intersect(functions, seed=None):
     else:
         f = functions
 
+    if interval is None:
+        interval = (bbox[0], bbox[2])
+
     x0 = seed
     y0 = f(x0)
 
@@ -180,7 +183,7 @@ def intersect(functions, seed=None):
     dx = 0.002 * width
     x = x0
     x_left = -np.inf
-    while x >= bbox[0]:
+    while x >= interval[0]:
         x -= dx
         try:
             y = f(x)
@@ -199,7 +202,7 @@ def intersect(functions, seed=None):
 
     x = x0
     x_right = np.inf
-    while x <= bbox[2]:
+    while x <= interval[1]:
         x += dx
         try:
             y = f(x)
@@ -217,15 +220,15 @@ def intersect(functions, seed=None):
     if x_right != np.inf and abs(f(x_right) - f(x_right - dx)) > height:
         x_right = np.inf
 
-    if x_left < bbox[0] and x_right > bbox[2]:
+    if x_left < interval[0] and x_right > interval[1]:
         # we didn't find anything
         return x0
 
-    if x_left < bbox[0]:
+    if x_left < interval[0]:
         x2 = x_right
         x1 = x_right - dx
 
-    if x_right > bbox[2]:
+    if x_right > interval[1]:
         x2 = x_left + dx
         x1 = x_left
 

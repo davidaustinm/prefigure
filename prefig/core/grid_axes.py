@@ -141,6 +141,15 @@ def grid(element, diagram, parent, outline_status):
     if spacings is not None:
         try:
             rx, ry = un.valid_eval(spacings)
+            if scales[0] == 'log':
+                x_positions = find_log_positions(rx)
+            else:
+                x_positions = find_linear_positions(rx)
+            if scales[1] == 'log':
+                y_positions = find_log_positions(ry)
+            else:
+                y_positions = find_linear_positions(ry)
+
             hspacings_set = True
         except:
             log.error(f"Error in <grid> parsing spacings={element.get('spacings')}")
