@@ -334,6 +334,7 @@ GraphicalElements =
         Shape* &
         Slope-Field* &
         Spline* &
+        Tick-Mark* &
         Tangent-line* &
         Triangle* &
         Vector*
@@ -376,6 +377,8 @@ Area-Between-Curves = element area-between-curves {
     attribute functions {text}?,
     attribute domain {text}?,
     attribute N {text}?,
+    attribute coordinates {"polar"|"cartesian"}?,
+    attribute domain-degrees {"yes"|"no"}?,
     FillAttributes,
     CommonAttributes
 }
@@ -385,6 +388,8 @@ Area-Under-Curve = element area-under-curve {
     attribute function {text},
     attribute domain {text}?,
     attribute N {text}?,
+    attribute coordinates {"polar"|"cartesian"}?,
+    attribute domain-degrees {"yes"|"no"}?,
     FillAttributes,
     CommonAttributes
 }
@@ -402,9 +407,11 @@ Axes = element axes {
     attribute v-pi-format {"yes"|"no"}?,
     attribute h-frame {"bottom"|"top"}?,
     attribute v-frame {"left"|"right"}?,
-    attribute labels {"yes"|"no"}?,
     attribute stroke {text}?,
     attribute thickness {text}?,
+    attribute tick-size {text}?,
+    attribute axes {"horizontal"|"vertical"}?,
+    attribute bounding-box {"yes"|"no"}?,
     CommonAttributes,
     XLabel?,
     YLabel?
@@ -420,6 +427,9 @@ Grid = element grid {
     attribute v-pi-format {"yes"|"no"}?,
     attribute stroke {text}?,
     attribute thickness {text}?,
+    attribute coordinates {text}?,
+    attribute spacing-degrees {"yes"|"no"}?,
+    attribute scales {"linear"|"semilogx"|"semilogy"|"loglog"}?,
     CommonAttributes
 }
 
@@ -438,10 +448,23 @@ Grid-Axes = element grid-axes {
     attribute ylabel {text}?,
     attribute arrows {text}?,
     attribute decorations {"yes"|"no"}?,
-    attribute labels {"yes"|"no"}?,
+    attribute tick-size {text}?,
+    attribute axes {"horizontal"|"vertical"}?,
+    attribute bounding-box {"yes"|"no"}?,
     CommonAttributes,
     XLabel?,
     YLabel?    
+}
+
+Tick-Mark = element tick-mark {
+    attribute at {text}?,
+    attribute location {text},
+    attribute axis {text}?,
+    attribute stroke {text}?,
+    attribute size {text}?,
+    attribute thickness {text}?,
+    LabelAttributes,
+    LabelText?
 }
 
 Circle = element circle {
@@ -468,6 +491,10 @@ Graph = element graph {
     attribute function {text},
     attribute N {text}?,
     attribute domain {text}?,
+    attribute coordinates {"polar"|"coordinates"}?,
+    attribute domain-degress {"yes"|"no"}?,
+    attribute closed {"yes"|"no"}?,
+    attribute fill {text}?,
     StrokeAttributes,
     CommonAttributes
 }

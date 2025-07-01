@@ -2,6 +2,7 @@ from . import (
     annotations,
     area,
     arrow,
+    axes,
     calculus,
     circle,
     clip,

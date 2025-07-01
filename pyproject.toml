@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prefig"
-version = "0.2.14"
+version = "0.3.5"
 description = "An authoring system for mathematical diagrams"
 readme = "README.md"
 homepage = "https://prefigure.org"
@@ -11,14 +11,14 @@ license = "GPL-3.0-or-later"
 include = ["resources"]
 
 [tool.poetry.dependencies]
-python = "^3.8.5"
+python = "^3.10"
 shapely = "^2.0.6"
 lxml = "^5.3.0"
 click = "^8.1.7"
 networkx = "^2.5"
-scipy = [{version = ">=1.5, <=1.7", python = "3.8"}, {version = "^1.8", python = ">=3.9,<3.13"}, {version = "^1.14.1", python = "3.13"}]
-numpy = [{version = ">=1.19, <=1.25", python = "3.8"}, {version = "^1.26", python = ">=3.9,<3.13"}, {version = "^2.1.0", python = "3.13"}]
-pycairo = [{version = ">=1.20, <=1.26", python = "3.8", optional = true}, {version = "^1.20", python = ">=3.9", optional = true}]
+scipy = [{version = "^1.8", python = "<3.13"}, {version = "^1.14.1", python = "3.13"}]
+numpy = [{version = "^1.26", python = "<3.13"}, {version = "^2.1.0", python = "3.13"}]
+pycairo = {version = "^1.20", optional = true}
 click-log = "^0.4.0"
 
 [tool.poetry.extras]

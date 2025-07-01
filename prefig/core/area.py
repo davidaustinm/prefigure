@@ -2,6 +2,7 @@
 
 import lxml.etree as ET
 import logging
+import math
 from . import user_namespace as un
 from . import utilities as util
 
@@ -13,6 +14,7 @@ def area_between_curves(element, diagram, parent, outline_status):
         finish_outline(element, diagram, parent)
         return
 
+    polar = element.get('coordinates', 'cartesian') == 'polar'
     util.set_attr(element, 'stroke', 'black')
     util.set_attr(element, 'fill', 'lightgray')
     util.set_attr(element, 'thickness', '2')
@@ -53,17 +55,32 @@ def area_between_curves(element, diagram, parent, outline_status):
     else:
         domain = un.valid_eval(domain)
 
+    if element.get('domain-degrees', 'no') == 'yes':
+        domain = [math.radians(d) for d in domain]
+
     dx = (domain[1]-domain[0])/N
     x = domain[0]
-    p = diagram.transform((x, f(x)))
+    if polar:
+        r = f(x)
+        p = diagram.transform((r*math.cos(x), r*math.sin(x)))
+    else:
+        p = diagram.transform((x, f(x)))
     cmds = ['M ' + util.pt2str(p)]  
     for _ in range(N+1):
-        p = diagram.transform((x,f(x)))
+        if polar:
+            r = f(x)
+            p = diagram.transform((r*math.cos(x), r*math.sin(x)))
+        else:
+            p = diagram.transform((x, f(x)))
         cmds.append('L ' + util.pt2str(p))
         x += dx
     for _ in range(N+1):
         x -= dx
-        p = diagram.transform((x, g(x)))
+        if polar:
+            r = g(x)
+            p = diagram.transform((r*math.cos(x), r*math.sin(x)))
+        else:
+            p = diagram.transform((x, g(x)))
         cmds.append('L ' + util.pt2str(p))
     cmds.append('Z')
     d = ' '.join(cmds)
@@ -72,7 +89,6 @@ def area_between_curves(element, diagram, parent, outline_status):
     diagram.add_id(path, element.get('id'))
     path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
-#    path.set('type', 'area between curves')
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, path, parent)

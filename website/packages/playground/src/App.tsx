@@ -1,6 +1,7 @@
 import React from "react";
 import { Container, Navbar, Nav, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./font.css";
 import "./App.css";
 import { SourceEditor } from "./components/editor";
 import { Renderer } from "./components/renderer";
@@ -18,8 +19,8 @@ function App() {
                         PreFigure Playground
                     </Navbar.Brand>
                     <Nav className="me-auto">
-                        <Nav.Link href="#examples">Examples</Nav.Link>
-                        <Nav.Link href="https://prefigure.org">About</Nav.Link>
+                        <Nav.Link href="https://prefigure.org/docs/chap-examples.html" target="_blank">Examples</Nav.Link>
+                        <Nav.Link href="https://prefigure.org" target="_blank">About</Nav.Link>
                     </Nav>
                     <Nav.Item className="text-light small">
                         PreFigure Version:{" "}

@@ -8,6 +8,7 @@ from . import user_namespace as un
 from . import utilities as util
 from . import CTM
 from . import label
+from . import math_utilities as math_util
 
 log = logging.getLogger('prefigure')
 
@@ -29,6 +30,8 @@ class Diagram:
         self.suppress_caption = suppress_caption
         self.environment = environment
         self.caption = ""
+
+        math_util.set_diagram(self)
 
         label.init(self.format, self.environment)
 
@@ -71,6 +74,9 @@ class Diagram:
 
         # stack for managing bounding boxes and clipping
         self.clippaths = []
+
+        # stack for managing scales of coordinate systems
+        self.scale_stack = []
 
         # list for legends
         self.legends = []
@@ -247,6 +253,7 @@ class Diagram:
         bbox = [0,0,width,height]
         un.enter_namespace('bbox', bbox)
         self.ctm_stack = [[ctm, bbox]]
+        self.scale_stack = [['linear', 'linear']]
 
         # initialize the SVG element 'defs' and add the clipping path
         self.defs = ET.SubElement(self.root, 'defs')
@@ -268,6 +275,15 @@ class Diagram:
 
     def pop_clippath(self):
         self.clippaths.pop(-1)
+
+    def push_scales(self, scales):
+        self.scale_stack.append(scales)
+
+    def pop_scales(self):
+        self.scale_stack.pop(-1)
+
+    def get_scales(self):
+        return self.scale_stack[-1]
 
     def get_clippath(self):
         return self.clippaths[-1]
@@ -518,7 +534,11 @@ class Diagram:
         # We have to clean up the arrow heads.  The references to the
         # arrow heads are in the reusable so we'll retrieve them and
         # and include them with the use element.
-        reuse_handle = element.get('id')+self.id_suffix[-1]+'-outline'
+        element_id = element.get('id')
+        if element_id.endswith(self.id_suffix[-1]):
+            reuse_handle = element_id + '-outline'
+        else:
+            reuse_handle = element.get('id')+self.id_suffix[-1]+'-outline'
         reusable = self.get_reusable(reuse_handle)
         use.set('href', r'#' + reuse_handle)
         for marker in ['marker-start', 'marker-end', 'marker-mid']:

@@ -2,6 +2,7 @@ import logging
 import lxml.etree as ET
 from . import annotations
 from . import area
+from . import axes
 from . import clip
 from . import circle
 from . import coordinates
@@ -36,7 +37,7 @@ tag_dict = {
     'arc': circle.arc,
     'area-between-curves': area.area_between_curves,
     'area-under-curve': area.area_under_curve,
-    'axes': grid_axes.axes,
+    'axes': axes.axes,
     'caption': label.caption,
     'circle': circle.circle,
     'clip': clip.clip,
@@ -61,6 +62,7 @@ tag_dict = {
     'rectangle': rectangle.rectangle,
     'repeat': repeat.repeat,
     'riemann-sum': riemann_sum.riemann_sum,
+    'tick-mark': axes.tick_mark,
     'transform': CTM.transform_group,
     'rotate': CTM.transform_rotate,
     'scale': CTM.transform_scale,
