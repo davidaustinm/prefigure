@@ -84,20 +84,40 @@ def build(
 def build_from_string(format, input_string, environment="pyodide"):
     tree = ET.fromstring(input_string)
     log.setLevel(logging.DEBUG)
-    diagrams = tree.xpath('//diagram')
-    if len(diagrams) > 0:
-        output_string = core.parse.mk_diagram(
-            diagrams[0],
-            format,
-            None,     # publication file
-            "prefig", # filename needed for label generation
-            False,    # supress caption
-            None,     # diagram number
-            environment,
-            return_string = True
-        )
-        return output_string
-    return ''
+    ns = {'pf': 'https://prefigure.org'}
+    diagrams_with_ns = tree.xpath('//pf:diagram', namespaces=ns)
+    diagrams_without_ns = tree.xpath('//diagram', namespaces=ns)
+    diagrams = diagrams_with_ns + diagrams_without_ns
+
+    try:
+        diagram = diagrams[0]
+    except:
+        return ''
+
+    # put all elements in default namespace
+    for elem in diagram.getiterator():
+        # Skip comments and processing instructions,
+        # because they do not have names
+        if not (
+                isinstance(elem, ET._Comment)
+                or isinstance(elem, ET._ProcessingInstruction)
+        ):
+            # Remove a namespace URI in the element's name
+            elem.tag = ET.QName(elem).localname
+
+    core.parse.check_duplicate_handles(diagram, set())
+
+    output_string = core.parse.mk_diagram(
+        diagram,
+        format,
+        None,     # publication file
+        "prefig", # filename needed for label generation
+        False,    # supress caption
+        None,     # diagram number
+        environment,
+        return_string = True
+    )
+    return output_string
 
 def pdf(
         format,
