@@ -8,7 +8,7 @@ PreFigure diagrams can now be authored inside a PreTeXt document.  More informat
 
 You may author and compile PreFigure diagrams in either of two environments:
 
-1. You may use the [Prefigure Playground](https://davidaustinm.github.io/prefigure/) and download SVG filed directly from the playground.
+1. You may use the [Prefigure Playground](https://davidaustinm.github.io/prefigure/) and download SVG files directly from the playground.
 2. PreFigure is available in a [GitHub Codespace](https://github.com/davidaustinm/prefigure-codespace).  This is a free, cloud-based platform that takes care of all the installation details and creates a fully configured working environment.  Follow the instructions on that page to create your codespace and then get started authoring diagrams.
 3. PreFigure may be installed locally as a Python package following the instructions in the **Local Installation** section below.
 
