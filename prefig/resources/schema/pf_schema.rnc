@@ -412,6 +412,9 @@ Axes = element axes {
     attribute tick-size {text}?,
     attribute axes {"horizontal"|"vertical"}?,
     attribute bounding-box {"yes"|"no"}?,
+    attribute h-zero-label {"yes"|"no"}?,
+    attribute v-zero-label {"yes"|"no"}?,
+    attribute label-commas {"yes"|"no"}?,
     CommonAttributes,
     XLabel?,
     YLabel?
@@ -451,6 +454,9 @@ Grid-Axes = element grid-axes {
     attribute tick-size {text}?,
     attribute axes {"horizontal"|"vertical"}?,
     attribute bounding-box {"yes"|"no"}?,
+    attribute h-zero-label {"yes"|"no"}?,
+    attribute v-zero-label {"yes"|"no"}?,
+    attribute label-commas {"yes"|"no"}?,
     CommonAttributes,
     XLabel?,
     YLabel?    

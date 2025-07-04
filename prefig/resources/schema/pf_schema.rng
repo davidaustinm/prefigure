@@ -1083,6 +1083,30 @@
           </choice>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="h-zero-label">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="v-zero-label">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="label-commas">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
       <ref name="CommonAttributes"/>
       <optional>
         <ref name="XLabel"/>
@@ -1237,6 +1261,30 @@
       </optional>
       <optional>
         <attribute name="bounding-box">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="h-zero-label">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="v-zero-label">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="label-commas">
           <choice>
             <value>yes</value>
             <value>no</value>

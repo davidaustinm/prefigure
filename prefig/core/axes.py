@@ -246,7 +246,12 @@ class Axes():
 
         # which locations will not get ticks or labels 
         self.h_exclude = []
-        if not self.h_zero_include and self.axes_attribute != 'horizontal':
+        self.h_zero_label = element.get("h-zero-label", "no") == "yes"
+        if (
+                not self.h_zero_include and
+                self.axes_attribute != 'horizontal' and
+                not self.h_zero_label
+        ):
             self.h_exclude.append(0)
 
         # ticks move up when the horizontal axis is on top
@@ -289,7 +294,12 @@ class Axes():
 
         # which locations will not get ticks or labels 
         self.v_exclude = []
-        if not self.v_zero_include and self.axes_attribute != 'vertical':
+        self.v_zero_label = element.get("v-zero-label", "no") == "yes"
+        if (
+                not self.v_zero_include and
+                self.axes_attribute != 'vertical' and
+                not self.v_zero_label
+        ):
             self.v_exclude.append(0)
 
         # ticks move right when the vertical axis is on the right
@@ -527,6 +537,14 @@ class Axes():
         if self.h_tick_group.getparent() is None:
             self.axes.append(self.h_tick_group)
 
+        if self.h_zero_label:
+            try:
+                h_exclude.remove(0)
+            except:
+                pass
+
+        commas = element.get("label-commas", "yes") == "yes"
+
         for x in h_positions:
             if x < self.bbox[0] or x > self.bbox[2]:
                 continue
@@ -553,7 +571,8 @@ class Axes():
                 math_element.text = begin+'{0:g}'.format(x_exp)+'}'
                 xlabel.set('scale', '0.8')
             else:
-                math_element.text = r'\text{'+'{0:g}'.format(x)+'}'
+                #math_element.text = r'\text{'+'{0:g}'.format(x)+'}'
+                math_element.text = label_text(x, commas)
             if self.h_pi_format:
                 math_element.text = get_pi_text(x)
 
@@ -626,6 +645,14 @@ class Axes():
         if self.v_tick_group.getparent() is None:
             self.axes.append(self.v_tick_group)
 
+        if element.get("v-zero-label", "no") == "yes":
+            try:
+                v_exclude.remove(0)
+            except:
+                pass
+
+        commas = element.get("label-commas", "yes") == "yes"
+
         for y in v_positions:
             if y < self.bbox[1] or y > self.bbox[3]:
                 continue
@@ -653,7 +680,8 @@ class Axes():
                 math_element.text = begin+'{0:g}'.format(y_exp)+'}'
                 ylabel.set('scale', '0.8')
             else:
-                math_element.text = r'\text{'+'{0:g}'.format(y)+'}'
+                #math_element.text = r'\text{'+'{0:g}'.format(y)+'}'
+                math_element.text = label_text(y, commas)
             if self.v_pi_format:
                 math_element.text = get_pi_text(y)
             # process as a math number
@@ -685,6 +713,45 @@ class Axes():
                                    user_coords=False)
             self.v_tick_group.append(line_el)
 
+def label_text(x, commas):
+    # we'll construct a text representation of x
+    # maybe it's simple
+    text = '{0:g}'.format(x)
+
+    # but it could be in exponential notation
+    if text.find('e') >= 0:
+        if x < 0:
+            prefix = '-'
+            x = abs(x)
+        else:
+            prefix = ''
+        integer = math.floor(x)
+        fraction = x - integer
+        if fraction > 1e-14:
+            suffix = '{0:g}'.format(fraction)[1:]
+        else:
+            suffix = ''
+        int_part = ''
+        while integer >= 10:
+            int_part = str(integer % 10) + int_part
+            integer = int(integer / 10)
+        int_part = str(integer) + int_part
+        text = prefix + int_part + suffix
+
+    if not commas:
+        return r'\text{' + text + r'}'
+
+    period = text.find('.')
+    if period < 0:
+        suffix = ''
+    else:
+        suffix = text[period:]
+        text = text[:period]
+    while len(text) > 3:
+        suffix = ',' + text[-3:] + suffix
+        text = text[:-3]
+    text = text + suffix
+    return r'\text{' + text + r'}'
 
 def tick_mark(element, diagram, parent, outline_status):
     # tick marks are in the background so there's no need to worry
