@@ -217,15 +217,6 @@ class Axes():
         self.y_axis_offsets = (0,0)
         self.h_zero_include = False
         self.top_labels = False
-        log.info(('bbox[1]', self.bbox[1]))
-        log.info(('bbox[3]', self.bbox[3]))
-        if isinstance(self.bbox[1], np.int32):
-            self.bbox[1] = self.bbox[1].astype(np.int64)
-        if isinstance(self.bbox[3], np.int32):
-            self.bbox[3] = self.bbox[3].astype(np.int64)
-        log.info(type(self.bbox[1]))
-        log.info(type(self.bbox[3]))
-        log.info(('product', self.bbox[1] * self.bbox[3]))
         if float(self.bbox[1]) * float(self.bbox[3]) >= 0:
             if self.bbox[3] <= 0:
                 self.top_labels = True
@@ -273,7 +264,7 @@ class Axes():
         self.x_axis_offsets = (0,0)
         self.v_zero_include = False
         self.right_labels = False
-        if self.bbox[0] * self.bbox[2] >= 0:
+        if float(self.bbox[0]) * float(self.bbox[2]) >= 0:
             if self.bbox[2] <= 0:
                 self.right_labels = True
                 self.x_axis_location = self.bbox[2]
