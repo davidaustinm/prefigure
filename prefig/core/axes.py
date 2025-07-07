@@ -716,15 +716,15 @@ class Axes():
 def label_text(x, commas):
     # we'll construct a text representation of x
     # maybe it's simple
+    if x < 0:
+        prefix = '-'
+        x = abs(x)
+    else:
+        prefix = ''
     text = '{0:g}'.format(x)
 
     # but it could be in exponential notation
     if text.find('e') >= 0:
-        if x < 0:
-            prefix = '-'
-            x = abs(x)
-        else:
-            prefix = ''
         integer = math.floor(x)
         fraction = x - integer
         if fraction > 1e-14:
@@ -736,10 +736,10 @@ def label_text(x, commas):
             int_part = str(integer % 10) + int_part
             integer = int(integer / 10)
         int_part = str(integer) + int_part
-        text = prefix + int_part + suffix
+        text = int_part + suffix
 
     if not commas:
-        return r'\text{' + text + r'}'
+        return r'\text{' + prefix + text + r'}'
 
     period = text.find('.')
     if period < 0:
@@ -751,7 +751,7 @@ def label_text(x, commas):
         suffix = ',' + text[-3:] + suffix
         text = text[:-3]
     text = text + suffix
-    return r'\text{' + text + r'}'
+    return r'\text{' + prefix + text + r'}'
 
 def tick_mark(element, diagram, parent, outline_status):
     # tick marks are in the background so there's no need to worry
