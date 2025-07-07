@@ -219,6 +219,10 @@ class Axes():
         self.top_labels = False
         log.info(('bbox[1]', self.bbox[1]))
         log.info(('bbox[3]', self.bbox[3]))
+        if isinstance(self.bbox[1], np.int32):
+            self.bbox[1] = self.bbox[1].astype(np.int64)
+        if isinstance(self.bbox[3], np.int32):
+            self.bbox[3] = self.bbox[3].astype(np.int64)
         log.info(type(self.bbox[1]))
         log.info(type(self.bbox[3]))
         log.info(('product', self.bbox[1] * self.bbox[3]))
