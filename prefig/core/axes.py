@@ -219,6 +219,7 @@ class Axes():
         self.top_labels = False
         log.info(('bbox[1]', self.bbox[1]))
         log.info(('bbox[3]', self.bbox[3]))
+        log.info(('product', self.bbox[1] * self.bbox[3]))
         if self.bbox[1] * self.bbox[3] >= 0:
             if self.bbox[3] <= 0:
                 self.top_labels = True
