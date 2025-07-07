@@ -217,6 +217,8 @@ class Axes():
         self.y_axis_offsets = (0,0)
         self.h_zero_include = False
         self.top_labels = False
+        log.info(('bbox[1]', self.bbox[1]))
+        log.info(('bbox[3]', self.bbox[3]))
         if self.bbox[1] * self.bbox[3] >= 0:
             if self.bbox[3] <= 0:
                 self.top_labels = True
