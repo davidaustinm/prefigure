@@ -13,9 +13,12 @@ def read(element, diagram, parent, outline_status):
         return
     filename = Path(filename)
     external_root = diagram.get_external()
-    if external_root is not None:
-        external_root = Path(external_root)
-        filename = external_root / filename
+    if diagram.get_environment() == "pretext":
+        filename = "data" / filename
+    else:
+        if external_root is not None:
+            external_root = Path(external_root)
+            filename = external_root / filename
 
     name = element.get('name', None)
     if name is None:

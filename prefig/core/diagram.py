@@ -92,6 +92,9 @@ class Diagram:
         if publication is not None:
             for subelement in publication:
                 if subelement.tag == 'external-root':
+                    log.warning('<external-root> in publication file is deprecated')
+                    log.warning('Use <directories> instead')
+                    log.warning('See "Working with data" in the PreFigure documentation"')
                     external = subelement.get('name', None)
                     if external is not None:
                         self.external = external
@@ -99,6 +102,12 @@ class Diagram:
                         log.warning('<external-root> in publication file needs a @name')
                     continue
                 self.defaults[subelement.tag] = subelement
+            directories = publication.xpath('.//directories')
+            if len(directories) > 0:
+                directories = directories[0]
+                data_directory = directories.get('data', None)
+                if data_directory is not None:
+                    self.external = data_directory
 
         if self.defaults.get('macros', None) is not None:
             label.add_macros(self.defaults.get('macros').text)
@@ -153,6 +162,9 @@ class Diagram:
 
     def set_output_format(self, format):
         self.format = format
+
+    def get_environment(self):
+        return self.environment
 
     # get the HTML tree so that we can add text for labels
     def label_html(self):
