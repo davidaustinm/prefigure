@@ -2,6 +2,11 @@ import numpy as np
 from . import user_namespace as un
 from . import label
 
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore', 'legacy print')
+    np.set_printoptions(legacy="1.25")
+
 colors = {'gray': r'#777', 'lightgray': r'#ccc', 'darkgray': r'#333'}
 
 # Some utilities to handle XML elements
