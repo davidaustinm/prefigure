@@ -45,6 +45,7 @@ tag_dict = {
     'definition': definition.definition,
     'derivative': definition.derivative,
     'ellipse': circle.ellipse,
+    'gradient': slope_field.gradient,
     'graph': graph.graph,
     'grid': grid_axes.grid,
     'grid-axes': grid_axes.grid_axes,
@@ -72,7 +73,8 @@ tag_dict = {
     'tangent-line': tangent_line.tangent,
     'translate': CTM.transform_translate,
     'triangle': polygon.triangle,
-    'vector': vector.vector
+    'vector': vector.vector,
+    'vector-field': slope_field.vector_field
 }
 
 log = logging.getLogger('prefigure')
