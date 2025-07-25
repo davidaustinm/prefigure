@@ -45,7 +45,6 @@ tag_dict = {
     'definition': definition.definition,
     'derivative': definition.derivative,
     'ellipse': circle.ellipse,
-    'gradient': slope_field.gradient,
     'graph': graph.graph,
     'grid': grid_axes.grid,
     'grid-axes': grid_axes.grid_axes,

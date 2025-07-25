@@ -80,6 +80,16 @@ def rotate(v, theta):
 def deriv(f, a):
     return calculus.derivative(f, a)
 
+def grad(f, a):
+    grad = []
+    for j in range(len(a)):
+        def f_trace(x):
+            b = a[:]
+            b[j] = x
+            return f(*b)
+        grad.append(calculus.derivative(f_trace, a[j]))
+    return np.array(grad)
+
 def zip_lists(a, b):
     return list(zip(a, b))
 

@@ -241,18 +241,3 @@ def vector_field(element, diagram, parent, outline_status):
 
     group.group(element, diagram, parent, outline_status)
 
-def gradient(element, diagram, parent, outline_status):
-    try:
-        f = un.valid_eval(element.get("function"))
-    except:
-        log.error("Error retrieving function in gradient element")
-        return
-
-    def grad(a, b):
-        f_x_trace = lambda x: f(x, b)
-        f_y_trace = lambda y: f(a, y)
-        return np.array([calculus.derivative(f_x_trace, a),
-                         calculus.derivative(f_y_trace, b)])
-    un.enter_namespace("__grad", grad)
-    element.set("function", "__grad")
-    vector_field(element, diagram, parent, outline_status)
