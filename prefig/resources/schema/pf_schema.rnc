@@ -314,6 +314,7 @@ GraphicalElements =
         Axes* &
         Circle* &
         Ellipse* &
+        Gradient* &
         Graph* &
         Grid* &
         Grid-Axes* &
@@ -337,7 +338,8 @@ GraphicalElements =
         Tick-Mark* &
         Tangent-line* &
         Triangle* &
-        Vector*
+        Vector* & 
+        Vector-Field*
     )
 
 Angle-Marker = element angle-marker {
@@ -420,6 +422,34 @@ Axes = element axes {
     YLabel?
 }
 
+Gradient = element gradient {
+    attribute at {text}?,
+    attribute function {text}?,
+    attribute spacings {text}?,
+    attribute scale {text}?,
+    attribute curve {text}?,
+    attribute domain {text}?,
+    attribute N {text}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text?}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
+Vector-Field = element vector-field {
+    attribute at {text}?,
+    attribute function {text}?,
+    attribute spacings {text}?,
+    attribute scale {text}?,
+    attribute curve {text}?,
+    attribute domain {text}?,
+    attribute N {text}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text?}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
 Grid = element grid {
     attribute at {text}?,
     attribute spacings {text}?,
@@ -433,6 +463,7 @@ Grid = element grid {
     attribute coordinates {text}?,
     attribute spacing-degrees {"yes"|"no"}?,
     attribute scales {"linear"|"semilogx"|"semilogy"|"loglog"}?,
+    Stroke-Attributes,
     CommonAttributes
 }
 
@@ -457,6 +488,7 @@ Grid-Axes = element grid-axes {
     attribute h-zero-label {"yes"|"no"}?,
     attribute v-zero-label {"yes"|"no"}?,
     attribute label-commas {"yes"|"no"}?,
+    StrokeAttributes,
     CommonAttributes,
     XLabel?,
     YLabel?    
@@ -469,6 +501,7 @@ Tick-Mark = element tick-mark {
     attribute stroke {text}?,
     attribute size {text}?,
     attribute thickness {text}?,
+    StrokeAttributes,
     LabelAttributes,
     LabelText?
 }
@@ -744,6 +777,7 @@ Spline = element spline {
     attribute closed {"yes"|"no"}?,
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,
+    attribute name {text}?,
     FillAttributes,
     CommonAttributes
 }

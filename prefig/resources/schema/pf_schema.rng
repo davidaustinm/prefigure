@@ -766,6 +766,9 @@
         <ref name="Ellipse"/>
       </zeroOrMore>
       <zeroOrMore>
+        <ref name="Gradient"/>
+      </zeroOrMore>
+      <zeroOrMore>
         <ref name="Graph"/>
       </zeroOrMore>
       <zeroOrMore>
@@ -836,6 +839,9 @@
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Vector"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="Vector-Field"/>
       </zeroOrMore>
     </interleave>
   </define>
@@ -1116,6 +1122,80 @@
       </optional>
     </element>
   </define>
+  <define name="Gradient">
+    <element name="gradient">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="function"/>
+      </optional>
+      <optional>
+        <attribute name="spacings"/>
+      </optional>
+      <optional>
+        <attribute name="scale"/>
+      </optional>
+      <optional>
+        <attribute name="curve"/>
+      </optional>
+      <optional>
+        <attribute name="domain"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles">
+          <optional>
+            <text/>
+          </optional>
+        </attribute>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Vector-Field">
+    <element name="vector-field">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="function"/>
+      </optional>
+      <optional>
+        <attribute name="spacings"/>
+      </optional>
+      <optional>
+        <attribute name="scale"/>
+      </optional>
+      <optional>
+        <attribute name="curve"/>
+      </optional>
+      <optional>
+        <attribute name="domain"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles">
+          <optional>
+            <text/>
+          </optional>
+        </attribute>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
   <define name="Grid">
     <element name="grid">
       <optional>
@@ -1176,6 +1256,7 @@
           </choice>
         </attribute>
       </optional>
+      <ref name="Stroke-Attributes"/>
       <ref name="CommonAttributes"/>
     </element>
   </define>
@@ -1291,6 +1372,7 @@
           </choice>
         </attribute>
       </optional>
+      <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
       <optional>
         <ref name="XLabel"/>
@@ -1318,6 +1400,7 @@
       <optional>
         <attribute name="thickness"/>
       </optional>
+      <ref name="StrokeAttributes"/>
       <ref name="LabelAttributes"/>
       <optional>
         <ref name="LabelText"/>
@@ -2028,6 +2111,9 @@
       </optional>
       <optional>
         <attribute name="arrow-angles"/>
+      </optional>
+      <optional>
+        <attribute name="name"/>
       </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>

@@ -11,6 +11,7 @@ from . import math_utilities as math_util
 from . import calculus
 
 log = logging.getLogger('prefigure')
+np.seterr(divide="ignore", invalid="ignore")
 
 # Add a graphical element for slope fields
 def slope_field(element, diagram, parent, outline_status):
@@ -140,52 +141,87 @@ def vector_field(element, diagram, parent, outline_status):
     else:
         line_template.set('stroke', element.get('stroke', 'blue'))
     line_template.set('thickness', element.get('thickness', '2'))
-    if element.get('arrows', 'yes') == 'yes':
-        line_template.set('arrows', '1')
+    line_template.set('arrows', '1')
 
     if element.get('arrow-width', None) is not None:
         line_template.set('arrow-width', element.get('arrow-width'))
     if element.get('arrow-angles', None) is not None:
         line_template.set('arrow-angles', element.get('arrow-angles'))
 
-    spacings = element.get('spacings', None)
-    if spacings is not None:
-        try:
-            spacings = un.valid_eval(spacings)
-            rx, ry = spacings
-        except:
-            log.error(f"Error parsing slope-field attribute @spacings={element.get('spacings')}")
-            return
-    else:
-        rx = grid_axes.find_gridspacing((bbox[0], bbox[2]))
-        ry = grid_axes.find_gridspacing((bbox[1], bbox[3]))
-
-    # we will go through and generate the vectors first
-    # since we'll need to scale them
     field_data = []
-    max_scale = 0
-    x = rx[0]
-    while x <= rx[2]:
-        y = ry[0]
-        while y <= ry[2]:
-            f_value = f(x, y)
-            try:
-                if len(f_value) != 2:
-                    log.error("Only two-dimensional vector fields are supported")
-                    return;
-            except:
-                pass
-            max_scale = max(max_scale,
-                            abs((f_value[0])/rx[1]),
-                            abs((f_value[1])/ry[1]))
-            field_data.append([np.array([x,y]), f_value])
-            y += ry[1]
-        x += rx[1]
+    if element.get('curve', None) is not None:
+        curve = un.valid_eval(element.get('curve'))
+        try:
+            domain = un.valid_eval(element.get('domain'))
+        except:
+            log.error('A @domain is needed if adding a vector field to a curve')
+            return
+        try:
+            N = un.valid_eval(element.get('N'))
+        except:
+            log.error('A @N is needed if adding a vector field to a curve')
+            return
 
-    scale_factor = min(1, 0.75 / max_scale)
-    if element.get('scale') is not None:
-        scale = un.valid_eval(element.get('scale'))
-        scale_factor = scale
+        t = domain[0]
+        # if "f" a function of t or (x,y)?
+        one_variable = True
+        try:
+            f(t)
+        except TypeError:
+            one_variable = False
+
+        dt = (domain[1]-domain[0])/(N-1)
+        for _ in range(N):
+            position = curve(t)
+            if one_variable:
+                field_data.append([position, f(t)])
+            else:
+                field_data.append([position, f(*position)])
+            t += dt
+        scale_factor = un.valid_eval(element.get('scale', '1'))
+
+    else:
+        spacings = element.get('spacings', None)
+        if spacings is not None:
+            try:
+                spacings = un.valid_eval(spacings)
+                rx, ry = spacings
+            except:
+                log.error(f"Error parsing slope-field attribute @spacings={element.get('spacings')}")
+                return
+        else:
+            rx = grid_axes.find_gridspacing((bbox[0], bbox[2]))
+            ry = grid_axes.find_gridspacing((bbox[1], bbox[3]))
+
+        # we will go through and generate the vectors first
+        # since we'll need to scale them
+        max_scale = 0
+        x = rx[0]
+        while x <= rx[2]:
+            y = ry[0]
+            while y <= ry[2]:
+                f_value = f(x, y)
+                if any(np.isnan(f_value)):
+                    y += ry[1]
+                    continue
+
+                try:
+                    if len(f_value) != 2:
+                        log.error("Only two-dimensional vector fields are supported")
+                        return;
+                except:
+                    pass
+                max_scale = max(max_scale,
+                                abs((f_value[0])/rx[1]),
+                                abs((f_value[1])/ry[1]))
+                field_data.append([np.array([x,y]), f_value])
+                y += ry[1]
+            x += rx[1]
+
+        scale_factor = min(1, 0.75 / max_scale)
+        if element.get('scale') is not None:
+            scale = un.valid_eval(element.get('scale'))
+            scale_factor = scale
 
     for datum in field_data:
         p, v = datum
