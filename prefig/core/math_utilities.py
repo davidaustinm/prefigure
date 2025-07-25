@@ -81,6 +81,7 @@ def deriv(f, a):
     return calculus.derivative(f, a)
 
 def grad(f, a):
+    a = list(a)
     grad = []
     for j in range(len(a)):
         def f_trace(x):

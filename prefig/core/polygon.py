@@ -189,7 +189,7 @@ def spline(element, diagram, parent, outline_status):
     cs = CubicSpline(t_vals, points, bc_type=bc)
 
     if element.get('name', None) is not None:
-        un.enter_namespace(element.get('name'), cs)
+        un.enter_function(element.get('name'), cs)
 
     N = un.valid_eval(element.get('N', '100'))
     domain = element.get('domain', None)

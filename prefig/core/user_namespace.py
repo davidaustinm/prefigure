@@ -170,6 +170,11 @@ def derivative(f, name):
     functions.add(name)
     variables.add(name)
 
+def enter_function(name, f):
+    globals()[name] = f
+    functions.add(name)
+    variables.add(name)
+
 def enter_namespace(name, value):
     globals()[name] = value
     variables.add(name)
