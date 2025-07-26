@@ -196,6 +196,7 @@ def vector_field(element, diagram, parent, outline_status):
         # we will go through and generate the vectors first
         # since we'll need to scale them
         max_scale = 0
+        exponent = un.valid_eval(element.get('exponent', '1'))
         x = rx[0]
         while x <= rx[2]:
             y = ry[0]
@@ -211,6 +212,13 @@ def vector_field(element, diagram, parent, outline_status):
                         return;
                 except:
                     pass
+                norm = math_util.length(f_value)
+                if norm < 1e-10:
+                    f_value = np.array((0,0))
+                else:
+                    # we will scale the length by length**exponent
+                    # to promote the length of shorter vectors
+                    f_value = norm**exponent * (1/norm * f_value)
                 max_scale = max(max_scale,
                                 abs((f_value[0])/rx[1]),
                                 abs((f_value[1])/ry[1]))
