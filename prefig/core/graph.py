@@ -29,6 +29,10 @@ def graph(element, diagram, parent, outline_status = None):
             domain = [bbox[0], bbox[2]]
     else:
         domain = un.valid_eval(domain)
+        if domain[0] == -np.inf:
+            domain[0] = bbox[0]
+        if domain[1] == np.inf:
+            domain[1] = bbox[2]
 
     # if there are arrows, we need to pull the domain in by two pixels
     # so that the arrows don't go outside the domain
