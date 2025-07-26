@@ -313,8 +313,8 @@ GraphicalElements =
         Area-Under-Curve* &
         Axes* &
         Circle* &
+        Contour* &
         Ellipse* &
-        Gradient* &
         Graph* &
         Grid* &
         Grid-Axes* &
@@ -422,34 +422,6 @@ Axes = element axes {
     YLabel?
 }
 
-Gradient = element gradient {
-    attribute at {text}?,
-    attribute function {text}?,
-    attribute spacings {text}?,
-    attribute scale {text}?,
-    attribute curve {text}?,
-    attribute domain {text}?,
-    attribute N {text}?,
-    attribute arrow-width {text}?,
-    attribute arrow-angles {text?}?,
-    StrokeAttributes,
-    CommonAttributes
-}
-
-Vector-Field = element vector-field {
-    attribute at {text}?,
-    attribute function {text}?,
-    attribute spacings {text}?,
-    attribute scale {text}?,
-    attribute curve {text}?,
-    attribute domain {text}?,
-    attribute N {text}?,
-    attribute arrow-width {text}?,
-    attribute arrow-angles {text?}?,
-    StrokeAttributes,
-    CommonAttributes
-}
-
 Grid = element grid {
     attribute at {text}?,
     attribute spacings {text}?,
@@ -504,6 +476,16 @@ Tick-Mark = element tick-mark {
     StrokeAttributes,
     LabelAttributes,
     LabelText?
+}
+
+Contour = element contour {
+    attribute at {text}?,
+    attribute function {text},
+    attribute k {text}?,
+    attribute depth {text}?,
+    attribute initial-depth {text}?,
+    StrokeAttributes,
+    CommonAttributes
 }
 
 Circle = element circle {
@@ -811,6 +793,20 @@ Vector = element vector {
     attribute head-location {text}?,
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,
+    StrokeAttributes,
+    CommonAttributes
+}
+
+Vector-Field = element vector-field {
+    attribute at {text}?,
+    attribute function {text}?,
+    attribute spacings {text}?,
+    attribute scale {text}?,
+    attribute curve {text}?,
+    attribute domain {text}?,
+    attribute N {text}?,
+    attribute arrow-width {text}?,
+    attribute arrow-angles {text?}?,
     StrokeAttributes,
     CommonAttributes
 }

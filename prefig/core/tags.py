@@ -41,6 +41,7 @@ tag_dict = {
     'caption': label.caption,
     'circle': circle.circle,
     'clip': clip.clip,
+    'contour': implicit.implicit_curve,
     'coordinates': coordinates.coordinates,
     'definition': definition.definition,
     'derivative': definition.derivative,

@@ -15,6 +15,9 @@ def set_diagram(d):
 # introduce some useful mathematical operations
 #   that are meant to be available to authors
 
+def ln(x):
+    return math.log(x)
+
 def dot(u, v):
     return np.dot(np.array(u), np.array(v))
 

@@ -763,10 +763,10 @@
         <ref name="Circle"/>
       </zeroOrMore>
       <zeroOrMore>
-        <ref name="Ellipse"/>
+        <ref name="Contour"/>
       </zeroOrMore>
       <zeroOrMore>
-        <ref name="Gradient"/>
+        <ref name="Ellipse"/>
       </zeroOrMore>
       <zeroOrMore>
         <ref name="Graph"/>
@@ -1122,80 +1122,6 @@
       </optional>
     </element>
   </define>
-  <define name="Gradient">
-    <element name="gradient">
-      <optional>
-        <attribute name="at"/>
-      </optional>
-      <optional>
-        <attribute name="function"/>
-      </optional>
-      <optional>
-        <attribute name="spacings"/>
-      </optional>
-      <optional>
-        <attribute name="scale"/>
-      </optional>
-      <optional>
-        <attribute name="curve"/>
-      </optional>
-      <optional>
-        <attribute name="domain"/>
-      </optional>
-      <optional>
-        <attribute name="N"/>
-      </optional>
-      <optional>
-        <attribute name="arrow-width"/>
-      </optional>
-      <optional>
-        <attribute name="arrow-angles">
-          <optional>
-            <text/>
-          </optional>
-        </attribute>
-      </optional>
-      <ref name="StrokeAttributes"/>
-      <ref name="CommonAttributes"/>
-    </element>
-  </define>
-  <define name="Vector-Field">
-    <element name="vector-field">
-      <optional>
-        <attribute name="at"/>
-      </optional>
-      <optional>
-        <attribute name="function"/>
-      </optional>
-      <optional>
-        <attribute name="spacings"/>
-      </optional>
-      <optional>
-        <attribute name="scale"/>
-      </optional>
-      <optional>
-        <attribute name="curve"/>
-      </optional>
-      <optional>
-        <attribute name="domain"/>
-      </optional>
-      <optional>
-        <attribute name="N"/>
-      </optional>
-      <optional>
-        <attribute name="arrow-width"/>
-      </optional>
-      <optional>
-        <attribute name="arrow-angles">
-          <optional>
-            <text/>
-          </optional>
-        </attribute>
-      </optional>
-      <ref name="StrokeAttributes"/>
-      <ref name="CommonAttributes"/>
-    </element>
-  </define>
   <define name="Grid">
     <element name="grid">
       <optional>
@@ -1405,6 +1331,25 @@
       <optional>
         <ref name="LabelText"/>
       </optional>
+    </element>
+  </define>
+  <define name="Contour">
+    <element name="contour">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="function"/>
+      <optional>
+        <attribute name="k"/>
+      </optional>
+      <optional>
+        <attribute name="depth"/>
+      </optional>
+      <optional>
+        <attribute name="initial-depth"/>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
     </element>
   </define>
   <define name="Circle">
@@ -2193,6 +2138,43 @@
       </optional>
       <optional>
         <attribute name="arrow-angles"/>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Vector-Field">
+    <element name="vector-field">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="function"/>
+      </optional>
+      <optional>
+        <attribute name="spacings"/>
+      </optional>
+      <optional>
+        <attribute name="scale"/>
+      </optional>
+      <optional>
+        <attribute name="curve"/>
+      </optional>
+      <optional>
+        <attribute name="domain"/>
+      </optional>
+      <optional>
+        <attribute name="N"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-width"/>
+      </optional>
+      <optional>
+        <attribute name="arrow-angles">
+          <optional>
+            <text/>
+          </optional>
+        </attribute>
       </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>

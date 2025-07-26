@@ -66,6 +66,8 @@ def validate_node(node, args=None):
         return True
     if isinstance(node, ast.Expression):
         return validate_node(node.body, args)
+    if isinstance(node, ast.Starred):
+        return validate_node(node.value)
     if isinstance(node, ast.Name):
         if node.id in variables:
             return True
