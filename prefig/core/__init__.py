@@ -13,6 +13,7 @@ from . import (
     graph,
     grid_axes,
     group,
+    image,
     implicit,
     label,
     label_tools,

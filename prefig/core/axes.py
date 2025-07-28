@@ -787,8 +787,8 @@ def tick_mark(element, diagram, parent, outline_status):
         size = un.valid_eval(element.get('size'))
         if not isinstance(size, np.ndarray):
             size = (size, size)
-        else:
-            size = (3,3)
+    else:
+        size = (3,3)
 
     if tactile:
         size = (18,0)
@@ -869,8 +869,8 @@ def tick_mark(element, diagram, parent, outline_status):
 
         if el_copy.get('alignment', None) is None:
             el_copy.set('alignment', align)
-        if el_copy.get('offset', None) is None:
-            el_copy.set('offset', off)
+            if el_copy.get('offset', None) is None:
+                el_copy.set('offset', off)
         el_copy.set("user-coords", "no")
         el_copy.set("anchor", util.pt2str(p, spacer=","))
         label.label(el_copy, diagram, parent, outline_status)

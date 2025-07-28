@@ -781,6 +781,9 @@
         <ref name="Histogram"/>
       </zeroOrMore>
       <zeroOrMore>
+        <ref name="Image"/>
+      </zeroOrMore>
+      <zeroOrMore>
         <ref name="Implicit-Curve"/>
       </zeroOrMore>
       <zeroOrMore>
@@ -1428,6 +1431,43 @@
       </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Image">
+    <element name="image">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="source"/>
+      <optional>
+        <attribute name="lower-left"/>
+      </optional>
+      <optional>
+        <attribute name="center"/>
+      </optional>
+      <optional>
+        <attribute name="dimensions"/>
+      </optional>
+      <optional>
+        <attribute name="opacity"/>
+      </optional>
+      <optional>
+        <attribute name="filetype">
+          <choice>
+            <value>svg</value>
+            <value>png</value>
+            <value>gif</value>
+            <value>jpeg</value>
+            <value>jpg</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="rotate"/>
+      </optional>
+      <optional>
+        <attribute name="scale"/>
+      </optional>
     </element>
   </define>
   <define name="Histogram">

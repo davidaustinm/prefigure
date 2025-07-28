@@ -480,6 +480,31 @@ def decorate(child, diagram, current_point, cmds):
         cmds += ['L', util.pt2str(ctm.transform((x_pos,0)))]
         cmds += ['L', util.pt2str(ctm.transform((length, 0)))]
 
+    if decoration_data[0] == 'ragged':
+        # offset, step
+        try:
+            data = [d.split('=') for d in decoration_data[1:]]
+            data = {k:v for k, v in data}
+        except:
+            log.error("Error in wave decoration data")
+            return
+        try:
+            offset = un.valid_eval(data['offset'])
+            step = un.valid_eval(data['step'])
+        except:
+            log.error("Error in retrieving the step and an offset in a ragged decoration")
+
+        np.random.seed(int(data.get('seed','1')))
+        x_pos = 0
+        y_pos = 0
+        p = ctm.transform((0,0))
+        cmds += ['L', util.pt2str(ctm.transform((0,0)))]
+        while x_pos < length-step:
+            y_pos = 2 * offset * (np.random.random()-0.5)
+            x_pos += (0.5*np.random.random()+0.75)*step
+            cmds += ['L', util.pt2str(ctm.transform((x_pos,y_pos)))]
+        cmds += ['L', util.pt2str(ctm.transform((length, 0)))]
+
     if decoration_data[0] == 'capacitor':
         try:
             data = [d.split('=') for d in decoration_data[1:]]

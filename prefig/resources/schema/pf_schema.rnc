@@ -319,6 +319,7 @@ GraphicalElements =
         Grid* &
         Grid-Axes* &
         Histogram* &
+        Image*&
         Implicit-Curve* &
         Label* &
         Legend* &
@@ -518,6 +519,18 @@ Graph = element graph {
     attribute fill {text}?,
     StrokeAttributes,
     CommonAttributes
+}
+
+Image = element image {
+    attribute at {text}?,
+    attribute source{text},
+    attribute lower-left {text}?,
+    attribute center {text}?,
+    attribute dimensions {text}?,
+    attribute opacity {text}?,
+    attribute filetype {"svg"|"png"|"gif"|"jpeg"|"jpg"}?,
+    attribute rotate {text}?,
+    attribute scale {text}?
 }
 
 Histogram = element histogram {

@@ -11,6 +11,7 @@ from . import definition
 from . import graph
 from . import grid_axes
 from . import group
+from . import image
 from . import implicit
 from . import label
 from . import legend
@@ -51,6 +52,7 @@ tag_dict = {
     'grid-axes': grid_axes.grid_axes,
     'group': group.group,
     'histogram': statistics.histogram,
+    'image': image.image,
     'implicit-curve': implicit.implicit_curve,
     'label': label.label,
     'legend': legend.legend,

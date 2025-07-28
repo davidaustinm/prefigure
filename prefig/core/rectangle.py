@@ -71,9 +71,11 @@ def rectangle(element, diagram, parent, outline_status):
     path.set('d', ' '.join(cmds))
 
     if diagram.output_format() == 'tactile':
-        if element.get('stroke') is not None:
+        stroke = element.get('stroke')
+        fill   = element.get('fill')
+        if stroke is not None and stroke != 'none':
             element.set('stroke', 'black')
-        if element.get('fill') is not None:
+        if fill is not None and fill != 'none':
             element.set('fill', 'lightgray')
     else:
         util.set_attr(element, 'stroke', 'none')
