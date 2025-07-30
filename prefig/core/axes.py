@@ -748,7 +748,7 @@ def label_text(x, commas):
         suffix = text[period:]
         text = text[:period]
     while len(text) > 3:
-        suffix = ',' + text[-3:] + suffix
+        suffix = '{,}' + text[-3:] + suffix
         text = text[:-3]
     text = text + suffix
     return r'\text{' + prefix + text + r'}'

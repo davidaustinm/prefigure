@@ -26,6 +26,8 @@ def slope_field(element, diagram, parent, outline_status):
         return
     bbox = diagram.bbox()
 
+    if element.get('id', None) is None:
+        diagram.add_id(element, None)
     # We're going to turn this element into a group and add lines to it
     element.tag = "group"
     if element.get('outline', 'no') == 'yes':
@@ -126,6 +128,9 @@ def vector_field(element, diagram, parent, outline_status):
         log.error(f"Error retrieving slope-field function={element.get('function')}")
         return
     bbox = diagram.bbox()
+
+    if element.get('id', None) is None:
+        diagram.add_id(element, None)
 
     # We're going to turn this element into a group and add lines to it
     element.tag = "group"
