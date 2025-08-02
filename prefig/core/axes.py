@@ -528,8 +528,7 @@ class Axes():
                 log.error(f"Error in <axes> parsing hlabels={hlabels}")
                 return
             if self.h_pi_format:
-                hlabels = 1/math.pi * hlabels
-
+                h_positions = 1/math.pi * h_positions
         h_scale = 1
         if self.h_pi_format:
             h_scale = math.pi
@@ -636,7 +635,7 @@ class Axes():
                 return
 
             if self.v_pi_format:
-                vlabels = 1/math.pi * vlabels
+                v_positions = 1/math.pi * v_positions
             
         v_scale = 1
         if self.v_pi_format:
