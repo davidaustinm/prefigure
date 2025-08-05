@@ -2,6 +2,9 @@ import numpy as np
 from . import user_namespace as un
 from . import label
 
+import logging
+logger = logging.getLogger('prefigure')
+
 import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore', 'legacy print')
@@ -25,7 +28,7 @@ def get_attr(element, attr, default):
     try:
         attribute = un.valid_eval(element.get(attr, default))
         if isinstance(attribute, np.ndarray):
-            return np.array2string(attribute, separator=',')
+            return ','.join([float2longstr(a) for a in attribute])
         return str(attribute)
     except (TypeError, SyntaxError):  # this is a string that's not in the namespace
         return element.get(attr, default)
