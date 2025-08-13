@@ -1,5 +1,7 @@
 import lxml.etree as ET
 import logging
+import numpy as np
+import math
 from . import user_namespace as un
 from . import math_utilities as math_util
 from . import utilities as util
@@ -18,7 +20,15 @@ def point(element, diagram, parent, outline_status = None):
 
     # determine the location and size of the point from the XML element
     try:
-        p = diagram.transform(un.valid_eval(element.get('p')))
+        p = un.valid_eval(element.get('p'))
+        if element.get('coordinates', 'cartesian') == 'polar':
+            radial = p[0]
+            angle = p[1]
+            if element.get('degrees', 'no') == 'yes':
+                angle = math.radians(angle)
+            p = radial * np.array([math.cos(angle), math.sin(angle)])
+            element.set('p', util.pt2long_str(p, spacer=','))
+        p = diagram.transform(p)
     except:
         log.error(f"Error in <point> defining p={element.get('p')}")
         return

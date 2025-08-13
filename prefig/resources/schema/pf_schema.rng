@@ -1886,6 +1886,22 @@
       <optional>
         <attribute name="size"/>
       </optional>
+      <optional>
+        <attribute name="coordinates">
+          <choice>
+            <value>cartesian</value>
+            <value>polar</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="degrees">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
       <ref name="LabelAttributes"/>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>

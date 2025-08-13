@@ -685,6 +685,8 @@ Point = element point {
     attribute at {text}?,
     attribute style {text}?,
     attribute size {text}?,
+    attribute coordinates {"cartesian"|"polar"}?,
+    attribute degrees {"yes"|"no"}?,
     LabelAttributes,
     FillAttributes,
     CommonAttributes,
