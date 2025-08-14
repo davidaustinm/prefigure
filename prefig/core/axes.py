@@ -571,7 +571,7 @@ class Axes():
                 xlabel.set('scale', '0.8')
             else:
                 #math_element.text = r'\text{'+'{0:g}'.format(x)+'}'
-                math_element.text = label_text(x, commas)
+                math_element.text = label_text(x, commas, diagram)
             if self.h_pi_format:
                 math_element.text = get_pi_text(x)
 
@@ -680,7 +680,7 @@ class Axes():
                 ylabel.set('scale', '0.8')
             else:
                 #math_element.text = r'\text{'+'{0:g}'.format(y)+'}'
-                math_element.text = label_text(y, commas)
+                math_element.text = label_text(y, commas, diagram)
             if self.v_pi_format:
                 math_element.text = get_pi_text(y)
             # process as a math number
@@ -712,7 +712,7 @@ class Axes():
                                    user_coords=False)
             self.v_tick_group.append(line_el)
 
-def label_text(x, commas):
+def label_text(x, commas, diagram):
     # we'll construct a text representation of x
     # maybe it's simple
     if x < 0:
@@ -741,13 +741,16 @@ def label_text(x, commas):
         return r'\text{' + prefix + text + r'}'
 
     period = text.find('.')
+    comma_include = '{,}'
+    if diagram.get_environment() == 'pyodide':
+        comma_include = ','
     if period < 0:
         suffix = ''
     else:
         suffix = text[period:]
         text = text[:period]
     while len(text) > 3:
-        suffix = '{,}' + text[-3:] + suffix
+        suffix = comma_include + text[-3:] + suffix
         text = text[:-3]
     text = text + suffix
     return r'\text{' + prefix + text + r'}'
