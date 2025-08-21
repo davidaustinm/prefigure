@@ -35,6 +35,10 @@ def parametric_curve(element, diagram, parent, outline_status):
         t += dt
         p = diagram.transform(f(t))
         points.append('L ' + util.pt2str(p))
+
+    if element.get('closed', 'no') == 'yes':
+        points.append('Z')
+
     if arrows > 0 and element.get('arrow-location', None) is not None:
         arrow_location = un.valid_eval(element.get('arrow-location'))
         num_pts = 5
@@ -45,9 +49,6 @@ def parametric_curve(element, diagram, parent, outline_status):
             t += dt
             p = diagram.transform(f(t))
             points.append('L ' + util.pt2str(p))
-
-    if element.get('closed', 'no') == 'yes':
-        points.append('Z')
 
     d = ' '.join(points)
 
