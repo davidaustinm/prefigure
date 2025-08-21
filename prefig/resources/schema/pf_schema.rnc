@@ -641,6 +641,7 @@ Parametric-Curve = element parametric-curve {
     attribute N {text}?,
     attribute closed {"yes"|"no"}?,
     attribute arrows {text}?,
+    attribute arrow-location {text}?,
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,
     attribute reverse {"yes"|"no"}?,

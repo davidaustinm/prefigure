@@ -24,8 +24,9 @@ def parametric_curve(element, diagram, parent, outline_status):
         log.error(f"Error in <parametric-curve> defining domain={element.get('domain')}")
         return
 
-    N = int(element.get('N', '100'))
+    arrows = int(element.get('arrows', '0'))
 
+    N = int(element.get('N', '100'))
     t = domain[0]
     dt = (domain[1]-domain[0])/N
     p = diagram.transform(f(t))
@@ -34,8 +35,20 @@ def parametric_curve(element, diagram, parent, outline_status):
         t += dt
         p = diagram.transform(f(t))
         points.append('L ' + util.pt2str(p))
+    if arrows > 0 and element.get('arrow-location', None) is not None:
+        arrow_location = un.valid_eval(element.get('arrow-location'))
+        num_pts = 5
+        t = arrow_location - num_pts*dt
+        p = diagram.transform(f(t))
+        points.append('M ' + util.pt2str(p))
+        for _ in range(num_pts):
+            t += dt
+            p = diagram.transform(f(t))
+            points.append('L ' + util.pt2str(p))
+
     if element.get('closed', 'no') == 'yes':
         points.append('Z')
+
     d = ' '.join(points)
 
     if diagram.output_format() == 'tactile':
@@ -51,12 +64,10 @@ def parametric_curve(element, diagram, parent, outline_status):
     diagram.add_id(path, element.get('id'))
     path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
-#    path.set('type', 'parametric curve')
 
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
     util.cliptobbox(path, element, diagram)
 
-    arrows = int(element.get('arrows', '0'))
     forward = 'marker-end'
     backward = 'marker-start'
     if element.get('reverse', 'no') == 'yes':
