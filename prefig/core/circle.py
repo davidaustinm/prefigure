@@ -47,7 +47,10 @@ def circle(element, diagram, parent, outline_status):
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
         if element.get('fill') is not None:
-            element.set('fill', 'lightgray')
+            if element.get('fill').strip().lower() != 'none':
+                element.set('fill', 'lightgray')
+            else:
+                element.set('fill', 'none')
     else:
         element.set('stroke', element.get('stroke', 'none'))
         element.set('fill', element.get('fill', 'none'))
@@ -120,7 +123,10 @@ def ellipse(element, diagram, parent, outline_status):
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
         if element.get('fill') is not None:
-            element.set('fill', 'lightgray')
+            if elementl.get('fill').strip().lower() != 'none':
+                element.set('fill', 'lightgray')
+            else:
+                element.set('fill', 'none')
     else:
         element.set('stroke', element.get('stroke', 'none'))
         element.set('fill', element.get('fill', 'none'))
@@ -283,7 +289,10 @@ def angle(element, diagram, parent, outline_status):
     element.set('stroke', element.get('stroke', 'black'))
     if diagram.output_format() == 'tactile':
         if element.get('fill') is not None:
-            element.set('fill', 'lightgray')
+            if element.get('fill').strip().lower() != 'none':
+                element.set('fill', 'lightgray')
+            else:
+                element.set('fill', 'none')
     else:
         element.set('fill', element.get('fill', 'none'))
     element.set('thickness', element.get('thickness','2'))

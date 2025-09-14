@@ -53,7 +53,10 @@ def polygon(element, diagram, parent,
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
         if element.get('fill') is not None:
-            element.set('fill', 'lightgray')
+            if element.get('fill').strip().lower() != 'none':
+                element.set('fill', 'lightgray')
+            else:
+                element.set('fill', 'none')
     util.set_attr(element, 'stroke', 'none')
     util.set_attr(element, 'fill', 'none')
     util.set_attr(element, 'thickness', '2')

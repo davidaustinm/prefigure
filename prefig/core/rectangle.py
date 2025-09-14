@@ -75,8 +75,11 @@ def rectangle(element, diagram, parent, outline_status):
         fill   = element.get('fill')
         if stroke is not None and stroke != 'none':
             element.set('stroke', 'black')
-        if fill is not None and fill != 'none':
-            element.set('fill', 'lightgray')
+        if fill is not None:
+            if fill.strip().lower() != 'none':
+                element.set('fill', 'lightgray')
+            else:
+                element.set('fill', 'none')
     else:
         util.set_attr(element, 'stroke', 'none')
         util.set_attr(element, 'fill', 'none')

@@ -34,7 +34,13 @@ def point(element, diagram, parent, outline_status = None):
         return
 
     if diagram.output_format() == 'tactile':
-        element.set('size', element.get('size', '9'))
+        if element.get('size', None) is not None:
+            size = un.valid_eval(element.get('size'))
+            size = max(size, 9)
+            size = str(size)
+        else:
+            size = '9'
+        element.set('size', size)
     else:
         element.set('size', element.get('size', '4'))
     size = util.get_attr(element, 'size', '1')
