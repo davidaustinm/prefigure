@@ -64,7 +64,7 @@ PreFigure may be installed locally as a Python package in the usual way using `p
     apt install nodejs
     ```
 
-6. For creating tactile graphics to be embossed, you are encouraged to install `rsvg-convert`, which PreFigure uses to convert SVGs into PDFs.  On Ubuntu, you can say
+6. For building PDF versions of diagrams, you will need to install `rsvg-convert`, which PreFigure uses to convert SVGs into PDFs.  On Ubuntu, you can say
 
     ```
     apt install librsvg2-bin
