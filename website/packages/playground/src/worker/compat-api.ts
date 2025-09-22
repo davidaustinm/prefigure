@@ -2,13 +2,13 @@ import { toBraille } from "./liblouis";
 
 // @ts-ignore
 import { setupEngine, toSpeech } from "speech-rule-engine";
-import { mathjax } from "mathjax-full/js/mathjax.js";
-import { TeX } from "mathjax-full/js/input/tex.js";
-import { SVG } from "mathjax-full/js/output/svg.js";
-import { liteAdaptor } from "mathjax-full/js/adaptors/liteAdaptor.js";
-import { RegisterHTMLHandler } from "mathjax-full/js/handlers/html.js";
-import { SerializedMmlVisitor } from "mathjax-full/js/core/MmlTree/SerializedMmlVisitor";
-import { MathDocument } from "mathjax-full/js/core/MathDocument";
+import { mathjax } from "@mathjax/src/mjs/mathjax.js";
+import { TeX } from "@mathjax/src/mjs/input/tex.js";
+import { SVG } from "@mathjax/src/mjs/output/svg.js";
+import { liteAdaptor } from "@mathjax/src/mjs/adaptors/liteAdaptor.js";
+import { RegisterHTMLHandler } from "@mathjax/src/mjs/handlers/html.js";
+import { SerializedMmlVisitor } from "@mathjax/src/mjs/core/MmlTree/SerializedMmlVisitor";
+import type { MathDocument } from "@mathjax/src/mjs/core/MathDocument";
 
 /**
  * This is the API used by PreFigure when running in the browser. It implements the necessary
