@@ -88,7 +88,7 @@ export class PreFigureCompiler {
     async compile(
         mode: "svg" | "tactile",
         source: string,
-    ): Promise<{ svg: string; annotations: unknown }> {
+    ): Promise<{ svg: string; annotations: string }> {
         this._checkInit();
 
         const result = await this.pyodide.runPython(`

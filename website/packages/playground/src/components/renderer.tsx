@@ -10,6 +10,7 @@ import {
 import { Download } from "react-bootstrap-icons";
 import { saveAs } from "file-saver";
 
+
 /**
  * Renders and displays the currently active PreFigure source code.
  */
@@ -17,6 +18,7 @@ export function Renderer() {
     const loadPyodide = useStoreActions((actions) => actions.loadPyodide);
     const status = useStoreState((state) => state.status);
     const compiledSource = useStoreState((state) => state.compiledSource);
+    const annotations = useStoreState((state) => state.annotations);
     const compile = useStoreActions((actions) => actions.compile);
     const mode = useStoreState((state) => state.compileMode);
     const setMode = useStoreActions((actions) => actions.setCompileMode);
@@ -80,12 +82,19 @@ export function Renderer() {
             <div className="render-buffer">
                 <div className="render-content">
                     {sourceForDisplay.startsWith("<svg") ? (
+                    <div className="ChemAccess-element" tabIndex={0}>
                         <div
-                            className="rendered-svg"
+                            className="svg"
                             dangerouslySetInnerHTML={{
                                 __html: sourceForDisplay,
                             }}
                         ></div>
+                        <div className="cml"
+                             dangerouslySetInnerHTML={{
+                             __html: annotations,
+                            }}
+                        ></div>
+                      </div>
                     ) : (
                         compiledSource
                     )}
