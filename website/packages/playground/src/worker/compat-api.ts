@@ -1,9 +1,7 @@
 import { toBraille } from "./liblouis";
 
-// XXX: We need this as a workaround for https://github.com/Speech-Rule-Engine/speech-rule-engine/issues/783
-// When speech-rule-engine is out of alpha/beta we might be able to use the designated imports
 // @ts-ignore
-import * as SRE from "speech-rule-engine/lib/sre";
+import { setupEngine, toSpeech } from "speech-rule-engine";
 import { mathjax } from "mathjax-full/js/mathjax.js";
 import { TeX } from "mathjax-full/js/input/tex.js";
 import { SVG } from "mathjax-full/js/output/svg.js";
@@ -44,7 +42,7 @@ export class PrefigBrowserApi {
                 InputJax: tex,
             });
 
-            await SRE.setupEngine({
+            await setupEngine({
                 locale: "nemeth",
                 modality: "braille",
             });
@@ -117,7 +115,7 @@ export class PrefigBrowserApi {
         const mml = visitor.visitTree(mathNode);
 
         // A string containing braille version of the MathML
-        const braille = SRE.toSpeech(mml);
+        const braille = toSpeech(mml);
 
         return braille;
     }
