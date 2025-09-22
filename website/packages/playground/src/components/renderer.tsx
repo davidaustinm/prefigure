@@ -9,6 +9,7 @@ import {
 } from "react-bootstrap";
 import { Download } from "react-bootstrap-icons";
 import { saveAs } from "file-saver";
+import * as diagcess from "diagcess";
 
 
 /**
@@ -81,21 +82,8 @@ export function Renderer() {
         <div className="render-frame">
             <div className="render-buffer">
                 <div className="render-content">
-                    {sourceForDisplay.startsWith("<svg") ? (
-                    <div className="ChemAccess-element" tabIndex={0}>
-                        <div
-                            className="svg"
-                            dangerouslySetInnerHTML={{
-                                __html: sourceForDisplay,
-                            }}
-                        ></div>
-                        <div className="cml"
-                             dangerouslySetInnerHTML={{
-                             __html: annotations,
-                            }}
-                        ></div>
-                      </div>
-                    ) : (
+                    {sourceForDisplay.startsWith("<svg") ?
+                        <AnnotateSvg svg={sourceForDisplay} annotations={annotations}/> : (
                         compiledSource
                     )}
                 </div>
@@ -158,4 +146,29 @@ export function Renderer() {
             </Nav>
         </div>
     );
+}
+
+
+function AnnotateSvg({svg, annotations}: {
+  svg: string,
+  annotations: string
+}) {
+  React.useEffect(() => {
+    diagcess.Base.init(true)
+  });
+
+  return (
+    <div className="ChemAccess-element">
+      <div className="svg"
+           dangerouslySetInnerHTML={{
+             __html: svg,
+           }}
+      ></div>
+      <div className="cml"
+           dangerouslySetInnerHTML={{
+             __html: annotations,
+           }}
+      ></div>
+    </div>
+  );
 }

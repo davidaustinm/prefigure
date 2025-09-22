@@ -9,11 +9,6 @@ import { useStoreState } from "./state";
 
 function App() {
     const version = useStoreState((state) => state.prefigVersion);
-    React.useEffect(() => {
-      // currently a hack
-      diagcess.Base.init()
-    }, []);
-
 
     return (
         <React.Fragment>

@@ -87,7 +87,6 @@ export const playgroundModel: PlaygroundModel = {
         state.compiledSource = payload;
     }),
     setAnnotations: action((state, payload) => {
-      console.log(payload);
         state.annotations = payload;
     }),
     setErrorState: action((state, payload) => {
