@@ -14,6 +14,7 @@
         "@codemirror/lang-python": "^6.1.6",
         "@codemirror/lang-xml": "^6.1.0",
         "@codemirror/state": "^6.4.1",
+        "@mathjax/src": "^4.0.0",
         "@monaco-editor/react": "^4.6.0",
         "@types/file-saver": "^2.0.7",
         "bootstrap": "^5.3.3",
@@ -21,11 +22,11 @@
         "comlink": "^4.4.2",
         "easy-peasy": "^6.0.5",
         "file-saver": "^2.0.5",
-        "mathjax-full": "^3.2.2",
         "pyodide": "^0.26.4",
         "react": "^18.3.1",
         "react-bootstrap-icons": "^1.11.5",
-        "react-dom": "^18.3.1"
+        "react-dom": "^18.3.1",
+        "speech-rule-engine": "5.0.0-beta.1"
     },
     "devDependencies": {
         "@types/node": "^22.10.1",

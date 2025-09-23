@@ -1,16 +1,14 @@
 import { toBraille } from "./liblouis";
 
-// XXX: We need this as a workaround for https://github.com/Speech-Rule-Engine/speech-rule-engine/issues/783
-// When speech-rule-engine is out of alpha/beta we might be able to use the designated imports
 // @ts-ignore
-import * as SRE from "speech-rule-engine/lib/sre";
-import { mathjax } from "mathjax-full/js/mathjax.js";
-import { TeX } from "mathjax-full/js/input/tex.js";
-import { SVG } from "mathjax-full/js/output/svg.js";
-import { liteAdaptor } from "mathjax-full/js/adaptors/liteAdaptor.js";
-import { RegisterHTMLHandler } from "mathjax-full/js/handlers/html.js";
-import { SerializedMmlVisitor } from "mathjax-full/js/core/MmlTree/SerializedMmlVisitor";
-import { MathDocument } from "mathjax-full/js/core/MathDocument";
+import { setupEngine, toSpeech } from "speech-rule-engine";
+import { mathjax } from "@mathjax/src/mjs/mathjax.js";
+import { TeX } from "@mathjax/src/mjs/input/tex.js";
+import { SVG } from "@mathjax/src/mjs/output/svg.js";
+import { liteAdaptor } from "@mathjax/src/mjs/adaptors/liteAdaptor.js";
+import { RegisterHTMLHandler } from "@mathjax/src/mjs/handlers/html.js";
+import { SerializedMmlVisitor } from "@mathjax/src/mjs/core/MmlTree/SerializedMmlVisitor.js";
+import type { MathDocument } from "@mathjax/src/mjs/core/MathDocument.js";
 
 /**
  * This is the API used by PreFigure when running in the browser. It implements the necessary
@@ -44,7 +42,7 @@ export class PrefigBrowserApi {
                 InputJax: tex,
             });
 
-            await SRE.setupEngine({
+            await setupEngine({
                 locale: "nemeth",
                 modality: "braille",
             });
@@ -117,7 +115,7 @@ export class PrefigBrowserApi {
         const mml = visitor.visitTree(mathNode);
 
         // A string containing braille version of the MathML
-        const braille = SRE.toSpeech(mml);
+        const braille = toSpeech(mml);
 
         return braille;
     }
