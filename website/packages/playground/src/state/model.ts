@@ -27,6 +27,7 @@ compiler = worker.compiler as any as Awaited<typeof worker.compiler>;
 export interface PlaygroundModel {
     source: string;
     compiledSource: string;
+    annotations: string;
     status: "" | "loadingPyodide" | "compiling";
     compileMode: "svg" | "tactile";
     prefigVersion: string;
@@ -35,6 +36,7 @@ export interface PlaygroundModel {
     setSource: Action<PlaygroundModel, string>;
     onSetSource: ThunkOn<PlaygroundModel>;
     setCompiledSource: Action<PlaygroundModel, string>;
+    setAnnotations: Action<PlaygroundModel, string>;
     setStatus: Action<PlaygroundModel, "" | "loadingPyodide" | "compiling">;
     setErrorState: Action<PlaygroundModel, string>;
     setCompileMode: Action<PlaygroundModel, "svg" | "tactile">;
@@ -63,6 +65,7 @@ export const playgroundModel: PlaygroundModel = {
   </coordinates>
 </diagram>`,
     compiledSource: "",
+    annotations: "",
     compileMode: "svg",
     errorState: "",
     status: "",
@@ -82,6 +85,9 @@ export const playgroundModel: PlaygroundModel = {
     }),
     setCompiledSource: action((state, payload) => {
         state.compiledSource = payload;
+    }),
+    setAnnotations: action((state, payload) => {
+        state.annotations = payload;
     }),
     setErrorState: action((state, payload) => {
         state.errorState = payload;
@@ -123,6 +129,7 @@ export const playgroundModel: PlaygroundModel = {
             const compiled = await compiler.compile(mode, source);
             // console.log("Got compiled results", compiled);
             actions.setCompiledSource(compiled.svg);
+            actions.setAnnotations(compiled.annotations || "");
             actions.saveCompileState();
         } catch (e) {
             console.error(e);

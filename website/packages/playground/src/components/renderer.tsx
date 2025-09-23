@@ -9,6 +9,8 @@ import {
 } from "react-bootstrap";
 import { Download } from "react-bootstrap-icons";
 import { saveAs } from "file-saver";
+import * as diagcess from "diagcess";
+
 
 /**
  * Renders and displays the currently active PreFigure source code.
@@ -17,6 +19,7 @@ export function Renderer() {
     const loadPyodide = useStoreActions((actions) => actions.loadPyodide);
     const status = useStoreState((state) => state.status);
     const compiledSource = useStoreState((state) => state.compiledSource);
+    const annotations = useStoreState((state) => state.annotations);
     const compile = useStoreActions((actions) => actions.compile);
     const mode = useStoreState((state) => state.compileMode);
     const setMode = useStoreActions((actions) => actions.setCompileMode);
@@ -79,14 +82,8 @@ export function Renderer() {
         <div className="render-frame">
             <div className="render-buffer">
                 <div className="render-content">
-                    {sourceForDisplay.startsWith("<svg") ? (
-                        <div
-                            className="rendered-svg"
-                            dangerouslySetInnerHTML={{
-                                __html: sourceForDisplay,
-                            }}
-                        ></div>
-                    ) : (
+                    {sourceForDisplay.startsWith("<svg") ?
+                        <AnnotateSvg svg={sourceForDisplay} annotations={annotations}/> : (
                         compiledSource
                     )}
                 </div>
@@ -149,4 +146,29 @@ export function Renderer() {
             </Nav>
         </div>
     );
+}
+
+
+function AnnotateSvg({svg, annotations}: {
+  svg: string,
+  annotations: string
+}) {
+  React.useEffect(() => {
+    diagcess.Base.init(true)
+  });
+
+  return (
+    <div className="ChemAccess-element">
+      <div className="svg"
+           dangerouslySetInnerHTML={{
+             __html: svg,
+           }}
+      ></div>
+      <div className="cml"
+           dangerouslySetInnerHTML={{
+             __html: annotations,
+           }}
+      ></div>
+    </div>
+  );
 }
