@@ -63,6 +63,17 @@ export const playgroundModel: PlaygroundModel = {
       <m>(a,f(a))</m>
     </point>
   </coordinates>
+
+  <annotations>
+    <annotation ref="figure"
+                text="The graph of a function and its tangent line at the point a equals 1">
+      <annotation ref="graph" text="The graph and its tangent line">
+        <annotation ref="graph-0" text="The graph of the function f" sonify="yes"/>
+        <annotation ref="g-0" text="The point a comma f of a"/>
+        <annotation ref="line-24" text="The tangent line to the graph of f at the point"/>
+      </annotation>
+    </annotation>
+  </annotations>
 </diagram>`,
     compiledSource: "",
     annotations: "",
