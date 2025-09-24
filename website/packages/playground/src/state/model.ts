@@ -57,9 +57,9 @@ export const playgroundModel: PlaygroundModel = {
   <definition>a = 1</definition>
   <coordinates bbox="(-4,-4,4,4)">
     <grid-axes xlabel="x" ylabel="y"/>
-    <graph function="f"/>
-    <tangent-line function="f" point="a"/>
-    <point p="(a,f(a))" alignment="ne">
+    <graph at="graph" function="f"/>
+    <tangent-line at="tangent" function="f" point="a"/>
+    <point at="point" p="(a,f(a))" alignment="ne">
       <m>(a,f(a))</m>
     </point>
   </coordinates>
@@ -67,10 +67,10 @@ export const playgroundModel: PlaygroundModel = {
   <annotations>
     <annotation ref="figure"
                 text="The graph of a function and its tangent line at the point a equals 1">
-      <annotation ref="graph" text="The graph and its tangent line">
-        <annotation ref="graph-0" text="The graph of the function f" sonify="yes"/>
-        <annotation ref="g-0" text="The point a comma f of a"/>
-        <annotation ref="line-24" text="The tangent line to the graph of f at the point"/>
+      <annotation ref="graph-group" text="The graph and its tangent line">
+        <annotation ref="graph" text="The graph of the function f" sonify="yes"/>
+        <annotation ref="point" text="The point a comma f of a"/>
+        <annotation ref="tangent" text="The tangent line to the graph of f at the point"/>
       </annotation>
     </annotation>
   </annotations>
