@@ -52,7 +52,7 @@ def circle(element, diagram, parent, outline_status):
             else:
                 element.set('fill', 'none')
     else:
-        element.set('stroke', element.get('stroke', 'none'))
+        element.set('stroke', element.get('stroke', 'black'))
         element.set('fill', element.get('fill', 'none'))
     element.set('thickness', element.get('thickness', '2'))
     util.add_attr(circle, util.get_2d_attr(element))
