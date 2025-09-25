@@ -109,6 +109,15 @@ class Diagram:
                 if data_directory is not None:
                     self.external = data_directory
 
+        templates = self.diagram_element.xpath('.//templates')
+        if len(templates) > 0:
+            templates_element = templates[0]
+            for template in templates:
+                templates_parent = template.getparent()
+                templates_parent.remove(template)
+            for child in templates_element:
+                self.defaults[child.tag] = child
+
         if self.defaults.get('macros', None) is not None:
             label.add_macros(self.defaults.get('macros').text)
 
@@ -486,6 +495,13 @@ class Diagram:
 
     def get_root(self):
         return self.root
+
+    def apply_defaults(self, tag, element):
+        default = self.defaults.get(tag, None)
+        if default is not None:
+            for attr, value in default.attrib.items():
+                if element.get(attr, None) is None:
+                    element.set(attr, value)
 
     # when a graphical component is outlined, we first add the component's path
     # to <defs> so that it can be reused, then we stroke it with a thick white

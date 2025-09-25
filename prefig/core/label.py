@@ -15,6 +15,8 @@ import tempfile
 
 log = logging.getLogger('prefigure')
 
+allowed_fonts = {'serif','sans-serif','monospace'}
+
 def init(format, environment):
     global math_labels
     global text_measurements
@@ -465,10 +467,18 @@ def position_svg_label(element, diagram, ctm, group):
     # These lists contain: font, size, italics, bold, color
     label_color = element.get("color", None)
 
-    std_font_face = ['sans', 14, False, False, label_color]
-    it_font_face =  ['sans', 14, True, False, label_color]
-    b_font_face  =  ['sans', 14, False, True, label_color]
-    it_b_font_face  =  ['sans', 14, True, True, label_color]
+    diagram.apply_defaults('label', element)
+
+    font_family = element.get('font', 'sans-serif').lower().strip()
+    if font_family not in allowed_fonts:
+        font_family = 'sans-serif'
+
+    font_size = un.valid_eval(element.get('font-size', '14'))
+
+    std_font_face = [font_family, font_size, False, False, label_color]
+    it_font_face =  [font_family, font_size, True, False, label_color]
+    b_font_face  =  [font_family, font_size, False, True, label_color]
+    it_b_font_face  =  [font_family, font_size, True, True, label_color]
 
     label = element
 
