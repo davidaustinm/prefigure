@@ -32,6 +32,7 @@ class Diagram:
         self.environment = environment
         self.caption = ""
 
+        self.add_default_annotations = True
         if (self.environment == 'pyodide' and
             len(self.diagram_element.xpath('.//annotations')) == 0
             ):
@@ -39,6 +40,7 @@ class Diagram:
             annotations_tree = ET.SubElement(self.diagram_element,
                                              'annotations')
             annotations_tree.append(diagram_annotations)
+            self.add_default_annotations = False
 
         math_util.set_diagram(self)
 
@@ -591,6 +593,8 @@ class Diagram:
         self.annotations_root = ET.Element('annotations')
 
     def add_default_annotation(self, annotation):
+        if not self.add_default_annotations:
+            return
         self.default_annotations.append(annotation)
 
     def get_default_annotations(self):
