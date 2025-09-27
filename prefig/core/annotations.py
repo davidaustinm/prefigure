@@ -1,5 +1,6 @@
 import lxml.etree as ET
 import logging
+import copy
 
 log = logging.getLogger('prefigure')
 
@@ -122,3 +123,109 @@ def annotate(element, diagram, parent = None):
         ACTIVE = ET.Element('ACTIVE')
         ACTIVE.text = element.get('id')
         sonification.append(ACTIVE)
+
+pronounciations = {
+    'de-solve': 'D E solve',
+    'define-shapes': 'define shapes',
+    'angle-marker': 'angle marker',
+    'area-between-curves': 'area between curves',
+    'area-under-curve': 'area under curve',
+    'grid-axes': 'grid axes',
+    'implicit-curve': 'implicit curve',
+    'parametric-curve': 'parametric curve',
+    'plot-de-solution': 'plot D E solution',
+    'riemann-sum': 'Riemann sum',
+    'slope-field': 'slope field',
+    'tick-mark': 'tick mark',
+    'tangent-line': 'tangent line',
+    'vector-field': 'vector field'
+}
+
+labeled_elements = {
+    'label',
+    'point',
+    'xlabel',
+    'ylabel',
+    'angle-marker',
+    'tick-mark',
+    'item',
+    'node',
+    'edge'
+}
+
+label_subelements = {
+    'm': 'math',
+    'b': 'bold',
+    'it': 'italics',
+    'plain': 'plain',
+    'newline': 'new line'
+}
+
+def diagram_to_speech(diagram):
+    diagram = copy.deepcopy(diagram)
+
+    element_num = 0
+    for element in diagram.getiterator():
+        if element.tag in label_subelements.keys():
+            element.getparent().remove(element)
+            continue
+        attribs = copy.deepcopy(element.attrib)
+        for attrib_name in list(element.attrib.keys()):
+            element.attrib.pop(attrib_name)
+
+        if element.tag == "diagram":
+            element.set('ref', 'figure')
+            intro = "This prefigure source file begins with a diagram having these attributes: "
+        elif element.tag == "definition":
+            element.set('ref', 'element-'+str(element_num))
+            tag_speech = 'definition'
+            intro = "A definition element defining " + definition.text.strip()
+        elif element.tag in labeled_elements:
+            element.set('ref', 'element-'+str(element_num))
+            tag_speech = pronounciations.get(element.tag, element.tag)
+            label_text = label_to_speech(element)
+            if len(label_text) > 0:
+                if len(attribs) == 0:
+                    intro = f"A {tag_speech} element with label {label_text}.  The element has no attributes."
+                else:
+                    intro = f"A {tag_speech} element with label {label_text}.  There are these attributes: "
+            else:
+                if len(attribs) == 0:
+                    intro = f"A {tag_speech} element with no attributes."
+                else:
+                    intro = f"A {tag_speech} element with these attributes: "
+            element.text = None
+        else:
+            element.set('ref', 'element-'+str(element_num))
+            tag_speech = pronounciations.get(element.tag, element.tag)
+            if len(attribs) == 0:
+                intro = f"A {tag_speech} element with no attributes"
+            else:
+                intro = f"A {tag_speech} element with these attributes: "
+        element.set("text", intro + attributes_to_speech(attribs))
+        element_num += 1
+        element.tag = "annotation"
+
+    log.error(ET.tostring(diagram, pretty_print=True))
+    return diagram
+
+def attributes_to_speech(attribs):
+    strings = []
+    for key, value in attribs.items():
+        strings.append(f"{key} has value {value}")
+    return ', '.join(strings)
+
+def label_to_speech(element):
+    strings = []
+    if (element.text is not None and
+        len(element.text.strip()) > 0):
+        strings.append(element.text.strip())
+    for child in element:
+        child_speech = label_subelements.get(child.tag, child.tag)
+        strings.append('begin ' + child_speech)
+        strings.append(child.text.strip())
+        strings.append('end ' + child_speech)
+        if (child.tail is not None and
+            child.tail.strip() is not None):
+            strings.append(child.tail.strip())
+    return ' '.join(strings)

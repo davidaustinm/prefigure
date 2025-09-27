@@ -9,6 +9,7 @@ from . import utilities as util
 from . import CTM
 from . import label
 from . import math_utilities as math_util
+from . import annotations
 
 log = logging.getLogger('prefigure')
 
@@ -30,6 +31,14 @@ class Diagram:
         self.suppress_caption = suppress_caption
         self.environment = environment
         self.caption = ""
+
+        if (self.environment == 'pyodide' and
+            len(self.diagram_element.xpath('.//annotations')) == 0
+            ):
+            diagram_annotations = annotations.diagram_to_speech(diagram_element)
+            annotations_tree = ET.SubElement(self.diagram_element,
+                                             'annotations')
+            annotations_tree.append(diagram_annotations)
 
         math_util.set_diagram(self)
 
