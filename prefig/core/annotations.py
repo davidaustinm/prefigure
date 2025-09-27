@@ -179,7 +179,7 @@ def diagram_to_speech(diagram):
         elif element.tag == "definition":
             element.set('ref', 'element-'+str(element_num))
             tag_speech = 'definition'
-            intro = "A definition element defining " + definition.text.strip()
+            intro = "A definition element defining " + element.text.strip()
         elif element.tag in labeled_elements:
             element.set('ref', 'element-'+str(element_num))
             tag_speech = pronounciations.get(element.tag, element.tag)
