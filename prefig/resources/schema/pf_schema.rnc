@@ -48,7 +48,7 @@ DefinitionElements =
     Derivative?,
     DE-Solution?,
     Define-Shapes?,
-    Read
+    Read?
 
 Definition = element definition {
     text,
@@ -177,7 +177,9 @@ LabelAttributes =
     attribute rotate {text}?,
     attribute clear-background {"yes"|"no"}?,
     attribute background-margin {text}?,
-    attribute color {text}?
+    attribute color {text}?,
+    attribute font {text}?,
+    attribute font-size {text}?
 
 Math = element m {attribute color {text}? & text}
 Bold = element b {attribute color {text}? & text & Italic*}
