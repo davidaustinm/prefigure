@@ -33,7 +33,9 @@ export class PrefigBrowserApi {
             // Needed for MathJax
             RegisterHTMLHandler(this.adaptor);
             const tex = new TeX();
-            const svg = new SVG();
+            const svg = new SVG({
+                linebreaks: {inline: false}
+            });
             this.mathDocumentSvg = mathjax.document("", {
                 InputJax: tex,
                 OutputJax: svg,
