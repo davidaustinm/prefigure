@@ -16,8 +16,8 @@ shapely = "^2.0.6"
 lxml = "^6"
 click = "^8.1.7"
 networkx = "^2.5"
-scipy = [{version = "^1.8", python = "<3.13"}, {version = "^1.14.1", python = "3.13"}]
-numpy = [{version = "^1.26", python = "<3.13"}, {version = "^2.1.0", python = "3.13"}]
+scipy = [{version = "^1.8", python = "<3.13"}, {version = "^1.14.1", python = ">=3.13"}]
+numpy = [{version = "^1.26", python = "<3.13"}, {version = "^2.1.0", python = ">=3.13"}]
 pycairo = {version = "^1.20", optional = true}
 click-log = "^0.4.0"
 
