@@ -3,6 +3,7 @@ import lxml.etree as ET
 import numpy as np
 import logging
 import copy
+import re
 from . import tags
 from . import user_namespace as un
 from . import utilities as util
@@ -10,8 +11,12 @@ from . import CTM
 from . import label
 from . import math_utilities as math_util
 from . import annotations
+from . import repeat
 
 log = logging.getLogger('prefigure')
+
+# regular expression to check if id is EPUB compliant
+epub_id_check = re.compile('^[A-Za-z0-9_-]+$')
 
 class Diagram:
     def __init__(self,
@@ -129,8 +134,24 @@ class Diagram:
             for child in templates_element:
                 self.defaults[child.tag] = child
 
+        annotations = self.diagram_element.xpath('.//annotations')
+        if len(annotations) > 0:
+            self.check_annotation_ref(annotations[0])
+
         if self.defaults.get('macros', None) is not None:
             label.add_macros(self.defaults.get('macros').text)
+
+    def check_annotation_ref(self, element):
+        ref = element.get('ref', None)
+        if ref is not None:
+            if not bool(epub_id_check.fullmatch(ref)):
+                log.error(f"@ref {ref} in an annotation has characters disallowed by EPUB")
+                log.error("We will replace these characters but there may be unexpected behavior")
+                log.error("See the PreFigure documentation https://prefigure.org")
+                ref = repeat.epub_clean(ref)
+                element.set('ref', ref)
+        for child in element:
+            self.check_annotation_ref(child)
 
     def add_legend(self, legend):
         self.legends.append(legend)
@@ -436,6 +457,15 @@ class Diagram:
             # we're publicly using 'at' rather than 'id' for handles
             if child.get('at') is not None:
                 child.set('id', child.get('at'))
+
+            child_id = child.get('id', None)
+            if child_id is not None:
+                if not bool(epub_id_check.fullmatch(child_id)):
+                    log.error(f"The id {child_id} has characters disallowed by EPUB")
+                    log.error("We will substitute disallowed characters to make the id EPUB compliant")
+                    log.error("See the PreFigure documentation at https://prefigure.org")
+                    child.set('id', repeat.epub_clean(child_id))
+
             # see if the publication flie has any defaults
             defaults = self.defaults.get(child.tag, None)
             if defaults is not None:
