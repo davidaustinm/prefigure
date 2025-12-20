@@ -5,6 +5,7 @@ import numpy as np
 from . import utilities as util
 from . import CTM
 from . import user_namespace as un
+from . import repeat
 
 log = logging.getLogger('prefigure')
 
@@ -188,6 +189,11 @@ def add_arrowhead_marker(diagram,
         if arrow_width is None:
             arrow_width = 13/3
         dims = (1, arrow_width) #11/3)
+
+    # EPUB does not allow some characters to appear in @id
+    # There is a possibility that we have # or . so we will
+    # replace them with this function call
+    id = repeat.epub_clean(id)
 
     # If we've already created this one, we'll just move on
     if diagram.has_reusable(id):
