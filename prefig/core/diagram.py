@@ -146,8 +146,8 @@ class Diagram:
         if ref is not None:
             if not bool(epub_id_check.fullmatch(ref)):
                 log.error(f"@ref {ref} in an annotation has characters disallowed by EPUB")
-                log.error("We will replace these characters but there may be unexpected behavior")
-                log.error("Search for EPUB in the PreFigure documentation https://prefigure.org")
+                log.error("  We will replace these characters but there may be unexpected behavior")
+                log.error("  Search for EPUB in the PreFigure documentation https://prefigure.org")
                 ref = repeat.epub_clean(ref)
                 element.set('ref', ref)
         for child in element:
@@ -462,8 +462,8 @@ class Diagram:
             if child_id is not None:
                 if not bool(epub_id_check.fullmatch(child_id)):
                     log.error(f"The id {child_id} has characters disallowed by EPUB")
-                    log.error("We will substitute disallowed characters to make the id EPUB compliant")
-                    log.error("Search for EPUB in the PreFigure documentation at https://prefigure.org")
+                    log.error("  We will substitute disallowed characters to make the id EPUB compliant")
+                    log.error("  Search for EPUB in the PreFigure documentation at https://prefigure.org")
                     child.set('id', repeat.epub_clean(child_id))
 
             # see if the publication flie has any defaults
