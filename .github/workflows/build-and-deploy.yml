@@ -38,7 +38,9 @@ jobs:
                   cache-dependency-path: ./website/package-lock.json
 
             - name: Install ciaro deps
-              run: sudo apt-get install libcairo2-dev
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install libcairo2-dev
             
             - name: Set up Python
               uses: actions/setup-python@v3
