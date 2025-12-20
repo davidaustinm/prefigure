@@ -2,12 +2,32 @@ import lxml.etree as ET
 import logging
 from . import user_namespace as un
 import copy
+import re
 import numpy as np
 from . import group
 from . import label
 from . import utilities
 
 log = logging.getLogger('prefigure')
+
+# EPUB restricts the characters that can appear in an id to
+#   a-z|A-Z|0-9|_|-
+# This is an issue here since <repeat> elements can create id's
+# This regular expression checks characters to see if they are allowed
+epub_check = re.compile(r'[A-Za-z0-9_-]')
+
+# We also define substitutions for the most common disallowed characters
+epub_dict = {'(': 'p',
+             ')': 'q',
+             '[': 'p',
+             ']': 'q',
+             '{': 'p',
+             '}': 'q',
+             ',': 'c',
+             '.': 'd',
+             '=': '_',
+             r'#': 'h'}
+
 
 # Allows a block of XML to repeat with a changing parameter
 
@@ -48,11 +68,12 @@ def repeat(element, diagram, parent, outline_status):
         else:
             k_str = str(k)
 
-        un.enter_namespace(k_str, k)
+        k_str_clean = epub_clean(k_str)
+        # This is a change since we use the syntax "var_str" for the id suffix
         if count:
-            suffix_str = var + "=" + k_str
+            suffix_str = var + "_" + k_str_clean
         else:
-            suffix_str = var + "=" + str(num)
+            suffix_str = var + "_" + str(num)
 
         definition = ET.SubElement(element, 'definition')
         definition.text = var + '=' + k_str
@@ -78,3 +99,13 @@ def repeat(element, diagram, parent, outline_status):
 
     if annotation is not None:
         diagram.pop_from_annotation_branch()
+
+def epub_clean(s):
+    epub_clean = [bool(epub_check.fullmatch(ch)) for ch in s]
+    chars = []
+    for index, ch in enumerate(s):
+        if epub_clean[index]:
+            chars.append(ch)
+            continue
+        chars.append(epub_dict.get(ch, '_'))
+    return "".join(chars)
