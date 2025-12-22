@@ -134,9 +134,9 @@ class Diagram:
             for child in templates_element:
                 self.defaults[child.tag] = child
 
-        annotations = self.diagram_element.xpath('.//annotations')
-        if len(annotations) > 0:
-            self.check_annotation_ref(annotations[0])
+        author_annotations = self.diagram_element.xpath('.//annotations')
+        if len(author_annotations) > 0:
+            self.check_annotation_ref(author_annotations[0])
 
         if self.defaults.get('macros', None) is not None:
             label.add_macros(self.defaults.get('macros').text)
