@@ -135,7 +135,8 @@ class Diagram:
                 self.defaults[child.tag] = child
 
         author_annotations = self.diagram_element.xpath('.//annotations')
-        if len(author_annotations) > 0:
+        self.author_annotations_present = len(author_annotations) > 0
+        if self.author_annotations_present:
             self.check_annotation_ref(author_annotations[0])
 
         if self.defaults.get('macros', None) is not None:
@@ -297,6 +298,7 @@ class Diagram:
             h = height + margins[1]+margins[3]
             self.root.set("width", str(w))
             self.root.set("height", str(h))
+            self.root.set("viewBox", f"0 0 {w} {h}")
 
             # initialize the CTM and push it onto the CTM stack
             ctm.translate(0, height + margins[1] + margins[3])
@@ -400,6 +402,18 @@ class Diagram:
         except:
             log.error(f"Unable to write SVG at {out+'.svg'}")
             return
+
+        if self.author_annotations_present and self.environment == "pretext":
+            # we will write out a second version of the diagram
+            # without the height and width attributes for diagcess use
+            self.root.attrib.pop("height")
+            self.root.attrib.pop("width")
+            try:
+                with ET.xmlfile(out + '-diagcess.svg', encoding='utf-8') as xf:
+                    xf.write(self.root, pretty_print=True)
+            except:
+                log.error(f"Unable to write SVG at {out+'-diagcess.svg'}")
+                return
 
         if self.annotations_root is not None:
             diagram = ET.Element('diagram')
