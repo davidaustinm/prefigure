@@ -251,12 +251,14 @@ def grid(element, diagram, parent, outline_status):
         if x < bbox[0] or x > bbox[2]:
             continue
         line_el = line.mk_line((x,bbox[1]), (x,bbox[3]), diagram)
+        line_el.attrib.pop('id')
         grid.append(line_el)
 
     for y in y_positions:
         if y < bbox[1] or y > bbox[3]:
             continue
         line_el = line.mk_line((bbox[0], y), (bbox[2], y), diagram)
+        line_el.attrib.pop('id')
         grid.append(line_el)
 
 
