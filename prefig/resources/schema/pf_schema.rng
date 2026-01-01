@@ -1613,6 +1613,10 @@
       </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
+      <ref name="LabelAttributes"/>
+      <optional>
+        <ref name="LabelText"/>
+      </optional>
     </element>
   </define>
   <define name="Network">

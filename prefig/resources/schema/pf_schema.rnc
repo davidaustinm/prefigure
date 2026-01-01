@@ -584,7 +584,9 @@ Line = element line {
     attribute reverse {"yes"|"no"}?,
     attribute additional-arrows {"yes"|"no"}?,
     StrokeAttributes,
-    CommonAttributes    
+    CommonAttributes,
+    LabelAttributes,
+    LabelText?
 }
 
 Network = element network {
