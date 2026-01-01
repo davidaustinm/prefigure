@@ -5,7 +5,11 @@ import logging
 from . import utilities as util
 from . import math_utilities as math_util
 from . import user_namespace as un
+import copy
 from . import arrow
+from . import group
+from . import label
+from . import CTM
 
 log = logging.getLogger('prefigure')
 
@@ -50,12 +54,24 @@ def line(element, diagram, parent, outline_status):
 
     line = mk_line(p1, p2, diagram, element.get('id', None), 
                    endpoint_offsets=endpoint_offsets)
+
+    # we need to hold on to the endpoints in case the line is labelled
+    # these are endpoints in SVG coordinates
+    x1 = float(line.get('x1'))
+    x2 = float(line.get('x2'))
+    y1 = float(line.get('y1'))
+    y2 = float(line.get('y2'))
+
+    q1 = np.array((x1, y1))
+    q2 = np.array((x2, y2))
+    diagram.save_data(element, {'q1': q1, 'q2': q2})
+
+    # now add the graphical attributes
     util.set_attr(element, 'stroke', 'black')
     util.set_attr(element, 'thickness', '2')
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
     util.add_attr(line, util.get_1d_attr(element))
-#    line.set('type', 'line')
 
     arrows = int(element.get('arrows', '0'))
     forward = 'marker-end'
@@ -113,14 +129,37 @@ def line(element, diagram, parent, outline_status):
         diagram.add_outline(element, line, parent)
         finish_outline(element, diagram, parent)
     else:
+        original_parent = parent
+        parent = add_label(element, diagram, parent)
         parent.append(line)
 
+        # if no label has been added, then we're done
+        if original_parent == parent:
+            return
+
+        # if there is a label, then the id is on the outer <g> element
+        # so we need to remove it from the children
+        remove_id(parent)
+
 def finish_outline(element, diagram, parent):
+    original_parent = parent
+    parent = add_label(element, diagram, parent)
+
+    # if we've added a label, remove the id's from element under the parent <g>
+    if original_parent != parent:
+        remove_id(parent)
+
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),
                            element.get('fill', 'none'),
                            parent)
+
+def remove_id(el):
+    for child in el:
+        if child.get('id', None) is not None:
+            child.attrib.pop('id')
+        remove_id(child)
 
 # We'll be adding lines in other places so we'll use this more widely
 def mk_line(p0, p1, diagram, id = None, endpoint_offsets = None, user_coords = True):
@@ -176,3 +215,55 @@ def infinite_line(p0, p1, diagram, slope = None):
     if t_min > t_max:
         return None, None
     return [p + t * v for t in [t_min, t_max]]
+
+def add_label(element, diagram, parent):
+    # Is there a label associated with point?
+    text = element.text
+
+    # is there a label here?
+    has_text = text is not None and len(text.strip()) > 0
+    all_comments = all([subel.tag is ET.Comment for subel in element])
+    if has_text or not all_comments:
+        # If there's a label, we'll bundle the label and point in a group
+        parent_group = ET.SubElement(parent, 'g')
+        diagram.add_id(parent_group, element.get('id'))
+
+        # Now we'll create a new XML element describing the label
+        el = copy.deepcopy(element)
+        el.tag = 'label'
+
+        data = diagram.retrieve_data(element)
+        q1 = data['q1']
+        q2 = data['q2']
+
+        label_location = un.valid_eval(element.get("label-location", "0.5"))
+        if label_location < 0:
+            label_location = -label_location
+            q1, q2 = q2, q1
+
+        el.set('user-coords', 'no')
+        diff = q2 - q1
+        d = math_util.length(diff)
+        angle = math.degrees(math.atan2(diff[1], diff[0]))
+        if diagram.output_format() == "tactile":
+            anchor = q1 + label_location * diff
+            el.set("anchor", f"({anchor[0]}, {anchor[1]})")
+            direction = (diff[1], diff[0])
+            alignment = label.get_alignment_from_direction(direction)
+            el.set("alignment", alignment)
+            label.label(el, diagram, parent_group)
+        else:
+            tform = CTM.translatestr(*q1)
+            tform += ' ' + CTM.rotatestr(-angle)
+            distance = d * label_location
+            g = ET.SubElement(parent_group, "g")
+            g.set("transform", tform)
+            el.set("anchor", f"({distance},0)")
+            el.set("alignment", "north")
+            label.label(el, diagram, g)
+
+        return parent_group
+
+    else:
+        return parent
+

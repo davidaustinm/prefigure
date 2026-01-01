@@ -79,6 +79,9 @@ class Diagram:
         # a dictionary for holding shapes
         self.shape_dict = {}
 
+        # dictionary for saving graphical data
+        self.saved_data = {}
+
         # each SVG element will have an id, we'll store a count of ids here
         self.ids = {}
 
@@ -234,6 +237,12 @@ class Diagram:
         except:
             log.error(f"Unable to apply inverse coordinate transform to {p}")
             return np.array([0,0])
+
+    def save_data(self, element, data):
+        self.saved_data[element] = data
+
+    def retrieve_data(self, element):
+        return self.saved_data.get(element, None)
 
     def begin_figure(self):
         # set up the dimensions of the diagram in SVG coordinates
