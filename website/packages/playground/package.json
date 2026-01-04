@@ -16,6 +16,7 @@
         "@codemirror/state": "^6.4.1",
         "@mathjax/src": "^4.0.0",
         "@monaco-editor/react": "^4.6.0",
+        "@naman22khater/data-converter": "^1.0.1",
         "@types/file-saver": "^2.0.7",
         "bootstrap": "^5.3.3",
         "codemirror": "^6.0.1",
