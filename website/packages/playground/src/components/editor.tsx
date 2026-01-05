@@ -5,10 +5,22 @@ import { convert } from "@naman22khater/data-converter";
 
 type Language = "xml" | "yaml";
 
+/**
+ * Translate XML to Yaml.
+ *
+ * @param {string} source The XML source string.
+ * @returns {string} The corresponding Yaml string.
+ */
 function xmlToYaml(source: string): string {
   return convert(source, {from: 'xml', to: 'yaml'}).output;
 }
 
+/**
+ * Translate Yaml to XML.
+ *
+ * @param {string} source The Yaml source string.
+ * @returns {string} The corresponding XML string.
+ */
 function yamlToXml(source: string): string {
   return convert(source, {
     from: 'yaml',
@@ -20,11 +32,17 @@ function yamlToXml(source: string): string {
   }).output;
 }
 
+// Counter to avoid errors during initialization.
 let init = 2;
 
+/**
+ * A source editor component for XML/YAML code using CodeMirror 6 directly.
+ * This component allows the user to type PreFigure code.
+ */
 export function SourceEditor() {
   const source = useStoreState((state) => state.source);
   const setSource = useStoreActions((actions) => actions.setSource);
+  const error = useStoreState((state) => state.errorState);
 
   const [content, setContent] = useState<string>(source);
   const [language, setLanguage] = useState<Language>("xml");
@@ -33,12 +51,9 @@ export function SourceEditor() {
   useEffect(() => {
     try {
       if (!source.trim()) return;
-
       if (language === "yaml") {
-        // XML → YAML
         setContent(xmlToYaml(content));
       } else {
-        // YAML → XML
         if (init) {
           init--;
           return;
@@ -47,6 +62,7 @@ export function SourceEditor() {
       }
     } catch {
       // Ignore conversion errors (e.g. invalid syntax while editing)
+      // These should not happen as the selection box will be grayed out.
     }
   }, [language]);
 
@@ -64,6 +80,7 @@ export function SourceEditor() {
           Language:&nbsp;
           <select
             value={language}
+            disabled={error}
             onChange={(e) => setLanguage(e.target.value as Language)}
           >
             <option value="xml">XML</option>
