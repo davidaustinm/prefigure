@@ -80,7 +80,7 @@ export function SourceEditor() {
           Language:&nbsp;
           <select
             value={language}
-            disabled={error}
+            disabled={!!error}
             onChange={(e) => setLanguage(e.target.value as Language)}
           >
             <option value="xml">XML</option>
