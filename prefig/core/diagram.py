@@ -60,7 +60,7 @@ class Diagram:
         self.root = ET.Element("svg", nsmap = nsmap)
 
         self.id_suffix = ['']
-        self.add_id(self.root, diagram_element.get('id', 'diagram'))
+        self.add_id(self.root, diagram_element.get('id', 'pf__figure'))
 
         # prepare the XML tree for annotations, if there are any
         self.annotations_root = None
@@ -195,9 +195,12 @@ class Diagram:
         suffix = ''.join(self.id_suffix)
         if id is None:
             self.ids[element.tag] = self.ids.get(element.tag, -1) + 1
-            return element.tag+'-'+str(self.ids[element.tag])+suffix
+            result_id = element.tag+'-'+str(self.ids[element.tag])+suffix
         else:
-            return id + suffix
+            result_id = id + suffix
+        if result_id.startswith('pf__'):
+            return result_id
+        return 'pf__' + result_id
 
     def append_id_suffix(self, element):
         return self.find_id(element, element.get('id', None))
@@ -671,10 +674,16 @@ class Diagram:
 
     def add_annotation_to_branch(self, annotation):
         if len(self.annotation_branch_stack) == 0:
-            self.annotation_branches[annotation.get('id')] = annotation
+            id = annotation.get('id')
+            if not id.startswith('pf__'):
+                id = 'pf__' + id
+            self.annotation_branches[id] = annotation
             return
         self.annotation_branch_stack[-1].append(annotation)
-        annotation.set('id', self.append_id_suffix(annotation))
+        id = self.append_id_suffix(annotation)
+        if not id.startswith('pf__'):
+            id = 'pf__' + id
+        annotation.set('id', id)
 
     def get_annotation_branch(self, id):
         return self.annotation_branches.pop(id, None)

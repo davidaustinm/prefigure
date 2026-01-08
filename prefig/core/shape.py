@@ -36,7 +36,10 @@ def define(element, diagram, parent, outline_status):
             log.error(f"In <define-shapes>, {child.tag} does not define a shape")
             continue
         if child.get('at', None) is not None:
-            child.set('id', child.get('at'))
+            id = child.get('at')
+            if not id.startswith('pf__'):
+                id = 'pf__' + id
+            child.set('id', id)
         dummy_parent = ET.Element('group')
         # this is kind of a hack, but we only need to construct the shape
         # so we stash the format temporarily in case we're building a
@@ -69,6 +72,12 @@ def shape(element, diagram, parent, outline_status):
             return
 
     shape_refs = [r.strip() for r in reference.split(',')]
+    shape_edit = []
+    for shape_ref in shape_refs:
+        if not shape_ref.startswith('pf__'):
+            shape_ref = 'pf__' + shape_ref
+        shape_edit.append(shape_ref)
+    shape_refs = shape_edit
     shapes = []
     for ref in shape_refs:
         shapes.append(diagram.recall_shape(ref))
@@ -82,6 +91,8 @@ def shape(element, diagram, parent, outline_status):
             operation = 'union'
         else:
             path = ET.SubElement(parent, 'use')
+            if not reference.startswith('pf__'):
+                reference = 'pf__' + reference
             path.set('href', r'#' + reference)
 
     if operation is not None:

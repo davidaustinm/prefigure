@@ -18,7 +18,7 @@ def clip(element, diagram, parent, outline_status):
 
     clip = ET.Element('clipPath')
     clip.append(shape)
-    clip_id = 'clip-'+shape_ref
+    clip_id = shape_ref + '-clip'
     clip.set('id', clip_id)
 
     diagram.add_reusable(clip)

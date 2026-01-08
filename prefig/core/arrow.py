@@ -22,7 +22,7 @@ def add_tactile_arrowhead_marker(diagram, path, mid=False):
     # get the stroke width from the graphical component
     stroke_width_str = path.get('stroke-width', '1')
     stroke_width = int(stroke_width_str)
-    id = 'arrow-head-'+stroke_width_str
+    id = 'pf__arrow-head-'+stroke_width_str
 
     # if we've seen this already, there's no need to create it again
     if diagram.has_reusable(id):
@@ -180,12 +180,12 @@ def add_arrowhead_marker(diagram,
     # end or in the middle of a path
     id_data = f"_{arrow_width}_{arrow_angles[0]}_{arrow_angles[1]}"
     if not mid:
-        id = 'arrow-head-end-'+stroke_width_str+id_data+'-'+stroke_color
+        id = 'pf__arrow-head-end-'+stroke_width_str+id_data+'-'+stroke_color
         if arrow_width is None:
             arrow_width = 4
         dims = (1, arrow_width)
     else:
-        id = 'arrow-head-mid-'+stroke_width_str+id_data+'-'+stroke_color
+        id = 'pf__arrow-head-mid-'+stroke_width_str+id_data+'-'+stroke_color
         if arrow_width is None:
             arrow_width = 13/3
         dims = (1, arrow_width) #11/3)

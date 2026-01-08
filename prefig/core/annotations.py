@@ -33,14 +33,20 @@ def annotate(element, diagram, parent = None):
         parent = diagram.get_annotations_root()
 
     if element.get('ref', None) is not None:
-        element.set('id', element.get('ref'))
+        ref = element.get('ref')
+        if not ref.startswith('pf__'):
+            ref = 'pf__' + ref
+        element.set('id', ref)
         element.attrib.pop('ref')
     else:
         log.info(f"An annotation has an empty attribute ref")
     element.attrib.pop('annotate', None)
 
     # let's check to see if this is a reference to an annotation branch
-    annotation = diagram.get_annotation_branch(element.get('id'))
+    id = element.get('id')
+    if not id.startswith('pf__'):
+        id = 'pf__' + id
+    annotation = diagram.get_annotation_branch(id)
     if annotation is not None:
         annotate(annotation, diagram, parent)
         return

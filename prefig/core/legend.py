@@ -64,7 +64,7 @@ class Legend:
             # first we'll create the label
             label_el = copy.deepcopy(li)
             label_el.tag = 'label'
-            label_el.set('id', f"legend-label-{num}")
+            label_el.set('id', f"pf__legend-label-{num}")
             label_el.set('alignment', 'se')
             label_el.set('anchor', element.get('anchor', anchor_str))
             label_el.set('abs-offset', '(0,0)')
@@ -87,7 +87,7 @@ class Legend:
                 key = copy.deepcopy(key)
                 key.set('p', anchor_str)
                 key.set('size', '4')
-                key.set('id', f"legend-point-{num}")
+                key.set('id', f"pf__legend-point-{num}")
                 key_width = max(key_width, point_width)
             else:
                 fill =  key.get('fill')
@@ -219,11 +219,11 @@ class Legend:
             id = group.get('id', 'none')
             if id == 'background-group':
                 for rectangle in group:
-                    if rectangle.get('id', 'none').startswith('legend-label'):
+                    if rectangle.get('id', 'none').startswith('pf__legend-label'):
                         group.remove(rectangle)
             if id == 'braille-group':
                 for label in group:
-                    if label.get('id','none').startswith('legend-label'):
+                    if label.get('id','none').startswith('pf__legend-label'):
                         label_groups.append(label)
                         group.remove(label)
 

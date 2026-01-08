@@ -147,7 +147,7 @@ class Axes():
 
         self.axes = ET.SubElement(parent, 'g',
                                   attrib={
-                                      'id': element.get('id', 'axes'),
+                                      'id': element.get('id', 'pf__axes'),
                                       'stroke': self.stroke,
                                       'stroke-width': self.thickness
                                   }

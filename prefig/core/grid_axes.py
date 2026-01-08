@@ -120,9 +120,14 @@ def grid(element, diagram, parent, outline_status):
 
     thickness = element.get('thickness', '1')
     stroke = element.get('stroke', r'#ccc')
+    id = element.get('id')
+    if id is None:
+        id = 'pf__grid'
+    if not id.startswith('pf__'):
+        id = 'pf__' + id
     grid = ET.SubElement(parent, 'g',
                          attrib={
-                             'id': element.get('id', 'grid'),
+                             'id': id,
                              'stroke': stroke,
                              'stroke-width': thickness
                          }
@@ -268,27 +273,27 @@ def grid_axes(element, diagram, parent, outline_status):
     group = ET.SubElement(parent, 'g',
                           attrib=
                           {
-                              'id': 'grid-axes'
+                              'id': 'pf__grid-axes'
                           }
     )
 
     group_annotation = ET.Element('annotation')
-    group_annotation.set('ref', 'grid-axes')
+    group_annotation.set('ref', 'pf__grid-axes')
     group_annotation.set('text', 'The coordinate grid and axes')
     diagram. add_default_annotation(group_annotation)
 
     grid(element, diagram, group, outline_status)
 
     annotation = ET.Element('annotation')
-    annotation.set('ref', 'grid')
+    annotation.set('ref', 'pf__grid')
     annotation.set('text', 'The coordinate grid')
     group_annotation.append(annotation)
 
-    element.set('id', 'axes')
+    element.set('id', 'pf__axes')
     axes.axes(element, diagram, group, outline_status)
 
     annotation = ET.Element('annotation')
-    annotation.set('ref', 'axes')
+    annotation.set('ref', 'pf__axes')
     annotation.set('text', 'The coordinate axes')
     group_annotation.append(annotation)
 
