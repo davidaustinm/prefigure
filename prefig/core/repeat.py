@@ -55,13 +55,13 @@ def repeat(element, diagram, parent, outline_status):
     element_cp = copy.deepcopy(element)
     outline = element.get('outline')
     id = element.get('id')
-    if not id.startswith('pf__'):
-        id = 'pf__' + id
     element.clear()
     element.tag = 'group'
     if outline is not None:
         element.set('outline', outline)
     if id is not None:
+        if not id.startswith('pf__'):
+            id = 'pf__' + id
         element.set('id', id)
         element_cp.set('id', id)
 
