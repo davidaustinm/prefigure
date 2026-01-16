@@ -154,7 +154,9 @@ function AnnotateSvg({svg, annotations}: {
   annotations: string
 }) {
   React.useEffect(() => {
-    diagcess.Base.init(true)
+    if (annotations) {
+      diagcess.Base.init(true)
+    };
   });
 
   return (
