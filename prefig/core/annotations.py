@@ -6,7 +6,8 @@ log = logging.getLogger('prefigure')
 
 def annotations(element, diagram, parent, outline_status):
     # tactile diagrams have no annotations
-    if diagram.output_format() == 'tactile':
+    print(diagram.output_format(), diagram.environment);
+    if diagram.output_format() == 'tactile' and diagram.environment != 'pyodide':
         return
 
     # traverse the annotation tree and create the XML annotation output
