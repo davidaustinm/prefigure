@@ -114,25 +114,44 @@ def get_pi_text(x):
     if abs(4*x - round(4*x)) < 1e-10:
         num = round(4*x)
         if num == -1:
-            return r'-\pi/4'
+            return r'-\frac{\pi}{4}'
         if num == 1:
-            return r'\pi/4'
+            return r'\frac{\pi}{4}'
         if num % 2 == 1:
-            return str(num)+r'\pi/4'
+            if num < 0:
+                return f'-\\frac{{{-num}\\pi}}{{4}}'
+            else:
+                return f'\\frac{{{num}\\pi}}{{4}}'
     if abs(2*x - round(2*x)) < 1e-10:
         num = round(2*x)
         if num == -1:
-            return r'-\pi/2'
+            return r'-\frac{\pi}{2}'
         if num == 1:
-            return r'\pi/2'
-        return str(num)+r'\pi/2'
+            return r'\frac{\pi}{2}'
+        if num < 0:
+            return f'-\\frac{{{-num}\\pi}}{{2}}'
+        else:
+            return f'\\frac{{{num}\\pi}}{{2}}'
     if abs(3*x - round(3*x)) < 1e-10:
         num = round(3*x)
         if num == -1:
-            return r'-\pi/3'
+            return r'-\frac{\pi}{3}'
         if num == 1:
-            return r'\pi/3'
-        return str(num)+r'\pi/3'
+            return r'\frac{\pi}{3}'
+        if num < 0:
+            return f'-\\frac{{{-num}\\pi}}{{3}}'
+        else:
+            return f'\\frac{{{num}\\pi}}{{3}}'
+    if abs(6*x - round(6*x)) < 1e-10:
+        num = round(6*x)
+        if num == -1:
+            return r'-\frac{\pi}{6}'
+        if num == 1:
+            return r'\frac{\pi}{6}'
+        if num < 0:
+            return f'-\\frac{{{-num}\\pi}}{{6}}'
+        else:
+            return f'\\frac{{{num}\\pi}}{{6}}'
     return r'{0:g}\pi'.format(x)
     
 
