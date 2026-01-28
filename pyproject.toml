@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prefig"
-version = "0.5.5"
+version = "0.5.6"
 description = "An authoring system for mathematical diagrams"
 readme = "README.md"
 homepage = "https://prefigure.org"
