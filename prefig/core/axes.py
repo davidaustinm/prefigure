@@ -855,7 +855,7 @@ def tick_mark(element, diagram, parent, outline_status):
         el_text = element.text.strip()
     except:
         el_text = None
-    if el_text is not None and (len(el_text) > 0 or len(element) > 0):
+    if (el_text is not None and len(el_text) > 0) or len(element) > 0:
         el_copy = copy.deepcopy(element)
         if axis == 'horizontal':
             if tactile:
