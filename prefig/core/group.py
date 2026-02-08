@@ -22,7 +22,7 @@ def group(element, diagram, parent, outline_status):
         # we'll pass through the grouped components twice first adding
         # the outline
         group = ET.SubElement(parent, 'g')
-        diagram.add_id(group, element.get('id'))
+        diagram.add_id(group, element.get('id')+'-outline')
         if transform is not None:
             process_transform(diagram, transform, group, tactile)
         diagram.parse(element, group, outline_status = 'add_outline')

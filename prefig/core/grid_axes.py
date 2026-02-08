@@ -280,7 +280,8 @@ def grid_axes(element, diagram, parent, outline_status):
     group_annotation = ET.Element('annotation')
     group_annotation.set('ref', 'pf__grid-axes')
     group_annotation.set('text', 'The coordinate grid and axes')
-    diagram. add_default_annotation(group_annotation)
+    if element.get('annotate', 'yes') == 'yes':
+        diagram. add_default_annotation(group_annotation)
 
     grid(element, diagram, group, outline_status)
 
