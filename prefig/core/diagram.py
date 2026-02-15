@@ -63,7 +63,7 @@ class Diagram:
         # ids may get a suffix or a prefix
         self.add_id_prefix = False
         figure_id = 'figure'
-        if self.environment == 'pretext':
+        if self.environment == 'pretext' and self.format != 'tactile':
             self.add_id_prefix = True
             self.id_prefix = Path(self.filename).stem + '-'
             self.id_prefix = repeat.epub_clean(self.id_prefix)
