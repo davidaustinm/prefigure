@@ -62,9 +62,10 @@ class Legend:
                 continue
 
             # first we'll create the label
+            label_id_stub = diagram.prepend_id_prefix('legend-label')
             label_el = copy.deepcopy(li)
             label_el.tag = 'label'
-            label_el.set('id', f"pf__legend-label-{num}")
+            label_el.set('id', f"{label_id_stub}-{num}")
             label_el.set('alignment', 'se')
             label_el.set('anchor', element.get('anchor', anchor_str))
             label_el.set('abs-offset', '(0,0)')
@@ -83,11 +84,12 @@ class Legend:
                     log.warning(f"{ref} should refer to an element")
                     continue
             key = references[0]
+            point_id_stub = diagram.prepend_id_prefix('legend-point')
             if key.tag == 'point':
                 key = copy.deepcopy(key)
                 key.set('p', anchor_str)
                 key.set('size', '4')
-                key.set('id', f"pf__legend-point-{num}")
+                key.set('id', f"{point_id_stub}-{num}")
                 key_width = max(key_width, point_width)
             else:
                 fill =  key.get('fill')
@@ -215,15 +217,16 @@ class Legend:
         root = self.diagram.get_root()
         groups = root.findall('g')
         label_groups = []
+        legend_label_id = diagram.prepend_id_prefix('legend-label')
         for group in groups:
             id = group.get('id', 'none')
             if id == 'background-group':
                 for rectangle in group:
-                    if rectangle.get('id', 'none').startswith('pf__legend-label'):
+                    if rectangle.get('id', 'none').startswith(legend_label_id):
                         group.remove(rectangle)
             if id == 'braille-group':
                 for label in group:
-                    if label.get('id','none').startswith('pf__legend-label'):
+                    if label.get('id','none').startswith(legend_label_id):
                         label_groups.append(label)
                         group.remove(label)
 

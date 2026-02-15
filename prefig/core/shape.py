@@ -37,8 +37,7 @@ def define(element, diagram, parent, outline_status):
             continue
         if child.get('at', None) is not None:
             id = child.get('at')
-            if not id.startswith('pf__'):
-                id = 'pf__' + id
+            id = diagram.prepend_id_prefix(id)
             child.set('id', id)
         dummy_parent = ET.Element('group')
         # this is kind of a hack, but we only need to construct the shape
@@ -74,8 +73,7 @@ def shape(element, diagram, parent, outline_status):
     shape_refs = [r.strip() for r in reference.split(',')]
     shape_edit = []
     for shape_ref in shape_refs:
-        if not shape_ref.startswith('pf__'):
-            shape_ref = 'pf__' + shape_ref
+        shape_ref = diagram.prepend_id_prefix(shape_ref)
         shape_edit.append(shape_ref)
     shape_refs = shape_edit
     shapes = []
@@ -91,8 +89,7 @@ def shape(element, diagram, parent, outline_status):
             operation = 'union'
         else:
             path = ET.SubElement(parent, 'use')
-            if not reference.startswith('pf__'):
-                reference = 'pf__' + reference
+            reference = diagram.prepend_id_prefix(reference)
             path.set('href', r'#' + reference)
 
     if operation is not None:

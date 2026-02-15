@@ -60,8 +60,7 @@ def repeat(element, diagram, parent, outline_status):
     if outline is not None:
         element.set('outline', outline)
     if id is not None:
-        if not id.startswith('pf__'):
-            id = 'pf__' + id
+        id = diagram.prepend_id_prefix(id)
         element.set('id', id)
         element_cp.set('id', id)
 

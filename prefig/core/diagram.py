@@ -4,6 +4,7 @@ import numpy as np
 import logging
 import copy
 import re
+from pathlib import Path
 from . import tags
 from . import user_namespace as un
 from . import utilities as util
@@ -59,8 +60,17 @@ class Diagram:
                  'xml': xml_uri}
         self.root = ET.Element("svg", nsmap = nsmap)
 
+        # ids may get a suffix or a prefix
+        self.add_id_prefix = False
+        figure_id = 'figure'
+        if self.environment == 'pretext':
+            self.add_id_prefix = True
+            self.id_prefix = Path(self.filename).stem + '-'
+            self.id_prefix = repeat.epub_clean(self.id_prefix)
+            figure_id = self.id_prefix + figure_id
+
         self.id_suffix = ['']
-        self.add_id(self.root, diagram_element.get('id', 'pf__figure'))
+        self.add_id(self.root, diagram_element.get('id', figure_id))
 
         # prepare the XML tree for annotations, if there are any
         self.annotations_root = None
@@ -198,12 +208,18 @@ class Diagram:
             result_id = element.tag+'-'+str(self.ids[element.tag])+suffix
         else:
             result_id = id + suffix
-        if result_id.startswith('pf__'):
-            return result_id
-        return 'pf__' + result_id
+        result_id = self.prepend_id_prefix(result_id)
+        return result_id
 
     def append_id_suffix(self, element):
         return self.find_id(element, element.get('id', None))
+
+    def prepend_id_prefix(self, id):
+        if not self.add_id_prefix:
+            return id
+        if id.startswith(self.id_prefix):
+            return id
+        return self.id_prefix + id
     
     def output_format(self):
         return self.format
@@ -333,6 +349,7 @@ class Diagram:
                              'width': util.float2str(width),
                              'height': util.float2str(height)
                          })
+
         self.push_clippath(clippath)
 
     def push_clippath(self, clippath):
@@ -675,14 +692,12 @@ class Diagram:
     def add_annotation_to_branch(self, annotation):
         if len(self.annotation_branch_stack) == 0:
             id = annotation.get('id')
-            if not id.startswith('pf__'):
-                id = 'pf__' + id
+            id = self.prepend_id_prefix(id)
             self.annotation_branches[id] = annotation
             return
         self.annotation_branch_stack[-1].append(annotation)
         id = self.append_id_suffix(annotation)
-        if not id.startswith('pf__'):
-            id = 'pf__' + id
+        id = self.prepend_id_prefix(id)
         annotation.set('id', id)
 
     def get_annotation_branch(self, id):

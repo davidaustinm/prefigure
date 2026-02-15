@@ -122,9 +122,8 @@ def grid(element, diagram, parent, outline_status):
     stroke = element.get('stroke', r'#ccc')
     id = element.get('id')
     if id is None:
-        id = 'pf__grid'
-    if not id.startswith('pf__'):
-        id = 'pf__' + id
+        id = 'grid'
+    id = diagram.prepend_id_prefix(id)
     grid = ET.SubElement(parent, 'g',
                          attrib={
                              'id': id,
@@ -270,31 +269,37 @@ def grid(element, diagram, parent, outline_status):
 # Adds both a grid and axes with spacings found automatically
 
 def grid_axes(element, diagram, parent, outline_status):
+    id = element.get('id', 'grid-axes')
+    id = diagram.prepend_id_prefix(id)
     group = ET.SubElement(parent, 'g',
                           attrib=
                           {
-                              'id': 'pf__grid-axes'
+                              'id': id
                           }
     )
 
+    annotation_id = diagram.prepend_id_prefix('grid-axes')
+    grid_id = diagram.prepend_id_prefix('grid')
+    axes_id = diagram.prepend_id_prefix('axes')
+
     group_annotation = ET.Element('annotation')
-    group_annotation.set('ref', 'pf__grid-axes')
+    group_annotation.set('ref', annotation_id)
     group_annotation.set('text', 'The coordinate grid and axes')
     if element.get('annotate', 'yes') == 'yes':
         diagram. add_default_annotation(group_annotation)
-
+    element.set('id', grid_id)
     grid(element, diagram, group, outline_status)
 
     annotation = ET.Element('annotation')
-    annotation.set('ref', 'pf__grid')
+    annotation.set('ref', grid_id)
     annotation.set('text', 'The coordinate grid')
     group_annotation.append(annotation)
 
-    element.set('id', 'pf__axes')
+    element.set('id', axes_id)
     axes.axes(element, diagram, group, outline_status)
 
     annotation = ET.Element('annotation')
-    annotation.set('ref', 'pf__axes')
+    annotation.set('ref', axes_id)
     annotation.set('text', 'The coordinate axes')
     group_annotation.append(annotation)
 

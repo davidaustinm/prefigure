@@ -164,9 +164,10 @@ class Axes():
         self.stroke = element.get('stroke', 'black')
         self.thickness = element.get('thickness', '2')
 
+        default_id = diagram.prepend_id_prefix('axes')
         self.axes = ET.SubElement(parent, 'g',
                                   attrib={
-                                      'id': element.get('id', 'pf__axes'),
+                                      'id': element.get('id', default_id),
                                       'stroke': self.stroke,
                                       'stroke-width': self.thickness
                                   }

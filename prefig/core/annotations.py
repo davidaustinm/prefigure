@@ -34,8 +34,7 @@ def annotate(element, diagram, parent = None):
 
     if element.get('ref', None) is not None:
         ref = element.get('ref')
-        if not ref.startswith('pf__'):
-            ref = 'pf__' + ref
+        ref = diagram.prepend_id_prefix(ref)
         element.set('id', ref)
         element.attrib.pop('ref')
     else:
@@ -44,8 +43,7 @@ def annotate(element, diagram, parent = None):
 
     # let's check to see if this is a reference to an annotation branch
     id = element.get('id')
-    if not id.startswith('pf__'):
-        id = 'pf__' + id
+    id = diagram.prepend_id_prefix(id)
     annotation = diagram.get_annotation_branch(id)
     if annotation is not None:
         annotate(annotation, diagram, parent)
