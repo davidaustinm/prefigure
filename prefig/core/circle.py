@@ -359,6 +359,9 @@ def angle(element, diagram, parent, outline_status):
 
     radius = un.valid_eval(element.get('radius', str(default_radius)))
 
+    angle2 = math.atan2(v1[1], v1[0])
+    angle1 = math.atan2(v2[1], v2[0])
+
     if np.all(np.isclose(v1 + v2, np.zeros(2))):  # is the angle = 180?
         direction = np.array([v1[1], -v1[0]])
     else:
@@ -367,58 +370,64 @@ def angle(element, diagram, parent, outline_status):
     element.set('label-location', util.pt2str(label_location, spacer=','))
     if element.get('alignment', None) is None:
         element.set('alignment', 
-                    label.get_alignment_from_direction([direction[0], -direction[1]]))
+                    label.get_alignment_from_direction([direction[0],
+                                                        -direction[1]]))
     else:
         if element.get('alignment').strip() == 'e':
             element.set('alignment', 'east')
-    initial_point = v1*radius + p
-    final_point = v2*radius + p
-    initial_point_str = util.pt2str(initial_point)
-    final_point_str = util.pt2str(final_point)
 
-    d = 'M ' + initial_point_str
-    d += ' A ' + util.pt2str((radius, radius)) + ' 0 '
-    d += str(large_arc_flag) + ' 0 ' + final_point_str
-
-    # is this a right angle?
-    if right and math.degrees(angle) < 180:
-        ctm = CTM.CTM()
-        ctm.translate(*p)
-        '''
-        angle = math.atan2(v1[1],v1[0])
-        ctm.rotate(angle, units="rad")
-        d = 'M ' + util.pt2str(ctm.transform((radius,0)))
-        d += ' L ' + util.pt2str(ctm.transform((radius, -radius)))
-        d += ' L ' + util.pt2str(ctm.transform((0, -radius)))
-        '''
-        d = 'M ' + util.pt2str(ctm.transform(radius*v1))
-        d += ' L ' + util.pt2str(ctm.transform(radius*(v1+v2)))
-        d += ' L ' + util.pt2str(ctm.transform(radius*v2))
     arc = ET.Element('path')
     diagram.add_id(arc, element.get('id'))
-    arc.set('d', d)
 
     util.add_attr(arc, util.get_1d_attr(element))
-#    arc.set('type', 'arc')
     util.cliptobbox(arc, element, diagram)
 
-    if element.get('arrow', None) is not None:
+    thickness = un.valid_eval(element.get('thickness'))
+    arrow_id = None
+    if element.get('arrow', 'no') == 'yes':
         if element.get('reverse', 'no') == 'yes':
-            arrow.add_arrowhead_to_path(
+            arrow_id = arrow.add_arrowhead_to_path(
                 diagram,
                 'marker-end',
                 arc,
                 arrow_width=element.get('arrow-width', None),
                 arrow_angles=element.get('arrow-angles', None)
             )
+            arrow_length = arrow.get_arrow_length(arrow_id)
+            angle2 -= thickness * arrow_length / radius
         else:
-            arrow.add_arrowhead_to_path(
+            arrow_id = arrow.add_arrowhead_to_path(
                 diagram,
                 'marker-start',
                 arc,
                 arrow_width=element.get('arrow-width', None),
                 arrow_angles=element.get('arrow-angles', None)
             )
+            arrow_length = arrow.get_arrow_length(arrow_id)
+            angle1 += thickness * arrow_length / radius
+
+    # is this a right angle?
+    if right and math.degrees(angle) < 180:
+        d = 'M ' + util.pt2str(radius*v1+p)
+        d += ' L ' + util.pt2str(radius*(v1+v2)+p)
+        d += ' L ' + util.pt2str(radius*v2+p)
+        element.set('arrow', 'no')   # no arrow on 90 degree marker
+    else:
+        while angle2 < angle1:
+            angle2 += 2*math.pi
+        N = 100
+        dangle = (angle2 - angle1)/N
+        angle = angle1
+        arc_pt = p + radius * np.array((math.cos(angle), math.sin(angle)))
+        cmds = ['M', util.pt2str(arc_pt)]
+        for _ in range(N):
+            angle += dangle
+            arc_pt = p + radius * np.array((math.cos(angle), math.sin(angle)))
+            cmds.append('L ' + util.pt2str(arc_pt))
+
+        d = ' '.join(cmds)
+    arc.set('d', d)
+
     if outline_status == 'add_outline':
         diagram.add_outline(element, arc, parent, outline_width=2)
         return

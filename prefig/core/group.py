@@ -17,6 +17,7 @@ def group(element, diagram, parent, outline_status):
     outline = element.get('outline', None)
     tactile = diagram.output_format() == 'tactile'
     transform = element.get('transform', None)
+    diagram.add_id(element)
 
     if outline == 'always' or outline == diagram.output_format():
         # we'll pass through the grouped components twice first adding
