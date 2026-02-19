@@ -1,7 +1,10 @@
 import lxml.etree as ET
 import logging
+import math
+import numpy as np
 from . import user_namespace as un
 from . import utilities as util
+from . import math_utilities as math_util
 from . import arrow
 
 log = logging.getLogger('prefigure')
@@ -34,16 +37,6 @@ def vector(element, diagram, parent, outline_status):
         t = float(t)
         head_loc = (1-t)*tail + t * w
 
-    # Here is the shaft of the vector.  If the head is not at
-    # the tip, we add a waypoint along the line where the head
-    # will appear
-    cmds = []
-    cmds.append('M ' + util.pt2str(diagram.transform(tail)))
-    if t is not None:
-        cmds.append('L ' + util.pt2str(diagram.transform(head_loc)))
-    cmds.append('L ' + util.pt2str(diagram.transform(w)))
-    d = ' '.join(cmds)
-
     if diagram.output_format() == 'tactile':
         element.set('fill', 'black')
         element.set('stroke', 'black')
@@ -55,21 +48,45 @@ def vector(element, diagram, parent, outline_status):
     vector = ET.Element('path')
     diagram.add_id(vector, element.get('id'))
     util.add_attr(vector, util.get_2d_attr(element))
-    vector.set('d', d)
 
     # Now add the head using an SVG marker
     if t is not None:
         location = 'marker-mid'
     else:
         location = 'marker-end'
-    arrow.add_arrowhead_to_path(
+    arrow_id = arrow.add_arrowhead_to_path(
         diagram,
         location,
         vector,
         arrow_width=element.get('arrow-width', None),
         arrow_angles=element.get('arrow-angles', None)
     )
-#    vector.set('type', 'vector')
+
+    # we need to pull the tip of the vector in a bit to accommodate
+    # the arrowhead
+    p0 = diagram.transform(tail)
+    p1 = diagram.transform(w)
+    diff = p1 - p0
+    length = math_util.length(diff)
+    angle = math.atan2(diff[1], diff[0])
+
+    arrow_head_length = arrow.get_arrow_length(arrow_id)
+    thickness = un.valid_eval(element.get('thickness'))
+    if location == 'marker-end':
+        length -= thickness * arrow_head_length
+        p1 = length * np.array([math.cos(angle),math.sin(angle)]) + p0
+
+    # Here is the shaft of the vector.  If the head is not at
+    # the tip, we add a waypoint along the line where the head
+    # will appear
+    cmds = []
+
+    cmds.append('M ' + util.pt2str(p0))
+    if t is not None:
+        cmds.append('L ' + util.pt2str(diagram.transform(head_loc)))
+    cmds.append('L ' + util.pt2str(p1))
+    d = ' '.join(cmds)
+    vector.set('d', d)
 
     if outline_status == 'add_outline':
         diagram.add_outline(element, vector, parent)

@@ -9,6 +9,10 @@ from . import repeat
 
 log = logging.getLogger('prefigure')
 
+arrow_length_dict = {}
+def get_arrow_length(key):
+    return arrow_length_dict.get(key)
+
 # Form arrows to be used with a variety of graphical components
 # Arrowheads are created as markers and then added to paths
 
@@ -48,6 +52,8 @@ def add_tactile_arrowhead_marker(diagram, path, mid=False):
     s = 9
     l = t/math.tan(A)+0.1
     y = s*math.tan(A)
+
+    arrow_length_dict[id] = l
 
     # Scale and translate to fit the stroke-width
     # p1, p2, and p3 are the vertices of the triangle
@@ -206,6 +212,8 @@ def add_arrowhead_marker(diagram,
     x2 = l - s/math.tan(A)
     x1 = x2 + (s-t)/math.tan(B)
 
+    arrow_length_dict[id] = l
+
     ctm = CTM.CTM()
     ctm.scale(stroke_width, stroke_width)
     ctm.translate(-x2, s)
@@ -314,4 +322,5 @@ def add_arrowhead_to_path(diagram,
                               arrow_width,
                               arrow_angles)
     path.set(location, r'url(#{})'.format(id))
+    return id
 

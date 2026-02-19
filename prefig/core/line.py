@@ -69,6 +69,7 @@ def line(element, diagram, parent, outline_status):
     # now add the graphical attributes
     util.set_attr(element, 'stroke', 'black')
     util.set_attr(element, 'thickness', '2')
+    thickness = un.valid_eval(element.get('thickness'))
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
     util.add_attr(line, util.get_1d_attr(element))
@@ -78,14 +79,26 @@ def line(element, diagram, parent, outline_status):
     backward = 'marker-start'
     if element.get('reverse', 'no') == 'yes':
         forward, backward = backward, forward
+
+    # we may need to adjust the endpoints to account for the arrowheads
     if arrows > 0:
-        arrow.add_arrowhead_to_path(
+        arrow_id = arrow.add_arrowhead_to_path(
             diagram,
             forward,
             line,
             arrow_width=element.get('arrow-width', None),
             arrow_angles=element.get('arrow-angles', None)
         )
+        p0 = np.array((x1, y1))
+        p1 = np.array((x2, y2))
+        diff = p1 - p0
+        length = math_util.length(diff)
+        angle = math.atan2(diff[1], diff[0])
+        arrow_length = thickness * arrow.get_arrow_length(arrow_id)
+        shortened_length = length - arrow_length
+        p1 = shortened_length*np.array((math.cos(angle), math.sin(angle))) + p0
+        line.set('x2', util.float2str(p1[0]))
+        line.set('y2', util.float2str(p1[1]))
     if arrows > 1:
         arrow.add_arrowhead_to_path(
             diagram,
@@ -94,6 +107,9 @@ def line(element, diagram, parent, outline_status):
             arrow_width=element.get('arrow-width', None),
             arrow_angles=element.get('arrow-angles', None)
         )
+        p0 += arrow_length * np.array((math.cos(angle),math.sin(angle)))
+        line.set('x1', util.float2str(p0[0]))
+        line.set('y1', util.float2str(p0[1]))
 
     if element.get('additional-arrows', None) is not None:
         additional = un.valid_eval(element.get('additional-arrows'))
