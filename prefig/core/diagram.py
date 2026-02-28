@@ -63,10 +63,20 @@ class Diagram:
         # ids may get a suffix or a prefix
         self.add_id_prefix = False
         figure_id = 'figure'
-        if self.environment == 'pretext' and self.format != 'tactile':
+        if self.format != 'tactile':
             self.add_id_prefix = True
-            self.id_prefix = Path(self.filename).stem + '-'
-            self.id_prefix = repeat.epub_clean(self.id_prefix)
+            if self.environment == 'pyodide':
+                import time
+                import hashlib
+                import base64
+
+                nano_secs = time.time_ns()  # nanoseconds
+                hash = hashlib.sha256(str(nano_secs).encode()).digest()
+                hash_string = base64.urlsafe_b64encode(hash[-6:]).decode()
+                self.id_prefix = f"prefig-{hash_string}-"
+            else:
+                self.id_prefix = Path(self.filename).stem + '-'
+                self.id_prefix = repeat.epub_clean(self.id_prefix)
             figure_id = self.id_prefix + figure_id
 
         self.id_suffix = ['']
