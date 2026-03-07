@@ -78,6 +78,7 @@ def tangent(element, diagram, parent, outline_status):
             next_cmd = 'L'
         line_el.set('d', ' '.join(cmds))
 
+    diagram.register_svg_element(element, line_el)
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
     else:

@@ -38,14 +38,22 @@ class Diagram:
         self.environment = environment
         self.caption = ""
 
+        # the original source may be modified while parsing
+        # We will make a copy along with a dictionary linking
+        # the copied elements to the original elements.
+        # This will be used in the playground for annotating
+        # the source
+        self.diagram_element_copy = copy.deepcopy(self.diagram_element)
+        self.source_to_copy = {}
+        for source, cp in zip(self.diagram_element.iter(),
+                                self.diagram_element_copy.iter()):
+            self.source_to_copy[source] = cp
+        self.source_to_svg = {}
+
         self.add_default_annotations = True
         if (self.environment == 'pyodide' and
             len(self.diagram_element.xpath('.//annotations')) == 0
             ):
-            diagram_annotations = annotations.diagram_to_speech(diagram_element)
-            annotations_tree = ET.SubElement(self.diagram_element,
-                                             'annotations')
-            annotations_tree.append(diagram_annotations)
             self.add_default_annotations = False
 
         math_util.set_diagram(self)
@@ -272,6 +280,25 @@ class Diagram:
 
     def retrieve_data(self, element):
         return self.saved_data.get(element, None)
+
+    def register_svg_element(self, source, svg, overwrite=True):
+        source_copy = self.source_to_copy.get(source, None)
+        if source_copy is None:
+            return
+        if overwrite or self.source_to_svg.get(source_copy, None) is None:
+            self.source_to_svg[source_copy] = svg
+
+    def annotate_source(self):
+        if (self.environment == 'pyodide' and
+            len(self.diagram_element.xpath('.//annotations')) == 0
+            ):
+            diagram_annotations = annotations.diagram_to_speech(
+                self.diagram_element_copy,
+                self.source_to_svg
+            )
+            annotations_root = ET.Element('annotations')
+            annotations_root.append(diagram_annotations)
+            annotations.annotations(annotations_root, self, None, None)
 
     def begin_figure(self):
         # set up the dimensions of the diagram in SVG coordinates
@@ -647,6 +674,7 @@ class Diagram:
 #            'href': r'#' + element.get('id', 'none') + '-outline'
         }
         )
+        self.register_svg_element(element, use)
         # labeled points and angle markers are in a <g> with the 
         # point's id.  To avoid duplicate id's, we'll remove the
         # id from the graphical component

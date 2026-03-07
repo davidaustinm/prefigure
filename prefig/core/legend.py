@@ -24,7 +24,9 @@ class Legend:
 
         # we will put everything in a group and apply a final transform to it
         self.group = ET.Element('g')
+        diagram.add_id(self.group, element.get('id'))
         parent.append(self.group)
+        diagram.register_svg_element(element, self.group)
 
         # register this legend so we an come back to it
         diagram.add_legend(self)

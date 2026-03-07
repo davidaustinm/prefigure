@@ -132,6 +132,7 @@ class ImplicitCurve():
 
         path = ET.Element('path')
         diagram.add_id(path, element.get('id'))
+        diagram.register_svg_element(element, path)
         path.set('d', d)
 
         util.add_attr(path, util.get_1d_attr(element))

@@ -165,11 +165,11 @@ label_subelements = {
     'newline': 'new line'
 }
 
-def diagram_to_speech(diagram):
-    diagram = copy.deepcopy(diagram)
-
+def diagram_to_speech(diagram, source_to_svg):
     element_num = 0
     for element in diagram.getiterator():
+        if element.tag == 'annotation':  # skip over annotations we have added
+            continue
         if element.tag in label_subelements.keys():
             element.getparent().remove(element)
             continue
@@ -210,7 +210,14 @@ def diagram_to_speech(diagram):
         element_num += 1
         element.tag = "annotation"
 
-    log.error(ET.tostring(diagram, pretty_print=True))
+        svg = source_to_svg.get(element, None)
+        if svg is not None:
+            svg_id = svg.get('id', None)
+            if svg_id is not None:
+                child = ET.SubElement(element, 'annotation')
+                child.set('ref', svg_id)
+
+#    log.error(ET.tostring(diagram, pretty_print=True))
     return diagram
 
 def attributes_to_speech(attribs):

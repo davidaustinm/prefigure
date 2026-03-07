@@ -33,6 +33,7 @@ def circle(element, diagram, parent, outline_status):
     # unions and intersections
     circle = ET.Element('path')
     diagram.add_id(circle, element.get('id'))
+    diagram.register_svg_element(element, circle)
 
     N = un.valid_eval(element.get('N', '100'))
     cmds = make_path(diagram,
@@ -109,6 +110,8 @@ def ellipse(element, diagram, parent, outline_status):
     N = un.valid_eval(element.get('N', '100'))
     circle = ET.Element('path')
     diagram.add_id(circle, element.get('id'))
+    diagram.register_svg_element(element, circle)
+
     cmds = make_path(diagram,
                      center,
                      axes_length,
@@ -203,6 +206,7 @@ def arc(element, diagram, parent, outline_status):
 
     arc = ET.Element('path')
     diagram.add_id(arc, element.get('id'))
+    diagram.register_svg_element(element, arc)
 
     cmds = make_path(diagram,
                      center,
@@ -378,6 +382,7 @@ def angle(element, diagram, parent, outline_status):
 
     arc = ET.Element('path')
     diagram.add_id(arc, element.get('id'))
+    diagram.register_svg_element(element, arc)
 
     util.add_attr(arc, util.get_1d_attr(element))
     util.cliptobbox(arc, element, diagram)

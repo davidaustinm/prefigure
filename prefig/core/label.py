@@ -128,6 +128,7 @@ def label(element, diagram, parent, outline_status = None):
     diagram.add_label(element, group)
     diagram.add_id(element, element.get('id'))
     group.set('id', element.get('id'))
+    diagram.register_svg_element(element, group)
 
     # For non-tactile output, add a group to the diagram.
     # We'll return and insert the label into the group later

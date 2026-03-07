@@ -131,7 +131,7 @@ def grid(element, diagram, parent, outline_status):
                              'stroke-width': thickness
                          }
                          )
-
+    diagram.register_svg_element(element, grid, overwrite=False)
     util.cliptobbox(grid, element, diagram)
 
     bbox = diagram.bbox()
@@ -277,6 +277,7 @@ def grid_axes(element, diagram, parent, outline_status):
                               'id': id
                           }
     )
+    diagram.register_svg_element(element, group)
 
     annotation_id = diagram.prepend_id_prefix('grid-axes')
     grid_id = diagram.prepend_id_prefix('grid')
@@ -363,6 +364,8 @@ def grid_with_basis(element, diagram, parent, basis, outline_status):
 
     coords = ET.Element('path')
     diagram.add_id(coords, element.get('id'))
+    diagram.register_svg_element(element, coords)
+
     util.add_attr(coords, util.get_1d_attr(element))
     coords.set('d', ' '.join(cmds))
 #    coords.set('type', 'grid with basis')

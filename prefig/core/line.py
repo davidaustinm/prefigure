@@ -54,7 +54,7 @@ def line(element, diagram, parent, outline_status):
 
     line = mk_line(p1, p2, diagram, element.get('id', None), 
                    endpoint_offsets=endpoint_offsets)
-
+    diagram.register_svg_element(element, line)
     # we need to hold on to the endpoints in case the line is labelled
     # these are endpoints in SVG coordinates
     x1 = float(line.get('x1'))
@@ -243,6 +243,7 @@ def add_label(element, diagram, parent):
         # If there's a label, we'll bundle the label and point in a group
         parent_group = ET.SubElement(parent, 'g')
         diagram.add_id(parent_group, element.get('id'))
+        diagram.register_svg_element(element, parent_group)
 
         # Now we'll create a new XML element describing the label
         el = copy.deepcopy(element)

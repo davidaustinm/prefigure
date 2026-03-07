@@ -153,6 +153,7 @@ def shape(element, diagram, parent, outline_status):
         path.set('d', d)
 
     diagram.add_id(path, element.get('id'))
+    diagram.register_svg_element(element, path)
 
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:

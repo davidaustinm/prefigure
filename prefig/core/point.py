@@ -134,8 +134,10 @@ def point(element, diagram, parent, outline_status = None):
 
         # no label has been added if the parent hasn't changed
         if original_parent == parent:
+            diagram.register_svg_element(element, shape)
             return
 
+        diagram.register_svg_element(element, parent)
         # if there is a label, then the id is on the outer <g> element
         # so we need to remove it from the children
         if element.get('id', 'none') == parent.get('id'):

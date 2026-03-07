@@ -173,6 +173,7 @@ class Axes():
                                   }
                                   )
         util.cliptobbox(self.axes, element, diagram)
+        diagram.register_svg_element(element, self.axes, overwrite=False)
         
         # which axes are we asked to build
         self.axes_attribute = element.get("axes", None)
@@ -831,6 +832,7 @@ def tick_mark(element, diagram, parent, outline_status):
                                diagram,
                                user_coords=False)
 
+    diagram.register_svg_element(element, line_el)
     thickness = element.get('thickness', None)
     if thickness is None:
         if axes_object is None:

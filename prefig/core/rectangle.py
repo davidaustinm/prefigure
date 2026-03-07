@@ -34,6 +34,7 @@ def rectangle(element, diagram, parent, outline_status):
     # We're going to make a path so that we can use this with shape operations
     path = ET.SubElement(parent, 'path')
     diagram.add_id(path, element.get('id'))
+    diagram.register_svg_element(element, path)
 
     rotate = un.valid_eval(element.get('rotate', '0'))
     ctm = CTM.CTM()

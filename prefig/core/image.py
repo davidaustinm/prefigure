@@ -99,6 +99,7 @@ def image(element, diagram, parent, outline_status):
         return
 
     image_el = ET.SubElement(parent, 'image')
+    diagram.register_svg_element(element, image_el)
     image_el.set('x', util.float2str(-width/2))
     image_el.set('y', util.float2str(-height/2))
     image_el.set('width', util.float2str(width))

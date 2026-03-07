@@ -47,6 +47,7 @@ def vector(element, diagram, parent, outline_status):
 
     vector = ET.Element('path')
     diagram.add_id(vector, element.get('id'))
+    diagram.register_svg_element(element, vector)
     util.add_attr(vector, util.get_2d_attr(element))
 
     # Now add the head using an SVG marker
