@@ -485,6 +485,7 @@ Contour = element contour {
     attribute at {text}?,
     attribute function {text},
     attribute k {text}?,
+    attribute value {text}?,
     attribute depth {text}?,
     attribute initial-depth {text}?,
     StrokeAttributes,
@@ -552,6 +553,7 @@ Implicit-Curve = element implicit-curve {
     attribute at {text}?,
     attribute function {text},
     attribute k {text}?,
+    attribute value {text}?,
     attribute depth {text}?,
     attribute initial-depth {text}?,
     StrokeAttributes,
@@ -728,8 +730,10 @@ Riemann-Sum = element riemann-sum {
     attribute N {text},
     attribute domain {text}?,
     attribute rule {text}?,
+    attribute annotate {"yes"|"no"}?,
     FillAttributes,
-    CommonAttributes
+    CommonAttributes,
+    AnnotatedElementAttributes
 }
 
 Scatter = element scatter {
