@@ -104,6 +104,9 @@ class Diagram:
         self.label_html_body = ET.Element('body')
         self.label_html_tree.append(self.label_html_body)
 
+        # dictionary for holding previously computed data
+        self.source_to_data = {}
+
         # a dictionary for holding shapes
         self.shape_dict = {}
 
@@ -247,6 +250,20 @@ class Diagram:
 
     def get_environment(self):
         return self.environment
+
+    def register_source_data(self, element, key, value):
+        element_dict = self.source_to_data.get(element, None)
+        if element_dict is None:
+            element_dict = {}
+
+        element_dict[key] = value
+        self.source_to_data[element] = element_dict
+
+    def get_source_data(self, element, key):
+        element_dict = self.source_to_data.get(element, None)
+        if element_dict is None:
+            return None
+        return element_dict.get(key, None)
 
     # get the HTML tree so that we can add text for labels
     def label_html(self):
