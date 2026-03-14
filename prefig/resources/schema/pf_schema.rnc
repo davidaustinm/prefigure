@@ -818,7 +818,9 @@ Vector = element vector {
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,
     StrokeAttributes,
-    CommonAttributes
+    CommonAttributes,
+    LabelAttributes,
+    LabelText?
 }
 
 Vector-Field = element vector-field {
