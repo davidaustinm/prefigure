@@ -276,7 +276,8 @@ def add_label(element, diagram, parent):
             g = ET.SubElement(parent_group, "g")
             g.set("transform", tform)
             el.set("anchor", f"({distance},0)")
-            el.set("alignment", "north")
+            alignment = element.get('alignment', 'north')
+            el.set("alignment", alignment)
             label.label(el, diagram, g)
 
         return parent_group
