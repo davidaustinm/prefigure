@@ -4,6 +4,7 @@ import numpy as np
 import logging
 import copy
 import re
+from pathlib import Path
 from . import tags
 from . import user_namespace as un
 from . import utilities as util
@@ -37,14 +38,22 @@ class Diagram:
         self.environment = environment
         self.caption = ""
 
+        # the original source may be modified while parsing
+        # We will make a copy along with a dictionary linking
+        # the copied elements to the original elements.
+        # This will be used in the playground for annotating
+        # the source
+        self.diagram_element_copy = copy.deepcopy(self.diagram_element)
+        self.source_to_copy = {}
+        for source, cp in zip(self.diagram_element.iter(),
+                                self.diagram_element_copy.iter()):
+            self.source_to_copy[source] = cp
+        self.source_to_svg = {}
+
         self.add_default_annotations = True
         if (self.environment == 'pyodide' and
             len(self.diagram_element.xpath('.//annotations')) == 0
             ):
-            diagram_annotations = annotations.diagram_to_speech(diagram_element)
-            annotations_tree = ET.SubElement(self.diagram_element,
-                                             'annotations')
-            annotations_tree.append(diagram_annotations)
             self.add_default_annotations = False
 
         math_util.set_diagram(self)
@@ -59,8 +68,27 @@ class Diagram:
                  'xml': xml_uri}
         self.root = ET.Element("svg", nsmap = nsmap)
 
+        # ids may get a suffix or a prefix
+        self.add_id_prefix = False
+        figure_id = 'figure'
+        if self.format != 'tactile':
+            self.add_id_prefix = True
+            if self.environment == 'pyodide':
+                import time
+                import hashlib
+                import base64
+
+                nano_secs = time.time_ns()  # nanoseconds
+                hash = hashlib.sha256(str(nano_secs).encode()).digest()
+                hash_string = base64.urlsafe_b64encode(hash[-6:]).decode()
+                self.id_prefix = f"prefig-{hash_string}-"
+            else:
+                self.id_prefix = Path(self.filename).stem + '-'
+                self.id_prefix = repeat.epub_clean(self.id_prefix)
+            figure_id = self.id_prefix + figure_id
+
         self.id_suffix = ['']
-        self.add_id(self.root, diagram_element.get('id', 'diagram'))
+        self.add_id(self.root, diagram_element.get('id', figure_id))
 
         # prepare the XML tree for annotations, if there are any
         self.annotations_root = None
@@ -75,6 +103,9 @@ class Diagram:
         self.label_html_tree = ET.Element('html')
         self.label_html_body = ET.Element('body')
         self.label_html_tree.append(self.label_html_body)
+
+        # dictionary for holding previously computed data
+        self.source_to_data = {}
 
         # a dictionary for holding shapes
         self.shape_dict = {}
@@ -195,12 +226,21 @@ class Diagram:
         suffix = ''.join(self.id_suffix)
         if id is None:
             self.ids[element.tag] = self.ids.get(element.tag, -1) + 1
-            return element.tag+'-'+str(self.ids[element.tag])+suffix
+            result_id = element.tag+'-'+str(self.ids[element.tag])+suffix
         else:
-            return id + suffix
+            result_id = id + suffix
+        result_id = self.prepend_id_prefix(result_id)
+        return result_id
 
     def append_id_suffix(self, element):
         return self.find_id(element, element.get('id', None))
+
+    def prepend_id_prefix(self, id):
+        if not self.add_id_prefix:
+            return id
+        if id.startswith(self.id_prefix):
+            return id
+        return self.id_prefix + id
     
     def output_format(self):
         return self.format
@@ -210,6 +250,20 @@ class Diagram:
 
     def get_environment(self):
         return self.environment
+
+    def register_source_data(self, element, key, value):
+        element_dict = self.source_to_data.get(element, None)
+        if element_dict is None:
+            element_dict = {}
+
+        element_dict[key] = value
+        self.source_to_data[element] = element_dict
+
+    def get_source_data(self, element, key):
+        element_dict = self.source_to_data.get(element, None)
+        if element_dict is None:
+            return None
+        return element_dict.get(key, None)
 
     # get the HTML tree so that we can add text for labels
     def label_html(self):
@@ -243,6 +297,25 @@ class Diagram:
 
     def retrieve_data(self, element):
         return self.saved_data.get(element, None)
+
+    def register_svg_element(self, source, svg, overwrite=True):
+        source_copy = self.source_to_copy.get(source, None)
+        if source_copy is None:
+            return
+        if overwrite or self.source_to_svg.get(source_copy, None) is None:
+            self.source_to_svg[source_copy] = svg
+
+    def annotate_source(self):
+        if (self.environment == 'pyodide' and
+            len(self.diagram_element.xpath('.//annotations')) == 0
+            ):
+            diagram_annotations = annotations.diagram_to_speech(
+                self.diagram_element_copy,
+                self.source_to_svg
+            )
+            annotations_root = ET.Element('annotations')
+            annotations_root.append(diagram_annotations)
+            annotations.annotations(annotations_root, self, None, None)
 
     def begin_figure(self):
         # set up the dimensions of the diagram in SVG coordinates
@@ -330,6 +403,7 @@ class Diagram:
                              'width': util.float2str(width),
                              'height': util.float2str(height)
                          })
+
         self.push_clippath(clippath)
 
     def push_clippath(self, clippath):
@@ -617,6 +691,7 @@ class Diagram:
 #            'href': r'#' + element.get('id', 'none') + '-outline'
         }
         )
+        self.register_svg_element(element, use)
         # labeled points and angle markers are in a <g> with the 
         # point's id.  To avoid duplicate id's, we'll remove the
         # id from the graphical component
@@ -671,10 +746,14 @@ class Diagram:
 
     def add_annotation_to_branch(self, annotation):
         if len(self.annotation_branch_stack) == 0:
-            self.annotation_branches[annotation.get('id')] = annotation
+            id = annotation.get('id')
+            id = self.prepend_id_prefix(id)
+            self.annotation_branches[id] = annotation
             return
         self.annotation_branch_stack[-1].append(annotation)
-        annotation.set('id', self.append_id_suffix(annotation))
+        id = self.append_id_suffix(annotation)
+        id = self.prepend_id_prefix(id)
+        annotation.set('id', id)
 
     def get_annotation_branch(self, id):
         return self.annotation_branches.pop(id, None)

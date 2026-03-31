@@ -18,6 +18,16 @@ def set_diagram(d):
 def ln(x):
     return math.log(x)
 
+#Add other three trig functions for convenience
+def sec(x):
+    return 1/math.cos(x)
+
+def csc(x):
+    return 1/math.sin(x)
+
+def cot(x):
+    return 1/math.tan(x)
+
 def dot(u, v):
     return np.dot(np.array(u), np.array(v))
 

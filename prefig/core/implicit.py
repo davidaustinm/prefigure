@@ -112,7 +112,11 @@ class ImplicitCurve():
             log.error(f"Error in <implict-curve> retrieving function={element.get('function')}")
             return
         try:
-            k = un.valid_eval(element.get('k', '0'))
+            contour_value = element.get('value', None)
+            if contour_value is None:
+                k = un.valid_eval(element.get('k', '0'))
+            else:
+                k = un.valid_eval(contour_value)
             self.depth = int(un.valid_eval(element.get('depth', '8')))
             self.initialdepth = int(un.valid_eval(element.get('initial-depth','4')))
         except:
@@ -132,6 +136,7 @@ class ImplicitCurve():
 
         path = ET.Element('path')
         diagram.add_id(path, element.get('id'))
+        diagram.register_svg_element(element, path)
         path.set('d', d)
 
         util.add_attr(path, util.get_1d_attr(element))

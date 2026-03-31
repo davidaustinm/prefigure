@@ -9,6 +9,10 @@ from . import repeat
 
 log = logging.getLogger('prefigure')
 
+arrow_length_dict = {}
+def get_arrow_length(key):
+    return arrow_length_dict.get(key)
+
 # Form arrows to be used with a variety of graphical components
 # Arrowheads are created as markers and then added to paths
 
@@ -22,7 +26,7 @@ def add_tactile_arrowhead_marker(diagram, path, mid=False):
     # get the stroke width from the graphical component
     stroke_width_str = path.get('stroke-width', '1')
     stroke_width = int(stroke_width_str)
-    id = 'arrow-head-'+stroke_width_str
+    id = diagram.prepend_id_prefix('arrow-head-'+stroke_width_str)
 
     # if we've seen this already, there's no need to create it again
     if diagram.has_reusable(id):
@@ -48,6 +52,8 @@ def add_tactile_arrowhead_marker(diagram, path, mid=False):
     s = 9
     l = t/math.tan(A)+0.1
     y = s*math.tan(A)
+
+    arrow_length_dict[id] = l
 
     # Scale and translate to fit the stroke-width
     # p1, p2, and p3 are the vertices of the triangle
@@ -180,12 +186,12 @@ def add_arrowhead_marker(diagram,
     # end or in the middle of a path
     id_data = f"_{arrow_width}_{arrow_angles[0]}_{arrow_angles[1]}"
     if not mid:
-        id = 'arrow-head-end-'+stroke_width_str+id_data+'-'+stroke_color
+        id = diagram.prepend_id_prefix('arrow-head-end-'+stroke_width_str+id_data+'-'+stroke_color)
         if arrow_width is None:
             arrow_width = 4
         dims = (1, arrow_width)
     else:
-        id = 'arrow-head-mid-'+stroke_width_str+id_data+'-'+stroke_color
+        id = diagram.prepend_id_prefix('arrow-head-mid-'+stroke_width_str+id_data+'-'+stroke_color)
         if arrow_width is None:
             arrow_width = 13/3
         dims = (1, arrow_width) #11/3)
@@ -205,6 +211,8 @@ def add_arrowhead_marker(diagram,
     l = t/math.tan(A) + 0.1
     x2 = l - s/math.tan(A)
     x1 = x2 + (s-t)/math.tan(B)
+
+    arrow_length_dict[id] = l
 
     ctm = CTM.CTM()
     ctm.scale(stroke_width, stroke_width)
@@ -314,4 +322,5 @@ def add_arrowhead_to_path(diagram,
                               arrow_width,
                               arrow_angles)
     path.set(location, r'url(#{})'.format(id))
+    return id
 

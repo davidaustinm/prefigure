@@ -79,6 +79,7 @@ def graph(element, diagram, parent, outline_status = None):
         attrib['fill'] = element.get('fill')
 
     path = ET.Element('path', attrib = attrib)
+    diagram.register_svg_element(element, path)
 
     arrows = int(element.get('arrows', '0'))
     forward = 'marker-end'

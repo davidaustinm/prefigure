@@ -60,7 +60,9 @@ def repeat(element, diagram, parent, outline_status):
     if outline is not None:
         element.set('outline', outline)
     if id is not None:
+        id = diagram.prepend_id_prefix(id)
         element.set('id', id)
+        element_cp.set('id', id)
 
     for num, k in enumerate(iterator):
         if isinstance(k, np.ndarray):

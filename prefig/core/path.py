@@ -74,6 +74,7 @@ def path(element, diagram, parent, outline_status):
     d = ' '.join(cmds)
     path = ET.Element('path')
     diagram.add_id(path, element.get('id'))
+    diagram.register_svg_element(element, path)
     path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
 #    path.set('type', 'path')

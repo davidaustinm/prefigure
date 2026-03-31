@@ -16,6 +16,10 @@ import tempfile
 log = logging.getLogger('prefigure')
 
 allowed_fonts = {'serif','sans-serif','monospace'}
+ns = {
+    'svg': 'http://www.w3.org/2000/svg',
+    'xlink': 'http://www.w3.org/1999/xlink',
+}
 
 def init(format, environment):
     global math_labels
@@ -124,6 +128,7 @@ def label(element, diagram, parent, outline_status = None):
     diagram.add_label(element, group)
     diagram.add_id(element, element.get('id'))
     group.set('id', element.get('id'))
+    diagram.register_svg_element(element, group)
 
     # For non-tactile output, add a group to the diagram.
     # We'll return and insert the label into the group later
@@ -561,7 +566,7 @@ def position_svg_label(element, diagram, ctm, group):
                         new_row.append(text_el)
                 
             else: # otherwise it's an <m>
-                new_row.append(mk_m_element(element,
+                new_row.append(mk_m_element(element, diagram,
                                             label_group))
                 begin_space = True
         text_elements[num] = new_row
@@ -687,11 +692,31 @@ def mk_text_element(text_str, font_data, label_group):
     return [text_el] + measurements
 
 
-def mk_m_element(m_tag, label_group):
+def mk_m_element(m_tag, diagram, label_group):
     m_tag_id = m_tag.get('id')
     insert = math_labels.get_math_label(m_tag_id)
     if insert is None:
         return None
+
+    # We are going to modify the ids on the glyphs by prepending
+    # the filename in a pretext environment.
+    # Note that the xlink namespace is deprecated so this will
+    # need to change with MathJax4
+    defs = insert.find('svg:defs', namespaces=ns)
+    defs_dict = {}
+    for glyph in defs:
+        id = glyph.get('id')
+        new_id = diagram.prepend_id_prefix(id)
+        glyph.set('id', new_id)
+        defs_dict[id] = new_id
+
+    use_els = insert.findall('.//svg:use', namespaces=ns)
+    for use in use_els:
+        href = use.get('{http://www.w3.org/1999/xlink}href')
+        if href.startswith(r'#'):
+            href = href[1:]
+        new_href = r'#'+defs_dict[href]
+        use.set('{http://www.w3.org/1999/xlink}href', new_href)
 
     # Express dimensions in px for rsvg-convert
     dim_dict = {}

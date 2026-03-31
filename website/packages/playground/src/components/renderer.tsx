@@ -79,7 +79,7 @@ export function Renderer() {
     }
 
     return (
-        <div className="render-frame">
+        <div className="panel-frame">
             <div className="render-buffer">
                 <div className="render-content">
                     {sourceForDisplay.startsWith("<svg") ?
@@ -88,7 +88,7 @@ export function Renderer() {
                     )}
                 </div>
             </div>
-            <Nav className="render-toolbar">
+            <Nav className="panel-toolbar">
                 <Button
                     variant="success"
                     style={{ flexBasis: 100 }}
@@ -112,7 +112,7 @@ export function Renderer() {
                         Visual
                     </ToggleButton>
                     <ToggleButton
-                        id="toggle-visual"
+                        id="toggle-tactile"
                         value={2}
                         checked={mode === "tactile"}
                         active={mode === "tactile"}
@@ -141,7 +141,7 @@ export function Renderer() {
                         saveAs(blob, "figure.svg");
                     }}
                 >
-                    <Download /> Download
+                    <Download /> Download Graphic
                 </Button>
             </Nav>
         </div>

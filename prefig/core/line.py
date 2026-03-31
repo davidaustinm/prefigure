@@ -54,7 +54,7 @@ def line(element, diagram, parent, outline_status):
 
     line = mk_line(p1, p2, diagram, element.get('id', None), 
                    endpoint_offsets=endpoint_offsets)
-
+    diagram.register_svg_element(element, line)
     # we need to hold on to the endpoints in case the line is labelled
     # these are endpoints in SVG coordinates
     x1 = float(line.get('x1'))
@@ -69,6 +69,7 @@ def line(element, diagram, parent, outline_status):
     # now add the graphical attributes
     util.set_attr(element, 'stroke', 'black')
     util.set_attr(element, 'thickness', '2')
+    thickness = un.valid_eval(element.get('thickness'))
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
     util.add_attr(line, util.get_1d_attr(element))
@@ -78,14 +79,26 @@ def line(element, diagram, parent, outline_status):
     backward = 'marker-start'
     if element.get('reverse', 'no') == 'yes':
         forward, backward = backward, forward
+
+    # we may need to adjust the endpoints to account for the arrowheads
     if arrows > 0:
-        arrow.add_arrowhead_to_path(
+        arrow_id = arrow.add_arrowhead_to_path(
             diagram,
             forward,
             line,
             arrow_width=element.get('arrow-width', None),
             arrow_angles=element.get('arrow-angles', None)
         )
+        p0 = np.array((x1, y1))
+        p1 = np.array((x2, y2))
+        diff = p1 - p0
+        length = math_util.length(diff)
+        angle = math.atan2(diff[1], diff[0])
+        arrow_length = thickness * arrow.get_arrow_length(arrow_id)
+        shortened_length = length - arrow_length
+        p1 = shortened_length*np.array((math.cos(angle), math.sin(angle))) + p0
+        line.set('x2', util.float2str(p1[0]))
+        line.set('y2', util.float2str(p1[1]))
     if arrows > 1:
         arrow.add_arrowhead_to_path(
             diagram,
@@ -94,6 +107,9 @@ def line(element, diagram, parent, outline_status):
             arrow_width=element.get('arrow-width', None),
             arrow_angles=element.get('arrow-angles', None)
         )
+        p0 += arrow_length * np.array((math.cos(angle),math.sin(angle)))
+        line.set('x1', util.float2str(p0[0]))
+        line.set('y1', util.float2str(p0[1]))
 
     if element.get('additional-arrows', None) is not None:
         additional = un.valid_eval(element.get('additional-arrows'))
@@ -227,6 +243,7 @@ def add_label(element, diagram, parent):
         # If there's a label, we'll bundle the label and point in a group
         parent_group = ET.SubElement(parent, 'g')
         diagram.add_id(parent_group, element.get('id'))
+        diagram.register_svg_element(element, parent_group)
 
         # Now we'll create a new XML element describing the label
         el = copy.deepcopy(element)
@@ -259,7 +276,8 @@ def add_label(element, diagram, parent):
             g = ET.SubElement(parent_group, "g")
             g.set("transform", tform)
             el.set("anchor", f"({distance},0)")
-            el.set("alignment", "north")
+            alignment = element.get('alignment', 'north')
+            el.set("alignment", alignment)
             label.label(el, diagram, g)
 
         return parent_group

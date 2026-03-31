@@ -47,6 +47,7 @@ def mk_diagram(element,
         log.error("Debugging information is available with 'prefig -vv build filename'")
         return
     log.debug("Writing the diagram and any annotations")
+    diag.annotate_source()
     try:
         if return_string:
             return diag.end_figure_to_string()

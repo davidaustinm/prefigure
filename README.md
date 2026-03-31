@@ -31,7 +31,7 @@ PreFigure may be installed locally as a Python package in the usual way using `p
     On a linux machine, use your package manager to install `python3-louis`.  Ubuntu users can use
 
     ```
-    apt get python3-louis
+    apt install python3-louis
     ```
 
     while on a Mac, you will want

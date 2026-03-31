@@ -65,8 +65,8 @@ def network(element, diagram, parent, outline_status):
     positions = {}
     for node in element.findall('node'):
         handle = node.get('at', None)
-        diagram.add_id(node, handle)
-        handle = node.get('id')
+        # diagram.add_id(node, handle)
+        # handle = node.get('id')
         nodes[handle] = node
 
         # check for the position of this node 

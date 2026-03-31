@@ -24,6 +24,7 @@ __delta_on = False
 functions = {x for x in dir(math) + dir(math_utilities) if not "__" in x}.difference({'e', 'pi'})
 functions.add('max')
 functions.add('min')
+functions.add('round')
 variables = {'e', 'pi', 'inf'}
 
 # Transforms an AST by wrapping any List or Tuple inside a numpy array

@@ -10,15 +10,15 @@ def clip(element, diagram, parent, outline_status):
     if shape_ref is None:
         log.error("A <clip> tag needs a @shape attribute")
         return
-
+    shape_ref = diagram.prepend_id_prefix(shape_ref)
     shape = diagram.recall_shape(shape_ref)
     if shape is None:
-        log.error(f"Cannot clip to shape whose name is {element.get('shape')}")
+        log.error(f"Cannot clip to shape whose name is {shape_ref}")
         return
 
     clip = ET.Element('clipPath')
     clip.append(shape)
-    clip_id = 'clip-'+shape_ref
+    clip_id = shape_ref + '-clip'
     clip.set('id', clip_id)
 
     diagram.add_reusable(clip)

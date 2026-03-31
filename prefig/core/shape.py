@@ -36,7 +36,9 @@ def define(element, diagram, parent, outline_status):
             log.error(f"In <define-shapes>, {child.tag} does not define a shape")
             continue
         if child.get('at', None) is not None:
-            child.set('id', child.get('at'))
+            id = child.get('at')
+            id = diagram.prepend_id_prefix(id)
+            child.set('id', id)
         dummy_parent = ET.Element('group')
         # this is kind of a hack, but we only need to construct the shape
         # so we stash the format temporarily in case we're building a
@@ -69,6 +71,11 @@ def shape(element, diagram, parent, outline_status):
             return
 
     shape_refs = [r.strip() for r in reference.split(',')]
+    shape_edit = []
+    for shape_ref in shape_refs:
+        shape_ref = diagram.prepend_id_prefix(shape_ref)
+        shape_edit.append(shape_ref)
+    shape_refs = shape_edit
     shapes = []
     for ref in shape_refs:
         shapes.append(diagram.recall_shape(ref))
@@ -82,6 +89,7 @@ def shape(element, diagram, parent, outline_status):
             operation = 'union'
         else:
             path = ET.SubElement(parent, 'use')
+            reference = diagram.prepend_id_prefix(reference)
             path.set('href', r'#' + reference)
 
     if operation is not None:
@@ -145,6 +153,7 @@ def shape(element, diagram, parent, outline_status):
         path.set('d', d)
 
     diagram.add_id(path, element.get('id'))
+    diagram.register_svg_element(element, path)
 
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:

@@ -114,25 +114,44 @@ def get_pi_text(x):
     if abs(4*x - round(4*x)) < 1e-10:
         num = round(4*x)
         if num == -1:
-            return r'-\pi/4'
+            return r'-\frac{\pi}{4}'
         if num == 1:
-            return r'\pi/4'
+            return r'\frac{\pi}{4}'
         if num % 2 == 1:
-            return str(num)+r'\pi/4'
+            if num < 0:
+                return f'-\\frac{{{-num}\\pi}}{{4}}'
+            else:
+                return f'\\frac{{{num}\\pi}}{{4}}'
     if abs(2*x - round(2*x)) < 1e-10:
         num = round(2*x)
         if num == -1:
-            return r'-\pi/2'
+            return r'-\frac{\pi}{2}'
         if num == 1:
-            return r'\pi/2'
-        return str(num)+r'\pi/2'
+            return r'\frac{\pi}{2}'
+        if num < 0:
+            return f'-\\frac{{{-num}\\pi}}{{2}}'
+        else:
+            return f'\\frac{{{num}\\pi}}{{2}}'
     if abs(3*x - round(3*x)) < 1e-10:
         num = round(3*x)
         if num == -1:
-            return r'-\pi/3'
+            return r'-\frac{\pi}{3}'
         if num == 1:
-            return r'\pi/3'
-        return str(num)+r'\pi/3'
+            return r'\frac{\pi}{3}'
+        if num < 0:
+            return f'-\\frac{{{-num}\\pi}}{{3}}'
+        else:
+            return f'\\frac{{{num}\\pi}}{{3}}'
+    if abs(6*x - round(6*x)) < 1e-10:
+        num = round(6*x)
+        if num == -1:
+            return r'-\frac{\pi}{6}'
+        if num == 1:
+            return r'\frac{\pi}{6}'
+        if num < 0:
+            return f'-\\frac{{{-num}\\pi}}{{6}}'
+        else:
+            return f'\\frac{{{num}\\pi}}{{6}}'
     return r'{0:g}\pi'.format(x)
     
 
@@ -145,14 +164,16 @@ class Axes():
         self.stroke = element.get('stroke', 'black')
         self.thickness = element.get('thickness', '2')
 
+        default_id = diagram.prepend_id_prefix('axes')
         self.axes = ET.SubElement(parent, 'g',
                                   attrib={
-                                      'id': element.get('id', 'axes'),
+                                      'id': element.get('id', default_id),
                                       'stroke': self.stroke,
                                       'stroke-width': self.thickness
                                   }
                                   )
         util.cliptobbox(self.axes, element, diagram)
+        diagram.register_svg_element(element, self.axes, overwrite=False)
         
         # which axes are we asked to build
         self.axes_attribute = element.get("axes", None)
@@ -811,6 +832,7 @@ def tick_mark(element, diagram, parent, outline_status):
                                diagram,
                                user_coords=False)
 
+    diagram.register_svg_element(element, line_el)
     thickness = element.get('thickness', None)
     if thickness is None:
         if axes_object is None:
@@ -836,7 +858,7 @@ def tick_mark(element, diagram, parent, outline_status):
         el_text = element.text.strip()
     except:
         el_text = None
-    if el_text is not None and (len(el_text) > 0 or len(element) > 0):
+    if (el_text is not None and len(el_text) > 0) or len(element) > 0:
         el_copy = copy.deepcopy(element)
         if axis == 'horizontal':
             if tactile:

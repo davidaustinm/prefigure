@@ -1354,6 +1354,9 @@
         <attribute name="k"/>
       </optional>
       <optional>
+        <attribute name="value"/>
+      </optional>
+      <optional>
         <attribute name="depth"/>
       </optional>
       <optional>
@@ -1519,6 +1522,9 @@
       <attribute name="function"/>
       <optional>
         <attribute name="k"/>
+      </optional>
+      <optional>
+        <attribute name="value"/>
       </optional>
       <optional>
         <attribute name="depth"/>
@@ -1995,8 +2001,17 @@
       <optional>
         <attribute name="rule"/>
       </optional>
+      <optional>
+        <attribute name="annotate">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
+      <ref name="AnnotatedElementAttributes"/>
     </element>
   </define>
   <define name="Scatter">
@@ -2212,6 +2227,10 @@
       </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
+      <ref name="LabelAttributes"/>
+      <optional>
+        <ref name="LabelText"/>
+      </optional>
     </element>
   </define>
   <define name="Vector-Field">

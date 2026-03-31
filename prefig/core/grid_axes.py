@@ -120,14 +120,18 @@ def grid(element, diagram, parent, outline_status):
 
     thickness = element.get('thickness', '1')
     stroke = element.get('stroke', r'#ccc')
+    id = element.get('id')
+    if id is None:
+        id = 'grid'
+    id = diagram.prepend_id_prefix(id)
     grid = ET.SubElement(parent, 'g',
                          attrib={
-                             'id': element.get('id', 'grid'),
+                             'id': id,
                              'stroke': stroke,
                              'stroke-width': thickness
                          }
                          )
-
+    diagram.register_svg_element(element, grid, overwrite=False)
     util.cliptobbox(grid, element, diagram)
 
     bbox = diagram.bbox()
@@ -265,30 +269,38 @@ def grid(element, diagram, parent, outline_status):
 # Adds both a grid and axes with spacings found automatically
 
 def grid_axes(element, diagram, parent, outline_status):
+    id = element.get('id', 'grid-axes')
+    id = diagram.prepend_id_prefix(id)
     group = ET.SubElement(parent, 'g',
                           attrib=
                           {
-                              'id': 'grid-axes'
+                              'id': id
                           }
     )
+    diagram.register_svg_element(element, group)
+
+    annotation_id = diagram.prepend_id_prefix('grid-axes')
+    grid_id = diagram.prepend_id_prefix('grid')
+    axes_id = diagram.prepend_id_prefix('axes')
 
     group_annotation = ET.Element('annotation')
-    group_annotation.set('ref', 'grid-axes')
+    group_annotation.set('ref', annotation_id)
     group_annotation.set('text', 'The coordinate grid and axes')
-    diagram. add_default_annotation(group_annotation)
-
+    if element.get('annotate', 'yes') == 'yes':
+        diagram. add_default_annotation(group_annotation)
+    element.set('id', grid_id)
     grid(element, diagram, group, outline_status)
 
     annotation = ET.Element('annotation')
-    annotation.set('ref', 'grid')
+    annotation.set('ref', grid_id)
     annotation.set('text', 'The coordinate grid')
     group_annotation.append(annotation)
 
-    element.set('id', 'axes')
+    element.set('id', axes_id)
     axes.axes(element, diagram, group, outline_status)
 
     annotation = ET.Element('annotation')
-    annotation.set('ref', 'axes')
+    annotation.set('ref', axes_id)
     annotation.set('text', 'The coordinate axes')
     group_annotation.append(annotation)
 
@@ -352,6 +364,8 @@ def grid_with_basis(element, diagram, parent, basis, outline_status):
 
     coords = ET.Element('path')
     diagram.add_id(coords, element.get('id'))
+    diagram.register_svg_element(element, coords)
+
     util.add_attr(coords, util.get_1d_attr(element))
     coords.set('d', ' '.join(cmds))
 #    coords.set('type', 'grid with basis')
