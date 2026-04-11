@@ -9,6 +9,15 @@ def annotations(element, diagram, parent, outline_status):
     if diagram.output_format() == 'tactile' and diagram.environment != 'pyodide':
         return
 
+    # 4/11/26:  use the top-level annotations element as the top-level
+    #           annotation while preserving backward compatability
+    if element.get('text', None) is not None:
+        element.tag = "annotation"
+        element.set('ref', 'figure')
+        root = ET.Element("annotations")
+        root.append(element)
+        annotations(root, diagram, parent, outline_status)
+        return
     # traverse the annotation tree and create the XML annotation output
     # We first add default annotations, such as grid-axes
     diagram.initialize_annotations()
