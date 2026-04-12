@@ -191,6 +191,12 @@ def pdf(
         except FileNotFoundError:
             pass
 
+        diagcess = str(build_path.parent/build_path.stem) + '-diagcess.svg'
+        try:
+            os.remove(diagcess)
+        except FileNotFoundError:
+            pass
+
 def png(
         format,
         filename,
@@ -254,6 +260,12 @@ def png(
         annotations = str(build_path.parent/build_path.stem) + '-annotations.xml'
         try:
             os.remove(annotations)
+        except FileNotFoundError:
+            pass
+
+        diagcess = str(build_path.parent/build_path.stem) + '-diagcess.svg'
+        try:
+            os.remove(diagcess)
         except FileNotFoundError:
             pass
 
