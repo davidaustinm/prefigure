@@ -226,7 +226,7 @@ class Diagram:
         suffix = ''.join(self.id_suffix)
         if id is None:
             self.ids[element.tag] = self.ids.get(element.tag, -1) + 1
-            result_id = element.tag+'-'+str(self.ids[element.tag])+suffix
+            result_id = '__'+element.tag+'-'+str(self.ids[element.tag])+suffix
         else:
             result_id = id + suffix
         result_id = self.prepend_id_prefix(result_id)
