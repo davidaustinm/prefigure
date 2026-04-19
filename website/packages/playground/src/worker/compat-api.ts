@@ -15,14 +15,14 @@ import type { MathDocument } from "@mathjax/src/mjs/core/MathDocument.js";
  * functions for Prefigure's abstract classes.
  */
 export class PrefigBrowserApi {
+    readonly mjVersion: string = mathjax.version;
+    readonly sreVersion: string = version;
     offscreenCanvas: OffscreenCanvas | null = null;
     ctx: OffscreenCanvasRenderingContext2D | null = null;
     mathDocumentSvg: MathDocument<any, any, any> | null = null;
     mathDocumentMml: MathDocument<any, any, any> | null = null;
     initFinished: Promise<void> = Promise.resolve();
     adaptor = liteAdaptor();
-    sreVersion = version;
-    mjVersion = mathjax.version;
 
     constructor() {
         let resolve: Function;

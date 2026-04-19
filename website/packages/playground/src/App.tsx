@@ -5,6 +5,7 @@ import "./font.css";
 import "./App.css";
 import { SourceEditor } from "./components/editor";
 import { diagcessVersion, Renderer } from "./components/renderer";
+import { prefigBrowserApi } from "./worker/compat-api";
 import { useStoreState } from "./state";
 
 function App() {
@@ -22,19 +23,20 @@ function App() {
                         <Nav.Link href="https://prefigure.org/docs/chap-examples.html" target="_blank">Examples</Nav.Link>
                         <Nav.Link href="https://prefigure.org" target="_blank">About</Nav.Link>
                     </Nav>
-                    <NavDropdown title="Versions" menuVariant="dark" align="end">
-                        <NavDropdown.Item disabled>
-                             PreFigure: {version || "Unknown"},
-                        </NavDropdown.Item>
-                        <NavDropdown.Item disabled>
-                             MathJax: {prefigBrowserApi.mjVersion || "Unknown"}
-                        </NavDropdown.Item>
-                        <NavDropdown.Item disabled>
-                             SRE: {prefigBrowserApi.sreVersion || "Unknown"}
-                        </NavDropdown.Item>
-                        <NavDropdown.Item disabled>
-                             diagcess: {diagcessVersion || "Unknown"}
-                        </NavDropdown.Item>
+                    <NavDropdown className="version-menu bg-primary" title="Versions" align="end">
+                        <div className="version-grid">
+                            {([
+                                ["PreFigure", version],
+                                ["MathJax", prefigBrowserApi.mjVersion],
+                                ["SRE", prefigBrowserApi.sreVersion],
+                                ["diagcess", diagcessVersion],
+                            ] as [string, string | undefined][]).map(([pkg, ver]) => (
+                                <React.Fragment key={pkg}>
+                                    <span className="version-label">{pkg}:</span>
+                                    <code className="version-value">{ver || "Unknown"}</code>
+                                </React.Fragment>
+                            ))}
+                        </div>
                     </NavDropdown>
                 </Container>
             </Navbar>
