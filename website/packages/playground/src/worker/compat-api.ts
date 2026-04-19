@@ -1,7 +1,7 @@
 import { toBraille } from "./liblouis";
 
 // @ts-ignore
-import { setupEngine, toSpeech } from "speech-rule-engine";
+import { setupEngine, toSpeech, version } from "speech-rule-engine";
 import { mathjax } from "@mathjax/src/mjs/mathjax.js";
 import { TeX } from "@mathjax/src/mjs/input/tex.js";
 import { SVG } from "@mathjax/src/mjs/output/svg.js";
@@ -21,6 +21,8 @@ export class PrefigBrowserApi {
     mathDocumentMml: MathDocument<any, any, any> | null = null;
     initFinished: Promise<void> = Promise.resolve();
     adaptor = liteAdaptor();
+    sreVersion = version;
+    mjVersion = mathjax.version;
 
     constructor() {
         let resolve: Function;

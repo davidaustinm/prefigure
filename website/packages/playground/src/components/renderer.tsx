@@ -174,3 +174,5 @@ function AnnotateSvg({svg, annotations}: {
     </div>
   );
 }
+
+export const diagcessVersion = diagcess.version;

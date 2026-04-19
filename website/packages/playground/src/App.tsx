@@ -1,10 +1,10 @@
 import React from "react";
-import { Container, Navbar, Nav, Row, Col } from "react-bootstrap";
+import { Container, Navbar, Nav, NavDropdown, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./font.css";
 import "./App.css";
 import { SourceEditor } from "./components/editor";
-import { Renderer } from "./components/renderer";
+import { diagcessVersion, Renderer } from "./components/renderer";
 import { useStoreState } from "./state";
 
 function App() {
@@ -22,10 +22,20 @@ function App() {
                         <Nav.Link href="https://prefigure.org/docs/chap-examples.html" target="_blank">Examples</Nav.Link>
                         <Nav.Link href="https://prefigure.org" target="_blank">About</Nav.Link>
                     </Nav>
-                    <Nav.Item className="text-light small">
-                        PreFigure Version:{" "}
-                        {version ? <code>{version}</code> : "Unknown"}
-                    </Nav.Item>
+                    <NavDropdown title="Versions" menuVariant="dark" align="end">
+                        <NavDropdown.Item disabled>
+                             PreFigure: {version || "Unknown"},
+                        </NavDropdown.Item>
+                        <NavDropdown.Item disabled>
+                             MathJax: {prefigBrowserApi.mjVersion || "Unknown"}
+                        </NavDropdown.Item>
+                        <NavDropdown.Item disabled>
+                             SRE: {prefigBrowserApi.sreVersion || "Unknown"}
+                        </NavDropdown.Item>
+                        <NavDropdown.Item disabled>
+                             diagcess: {diagcessVersion || "Unknown"}
+                        </NavDropdown.Item>
+                    </NavDropdown>
                 </Container>
             </Navbar>
             <Container fluid className="full-container">
