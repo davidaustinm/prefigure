@@ -1,7 +1,11 @@
 {
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/mj-sre-page.test.js"
+  },
   "dependencies": {
-    "mathjax-full": "^3.2.2",
-    "speech-rule-engine": "4.0.7",
-    "yargs": "^15.4.1"
+    "@mathjax/src": "4.1.1",
+    "speech-rule-engine": "5.0.0-beta.7",
+    "yargs": "18.0.0"
   }
 }
