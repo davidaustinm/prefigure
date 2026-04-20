@@ -19,15 +19,15 @@
       <annotation ref="axes" text="The coordinate axes"/>
       <annotation ref="slope-field" text="The slope field"/>
       <annotation ref="solutions" text="A collection of solution curves">
-        <annotation ref="solution-k=-4" text="The solution with initial value -4"/>
-        <annotation ref="solution-k=-3" text="The solution with initial value -3"/>
-        <annotation ref="solution-k=-2" text="The solution with initial value -2"/>
-        <annotation ref="solution-k=-1" text="The solution with initial value -1"/>
-        <annotation ref="solution-k=0" text="The solution with initial value 0"/>
-        <annotation ref="solution-k=1" text="The solution with initial value 1"/>
-        <annotation ref="solution-k=2" text="The solution with initial value 2"/>
-        <annotation ref="solution-k=3" text="The solution with initial value 3"/>
-        <annotation ref="solution-k=4" text="The solution with initial value 4"/>
+        <annotation ref="solution-k_-4" text="The solution with initial value -4"/>
+        <annotation ref="solution-k_-3" text="The solution with initial value -3"/>
+        <annotation ref="solution-k_-2" text="The solution with initial value -2"/>
+        <annotation ref="solution-k_-1" text="The solution with initial value -1"/>
+        <annotation ref="solution-k_0" text="The solution with initial value 0"/>
+        <annotation ref="solution-k_1" text="The solution with initial value 1"/>
+        <annotation ref="solution-k_2" text="The solution with initial value 2"/>
+        <annotation ref="solution-k_3" text="The solution with initial value 3"/>
+        <annotation ref="solution-k_4" text="The solution with initial value 4"/>
       </annotation>
     </annotation>
   </annotations>
