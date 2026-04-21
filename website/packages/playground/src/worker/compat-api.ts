@@ -1,7 +1,7 @@
 import { toBraille } from "./liblouis";
 
 // @ts-ignore
-import { setupEngine, toSpeech } from "speech-rule-engine";
+import { setupEngine, toSpeech, version } from "speech-rule-engine";
 import { mathjax } from "@mathjax/src/mjs/mathjax.js";
 import { TeX } from "@mathjax/src/mjs/input/tex.js";
 import { SVG } from "@mathjax/src/mjs/output/svg.js";
@@ -15,6 +15,8 @@ import type { MathDocument } from "@mathjax/src/mjs/core/MathDocument.js";
  * functions for Prefigure's abstract classes.
  */
 export class PrefigBrowserApi {
+    readonly mjVersion: string = mathjax.version;
+    readonly sreVersion: string = version;
     offscreenCanvas: OffscreenCanvas | null = null;
     ctx: OffscreenCanvasRenderingContext2D | null = null;
     mathDocumentSvg: MathDocument<any, any, any> | null = null;

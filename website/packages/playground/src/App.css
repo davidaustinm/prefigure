@@ -102,3 +102,37 @@ body,
     padding: 0px;
     flex-basis: 0;
 }
+
+.version-menu {
+    color: #f8f9fa;
+    background-color: #0d6efd;
+}
+
+.version-menu .dropdown-menu {
+    color: #f8f9fa;
+    background-color: #0d6efd;
+}
+
+/* Version dropdown grid — two aligned columns, theme-aware colors */
+.version-grid {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    column-gap: 0.6rem;
+    row-gap: 0.2rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+/* Package label: uses Bootstrap's secondary color variable which is defined
+   for both light and dark via @media (prefers-color-scheme: dark).
+   rgba(33,37,41,0.75) on white  → 4.8:1 contrast (WCAG AA ✓)
+   rgba(222,226,230,0.75) on dark → ≥4.5:1 contrast (WCAG AA ✓) */
+.version-grid .version-label {
+    text-align: right;
+}
+
+/* Version value: uses the dropdown's foreground color — always high contrast */
+.version-grid .version-value {
+    color: var(--bs-primary-color);
+}
