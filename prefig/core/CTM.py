@@ -156,6 +156,17 @@ def transform_translate(element, diagram, root, outline_status):
         return
     diagram.ctm().translate(*p)
 
+def transform_basis(element, diagram, root, outline_status):
+    if outline_status == "finish_outline":
+        return
+    try:
+        v1, v2 = un.valid_eval(element.get("basis"))
+    except:
+        log.error(f"Error in <translate> parsing by={element.get('by')}")
+        return
+    matrix = np.array([v1, v2]).T
+    diagram.ctm().apply_matrix(matrix)
+
 def transform_rotate(element, diagram, root, outline_status):
     if outline_status == "finish_outline":
         return

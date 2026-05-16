@@ -40,6 +40,7 @@ tag_dict = {
     'area-under-curve': area.area_under_curve,
     'axes': axes.axes,
     'caption': label.caption,
+    'change-basis': CTM.transform_basis,
     'circle': circle.circle,
     'clip': clip.clip,
     'contour': implicit.implicit_curve,
