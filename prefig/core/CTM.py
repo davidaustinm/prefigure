@@ -22,6 +22,9 @@ log = logging.getLogger('prefigure')
 def identity():
     return [[1,0,0],[0,1,0]]
 
+def identity_3d():
+    return np.identity(4)
+
 def translation(x,y):
     return [[1,0,x],[0,1,y]]
 
@@ -68,6 +71,7 @@ class CTM:
         if ctm is None:
             self.ctm = identity()
             self.inverse = identity()
+            self.ctm_3d = identity_3d()
         else:
             self.ctm = ctm
         self.ctm_stack = []
@@ -77,13 +81,13 @@ class CTM:
         self.inv_scale_y = lambda y: y
 
     def push(self):
-        self.ctm_stack.append([self.ctm, self.inverse])
+        self.ctm_stack.append([self.ctm, self.inverse, self.ctm_3d])
 
     def pop(self):
         if len(self.ctm_stack) == 0:
             log.error("Attempt to restore an empty transform")
             return
-        self.ctm, self.inverse = self.ctm_stack.pop(-1)
+        self.ctm, self.inverse, self.ctm_3d = self.ctm_stack.pop(-1)
 
     def set_log_x(self):
         self.scale_x = lambda x: np.log10(x)
@@ -93,17 +97,31 @@ class CTM:
         self.scale_y = lambda y: np.log10(y)
         self.inv_scale_y = lambda y: 10**y
 
+    def set_eye(self, eye):
+        if np.isclose(eye[0], 0):
+            log.error("The first coordinate of the eye's position must be nonzero")
+            return
+        self.eye = np.array([eye[1]/eye[0], eye[2]/eye[0]])
+
     def translate(self, x, y):
         m = translation(x, y)
         self.ctm = concat(self.ctm, m)
         minv = translation(-x, -y)
         self.inverse = concat(minv, self.inverse)
 
+    def translate3d(self, x, y, z):
+        m = np.array([[1,0,0,y],[0,1,0,z],[0,0,1,x],[0,0,0,1]])
+        self.ctm_3d = self.ctm_3d @ m
+
     def scale(self, x, y):
         s = scaling(x, y)
         self.ctm = concat(self.ctm, s)
         sinv = scaling(1/x, 1/y)
         self.inverse = concat(sinv, self.inverse)
+
+    def scale3d(self, sx, sy, sz):
+        m = np.array([[sy,0,0,0],[0,sz,0,0],[0,0,sx,0],[0,0,0,1]])
+        self.ctm_3d = self.ctm_3d @ m
 
     def rotate(self, theta, units="deg"):
         m = rotation(theta, units)
@@ -133,6 +151,12 @@ class CTM:
         transformed_point = [math_util.dot(self.ctm[i], p) for i in range(2)]
         return np.array(transformed_point)
 
+    def project_to_screen(self, p):
+        # permute the coordinates and make homogeneous
+        p = np.array([p[1], p[2], p[0], 1])
+        transform_p = (self.ctm_3d @ p)
+        return transform_p[:2] - self.eye * transform_p[2]
+
     def copy(self):
         return copy.deepcopy(self) # CTM(copy.deepcopy(self.ctm))
 
@@ -146,6 +170,12 @@ def transform_group(element, diagram, root, outline_status):
     if outline_status != "finish_outline":
         diagram.ctm().pop()
 
+def transform_center(element, diagram, root, outline_status):
+    if outline_status == "finish_outline":
+        return
+    bbox = diagram.bbox()
+    diagram.ctm().translate((bbox[0]+bbox[2])/2, (bbox[1]+bbox[3])/2)
+
 def transform_translate(element, diagram, root, outline_status):
     if outline_status == "finish_outline":
         return
@@ -155,6 +185,16 @@ def transform_translate(element, diagram, root, outline_status):
         log.error(f"Error in <translate> parsing by={element.get('by')}")
         return
     diagram.ctm().translate(*p)
+
+def transform_translate3d(element, diagram, root, outline_status):
+    if outline_status == "finish_outline":
+        return
+    try:
+        p = un.valid_eval(element.get("by"))
+    except:
+        log.error(f"Error in <translate3d> parsing by={element.get('by')}")
+        return
+    diagram.ctm().translate3d(*p)
 
 def transform_basis(element, diagram, root, outline_status):
     if outline_status == "finish_outline":
@@ -205,3 +245,27 @@ def transform_scale(element, diagram, root, outline_status):
         ctm.scale(*s)
     else:
         ctm.scale(s, s)
+
+def transform_scale3d(element, diagram, root, outline_status):
+    if outline_status == "finish_outline":
+        return
+    try:
+        s = un.valid_eval(element.get("by"))
+    except:
+        log.error(f"Error in <scale3d> parsing by={element.get('by')}")
+        return
+
+    diagram.ctm().scale3d(*s)
+
+def set_eye(element, diagram, root, outline_status):
+    if outline_status == "finish_outline":
+        return
+    try:
+        eye = un.valid_eval(element.get("eye"))
+    except:
+        log.error(f"Error in <set-eye> parsing by={element.get('eye')}")
+        return
+
+    if len(eye) == 3:
+        eye = np.append(eye, 0)
+    diagram.ctm().set_eye(eye)
