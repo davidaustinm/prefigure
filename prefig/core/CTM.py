@@ -79,6 +79,7 @@ class CTM:
         self.scale_y = lambda y: y
         self.inv_scale_x = lambda x: x
         self.inv_scale_y = lambda y: y
+        self.eye = np.array([0,0])
 
     def push(self):
         self.ctm_stack.append([self.ctm, self.inverse, self.ctm_3d])
