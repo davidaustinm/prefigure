@@ -33,6 +33,7 @@ def vector(element, diagram, parent, outline_status):
 
     diagram.register_source_data(element, 'v', v)
     diagram.register_source_data(element, 'head', w)
+    diagram.register_source_data(element, 'tail', tail)
 
     # Specify where we want the head to appear.  By default,
     # it's at the tip of the vector, but it can be anywhere
@@ -189,8 +190,17 @@ def add_label(element, diagram, parent):
                 def_offset += un.valid_eval(user_offset)
             el.set('offset', util.np2str(def_offset))
 
+        label_location = element.get('label-location', None)
+        if label_location is not None:
+            label_location = un.valid_eval(label_location)
+            label_location = max(0, label_location)
+            label_location = min(1, label_location)
+        else:
+            label_location = 1
         head = diagram.get_source_data(element, 'head')
-        el.set('anchor', util.pt2long_str(head, spacer=','))
+        tail = diagram.get_source_data(element, 'tail')
+        anchor = label_location*head + (1-label_location)*tail
+        el.set('anchor', util.pt2long_str(anchor, spacer=','))
 
         # add the label graphical element to the group
         label.label(el, diagram, group)
