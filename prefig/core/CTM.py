@@ -203,7 +203,7 @@ def transform_basis(element, diagram, root, outline_status):
     try:
         v1, v2 = un.valid_eval(element.get("basis"))
     except:
-        log.error(f"Error in <translate> parsing by={element.get('by')}")
+        log.error(f"Error in <change-basis> parsing by={element.get('by')}")
         return
     matrix = np.array([v1, v2]).T
     diagram.ctm().apply_matrix(matrix)
