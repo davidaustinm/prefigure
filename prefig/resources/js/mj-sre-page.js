@@ -53,7 +53,7 @@ const { setupEngine, engineReady, toSpeech, toEnriched } = _require('speech-rule
 //  Get the command-line arguments
 //
 const argv = yargs(hideBin(process.argv))
-    .demand(0).strict()
+    .demand(1, 'an HTML input file is required').strict()
     .usage('$0 [options] infile.html > outfile.html')
     .options({
       speech: {
@@ -133,6 +133,19 @@ const toMathML = (node => visitor.visitTree(node, html));
 //
 //  Create a renderAction that calls a function for each math item
 //
+function isEmptySVG(node, adaptor) {
+  if (adaptor.kind(node) !== 'svg') return false;
+  for (const child of adaptor.childNodes(node)) {
+    const kind = adaptor.kind(child);
+    if (kind === 'defs') {
+      if (adaptor.childNodes(child).length > 0) return false;
+    } else if (kind !== 'g') {
+      return false;
+    }
+  }
+  return true;
+}
+
 function action(state, code, setup = null) {
   return [state, (doc) => {
     const adaptor = doc.adaptor;
@@ -153,6 +166,7 @@ function action(state, code, setup = null) {
 //
 newState('PRETEXT', STATE.METRICS + 10);
 newState('PRETEXTACTION', STATE.PRETEXT + 10);
+newState('PRETEXTCLEAN', STATE.PRETEXTACTION + 10);
 
 //
 //  The renderActions to use
@@ -236,6 +250,15 @@ if (argv.braille) {
     setupEngine({ modality: 'braille', locale: 'nemeth', markup: 'layout', domain: 'default' });
   });
 }
+
+//
+//  Remove empty SVG elements (empty defs + only g in body) from all math items
+//
+renderActions.clean = action(STATE.PRETEXTCLEAN, (math, doc, adaptor) => {
+  math.outputData.pretext = math.outputData.pretext.filter(
+    node => !isEmptySVG(node, adaptor)
+  );
+});
 
 //
 //  Create an HTML document using the html file and a new TeX input jax
