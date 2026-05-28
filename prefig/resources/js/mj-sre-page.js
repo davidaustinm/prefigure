@@ -103,7 +103,7 @@ const argv = yargs(hideBin(process.argv))
         describe: 'the packages to use, e.g. "base, ams"'
       },
       rules: {
-        default: 'mathspeak',
+        default: 'clearspeak',
         describe: 'the rule set to use for speech output'
       }
     })
@@ -133,19 +133,6 @@ const toMathML = (node => visitor.visitTree(node, html));
 //
 //  Create a renderAction that calls a function for each math item
 //
-function isEmptySVG(node, adaptor) {
-  if (adaptor.kind(node) !== 'svg') return false;
-  for (const child of adaptor.childNodes(node)) {
-    const kind = adaptor.kind(child);
-    if (kind === 'defs') {
-      if (adaptor.childNodes(child).length > 0) return false;
-    } else if (kind !== 'g') {
-      return false;
-    }
-  }
-  return true;
-}
-
 function action(state, code, setup = null) {
   return [state, (doc) => {
     const adaptor = doc.adaptor;
@@ -252,12 +239,52 @@ if (argv.braille) {
 }
 
 //
+// Cleanup Actions
+// Remove the pretext data from the math document if the element is empty.
+//
+
+//
 //  Remove empty SVG elements (empty defs + only g in body) from all math items
 //
-renderActions.clean = action(STATE.PRETEXTCLEAN, (math, doc, adaptor) => {
-  math.outputData.pretext = math.outputData.pretext.filter(
-    node => !isEmptySVG(node, adaptor)
+function isEmptySVG(node, adaptor) {
+  if (adaptor.kind(node) !== 'svg') return false;
+  for (const child of adaptor.childNodes(node)) {
+    const kind = adaptor.kind(child);
+    if (kind === 'defs') {
+      if (adaptor.childNodes(child).length > 0) return false;
+    } else if (kind !== 'g') {
+      return false;
+    }
+  }
+  return true;
+}
+
+function isEmptyNode(node, adaptor, tag) {
+  if (adaptor.kind(node) !== tag) return false;
+  if (adaptor.childNodes(node).length > 2) return false;
+  if (adaptor.childNodes(node).length === 0) return true;
+  const child = adaptor.firstChild(node);
+  return adaptor.kind(child) === '#text' && child.value === '';
+}
+
+
+const emptyFilter = () => {
+  if (argv.svg) {
+    return node => !isEmptySVG(node, adaptor);
+  }
+  if (argv.svgenhanced) {
+    return node => adaptor.kind(node) === 'mjx-container' &&
+      !isEmptySVG(adaptor.firstChild(node), adaptor);
+  }
+  return node => !isEmptyNode(
+    node,
+    adaptor,
+    argv.mathml ? 'math' : (argv.braille ? 'mjx-braille' : (argv.speech ? 'mjx-speech' : 'mjx-data'))
   );
+};
+
+renderActions.clean = action(STATE.PRETEXTCLEAN, (math, doc, adaptor) => {
+  math.outputData.pretext = math.outputData.pretext.filter(emptyFilter());
 });
 
 //
