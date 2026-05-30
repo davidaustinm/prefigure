@@ -66,7 +66,8 @@ def repeat(element, diagram, parent, outline_status):
 
     for num, k in enumerate(iterator):
         if isinstance(k, np.ndarray):
-            k_str = utilities.np2str(k)
+            k_str = utilities.pt2long_str(k, spacer=",")
+            k_str = "("+k_str+",)"
         else:
             k_str = str(k)
 
