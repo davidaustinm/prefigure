@@ -121,7 +121,18 @@ def valid_eval(s, name=None, substitution=True):
     if s.strip()[0] == r'#':  # it's a color
         return s
     if s.strip().startswith('rgb'): # it's a color
-        return s
+        colors = s.strip()[3:]
+        if validate(colors):
+            try:
+                r, g, b = [int(c) for c in transform_eval(colors)]
+                return f"rgb({r},{g},{b})"
+            except:
+                logger.error(f"Unsafe evaluation in rgb: {s}")
+                raise SyntaxError(f"Unsafe evaluation in rgb: {s}")
+        else:
+            logger.error(f"Unsafe evaluation in rgb: {s}")
+            raise SyntaxError(f"Unsafe evaluation in rgb: {s}")
+        return
     # is this a function?  If so:
     if equal >= 0:
         name, expr = [field.strip() for field in s.split('=')]
