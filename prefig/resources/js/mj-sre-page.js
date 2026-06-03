@@ -4,7 +4,7 @@
  *
  *  pretext
  *
- *  Uses MathJax v4 to convert all TeX in an HTML document to forms
+ *  Uses MathJax v3 to convert all TeX in an HTML document to forms
  *  needed by PreTeXt
  *
  * ----------------------------------------------------------------------
@@ -28,26 +28,22 @@
 // via https://gist.github.com/dpvc/386e8aac18c010361ef362b9237c71e9
 // AIM braille textbook workshop, 2020-08
 
-import { mathjax } from '@mathjax/src/mjs/mathjax.js';
-import { TeX } from '@mathjax/src/mjs/input/tex.js';
-import { MathML } from '@mathjax/src/mjs/input/mathml.js';
-import { SVG } from '@mathjax/src/mjs/output/svg.js';
-import { RegisterHTMLHandler } from '@mathjax/src/mjs/handlers/html.js';
-import { liteAdaptor } from '@mathjax/src/mjs/adaptors/liteAdaptor.js';
-import { SerializedMmlVisitor } from '@mathjax/src/mjs/core/MmlTree/SerializedMmlVisitor.js';
-import { STATE, newState } from '@mathjax/src/mjs/core/MathItem.js';
-import { EnrichHandler } from '@mathjax/src/mjs/a11y/semantic-enrich.js';
-import { AllPackages } from './AllPackages.js';
-import fs from 'fs';
-import { createRequire } from 'module';
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
+//
+//  Load the packages needed for MathJax
+//
+require('mathjax-full/js/util/asyncLoad/node.js');
+const {mathjax} = require('mathjax-full/js/mathjax.js');
+const {TeX} = require('mathjax-full/js/input/tex.js');
+//  RAB 2021-09-01, MathML only needed for  svgenhanced  mode
+const {MathML} = require('mathjax-full/js/input/mathml.js');
+const {SVG} = require('mathjax-full/js/output/svg.js');
+const {RegisterHTMLHandler} = require('mathjax-full/js/handlers/html.js');
+const {liteAdaptor} = require('mathjax-full/js/adaptors/liteAdaptor.js');
+const {STATE, newState} = require('mathjax-full/js/core/MathItem.js');
+//  RAB 2021-09-01, Enrichhandler only needed for  svgenhanced  mode
+const {EnrichHandler} = require('mathjax-full/js/a11y/semantic-enrich.js');
 
-// SRE's ESM build uses eval('require') to load fs, which fails in a native ESM
-// context. Load the CJS build via createRequire so that `require` is available
-// inside SRE and it can read locale data files from disk.
-const _require = createRequire(import.meta.url);
-const { setupEngine, engineReady, toSpeech, toEnriched } = _require('speech-rule-engine');
+const {AllPackages} = require('mathjax-full/js/input/tex/AllPackages.js');
 
 //
 //  Get the command-line arguments
@@ -74,11 +70,11 @@ const argv = yargs(hideBin(process.argv))
       svgenhanced: {
         boolean: true,
         default: false,
-        describe: 'produce speech-enhanced svg output'
+        describe: 'produces speech enhanced svg output'
       },
       depth: {
         default: 'shallow',
-        describe: 'the speech depth for SVG elements'
+        describe: 'The speech depth for SVG elements'
       },
       mathml: {
         boolean: true,
@@ -112,23 +108,29 @@ const argv = yargs(hideBin(process.argv))
 const needsSRE = argv.speech || argv.braille || argv.svgenhanced;
 
 //
+//  Load SRE if needed for speech or braille
+//
+const {Sre} = needsSRE ? require('mathjax-full/js/a11y/sre.js') :
+      {Sre: {sreReady: Promise.resolve()}};
+
+//
 //  Read the HTML file
 //
-const htmlfile = fs.readFileSync(argv._[0], 'utf8');
+const htmlfile = require('fs').readFileSync(argv._[0], 'utf8');
 
 //
 //  Create DOM adaptor and register it for HTML documents
 //
-const adaptor = liteAdaptor({ fontSize: argv.em });
-const handler = needsSRE
-  ? EnrichHandler(RegisterHTMLHandler(adaptor), new MathML())
-  : RegisterHTMLHandler(adaptor);
+const adaptor = liteAdaptor({fontSize: argv.em});
+const handler = RegisterHTMLHandler(adaptor);
 
 //
 //  Create a MathML serializer
 //
+const {SerializedMmlVisitor} = require('mathjax-full/js/core/MmlTree/SerializedMmlVisitor.js');
 const visitor = new SerializedMmlVisitor();
 const toMathML = (node => visitor.visitTree(node, html));
+
 
 //
 //  Create a renderAction that calls a function for each math item
@@ -148,6 +150,7 @@ function action(state, code, setup = null) {
   }];
 }
 
+
 //
 //  States for PreTeXt actions
 //
@@ -159,12 +162,19 @@ newState('PRETEXTCLEAN', STATE.PRETEXTACTION + 10);
 //  The renderActions to use
 //
 const renderActions = {
+  //
+  //  An action to set up the pretext data array
+  //  and enrich the MathML, if needed
+  //
   pretext: action(STATE.PRETEXT, (math, doc, adaptor) => {
     math.outputData.pretext = [adaptor.text('\n')];
     if (needsSRE) {
       math.outputData.mml = toMathML(math.root).toString();
     }
   }),
+  //
+  //  Override the typeset action to make the mjx-data element
+  //
   typeset: action(STATE.TYPESET, (math, doc, adaptor) => {
     math.typesetRoot = adaptor.node('mjx-data', {}, math.outputData.pretext);
   })
@@ -181,23 +191,20 @@ if (argv.svg) {
 }
 
 //
-//  MathML-input SVG document used for svgenhanced
+//  If SVG is requested, add an action to add it to the output
+//  RAB 2021-09-01,  svgenhanced  mode not being used (yet)
 //
 const mmldoc = mathjax.document('', {
   InputJax: new MathML(),
-  OutputJax: new SVG({ fontCache: (argv.fontPaths ? 'none' : 'local') }),
+  OutputJax: new SVG({fontCache: (argv.fontPaths ? 'none' : 'local')}),
 });
-
-//
-//  If svgenhanced is requested, produce SRE-enriched SVG output
-//
 if (argv.svgenhanced) {
   renderActions.svg = action(STATE.PRETEXTACTION, (math, doc, adaptor) => {
-    const out = mmldoc.convert(toEnriched(math.outputData.mml).toString());
+    let out = mmldoc.convert(Sre.toEnriched(math.outputData.mml).toString());
     math.outputData.pretext.push(out);
     math.outputData.pretext.push(adaptor.text('\n'));
   }, () => {
-    setupEngine({ speech: argv.depth, modality: 'speech', locale: argv.locale, domain: argv.rules });
+    Sre.setupEngine({speech: argv.depth, modality: 'speech', locale: argv.locale, domain: argv.rules});
   });
 }
 
@@ -205,7 +212,7 @@ if (argv.svgenhanced) {
 //  If MathML is requested, add an action to add it to the output
 //
 if (argv.mathml) {
-  renderActions.mathml = action(STATE.PRETEXTACTION, (math, doc, adaptor) => {
+  renderActions.mathml = action(STATE.PRETEXTACTION, (math, doc, adpator) => {
     const mml = adaptor.firstChild(adaptor.body(adaptor.parse(toMathML(math.root), 'text/html')));
     math.outputData.pretext.push(mml);
     math.outputData.pretext.push(adaptor.text('\n'));
@@ -214,27 +221,29 @@ if (argv.mathml) {
 
 //
 //  If speech is requested, add an action to add it to the output
+//  and set up the speech engine for speech in the correct locale
 //
 if (argv.speech) {
   renderActions.speech = action(STATE.PRETEXTACTION, (math, doc, adaptor) => {
-    const speech = toSpeech(math.outputData.mml);
+    const speech = Sre.toSpeech(math.outputData.mml);
     math.outputData.pretext.push(adaptor.node('mjx-speech', {}, [adaptor.text(speech)]));
     math.outputData.pretext.push(adaptor.text('\n'));
   }, () => {
-    setupEngine({ modality: 'speech', locale: argv.locale, domain: argv.rules });
+    Sre.setupEngine({modality: 'speech', locale: argv.locale, domain: argv.rules});
   });
 }
 
 //
 //  If braille is requested, add an action to add it to the output
+//  and set up the speech engine for nemeth braille
 //
 if (argv.braille) {
   renderActions.braille = action(STATE.PRETEXTACTION, (math, doc, adaptor) => {
-    const speech = toSpeech(math.outputData.mml);
+    const speech = Sre.toSpeech(math.outputData.mml);
     math.outputData.pretext.push(adaptor.node('mjx-braille', {}, [adaptor.text(speech)]));
     math.outputData.pretext.push(adaptor.text('\n'));
   }, () => {
-    setupEngine({ modality: 'braille', locale: 'nemeth', markup: 'layout', domain: 'default' });
+    Sre.setupEngine({modality: 'braille', locale: 'nemeth', markup: 'layout', domain: 'default'});
   });
 }
 
@@ -292,8 +301,8 @@ renderActions.clean = action(STATE.PRETEXTCLEAN, (math, doc, adaptor) => {
 //
 const html = mathjax.document(htmlfile, {
   renderActions,
-  InputJax: new TeX({ packages: argv.packages.split(/\s*,\s*/) }),
-  OutputJax: new SVG({ fontCache: (argv.fontPaths ? 'none' : 'local') }),
+  InputJax: new TeX({packages: argv.packages.split(/\s*,\s*/)}),
+  OutputJax: new SVG({fontCache: (argv.fontPaths ? 'none' : 'local')})
 });
 
 //
@@ -303,16 +312,31 @@ if (!(argv.svg || argv.svgenhanced)) {
   html.addStyleSheet = () => {};
 }
 
-(async () => {
+(async function () {
+  //
+  //  Wait for SRE, if needed
+  //
   if (needsSRE) {
-    await engineReady();
+    const feature = {
+      xpath: require.resolve('wicked-good-xpath/dist/wgxpath.install-node.js'),
+      json: require.resolve('speech-rule-engine/lib/mathmaps/base.json').replace(/\/base\.json$/, '')
+    };
+    Sre.setupEngine(feature);
     if (argv.braille) {
-      await setupEngine({ locale: 'nemeth', modality: 'braille', markup: 'layout', domain: 'default' });
+      Sre.setupEngine({locale: 'nemeth'});
     }
     if (argv.speech || argv.svgenhanced) {
-      await setupEngine({ locale: argv.locale, modality: 'speech', domain: argv.rules });
+      Sre.setupEngine({locale: argv.locale});
     }
+    await Sre.sreReady();
   }
-  await mathjax.handleRetriesFor(() => html.renderPromise());
+  //
+  //  Render the document
+  //
+  await mathjax.handleRetriesFor(() => html.render());
+  //
+  //  Output the resulting document
+  //
   console.log(adaptor.outerHTML(adaptor.root(html.document)));
-})().catch((err) => console.error(err));
+})()
+  .catch((err) => console.error(err));

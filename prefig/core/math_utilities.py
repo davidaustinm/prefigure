@@ -271,3 +271,15 @@ def intersect(functions, seed=None, interval=None):
             x1 = mid
     return (x1+x2)/2
 
+def proj_2d(*args):
+    if len(args) == 1:
+        p = args[0]
+        if len(p) == 3:
+            p = np.array([p[0],p[1],p[2],1])
+    elif len(args) == 3:
+        p = np.array([args[0], args[1], args[2], 1])
+    elif len(args) == 4:
+        p = np.array(args)
+    else:
+        logger.error("Error in proj_2d:  point must be three- or four-dimensional")
+    return diagram.ctm().project_to_screen(p)
