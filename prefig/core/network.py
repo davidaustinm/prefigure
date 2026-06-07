@@ -287,6 +287,16 @@ def network(element, diagram, parent, outline_status):
         node_fill = 'white'
         node_stroke = 'black'
 
+    # controls the spread of edges in a multi-graph
+
+    arrow_buffer = 3
+    spread = 15
+    if element.get('edge-spread', None) is not None:
+        spread = un.valid_eval(element.get('edge-spread'))
+    if diagram.output_format() == 'tactile':
+        arrow_buffer = 12
+        spread = 20
+
     element.clear()
     if auto_layout:
         element.tag = 'coordinates'
@@ -304,14 +314,6 @@ def network(element, diagram, parent, outline_status):
     # value = list of points the edges move toward
     edge_directions = {}
     
-    # controls the spread of edges in a multi-graph
-
-    arrow_buffer = 3
-    spread = 15
-    if diagram.output_format() == 'tactile':
-        arrow_buffer = 12
-        spread = 20
-        
     # remember that directed_edges is a dictionary:
     #   key = (p, q)
     #   value = all the edges from p to q
