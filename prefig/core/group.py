@@ -32,7 +32,8 @@ def group(element, diagram, parent, outline_status):
 
         # then stroking the grouped components
         group = ET.SubElement(parent, 'g')
-        diagram.add_id(group, element.get('id'))
+        group.set('id', element.get('id'))
+#        diagram.add_id(group, element.get('id'))
         diagram.register_svg_element(element, group)
 
         if transform is not None:
@@ -44,7 +45,8 @@ def group(element, diagram, parent, outline_status):
         return
 
     group = ET.SubElement(parent, 'g')
-    diagram.add_id(group, element.get('id'))
+    group.set('id', element.get('id'))
+#    diagram.add_id(group, element.get('id'))
     diagram.register_svg_element(element, group)
 
     if transform is not None:
