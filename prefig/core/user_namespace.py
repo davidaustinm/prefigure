@@ -25,6 +25,7 @@ functions = {x for x in dir(math) + dir(math_utilities) if not "__" in x}.differ
 functions.add('max')
 functions.add('min')
 functions.add('round')
+functions.add('abs')
 variables = {'e', 'pi', 'inf'}
 
 # Transforms an AST by wrapping any List or Tuple inside a numpy array
