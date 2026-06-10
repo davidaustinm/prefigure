@@ -168,6 +168,9 @@ def line_intersection(lines):
     t = dot(normal, q1-p1) / denom
     return q1 - t*v
 
+def solve(f, y, seed):
+    return intersect(lambda x: f(x)-y, seed)
+
 # find the intersection of two graphs or the zero of just one
 def intersect(functions, seed=None, interval=None):
     bbox = diagram.bbox()
