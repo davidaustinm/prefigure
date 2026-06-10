@@ -2233,6 +2233,9 @@
       <optional>
         <attribute name="arrow-angles"/>
       </optional>
+      <optional>
+        <attribute name="label-location"/>
+      </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
       <ref name="LabelAttributes"/>

@@ -821,6 +821,7 @@ Vector = element vector {
     attribute head-location {text}?,
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,
+    attribute label-location {text}?,
     StrokeAttributes,
     CommonAttributes,
     LabelAttributes,
