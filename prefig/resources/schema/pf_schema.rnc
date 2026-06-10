@@ -18,7 +18,8 @@ Caption = element caption {text}
 # Annotations are constructed with a single #annotations element,
 # which contains a single #annotation
 Annotations = element annotations {
-    Annotation
+    Annotation*,
+    attribute text {text}
 }
 
 AnnotationAttributes = 
@@ -164,6 +165,9 @@ TransformElements = (
     }* &
     element scale {
         attribute by {text}
+    }* &
+    element change-basis {
+        attribute basis {text}
     }*
 )
 

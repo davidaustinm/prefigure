@@ -39,7 +39,10 @@
   -->
   <define name="Annotations">
     <element name="annotations">
-      <ref name="Annotation"/>
+      <zeroOrMore>
+        <ref name="Annotation"/>
+      </zeroOrMore>
+      <attribute name="text"/>
     </element>
   </define>
   <define name="AnnotationAttributes">
@@ -346,6 +349,11 @@
       <zeroOrMore>
         <element name="scale">
           <attribute name="by"/>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="change-basis">
+          <attribute name="basis"/>
         </element>
       </zeroOrMore>
     </interleave>
