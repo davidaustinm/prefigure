@@ -827,9 +827,6 @@
     <optional>
       <attribute name="fill-rule"/>
     </optional>
-    <optional>
-      <ref name="TactileFillAttributes"/>
-    </optional>
   </define>
   <define name="TactileFillAttributes">
     <ref name="TactileStrokeAttributes"/>

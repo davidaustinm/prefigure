@@ -186,7 +186,7 @@ LabelAttributes =
     attribute font-size {text}?,
     TactileLabelAttributes?
 
-TactileLabelAttributes = 
+TactileLabelAttributes =
     attribute tactile-alignment {text}?,
     attribute tactile-offset {text}?,
     attribute tactile-justify {"right" | "left" | "center"}?,
@@ -330,8 +330,7 @@ FillAttributes =
     StrokeAttributes,
     attribute fill {text}?,
     attribute fill-opacity {text}?,
-    attribute fill-rule {text}?,
-    TactileFillAttributes?
+    attribute fill-rule {text}?
 
 TactileFillAttributes =
     TactileStrokeAttributes,
