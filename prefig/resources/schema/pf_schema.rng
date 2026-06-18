@@ -1175,12 +1175,6 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="stroke"/>
-      </optional>
-      <optional>
-        <attribute name="thickness"/>
-      </optional>
-      <optional>
         <attribute name="coordinates"/>
       </optional>
       <optional>
@@ -1201,7 +1195,7 @@
           </choice>
         </attribute>
       </optional>
-      <ref name="Stroke-Attributes"/>
+      <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
     </element>
   </define>
@@ -1337,13 +1331,7 @@
         <attribute name="axis"/>
       </optional>
       <optional>
-        <attribute name="stroke"/>
-      </optional>
-      <optional>
         <attribute name="size"/>
-      </optional>
-      <optional>
-        <attribute name="thickness"/>
       </optional>
       <ref name="StrokeAttributes"/>
       <ref name="LabelAttributes"/>
@@ -1507,17 +1495,6 @@
       <optional>
         <attribute name="bin-text"/>
       </optional>
-      <optional>
-        <attribute name="annotate">
-          <choice>
-            <value>yes</value>
-            <value>no</value>
-          </choice>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="text"/>
-      </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
     </element>
@@ -1662,10 +1639,10 @@
       </optional>
       <optional>
         <attribute name="alignment">
-          <group>
+          <choice>
             <value>vertical</value>
             <value>horizontal</value>
-          </group>
+          </choice>
         </attribute>
       </optional>
       <optional>
@@ -2009,17 +1986,8 @@
       <optional>
         <attribute name="rule"/>
       </optional>
-      <optional>
-        <attribute name="annotate">
-          <choice>
-            <value>yes</value>
-            <value>no</value>
-          </choice>
-        </attribute>
-      </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
-      <ref name="AnnotatedElementAttributes"/>
     </element>
   </define>
   <define name="Scatter">
@@ -2044,17 +2012,6 @@
       </optional>
       <optional>
         <attribute name="point-text"/>
-      </optional>
-      <optional>
-        <attribute name="annotate">
-          <choice>
-            <value>yes</value>
-            <value>no</value>
-          </choice>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="text"/>
       </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
@@ -2222,7 +2179,7 @@
         <attribute name="tail"/>
       </optional>
       <optional>
-        <attribute name="scale"/>
+        <attribute name="scale-length"/>
       </optional>
       <optional>
         <attribute name="head-location"/>
