@@ -404,6 +404,46 @@
     <optional>
       <attribute name="font-size"/>
     </optional>
+    <optional>
+      <ref name="TactileLabelAttributes"/>
+    </optional>
+  </define>
+  <define name="TactileLabelAttributes">
+    <optional>
+      <attribute name="tactile-alignment"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-offset"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-justify">
+        <choice>
+          <value>right</value>
+          <value>left</value>
+          <value>center</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="tactile-interline"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-scale"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-rotate"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-clear-background">
+        <choice>
+          <value>yes</value>
+          <value>no</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="tactile-background-margin"/>
+    </optional>
   </define>
   <define name="Math">
     <element name="m">
@@ -744,6 +784,37 @@
         </choice>
       </attribute>
     </optional>
+    <optional>
+      <ref name="TactileStrokeAttributes"/>
+    </optional>
+  </define>
+  <define name="TactileStrokeAttributes">
+    <optional>
+      <attribute name="tactile-stroke"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-thickness"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-miterlimit"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-linejoin"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-linecap"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-dash"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-cliptobbox">
+        <choice>
+          <value>yes</value>
+          <value>no</value>
+        </choice>
+      </attribute>
+    </optional>
   </define>
   <define name="FillAttributes">
     <ref name="StrokeAttributes"/>
@@ -755,6 +826,18 @@
     </optional>
     <optional>
       <attribute name="fill-rule"/>
+    </optional>
+    <optional>
+      <ref name="TactileFillAttributes"/>
+    </optional>
+  </define>
+  <define name="TactileFillAttributes">
+    <ref name="TactileStrokeAttributes"/>
+    <optional>
+      <attribute name="tactile-fill"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-fill-rule"/>
     </optional>
   </define>
   <!-- start defining the graphical elements -->
@@ -872,6 +955,9 @@
       <attribute name="points"/>
       <optional>
         <attribute name="radius"/>
+      </optional>
+      <optional>
+        <attribute name="tactile-radius"/>
       </optional>
       <optional>
         <attribute name="arrow">

@@ -183,7 +183,19 @@ LabelAttributes =
     attribute background-margin {text}?,
     attribute color {text}?,
     attribute font {text}?,
-    attribute font-size {text}?
+    attribute font-size {text}?,
+    TactileLabelAttributes?
+
+TactileLabelAttributes = 
+    attribute tactile-alignment {text}?,
+    attribute tactile-offset {text}?,
+    attribute tactile-justify {"right" | "left" | "center"}?,
+    attribute tactile-interline {text}?,
+    attribute tactile-scale {text}?,
+    attribute tactile-rotate {text}?,
+    attribute tactile-clear-background {"yes"|"no"}?,
+    attribute tactile-background-margin {text}?
+
 
 Math = element m {attribute color {text}? & text}
 Bold = element b {attribute color {text}? & text & Italic*}
@@ -302,13 +314,29 @@ StrokeAttributes =
     attribute linecap {text}?,
     attribute dash {text}?,
     attribute cliptobbox {"yes"|"no"}?,
-    attribute outline {"yes"|"no"}?
+    attribute outline {"yes"|"no"}?,
+    TactileStrokeAttributes?
+
+TactileStrokeAttributes = 
+    attribute tactile-stroke {text}?,
+    attribute tactile-thickness {text}?,
+    attribute tactile-miterlimit {text}?,
+    attribute tactile-linejoin {text}?,
+    attribute tactile-linecap {text}?,
+    attribute tactile-dash {text}?,
+    attribute tactile-cliptobbox {"yes"|"no"}?
 
 FillAttributes =
     StrokeAttributes,
     attribute fill {text}?,
     attribute fill-opacity {text}?,
-    attribute fill-rule {text}?
+    attribute fill-rule {text}?,
+    TactileFillAttributes?
+
+TactileFillAttributes =
+    TactileStrokeAttributes,
+    attribute tactile-fill {text}?,
+    attribute tactile-fill-rule {text}?
 
 # start defining the graphical elements
 GraphicalElements = 
@@ -353,6 +381,7 @@ Angle-Marker = element angle-marker {
     attribute at {text}?,
     attribute points {text},
     attribute radius {text}?,
+    attribute tactile-radius {text}?,
     attribute arrow {"yes"|"no"}?,
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,
