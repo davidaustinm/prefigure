@@ -354,11 +354,7 @@ def view(filename, ignore_annotations, port):
 
     # Now we'll look for the output SVG file to view
     # If we're given an xml file, we'll modify the filename
-    if filename.endswith('.xml'):
-        filename = filename[:-4] + '.svg'
-
-    if not filename.endswith('.svg'):
-        filename += '.svg'
+    filename = str(Path(filename).with_suffix('.svg'))
 
     view_path = None
     path = Path(filename)
@@ -408,8 +404,9 @@ def view(filename, ignore_annotations, port):
         url_preamble = f"https://{os.environ.get('CODESPACE_NAME')}-{active_port}.{os.environ.get('GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN')}"
     else:
         url_preamble = f"http://localhost:{active_port}"
-    
+
     # Does this figure have annotations
+    os.chdir(cwd)
     if ignore_annotations or not view_path.with_suffix('.xml').exists():
         # Don't worry about annotations so just open the SVG in a browser
         file_rel_path = os.path.relpath(view_path, home_dir)
@@ -437,7 +434,7 @@ def view(filename, ignore_annotations, port):
         diagcess_file = diagcess_dir / 'diagcess.html'
 
         file_rel_path = os.path.relpath(view_path, diagcess_dir)
-        file_rel_path = file_rel_path[:-4]
+        file_rel_path = str(Path(file_rel_path).with_suffix(''))
         diagcess_rel_path = os.path.relpath(diagcess_file, home_dir)
 
         ## TODO:  what is diagcess_rel_path is empty?

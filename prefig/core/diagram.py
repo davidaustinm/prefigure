@@ -474,7 +474,7 @@ class Diagram:
             suffix = '-' + str(self.diagram_number)
 
         input_dir = os.path.dirname(self.filename)
-        basename = os.path.basename(self.filename)[:-4] + suffix
+        basename = Path(self.filename).stem + suffix
 
         # perform the SVG 1.1 conversion if requested
         if self.output_format() == 'svg11':
