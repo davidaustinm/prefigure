@@ -475,6 +475,12 @@ class Diagram:
 
         input_dir = os.path.dirname(self.filename)
         basename = os.path.basename(self.filename)[:-4] + suffix
+
+        # perform the SVG 1.1 conversion if requested
+        if self.output_format() == 'svg11':
+            basename = basename + "-11"
+            self.root = self.svg11_conversion(self.root)
+
         output_dir = os.path.join(input_dir, 'output')
         out = os.path.join(output_dir, basename)
         try:
@@ -485,6 +491,20 @@ class Diagram:
         except:
             log.error(f"Unable to write SVG at {out+'.svg'}")
             return
+
+        # don't write out annotations in svg11 format
+        if self.output_format() == 'svg11':
+            return
+
+        # if we're inside pretext, we'll also add an SVG1.1 version
+        if self.environment == "pretext":
+            root11 = self.svg11_conversion(self.root)
+            try:
+                with ET.xmlfile(out + '-11.svg', encoding='utf-8') as xf:
+                    xf.write(root11, pretty_print=True)
+            except:
+                log.error(f"Unable to write SVG at {out + '-11.svg'}")
+                return
 
         if self.author_annotations_present and self.environment == "pretext":
             # we will write out a second version of the diagram
@@ -778,3 +798,58 @@ class Diagram:
 
         log.error(f"We cannot find a <shape> with id={shape_id}")
         return None
+
+    def svg11_conversion(self, root):
+        SVG_NS = "http://www.w3.org/2000/svg"
+        XLINK_NS = "http://www.w3.org/1999/xlink"
+
+        # Replace href with xlink:href in all <use> elements
+        for use_elem in root.iter('use'):
+            if 'href' in use_elem.attrib:
+                value = use_elem.attrib.pop('href')
+                use_elem.attrib[f'{{{XLINK_NS}}}href'] = value
+
+        # Handle arrow-head-end markers
+        for defs in root.iter('defs'):
+            for marker in list(defs):
+                if marker.tag != 'marker':
+                    continue
+                marker_id = marker.get('id', '')
+                if 'arrow-head-end' not in marker_id:
+                    continue
+
+                marker.set('orient', 'auto')
+
+                start_marker = copy.deepcopy(marker)
+                start_marker.set('id',
+                                 marker_id.replace('arrow-head-end', 'arrow-head-start'))
+
+                ref_x = float(start_marker.get('refX', 0))
+                ref_y = float(start_marker.get('refY', 0))
+                marker_width = float(start_marker.get('markerWidth', 0))
+                marker_height = float(start_marker.get('markerHeight', 0))
+
+                cx = marker_width / 2
+                cy = marker_height / 2
+                g = ET.Element('g')
+                g.set('transform', f'rotate(180, {cx}, {cy})')
+
+                for child in list(start_marker):
+                    start_marker.remove(child)
+                    g.append(child)
+
+                start_marker.append(g)
+
+                new_ref_x = marker_width - ref_x
+                start_marker.set('refX', str(int(new_ref_x) if new_ref_x == int(new_ref_x) else new_ref_x))
+
+                defs.append(start_marker)
+
+        # Update marker-start references from arrow-head-end to arrow-head-start
+        for elem in root.iter():
+            value = elem.get('marker-start', '')
+            if 'arrow-head-end' in value:
+                elem.set('marker-start',
+                         value.replace('arrow-head-end', 'arrow-head-start'))
+
+        return root
