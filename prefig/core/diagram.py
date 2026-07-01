@@ -56,6 +56,7 @@ class Diagram:
             ):
             self.add_default_annotations = False
 
+        util.set_diagram(self)
         math_util.set_diagram(self)
 
         label.init(self.format, self.environment)

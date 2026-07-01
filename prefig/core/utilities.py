@@ -10,6 +10,11 @@ with warnings.catch_warnings():
     warnings.filterwarnings('ignore', 'legacy print')
     np.set_printoptions(legacy="1.25")
 
+diagram = None
+def set_diagram(d):
+    global diagram
+    diagram = d
+
 colors = {'gray': r'#777', 'lightgray': r'#ccc', 'darkgray': r'#333'}
 
 # Some utilities to handle XML elements
