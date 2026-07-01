@@ -4,9 +4,11 @@ import lxml.etree as ET
 import logging
 from . import user_namespace as un
 from . import utilities as util
+from . import math_utilities as math_util
 from . import arrow
 
 log = logging.getLogger('prefigure')
+separation_tolerance = 5
 
 def parametric_curve(element, diagram, parent, outline_status):
     if outline_status == 'finish_outline':
@@ -32,9 +34,8 @@ def parametric_curve(element, diagram, parent, outline_status):
     p = diagram.transform(f(t))
     points = ['M ' + util.pt2str(p)]
     for _ in range(N):
+        points += take_step(diagram, f, t, dt)
         t += dt
-        p = diagram.transform(f(t))
-        points.append('L ' + util.pt2str(p))
 
     if element.get('closed', 'no') == 'yes':
         points.append('Z')
@@ -108,3 +109,12 @@ def finish_outline(element, diagram, parent):
                            element.get('thickness'),
                            element.get('fill', 'none'),
                            parent)
+
+def take_step(diagram, f, t0, dt):
+    last_p = diagram.transform(f(t0))
+    t1 = t0 + dt
+    p = diagram.transform(f(t1))
+    if math_util.length(p - last_p) < separation_tolerance:
+        return ['L ' + util.pt2str(p)]
+    dt /= 2
+    return take_step(diagram, f, t0, dt) + take_step(diagram, f, t0+dt, dt)

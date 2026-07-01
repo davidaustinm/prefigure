@@ -2,10 +2,12 @@ import lxml.etree as ET
 import logging
 import math
 import numpy as np
+from . import utilities as util
 from . import math_utilities as math_util
 from . import user_namespace as un
 from . import utilities as util
 from . import arrow
+from . import calculus
 
 log = logging.getLogger('prefigure')
 
@@ -34,66 +36,38 @@ def graph(element, diagram, parent, outline_status = None):
         if domain[1] == np.inf:
             domain[1] = bbox[2]
 
-    # if there are arrows, we need to pull the domain in by two pixels
-    # so that the arrows don't go outside the domain
-    arrows = int(element.get('arrows', '0'))
-    if arrows > 0 and not polar:
-        end = diagram.transform((domain[1], 0))
-        end[0] -= 2
-        new_domain = diagram.inverse_transform(end)
-        domain[1] = new_domain[0]
-    if arrows == 2 and not polar:
-        begin = diagram.transform((domain[0],0))
-        begin[0] += 2
-        new_domain = diagram.inverse_transform(begin)
-        domain[0] = new_domain[0]
-
-    # retrieve the function from the namespace and generate points
-    try:
-        f = un.valid_eval(element.get('function'))
-    except SyntaxError as e:
-        log.error(f"Error retrieving function in graph: {str(e)}")
-        return
-
-    N = int(element.get('N', '100'))
-    if polar:
-        cmds = polar_path(element, diagram, f, domain, N)
-    else:
-        cmds = cartesian_path(element, diagram, f, domain, N)
-
     # now set up the attributes
     util.set_attr(element, 'thickness', '2')
+    thickness = un.valid_eval(element.get('thickness'))
     util.set_attr(element, 'stroke', 'blue')
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
 
-    attrib = {'id': diagram.find_id(element, element.get('id'))}
-    attrib.update(util.get_1d_attr(element))
-    attrib.update(
-        {
-            'd': ' '.join(cmds),
-            'fill': 'none'
-        }
-    )
-    if polar and element.get('fill', None) is not None:
-        attrib['fill'] = element.get('fill')
-
-    path = ET.Element('path', attrib = attrib)
+    path = ET.Element('path')
+    diagram.add_id(path, element.get('id'))
     diagram.register_svg_element(element, path)
+
+    util.add_attr(path, util.get_1d_attr(element))
+    if polar and element.get('fill', None) is not None:
+        path.set('fill', element.get('fill', 'none'))
 
     arrows = int(element.get('arrows', '0'))
     forward = 'marker-end'
     backward = 'marker-start'
+
     if element.get('reverse', 'no') == 'yes':
         forward, backward = backward, forward
+
+    arrow_length = 0
     if arrows > 0:
-        arrow.add_arrowhead_to_path(
+        arrow_id = arrow.add_arrowhead_to_path(
             diagram,
             forward,
             path,
             arrow_width=element.get('arrow-width', None),
             arrow_angles=element.get('arrow-angles', None)
         )
+        arrow_length = thickness * arrow.get_arrow_length(arrow_id)
     if arrows > 1:
         arrow.add_arrowhead_to_path(
             diagram,
@@ -103,6 +77,46 @@ def graph(element, diagram, parent, outline_status = None):
             arrow_angles=element.get('arrow-angles', None)
         )
 
+    # retrieve the function from the namespace and generate points
+    try:
+        f = un.valid_eval(element.get('function'))
+    except SyntaxError as e:
+        log.error(f"Error retrieving function in graph: {str(e)}")
+        return
+
+    if not polar:
+        # do we need to place at arrow on the left of the graph?
+        if arrows > 1 or (arrows == 1 and element.get('reverse', 'no') == 'yes'):
+            # shorten the left side of the domain
+            y0 = f(domain[0])
+            fp = calculus.derivative(f, domain[0])
+            y1 = fp*(domain[1]-domain[0]) + y0
+            p0 = diagram.transform((domain[0], y0))
+            p1 = diagram.transform((domain[1], y1))
+            diff = p1 - p0
+            begin = p0 + arrow_length/math_util.length(diff) * diff
+            begin_user = diagram.inverse_transform(begin)
+            domain[0] = begin_user[0]
+            # do we need to place at arrow on the left of the graph?
+        if arrows > 1 or (arrows == 1 and element.get('reverse', 'no') == 'no'):
+            # shorten the right side of the domain
+            y0 = f(domain[1])
+            fp = calculus.derivative(f, domain[1], right=False)
+            y1 = fp*(domain[1]-domain[0]) + y0
+            p0 = diagram.transform((domain[1], y0))
+            p1 = diagram.transform((domain[0], y1))
+            diff = p1 - p0
+            end = p0 + arrow_length/math_util.length(diff) * diff
+            end_user = diagram.inverse_transform(end)
+            domain[1] = end_user[0]
+
+    N = int(element.get('N', '100'))
+    if polar:
+        cmds = polar_path(element, diagram, f, domain, N)
+    else:
+        cmds = cartesian_path(element, diagram, f, domain, N)
+
+    path.set('d', ' '.join(cmds))
     # By default, we clip the graph to the bounding box
     if element.get('cliptobbox') is None:
         element.set('cliptobbox', 'yes')

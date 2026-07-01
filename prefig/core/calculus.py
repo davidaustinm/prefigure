@@ -1,8 +1,11 @@
 # here are some calculus operations for developers
 # TODO:  should probably rename and include more math
 
-def derivative(f, a):
-    return richardson(f, a, 0.1, 4)
+def derivative(f, a, right=True):
+    h = 0.1
+    if not right:
+        h *= -1
+    return richardson(f, a, h, 4)
 
 def richardson(f, a, h, k):
     E = []
