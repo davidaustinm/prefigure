@@ -322,11 +322,13 @@ FillAttributes =
     attribute fill {text}?,
     attribute fill-opacity {text}?,
     attribute fill-rule {text}?,
+    attribute fill-pattern {'horizontal' | 'vertical' | 'diagonal' | 'backdiagonal' | 'dot' | 'diamond'}?,
     TactileFillAttributes?
 
 TactileFillAttributes =
     attribute tactile-fill {text}?,
-    attribute tactile-fill-rule {text}?
+    attribute tactile-fill-rule {text}?,
+    attribute tactile-fill-pattern {'horizontal' | 'vertical' | 'diagonal' | 'backdiagonal' | 'dot' | 'diamond'}?
 
 # start defining the graphical elements
 GraphicalElements = 

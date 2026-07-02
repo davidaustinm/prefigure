@@ -776,6 +776,18 @@
       <attribute name="fill-rule"/>
     </optional>
     <optional>
+      <attribute name="fill-pattern">
+        <choice>
+          <value>horizontal</value>
+          <value>vertical</value>
+          <value>diagonal</value>
+          <value>backdiagonal</value>
+          <value>dot</value>
+          <value>diamond</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
       <ref name="TactileFillAttributes"/>
     </optional>
   </define>
@@ -785,6 +797,18 @@
     </optional>
     <optional>
       <attribute name="tactile-fill-rule"/>
+    </optional>
+    <optional>
+      <attribute name="tactile-fill-pattern">
+        <choice>
+          <value>horizontal</value>
+          <value>vertical</value>
+          <value>diagonal</value>
+          <value>backdiagonal</value>
+          <value>dot</value>
+          <value>diamond</value>
+        </choice>
+      </attribute>
     </optional>
   </define>
   <!-- start defining the graphical elements -->
