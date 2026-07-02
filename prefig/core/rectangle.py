@@ -73,14 +73,9 @@ def rectangle(element, diagram, parent, outline_status):
 
     if diagram.output_format() == 'tactile':
         stroke = element.get('stroke')
-        fill   = element.get('fill')
         if stroke is not None and stroke != 'none':
             element.set('stroke', 'black')
-        if fill is not None:
-            if fill.strip().lower() != 'none':
-                element.set('fill', 'lightgray')
-            else:
-                element.set('fill', 'none')
+        util.set_tactile_fill(element)
     else:
         util.set_attr(element, 'stroke', 'none')
         util.set_attr(element, 'fill', 'none')
@@ -103,6 +98,5 @@ def finish_outline(element, diagram, parent):
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),
-#                           element.get('fill', 'none'),
-                           'none',
+                           element.get('fill', 'none'),
                            parent)

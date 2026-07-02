@@ -55,8 +55,7 @@ def parametric_curve(element, diagram, parent, outline_status):
 
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
-        if element.get('fill') is not None:
-            element.set('fill', 'lightgray')
+        util.set_tactile_fill(element)
     else:
         util.set_attr(element, 'stroke', 'blue')
         util.set_attr(element, 'fill', 'none')

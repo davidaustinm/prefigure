@@ -235,7 +235,7 @@ class Legend:
         # We're doing this at the very end so the diagram.ctm is the default
         
         gap = 3.6 # gap between embossed dots
-        outer_padding = 3*gap # 1/8th of an inch
+        outer_padding = 4.2*gap # 1/8th of an inch
         center_padding = 6*gap
 
         # TODO:  This feature needs to be checked with users

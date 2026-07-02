@@ -20,7 +20,7 @@ def area_between_curves(element, diagram, parent, outline_status):
     util.set_attr(element, 'thickness', '2')
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
-        element.set('fill', 'lightgray')
+        util.set_tactile_fill(element)
 
     # Retrieve the two functions and construct the area
     functions = element.get('functions')

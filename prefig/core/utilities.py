@@ -16,6 +16,8 @@ def set_diagram(d):
     diagram = d
 
 colors = {'gray': r'#777', 'lightgray': r'#ccc', 'darkgray': r'#333'}
+textures = {'horizontal', 'vertical', 'diagonal',
+            'backdiagonal', 'dot', 'diamond'}
 
 # Some utilities to handle XML elements
 def get_color(color):
@@ -64,13 +66,35 @@ def get_1d_attr(element):
     d['fill'] = element.get('fill', 'none')
     return d
 
+def set_tactile_fill(element):
+    fill = element.get('fill', 'none')
+    if fill.startswith('url'):
+        return
+    if fill in {'white', 'none'}:
+        element.set('fill', fill)
+    else:
+        element.set('fill', 'lightgray')
+
 def get_2d_attr(element):
     d = get_1d_attr(element)
-    d['fill'] = get_color(element.get('fill'))
-    if element.get('fill-rule') is not None:
-        d['fill-rule'] = element.get('fill-rule')
-    if element.get('fill-opacity') is not None:
-        d['fill-opacity'] = element.get('fill-opacity')
+    fill_color = get_color(element.get('fill'))
+    texture = element.get('fill-pattern', None)
+    if texture is not None:
+        if texture in textures:
+            if fill_color is None:
+                fill_color = 'gray'
+            url = diagram.add_texture(texture, fill_color)
+            d['fill'] = fr'url(#{url})'
+            element.set('fill', d['fill'])
+        else:
+            logger.error(f"{texture} is not a recognized texture")
+    else:
+        d['fill'] = get_color(element.get('fill'))
+        element.set('fill', d['fill'])
+        if element.get('fill-rule') is not None:
+            d['fill-rule'] = element.get('fill-rule')
+        if element.get('fill-opacity') is not None:
+            d['fill-opacity'] = element.get('fill-opacity')
     return d
 
 def cliptobbox(g_element, element, diagram):

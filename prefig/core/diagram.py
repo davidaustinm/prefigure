@@ -1,6 +1,7 @@
 import os
 import lxml.etree as ET
 import numpy as np
+import math
 import logging
 import copy
 import re
@@ -119,6 +120,9 @@ class Diagram:
 
         # track reusables that have been added for outlining
         self.reusables = {}
+
+        # track textures that have been added for fill
+        self.textures = {}
 
         # a dictionary to remember some network information
         self.network_coordinates = {}
@@ -854,3 +858,121 @@ class Diagram:
                          value.replace('arrow-head-end', 'arrow-head-start'))
 
         return root
+
+    def add_texture(self, texture, color):
+        tactile = self.output_format() == 'tactile'
+        if tactile:
+            color="#777"
+        from . import repeat
+        clean_color = repeat.epub_clean(color)
+        texture_str = texture + '-' + color
+        if self.textures.get(texture_str, None) is not None:
+            return self.textures.get(texture_str)
+
+        pattern = ET.SubElement(self.defs, 'pattern')
+        pattern.set('x', '0')
+        pattern.set('y', '0')
+        pattern.set('patternUnits', 'userSpaceOnUse')
+
+        if texture == 'horizontal':
+            id = self.prepend_id_prefix(f'__horizontal_texture_{clean_color}')
+            self.textures[texture] = id
+            pattern.set('id', id)
+            s = 5
+            if tactile:
+                s = 9
+            pattern.set('width', f'{s}')
+            pattern.set('height', f'{s}')
+            line = ET.SubElement(pattern, 'line')
+            line.set('x1', '-1')
+            line.set('y1', '0')
+            line.set('x2', f'{s+1}')
+            line.set('y2', '0')
+            line.set('stroke', color)
+            line.set('stroke-width', '1')
+
+        if texture == 'vertical':
+            id = self.prepend_id_prefix(f'__vertical_texture_{clean_color}')
+            pattern.set('id', id)
+            s = 5
+            if tactile:
+                s = 9
+            pattern.set('width', f'{s}')
+            pattern.set('height', f'{s}')
+            line = ET.SubElement(pattern, 'line')
+            line.set('x1', '0')
+            line.set('y1', '-1')
+            line.set('x2', '0')
+            line.set('y2', f'{s+1}')
+            line.set('stroke', color)
+            line.set('stroke-width', '1')
+
+        if texture == 'diagonal':
+            id = self.prepend_id_prefix(f'__diagonal_texture_{clean_color}')
+            pattern.set('id', id)
+            s = 7
+            if tactile:
+                s = 13
+            pattern.set('width', f'{s}')
+            pattern.set('height', f'{s}')
+            for data in [[-1,1,1,-1], [-1,s+1,s+1,-1], [s-1,s+1,s+1,s-1]]:
+                line = ET.SubElement(pattern, 'line')
+                for field, value in zip(['x1','y1','x2','y2'], data):
+                    line.set(field, str(value))
+                line.set('stroke', color)
+                line.set('stroke-width', '0.5')
+
+        if texture == 'backdiagonal':
+            id = self.prepend_id_prefix(f'__backdiagonal_texture_{clean_color}')
+            pattern.set('id', id)
+            s = 7
+            if tactile:
+                s = 13
+            pattern.set('width', f'{s}')
+            pattern.set('height', f'{s}')
+            for data in [[s-1,-1,s+1,1], [-1,-1,s+1,s+1], [-1,s-1,1,s+1]]:
+                line = ET.SubElement(pattern, 'line')
+                for field, value in zip(['x1','y1','x2','y2'], data):
+                    line.set(field, str(value))
+                line.set('stroke', color)
+                line.set('stroke-width', '0.5')
+
+        if texture == 'dot':
+            id = self.prepend_id_prefix(f'__dot_texture_{clean_color}')
+            pattern.set('id', id)
+            s = 6
+            dot_size = 1
+            if tactile:
+                s = 9
+                dot_size = 2
+            s3 = math.sqrt(3)
+            r = 2/s3 * s
+            t = 1/s3 * s
+            pattern.set('width', f'{2*s}')
+            pattern.set('height', f'{2*s3*s}')
+            for center in [[0,0], [0,r], [0,2*r], [s,t],
+                           [s,2*r+t], [s,r+t]]:
+                center[0] += dot_size
+                center[1] += dot_size
+                circle = ET.SubElement(pattern, 'circle')
+                circle.set('cx', f'{center[0]}')
+                circle.set('cy', f'{center[1]}')
+                circle.set('r', f'{dot_size}')
+                circle.set('fill', color)
+
+        if texture == 'diamond':
+            id = self.prepend_id_prefix(f'__diamond_texture_{clean_color}')
+            pattern.set('id', id)
+            s = 2
+            if tactile:
+                s = 5
+            t = s*math.sqrt(3)
+            pattern.set('width', f'{4*s}')
+            pattern.set('height', f'{4*t}')
+            for cx, cy in [[s,t],[3*s,3*t]]:
+                path = ET.SubElement(pattern, 'path')
+                path.set('d', f'M {cx} {cy+t} L {cx+s} {cy} L {cx} {cy-t} L {cx-s} {cy} Z')
+                path.set('fill', color)
+
+        self.textures[texture_str] = id
+        return id

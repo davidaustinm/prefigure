@@ -38,8 +38,7 @@ def path(element, diagram, parent, outline_status):
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
-        if element.get('fill') is not None:
-            element.set('fill', 'lightgray')
+        util.set_tactile_fill(element)
     util.set_attr(element, 'stroke', 'none')
     util.set_attr(element, 'fill', 'none')
     util.set_attr(element, 'thickness', '2')
@@ -77,7 +76,6 @@ def path(element, diagram, parent, outline_status):
     diagram.register_svg_element(element, path)
     path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
-#    path.set('type', 'path')
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
     util.cliptobbox(path, element, diagram)
 

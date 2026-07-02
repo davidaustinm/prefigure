@@ -47,17 +47,12 @@ def circle(element, diagram, parent, outline_status):
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
-        if element.get('fill') is not None:
-            if element.get('fill').strip().lower() != 'none':
-                element.set('fill', 'lightgray')
-            else:
-                element.set('fill', 'none')
+        util.set_tactile_fill(element)
     else:
         element.set('stroke', element.get('stroke', 'black'))
         element.set('fill', element.get('fill', 'none'))
     element.set('thickness', element.get('thickness', '2'))
     util.add_attr(circle, util.get_2d_attr(element))
-#    circle.set('type', 'circle')
     util.cliptobbox(circle, element, diagram)
 
     if outline_status == 'add_outline':
@@ -125,17 +120,12 @@ def ellipse(element, diagram, parent, outline_status):
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
-        if element.get('fill') is not None:
-            if elementl.get('fill').strip().lower() != 'none':
-                element.set('fill', 'lightgray')
-            else:
-                element.set('fill', 'none')
+        util.set_tactile_fill(element)
     else:
         element.set('stroke', element.get('stroke', 'none'))
         element.set('fill', element.get('fill', 'none'))
     element.set('thickness', element.get('thickness', '2'))
     util.add_attr(circle, util.get_2d_attr(element))
-#    circle.set('type', 'ellipse')
     util.cliptobbox(circle, element, diagram)
 
     if outline_status == 'add_outline':
@@ -156,8 +146,7 @@ def arc(element, diagram, parent, outline_status):
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
-        if element.get('fill', 'none') != 'none':
-            element.set('fill', 'lightgray')
+        util.set_tactile_fill(element)
     else:
         element.set('stroke', element.get('stroke', 'none'))
         element.set('fill', element.get('fill', 'none'))
@@ -219,7 +208,6 @@ def arc(element, diagram, parent, outline_status):
 
     arc.set('d', ' '.join(cmds))
     util.add_attr(arc, util.get_2d_attr(element))
-#    arc.set('type', 'arc')
     util.cliptobbox(arc, element, diagram)
 
     try:
@@ -250,11 +238,11 @@ def arc(element, diagram, parent, outline_status):
         )
 
     if outline_status == 'add_outline':
-        diagram.add_outline(element, arc, parent, outline_width=2)
+        diagram.add_outline(element, arc, parent)
         return
 
     if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
-        diagram.add_outline(element, arc, parent, outline_width=4)
+        diagram.add_outline(element, arc, parent)
         finish_outline(element, diagram, parent)
     else:
         parent.append(arc)
@@ -292,11 +280,7 @@ def angle(element, diagram, parent, outline_status):
 
     element.set('stroke', element.get('stroke', 'black'))
     if diagram.output_format() == 'tactile':
-        if element.get('fill') is not None:
-            if element.get('fill').strip().lower() != 'none':
-                element.set('fill', 'lightgray')
-            else:
-                element.set('fill', 'none')
+        util.set_tactile_fill(element)
     else:
         element.set('fill', element.get('fill', 'none'))
     element.set('thickness', element.get('thickness','2'))
@@ -384,7 +368,7 @@ def angle(element, diagram, parent, outline_status):
     diagram.add_id(arc, element.get('id'))
     diagram.register_svg_element(element, arc)
 
-    util.add_attr(arc, util.get_1d_attr(element))
+    util.add_attr(arc, util.get_2d_attr(element))
     util.cliptobbox(arc, element, diagram)
 
     thickness = un.valid_eval(element.get('thickness'))
@@ -434,7 +418,7 @@ def angle(element, diagram, parent, outline_status):
     arc.set('d', d)
 
     if outline_status == 'add_outline':
-        diagram.add_outline(element, arc, parent, outline_width=2)
+        diagram.add_outline(element, arc, parent, outline_width=4)
         return
 
     if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':

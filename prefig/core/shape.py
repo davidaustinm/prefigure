@@ -54,6 +54,7 @@ def define(element, diagram, parent, outline_status):
         shape = dummy_parent.getchildren()[0]
         shape.attrib.pop('stroke', None)
         shape.attrib.pop('fill', None)
+        shape.attrib.pop('stroke-width', None)
         diagram.add_shape(shape)
     
 
@@ -158,8 +159,7 @@ def shape(element, diagram, parent, outline_status):
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
-        if element.get('fill') is not None:
-            element.set('fill', 'lightgray')
+        util.set_tactile_fill(element)
     else:
         util.set_attr(element, 'stroke', 'none')
         util.set_attr(element, 'fill', 'none')
@@ -187,7 +187,7 @@ def finish_outline(element, diagram, parent):
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),
-                           element.get('fill', 'none'),
+                           element.get('fill'),
                            parent)
 
     
