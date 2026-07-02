@@ -47,7 +47,8 @@ DefinitionElements =
     Derivative |
     DE-Solution |
     Define-Shapes |
-    Read
+    Read |
+    Templates
 
 Definition = element definition {
     text,
@@ -82,6 +83,10 @@ Read = element read {
     attribute quotechar {text}?,
     attribute string-columns {text}?,
     attribute type {text}
+}
+
+Templates = element templates {
+    GraphicalElements+
 }
 
 # the next elements group other elements together
@@ -322,51 +327,51 @@ FillAttributes =
     attribute fill {text}?,
     attribute fill-opacity {text}?,
     attribute fill-rule {text}?,
-    attribute fill-pattern {'horizontal' | 'vertical' | 'diagonal' | 'backdiagonal' | 'dot' | 'diamond'}?,
+    attribute fill-pattern {"horizontal" | "vertical" | "diagonal" | "backdiagonal" | "dot" | "diamond"}?,
     TactileFillAttributes?
 
 TactileFillAttributes =
     attribute tactile-fill {text}?,
     attribute tactile-fill-rule {text}?,
-    attribute tactile-fill-pattern {'horizontal' | 'vertical' | 'diagonal' | 'backdiagonal' | 'dot' | 'diamond'}?
+    attribute tactile-fill-pattern {"horizontal" | "vertical" | "diagonal" | "backdiagonal" | "dot" | "diamond"}?
 
 # start defining the graphical elements
 GraphicalElements = 
     (
-        Angle-Marker* &
-        Arc* &
-        Area-Between-Curves* &
-        Area-Under-Curve* &
-        Axes* &
-        Circle* &
-        Contour* &
-        Ellipse* &
-        Graph* &
-        Grid* &
-        Grid-Axes* &
-        Histogram* &
-        Image* &
-        Implicit-Curve* &
-        Label* &
-        Legend* &
-        Line* &
-        Network* &
-        Parametric-Curve* &
-        Path* &
-        Plot-DE-Solution* &
-        Point* &
-        Polygon* &
-        Rectangle* &
-        Riemann-Sum* &
-        Scatter* &
-        Shape* &
-        Slope-Field* &
-        Spline* &
-        Tick-Mark* &
-        Tangent-line* &
-        Triangle* &
-        Vector* & 
-        Vector-Field*
+        Angle-Marker |
+        Arc |
+        Area-Between-Curves |
+        Area-Under-Curve |
+        Axes |
+        Circle |
+        Contour |
+        Ellipse |
+        Graph |
+        Grid |
+        Grid-Axes |
+        Histogram |
+        Image |
+        Implicit-Curve |
+        Label |
+        Legend |
+        Line |
+        Network |
+        Parametric-Curve |
+        Path |
+        Plot-DE-Solution |
+        Point |
+        Polygon |
+        Rectangle |
+        Riemann-Sum |
+        Scatter |
+        Shape |
+        Slope-Field |
+        Spline |
+        Tick-Mark |
+        Tangent-line |
+        Triangle |
+        Vector |
+        Vector-Field
     )
 
 Angle-Marker = element angle-marker {

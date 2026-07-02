@@ -103,6 +103,7 @@
       <ref name="DE-Solution"/>
       <ref name="Define-Shapes"/>
       <ref name="Read"/>
+      <ref name="Templates"/>
     </choice>
   </define>
   <define name="Definition">
@@ -168,6 +169,13 @@
         <attribute name="string-columns"/>
       </optional>
       <attribute name="type"/>
+    </element>
+  </define>
+  <define name="Templates">
+    <element name="templates">
+      <oneOrMore>
+        <ref name="GraphicalElements"/>
+      </oneOrMore>
     </element>
   </define>
   <!-- the next elements group other elements together -->
@@ -813,110 +821,42 @@
   </define>
   <!-- start defining the graphical elements -->
   <define name="GraphicalElements">
-    <interleave>
-      <zeroOrMore>
-        <ref name="Angle-Marker"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Arc"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Area-Between-Curves"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Area-Under-Curve"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Axes"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Circle"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Contour"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Ellipse"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Graph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Grid"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Grid-Axes"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Histogram"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Image"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Implicit-Curve"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Label"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Legend"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Line"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Network"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Parametric-Curve"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Path"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Plot-DE-Solution"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Point"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Polygon"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Rectangle"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Riemann-Sum"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Scatter"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Shape"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Slope-Field"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Spline"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Tick-Mark"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Tangent-line"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Triangle"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Vector"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="Vector-Field"/>
-      </zeroOrMore>
-    </interleave>
+    <choice>
+      <ref name="Angle-Marker"/>
+      <ref name="Arc"/>
+      <ref name="Area-Between-Curves"/>
+      <ref name="Area-Under-Curve"/>
+      <ref name="Axes"/>
+      <ref name="Circle"/>
+      <ref name="Contour"/>
+      <ref name="Ellipse"/>
+      <ref name="Graph"/>
+      <ref name="Grid"/>
+      <ref name="Grid-Axes"/>
+      <ref name="Histogram"/>
+      <ref name="Image"/>
+      <ref name="Implicit-Curve"/>
+      <ref name="Label"/>
+      <ref name="Legend"/>
+      <ref name="Line"/>
+      <ref name="Network"/>
+      <ref name="Parametric-Curve"/>
+      <ref name="Path"/>
+      <ref name="Plot-DE-Solution"/>
+      <ref name="Point"/>
+      <ref name="Polygon"/>
+      <ref name="Rectangle"/>
+      <ref name="Riemann-Sum"/>
+      <ref name="Scatter"/>
+      <ref name="Shape"/>
+      <ref name="Slope-Field"/>
+      <ref name="Spline"/>
+      <ref name="Tick-Mark"/>
+      <ref name="Tangent-line"/>
+      <ref name="Triangle"/>
+      <ref name="Vector"/>
+      <ref name="Vector-Field"/>
+    </choice>
   </define>
   <define name="Angle-Marker">
     <element name="angle-marker">
