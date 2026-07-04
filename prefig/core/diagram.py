@@ -878,9 +878,11 @@ class Diagram:
             id = self.prepend_id_prefix(f'__horizontal_texture_{clean_color}')
             self.textures[texture] = id
             pattern.set('id', id)
-            s = 5
+            s = 7
+            thickness = '2'
             if tactile:
                 s = 9
+                thickness = '1'
             pattern.set('width', f'{s}')
             pattern.set('height', f'{s}')
             line = ET.SubElement(pattern, 'line')
@@ -889,14 +891,16 @@ class Diagram:
             line.set('x2', f'{s+1}')
             line.set('y2', '0')
             line.set('stroke', color)
-            line.set('stroke-width', '1')
+            line.set('stroke-width', thickness)
 
         if texture == 'vertical':
             id = self.prepend_id_prefix(f'__vertical_texture_{clean_color}')
             pattern.set('id', id)
-            s = 5
+            s = 7
+            thickness = '2'
             if tactile:
                 s = 9
+                thickness = '1'
             pattern.set('width', f'{s}')
             pattern.set('height', f'{s}')
             line = ET.SubElement(pattern, 'line')
@@ -905,14 +909,16 @@ class Diagram:
             line.set('x2', '0')
             line.set('y2', f'{s+1}')
             line.set('stroke', color)
-            line.set('stroke-width', '1')
+            line.set('stroke-width', thickness)
 
         if texture == 'diagonal':
             id = self.prepend_id_prefix(f'__diagonal_texture_{clean_color}')
             pattern.set('id', id)
-            s = 7
+            s = 9
+            thickness = '1'
             if tactile:
                 s = 13
+                thickness = '1'
             pattern.set('width', f'{s}')
             pattern.set('height', f'{s}')
             for data in [[-1,1,1,-1], [-1,s+1,s+1,-1], [s-1,s+1,s+1,s-1]]:
@@ -920,14 +926,16 @@ class Diagram:
                 for field, value in zip(['x1','y1','x2','y2'], data):
                     line.set(field, str(value))
                 line.set('stroke', color)
-                line.set('stroke-width', '0.5')
+                line.set('stroke-width', thickness)
 
         if texture == 'backdiagonal':
             id = self.prepend_id_prefix(f'__backdiagonal_texture_{clean_color}')
             pattern.set('id', id)
-            s = 7
+            s = 9
+            thickness = '1'
             if tactile:
                 s = 13
+                thickness = '1'
             pattern.set('width', f'{s}')
             pattern.set('height', f'{s}')
             for data in [[s-1,-1,s+1,1], [-1,-1,s+1,s+1], [-1,s-1,1,s+1]]:
@@ -935,13 +943,13 @@ class Diagram:
                 for field, value in zip(['x1','y1','x2','y2'], data):
                     line.set(field, str(value))
                 line.set('stroke', color)
-                line.set('stroke-width', '0.5')
+                line.set('stroke-width', thickness)
 
         if texture == 'dot':
             id = self.prepend_id_prefix(f'__dot_texture_{clean_color}')
             pattern.set('id', id)
-            s = 6
-            dot_size = 1
+            s = 8
+            dot_size = 1.8
             if tactile:
                 s = 9
                 dot_size = 2
@@ -963,7 +971,7 @@ class Diagram:
         if texture == 'diamond':
             id = self.prepend_id_prefix(f'__diamond_texture_{clean_color}')
             pattern.set('id', id)
-            s = 2
+            s = 2.5
             if tactile:
                 s = 5
             t = s*math.sqrt(3)
