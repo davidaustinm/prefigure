@@ -50,11 +50,11 @@ def get_1d_attr(element):
     if element.get('stroke') is not None:
         d['stroke'] = get_color(element.get('stroke'))
     if element.get('stroke-opacity') is not None:
-        d['stroke-opacity'] = element.get('stroke-opacity')
+        d['stroke-opacity'] = un.valid_eval(element.get('stroke-opacity'))
     if element.get('opacity') is not None:
-        d['opacity'] = element.get('opacity')
+        d['opacity'] = un.valid_eval(element.get('opacity'))
     if element.get('thickness') is not None:
-        d['stroke-width'] = element.get('thickness')
+        d['stroke-width'] = un.valid_eval(element.get('thickness'))
     if element.get('miterlimit') is not None:
         d['stroke-miterlimit'] = element.get('miterlimit')
     if element.get('linejoin') is not None:
@@ -91,10 +91,10 @@ def get_2d_attr(element):
     else:
         d['fill'] = get_color(element.get('fill'))
         element.set('fill', d['fill'])
-        if element.get('fill-rule') is not None:
-            d['fill-rule'] = element.get('fill-rule')
-        if element.get('fill-opacity') is not None:
-            d['fill-opacity'] = element.get('fill-opacity')
+    if element.get('fill-rule') is not None:
+        d['fill-rule'] = element.get('fill-rule')
+    if element.get('fill-opacity') is not None:
+        d['fill-opacity'] = un.valid_eval(element.get('fill-opacity'))
     return d
 
 def cliptobbox(g_element, element, diagram):

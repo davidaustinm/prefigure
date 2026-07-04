@@ -313,7 +313,7 @@ StrokeAttributes =
     attribute outline {"yes"|"no"}?,
     TactileStrokeAttributes?
 
-TactileStrokeAttributes = 
+TactileStrokeAttributes =
     attribute tactile-stroke {text}?,
     attribute tactile-thickness {text}?,
     attribute tactile-miterlimit {text}?,
