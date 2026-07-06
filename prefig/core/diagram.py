@@ -561,7 +561,7 @@ class Diagram:
 
     # Here we parse the children of the given XML element
     # Resulting SVG elements will be placed below root
-    def parse(self, element = None, root = None, outline_status = None):
+    def parse(self, element = None, root = None, outline_group = None):
         if element is None:
             element = self.diagram_element
         if root is None:
@@ -599,14 +599,14 @@ class Diagram:
                 if attr.startswith(prefix):
                     child.set(attr[len(prefix):], value)
             try:
-                tags.parse_element(child, self, root, outline_status)
+                tags.parse_element(child, self, root, outline_group)
             except Exception as e:
                 log.error(f"Error in parsing element {child.tag}")
                 log.error(str(e))
                 return
             if (
                     child.get('annotate', 'no') == 'yes' and
-                    outline_status != 'add_outline'
+                    root.get('data-outline', 'no') == 'no'
             ):
                 tag = child.tag
                 if tag != 'group' and tag != 'repeat':
@@ -615,9 +615,11 @@ class Diagram:
                         if child.get(attrib, None) is not None:
                             annotation.set(attrib, child.get(attrib))
                     if annotation.get('text', None) is not None:
-                        annotation.set('text', label.evaluate_text(annotation.get('text')))
+                        annotation.set('text',
+                                       label.evaluate_text(annotation.get('text')))
                     if annotation.get('speech', None) is not None:
-                        annotation.set('speech', label.evaluate_text(annotation.get('speech')))
+                        annotation.set('speech',
+                                       label.evaluate_text(annotation.get('speech')))
                     self.add_annotation_to_branch(annotation)
 
     def ctm(self):

@@ -10,10 +10,7 @@ from . import CTM
 log = logging.getLogger('prefigure')
 
 # Process a rectangle tag
-def rectangle(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def rectangle(element, diagram, parent, outline_group=None):
 
     # An author may specifiy either the lower-left corner or the center
     try:
@@ -84,11 +81,11 @@ def rectangle(element, diagram, parent, outline_status):
     util.add_attr(path, util.get_2d_attr(element))
     util.cliptobbox(path, element, diagram)
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, path, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, path, parent)
         finish_outline(element, diagram, parent)
     else:
