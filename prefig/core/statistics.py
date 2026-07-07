@@ -9,7 +9,7 @@ from . import tags
 import logging
 log = logging.getLogger('prefigure')
 
-def scatter(element, diagram, parent, outline_status):
+def scatter(element, diagram, parent, outline_group):
     points = None
     data = element.get('data', None)
     if data is not None:
@@ -58,9 +58,9 @@ def scatter(element, diagram, parent, outline_status):
     element.set('parameter', 'point in __scatter_points')
     element.append(point_element)
 
-    tags.parse_element(element, diagram, parent, outline_status)
+    tags.parse_element(element, diagram, parent, outline_group)
 
-def histogram(element, diagram, parent, outline_status):
+def histogram(element, diagram, parent, outline_group):
     data = element.get('data', None)
     if data is None:
         log.error('A <histogram> needs a @data attribute')
@@ -102,5 +102,5 @@ def histogram(element, diagram, parent, outline_status):
     element.set('parameter', f"bin_num=0..{bins-1}")
     element.append(bin_element)
 
-    tags.parse_element(element, diagram, parent, outline_status)
+    tags.parse_element(element, diagram, parent, outline_group)
     
