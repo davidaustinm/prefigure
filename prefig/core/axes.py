@@ -349,7 +349,7 @@ class Axes():
                     el.set('offset', '(-2,2)')
 
             el.set('clear-background', self.clear_background)
-            label.label(el, diagram, parent, outline_status=None)
+            label.label(el, diagram, parent, outline_group=None)
 
         ylabel = element.get('ylabel')
         if ylabel is not None:
@@ -364,7 +364,7 @@ class Axes():
                 el.set('offset', '(2,-2)')
 
             el.set('clear-background', self.clear_background)
-            label.label(el, diagram, parent, outline_status=None)
+            label.label(el, diagram, parent, outline_group=None)
 
         
         for child in element:
@@ -614,7 +614,7 @@ class Axes():
                     xlabel.set('offset', '(0,-7)')
 
             xlabel.set('clear-background', self.clear_background)
-            label.label(xlabel, diagram, parent, outline_status=None)
+            label.label(xlabel, diagram, parent, outline_group=None)
 
             p = diagram.transform((x*h_scale,self.y_axis_location))
             line_el = line.mk_line((p[0],
@@ -724,7 +724,7 @@ class Axes():
                     ylabel.set('offset', '(-7,0)')
 
             ylabel.set('clear-background', self.clear_background)
-            label.label(ylabel, diagram, parent, outline_status=None)
+            label.label(ylabel, diagram, parent, outline_group=None)
             p = diagram.transform((self.x_axis_location, y*v_scale))
             line_el = line.mk_line((p[0]-self.v_tick_direction*self.ticksize[0],
                                     p[1]),
@@ -777,12 +777,7 @@ def label_text(x, commas, diagram):
     text = text + suffix
     return r'\text{' + prefix + text + r'}'
 
-def tick_mark(element, diagram, parent, outline_status):
-    # tick marks are in the background so there's no need to worry
-    # about the outline_status
-    if outline_status == 'finish_outline':
-        return
-
+def tick_mark(element, diagram, parent, outline_group):
     axis = element.get('axis', 'horizontal')
     tactile = diagram.output_format() == 'tactile'
     location = un.valid_eval(element.get('location', '0'))
@@ -853,13 +848,16 @@ def tick_mark(element, diagram, parent, outline_status):
 
     line_el.set('stroke-width', thickness)
     line_el.set('stroke', stroke)
+
+    has_label = label.has_label(element)
+    if has_label:
+        parent = ET.SubElement(parent, 'g')
+        diagram.add_id(parent, element.get('id'))
+    else:
+        diagram.add_id(line_el, element.get('id'))
     parent.append(line_el)
 
-    try:
-        el_text = element.text.strip()
-    except:
-        el_text = None
-    if (el_text is not None and len(el_text) > 0) or len(element) > 0:
+    if has_label:
         el_copy = copy.deepcopy(element)
         if axis == 'horizontal':
             if tactile:
@@ -898,16 +896,14 @@ def tick_mark(element, diagram, parent, outline_status):
                 el_copy.set('offset', off)
         el_copy.set("user-coords", "no")
         el_copy.set("anchor", util.pt2str(p, spacer=","))
-        label.label(el_copy, diagram, parent, outline_status)
+        label.label(el_copy, diagram, parent, outline_group)
 
 
 axes_object = None
 def get_axes():
     return axes_object
 
-def axes(element, diagram, parent, outline_status):
-    if outline_status == "finish_outline":
-        return
+def axes(element, diagram, parent, outline_group):
     global axes_object
     axes_object = Axes(element, diagram, parent)
     
