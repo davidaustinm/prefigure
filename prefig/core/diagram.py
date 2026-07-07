@@ -233,7 +233,10 @@ class Diagram:
             self.ids[element.tag] = self.ids.get(element.tag, -1) + 1
             result_id = '__'+element.tag+'-'+str(self.ids[element.tag])+suffix
         else:
-            result_id = id + suffix
+            if not id.endswith(suffix):
+                result_id = id + suffix
+            else:
+                result_id = id
         result_id = self.prepend_id_prefix(result_id)
         return result_id
 

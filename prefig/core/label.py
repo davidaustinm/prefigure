@@ -35,6 +35,13 @@ def init(format, environment):
         braille_translator = label_tools.LocalLouisBrailleTranslator()
         math_labels = label_tools.LocalMathLabels(format)
 
+# Is there a label associated with this element
+def has_label(element):
+    text = element.text
+    has_text = text is not None and len(text.strip()) > 0
+    all_comments = all([subel.tag is ET.Comment for subel in element])
+    return has_text or not all_comments
+
 def add_macros(macros):
     math_labels.add_macros(macros)
 
