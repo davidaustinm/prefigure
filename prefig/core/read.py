@@ -6,7 +6,7 @@ from . import user_namespace as un
 import logging
 log = logging.getLogger('prefigure')
 
-def read(element, diagram, parent, outline_status):
+def read(element, diagram, parent, outline_group):
     filename = element.get('filename', None)
     if filename is None:
         log.error('A <read> element needs a @filename attribute')
