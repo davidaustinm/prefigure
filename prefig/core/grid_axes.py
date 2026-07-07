@@ -112,10 +112,10 @@ def find_linear_positions(r):
     return np.linspace(r[0], r[2], N+1)
 
 # Add a graphical element for a grid.  All the grid lines sit inside a group
-def grid(element, diagram, parent, outline_status):
+def grid(element, diagram, parent, outline_group):
     basis = element.get('basis')
     if basis is not None:
-        grid_with_basis(element, diagram, parent, basis, outline_status)
+        grid_with_basis(element, diagram, parent, basis, outline_group)
         return
 
     thickness = element.get('thickness', '1')
@@ -268,7 +268,7 @@ def grid(element, diagram, parent, outline_status):
 
 # Adds both a grid and axes with spacings found automatically
 
-def grid_axes(element, diagram, parent, outline_status):
+def grid_axes(element, diagram, parent, outline_group):
     id = element.get('id', 'grid-axes')
     id = diagram.prepend_id_prefix(id)
     group = ET.SubElement(parent, 'g',
@@ -289,7 +289,7 @@ def grid_axes(element, diagram, parent, outline_status):
     if element.get('annotate', 'yes') == 'yes':
         diagram. add_default_annotation(group_annotation)
     element.set('id', grid_id)
-    grid(element, diagram, group, outline_status)
+    grid(element, diagram, group, outline_group)
 
     annotation = ET.Element('annotation')
     annotation.set('ref', grid_id)
@@ -297,7 +297,7 @@ def grid_axes(element, diagram, parent, outline_status):
     group_annotation.append(annotation)
 
     element.set('id', axes_id)
-    axes.axes(element, diagram, group, outline_status)
+    axes.axes(element, diagram, group, outline_group)
 
     annotation = ET.Element('annotation')
     annotation.set('ref', axes_id)
@@ -305,10 +305,7 @@ def grid_axes(element, diagram, parent, outline_status):
     group_annotation.append(annotation)
 
 # construct a grid with a given basis
-def grid_with_basis(element, diagram, parent, basis, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def grid_with_basis(element, diagram, parent, basis, outline_group):
     try:
         v1, v2 = un.valid_eval(basis)
     except:
@@ -368,13 +365,12 @@ def grid_with_basis(element, diagram, parent, basis, outline_status):
 
     util.add_attr(coords, util.get_1d_attr(element))
     coords.set('d', ' '.join(cmds))
-#    coords.set('type', 'grid with basis')
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, coords, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, coords, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+          or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, coords, parent)
         finish_outline(element, diagram, parent)
     else:
