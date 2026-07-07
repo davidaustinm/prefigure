@@ -10,10 +10,7 @@ from . import arrow
 log = logging.getLogger('prefigure')
 separation_tolerance = 5
 
-def parametric_curve(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def parametric_curve(element, diagram, parent, outline_group):
 
     try:
         f = un.valid_eval(element.get('function'))
@@ -92,11 +89,11 @@ def parametric_curve(element, diagram, parent, outline_status):
             arrow_angles=element.get('arrow-angles', None)
         )
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, path, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+          or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, path, parent)
         finish_outline(element, diagram, parent)
     else:
