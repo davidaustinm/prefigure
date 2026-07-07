@@ -126,9 +126,7 @@ def get_alignment_from_direction(direction):
 # to be processed together.  As a result, labels will be added to
 # the diagram after all the other components have been processed.
 
-def label(element, diagram, parent, outline_status = None):
-    if outline_status == 'add_outline':  # we're not ready for labels
-        return
+def label(element, diagram, parent, outline_group=None):
 
     # Define a group to hold the label.  
     group = ET.Element('g')
@@ -756,7 +754,7 @@ def mk_m_element(m_tag, diagram, label_group):
 
 # add a caption to a tactile diagram in the upper-left corner
 #   e.g. "Figure 2.3.4"
-def caption(element, diagram, parent, outline_status):
+def caption(element, diagram, parent, outline_group):
     if diagram.caption_suppressed():
         return
     text = element.text
