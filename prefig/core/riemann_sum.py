@@ -10,7 +10,7 @@ log = logging.getLogger('prefigure')
 
 # Add a graphical element describing a Riemann sum
 # left, right, midpoint, trapezoid, simpsons, upper, lower, samples
-def riemann_sum(element, diagram, parent, outline_status):
+def riemann_sum(element, diagram, parent, outline_group):
     diagram.add_id(element, element.get('id'))
     element_id = element.get('id')
 
@@ -144,6 +144,6 @@ def riemann_sum(element, diagram, parent, outline_status):
             interval_annotation.set('ref', area.get('id'))
             interval_annotation.set('text', label.evaluate_text(interval_text))
 
-    group.group(element, diagram, parent, outline_status)
+    group.group(element, diagram, parent, outline_group)
     if annotation is not None:
         diagram.pop_from_annotation_branch()
