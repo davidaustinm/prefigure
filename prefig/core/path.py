@@ -30,11 +30,7 @@ def is_path_tag(tag):
              
 
 # Process a path tag into a graphical component
-def path(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
-
+def path(element, diagram, parent, outline_group):
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
@@ -108,14 +104,13 @@ def path(element, diagram, parent, outline_status):
             path
         )
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, path, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, path, parent)
         finish_outline(element, diagram, parent)
-
     else:
         parent.append(path)
 
