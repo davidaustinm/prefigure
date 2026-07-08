@@ -44,11 +44,7 @@ def parse_points(element):
 
 # Process a polygon tag into a graphical component
 def polygon(element, diagram, parent,
-            outline_status, points = None, arrow_points = None):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
-
+            outline_group, points = None, arrow_points = None):
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
             element.set('stroke', 'black')
@@ -152,18 +148,17 @@ def polygon(element, diagram, parent,
             arrow_angles=element.get('arrow-angles', None)
         )
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, path, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, path, parent)
         finish_outline(element, diagram, parent)
-
     else:
         parent.append(path)
 
-def spline(element, diagram, parent, outline_status):
+def spline(element, diagram, parent, outline_group):
     points = element.get('points', None)
     if points is None:
         log.error('A spline element needs a @points attribute')
@@ -218,21 +213,10 @@ def spline(element, diagram, parent, outline_status):
             if isinstance(arrow_curve[0], np.ndarray) == False:
                 arrow_curve = list(zip(arrow_t, arrow_curve))
     
-    polygon(element, diagram, parent, outline_status,
+    polygon(element, diagram, parent, outline_group,
             points=curve, arrow_points = arrow_curve)
 
-def triangle(element, diagram, parent, outline_status):
-    '''
-    if outline_status == 'finish_outline':
-        polygon(element, diagram, parent, outline_status)
-        for child in element:
-            if child.tag == 'point':
-                point.point(element, diagram, parent, outline_status)
-            if child.tag == 'label':
-                label.label(element, diagram, parent, outline_status)
-        return
-    '''
-
+def triangle(element, diagram, parent, outline_group):
     try:
         vertices = un.valid_eval(element.get('vertices'))
     except:
@@ -308,7 +292,7 @@ def triangle(element, diagram, parent, outline_status):
                 m_tag = ET.SubElement(label_el, 'm')
                 m_tag.text = labels[i]
 
-    group.group(element, diagram, parent, outline_status)
+    group.group(element, diagram, parent, outline_group)
 
 def finish_outline(element, diagram, parent):
     diagram.finish_outline(element,
