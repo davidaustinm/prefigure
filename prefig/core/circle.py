@@ -13,10 +13,7 @@ from . import label
 log = logging.getLogger('prefigure')
 
 # Add graphical elements related to circles
-def circle(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def circle(element, diagram, parent, outline_group):
 
     try:
         center = un.valid_eval(element.get('center'))
@@ -55,37 +52,24 @@ def circle(element, diagram, parent, outline_status):
     util.add_attr(circle, util.get_2d_attr(element))
     util.cliptobbox(circle, element, diagram)
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, circle, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, circle, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, circle, parent)
         finish_outline(element, diagram, parent)
     else:
         parent.append(circle)
 
 def finish_outline(element, diagram, parent):
-    original_parent = parent
-    parent = add_label(element, diagram, parent)
-
-    # if the parent has changed, then we've added a label
-    # and need to remove the id's below the parent
-    if original_parent != parent:
-        for child in parent:
-            if child.get('id', None) is not None:
-                child.attrib.pop('id')
-
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),
                            element.get('fill'),
                            parent)    
 
-def ellipse(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def ellipse(element, diagram, parent, outline_group):
 
     try:
         center = un.valid_eval(element.get('center'))
@@ -128,20 +112,17 @@ def ellipse(element, diagram, parent, outline_status):
     util.add_attr(circle, util.get_2d_attr(element))
     util.cliptobbox(circle, element, diagram)
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, circle, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, circle, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+          or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, circle, parent)
         finish_outline(element, diagram, parent)
     else:
         parent.append(circle)
 
-def arc(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def arc(element, diagram, parent, outline_group):
 
     if diagram.output_format() == 'tactile':
         if element.get('stroke') is not None:
@@ -237,11 +218,11 @@ def arc(element, diagram, parent, outline_status):
             arrow_angles=element.get('arrow-angles', None)
         )
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, arc, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, arc, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, arc, parent)
         finish_outline(element, diagram, parent)
     else:
@@ -273,10 +254,8 @@ def make_path(diagram,
     return cmds
 
 # Alexei's angle marker
-def angle(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def angle(element, diagram, parent, outline_group):
+    has_label = label.has_label(element)
 
     element.set('stroke', element.get('stroke', 'black'))
     if diagram.output_format() == 'tactile':
@@ -365,7 +344,12 @@ def angle(element, diagram, parent, outline_status):
             element.set('alignment', 'east')
 
     arc = ET.Element('path')
-    diagram.add_id(arc, element.get('id'))
+    if has_label:
+        parent = ET.SubElement(parent, 'g')
+        diagram.add_id(parent, element.get('id'))
+        add_label(element, diagram, parent)
+    else:
+        diagram.add_id(arc, element.get('id'))
     diagram.register_svg_element(element, arc)
 
     util.add_attr(arc, util.get_2d_attr(element))
@@ -417,53 +401,25 @@ def angle(element, diagram, parent, outline_status):
         d = ' '.join(cmds)
     arc.set('d', d)
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, arc, parent, outline_width=4)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, arc, outline_group, outline_width=4)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, arc, parent, outline_width=4)
         finish_outline(element, diagram, parent)
     else:
-        original_parent = parent
-        parent = add_label(element, diagram, parent)
         parent.append(arc)
 
-        if original_parent == parent:
-            # no label has been added so we're done
-            return
-        # if a label has been added, then remove the id's below parent <g>
-        if element.get('id', 'none') == parent.get('id'):
-            element.attrib.pop('id')
-        for child in parent:
-            if child.get('id', None) is not None:
-                child.attrib.pop('id')
-
 def add_label(element, diagram, parent):
-    # Is there a label associated with the marker?
-    text = element.text
+    # Now we'll create a new XML element describing the label
+    el = copy.deepcopy(element)
+    el.tag = 'label'
+    el.set('alignment', element.get('alignment'))
+    el.set('p', element.get('label-location'))
+    el.set('user-coords', 'no')
+    if element.get('offset', None) is not None:
+        el.set('offset', element.get('offset'))
 
-    # is there a label here?
-    has_text = text is not None and len(text.strip()) > 0
-    all_comments = all([subel.tag is ET.Comment for subel in element])
-    if has_text or not all_comments:
-        # If there's a label, we'll bundle the label and the angle mark in a group
-        group = ET.SubElement(parent, 'g')
-        diagram.add_id(group, element.get('id'))
-#        group.set('type', 'labeled-angle-marker')
-
-        # Now we'll create a new XML element describing the label
-        el = copy.deepcopy(element)
-        el.tag = 'label'
-        el.set('alignment', element.get('alignment'))
-        el.set('p', element.get('label-location'))
-        el.set('user-coords', 'no')
-        if element.get('offset', None) is not None:
-            el.set('offset', element.get('offset'))
-
-        # add the label graphical element to the group
-        label.label(el, diagram, group)
-        return group
-    else:
-        return parent
-
+    # add the label graphical element to the group
+    label.label(el, diagram, parent)
