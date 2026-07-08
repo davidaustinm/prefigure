@@ -9,9 +9,7 @@ from . import arrow
 
 log = logging.getLogger('prefigure')
 
-def de_solve(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        return
+def de_solve(element, diagram, parent, outline_group):
 
     try:
         f = un.valid_eval(element.get('function'))
@@ -96,10 +94,7 @@ def de_solve(element, diagram, parent, outline_status):
         return
     un.enter_namespace(name, solution)
 
-def plot_de_solution(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def plot_de_solution(element, diagram, parent, outline_group):
     if element.get('function') is not None:
         element.set('name', '__de_solution')
         de_solve(element, diagram, parent, None)
@@ -193,11 +188,11 @@ def plot_de_solution(element, diagram, parent, outline_status):
     element.set('cliptobbox', element.get('cliptobbox', 'yes'))
     util.cliptobbox(path, element, diagram)
     
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, path, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, path, parent)
         finish_outline(element, diagram, parent)
     else:
