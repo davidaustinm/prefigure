@@ -9,8 +9,8 @@ from .import math_utilities as m_util
 log = logging.getLogger('prefigure')
 
 # add an implicit curve to a diagram
-def implicit_curve(element, diagram, parent, outline_status):
-    ImplicitCurve(element, diagram, parent, outline_status)
+def implicit_curve(element, diagram, parent, outline_group):
+    ImplicitCurve(element, diagram, parent, outline_group)
 
 class QuadTree():
     def __init__(self, b, d):
@@ -94,11 +94,7 @@ class LevelSet():
         return self.f(p[0], p[1]) - self.k
 
 class ImplicitCurve():
-    def __init__(self, element, diagram, parent, outline_status):
-        if outline_status == "finish_outline":
-            finish_outline(element, diagram, parent)
-            return
-
+    def __init__(self, element, diagram, parent, outline_group):
         if diagram.output_format() == 'tactile':
             element.set('stroke', 'black')
         else:
@@ -141,11 +137,11 @@ class ImplicitCurve():
 
         util.add_attr(path, util.get_1d_attr(element))
 
-        if outline_status == 'add_outline':
-            diagram.add_outline(element, path, parent)
-            return
-
-        if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+        if outline_group is not None:
+            diagram.add_outline(element, path, outline_group)
+            finish_outline(element, diagram, parent)
+        elif (element.get('outline', 'no') == 'yes'
+                or diagram.output_format() == 'tactile'):
             diagram.add_outline(element, path, parent)
             finish_outline(element, diagram, parent)
         else:
