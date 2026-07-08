@@ -161,25 +161,19 @@ class CTM:
     def copy(self):
         return copy.deepcopy(self) # CTM(copy.deepcopy(self.ctm))
 
-def transform_group(element, diagram, root, outline_status):
-    if outline_status != "finish_outline":
-        diagram.ctm().push()
-        element.tag = "group"
+def transform_group(element, diagram, root, outline_group):
+    diagram.ctm().push()
+    element.tag = "group"
 
-    diagram.parse(element, root=root, outline_status=outline_status)
+    diagram.parse(element, root=root, outline_group = outline_group)
 
-    if outline_status != "finish_outline":
-        diagram.ctm().pop()
+    diagram.ctm().pop()
 
-def transform_center(element, diagram, root, outline_status):
-    if outline_status == "finish_outline":
-        return
+def transform_center(element, diagram, root, outline_group):
     bbox = diagram.bbox()
     diagram.ctm().translate((bbox[0]+bbox[2])/2, (bbox[1]+bbox[3])/2)
 
-def transform_translate(element, diagram, root, outline_status):
-    if outline_status == "finish_outline":
-        return
+def transform_translate(element, diagram, root, outline_group):
     try:
         p = un.valid_eval(element.get("by"))
     except:
@@ -187,9 +181,7 @@ def transform_translate(element, diagram, root, outline_status):
         return
     diagram.ctm().translate(*p)
 
-def transform_translate3d(element, diagram, root, outline_status):
-    if outline_status == "finish_outline":
-        return
+def transform_translate3d(element, diagram, root, outline_group):
     try:
         p = un.valid_eval(element.get("by"))
     except:
@@ -197,9 +189,7 @@ def transform_translate3d(element, diagram, root, outline_status):
         return
     diagram.ctm().translate3d(*p)
 
-def transform_basis(element, diagram, root, outline_status):
-    if outline_status == "finish_outline":
-        return
+def transform_basis(element, diagram, root, outline_group):
     try:
         v1, v2 = un.valid_eval(element.get("basis"))
     except:
@@ -208,9 +198,7 @@ def transform_basis(element, diagram, root, outline_status):
     matrix = np.array([v1, v2]).T
     diagram.ctm().apply_matrix(matrix)
 
-def transform_rotate(element, diagram, root, outline_status):
-    if outline_status == "finish_outline":
-        return
+def transform_rotate(element, diagram, root, outline_group):
     try:
         angle = un.valid_eval(element.get("by"))
     except:
@@ -232,9 +220,7 @@ def transform_rotate(element, diagram, root, outline_status):
     ctm.rotate(angle, units=units)
     ctm.translate(*(-p))
 
-def transform_scale(element, diagram, root, outline_status):
-    if outline_status == "finish_outline":
-        return
+def transform_scale(element, diagram, root, outline_group):
     try:
         s = un.valid_eval(element.get("by"))
     except:
@@ -247,9 +233,7 @@ def transform_scale(element, diagram, root, outline_status):
     else:
         ctm.scale(s, s)
 
-def transform_scale3d(element, diagram, root, outline_status):
-    if outline_status == "finish_outline":
-        return
+def transform_scale3d(element, diagram, root, outline_group):
     try:
         s = un.valid_eval(element.get("by"))
     except:
@@ -258,9 +242,7 @@ def transform_scale3d(element, diagram, root, outline_status):
 
     diagram.ctm().scale3d(*s)
 
-def set_eye(element, diagram, root, outline_status):
-    if outline_status == "finish_outline":
-        return
+def set_eye(element, diagram, root, outline_group):
     try:
         eye = un.valid_eval(element.get("eye"))
     except:
