@@ -11,13 +11,7 @@ from . import label
 log = logging.getLogger('prefigure')
 
 # Add a graphical element describing a point
-def point(element, diagram, parent, outline_status = None):
-    # if we're outlining the shape and have already added the outline,
-    # we'll just add the point to complete the task
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
-
+def point(element, diagram, parent, outline_group):
     # determine the location and size of the point from the XML element
     try:
         p = un.valid_eval(element.get('p'))
@@ -48,7 +42,15 @@ def point(element, diagram, parent, outline_status = None):
 
     # by default, we'll assume it's a circle but we can change that later
     shape = ET.Element('circle')
-    diagram.add_id(shape, element.get('id'))
+    has_label = label.has_label(element)
+    if has_label:
+        group = ET.SubElement(parent, 'g')
+        parent = group
+        diagram.add_id(group, element.get('id'))
+        diagram.register_svg_element(element, parent)
+    else:
+        diagram.add_id(shape, element.get('id'))
+        diagram.register_svg_element(element, shape)
 
     # now we'll work out the actual shape of the point
     style = util.get_attr(element, 'style', 'circle')
@@ -117,31 +119,18 @@ def point(element, diagram, parent, outline_status = None):
     util.add_attr(shape, util.get_2d_attr(element))
     util.cliptobbox(shape, element, diagram)
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, shape, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
-        diagram.add_outline(element, shape, parent)
+    if outline_group is not None:
+        diagram.add_outline(element, shape, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
+        diagram.add_outline(element, shape, outline_group)
         finish_outline(element, diagram, parent)
     else:
-        original_parent = parent
-        parent = add_label(element, diagram, parent)
         parent.append(shape)
 
-        # no label has been added if the parent hasn't changed
-        if original_parent == parent:
-            diagram.register_svg_element(element, shape)
-            return
-
-        diagram.register_svg_element(element, parent)
-        # if there is a label, then the id is on the outer <g> element
-        # so we need to remove it from the children
-        if element.get('id', 'none') == parent.get('id'):
-            element.attrib.pop('id')
-        for child in parent:
-            if child.get('id', None) is not None:
-                child.attrib.pop('id')
+    if has_label:
+        add_label(element, diagram, parent)
 
 def inside(p, center, size, style, ctm, buffer=0):
     p = ctm.transform(p)
@@ -159,14 +148,6 @@ def inside(p, center, size, style, ctm, buffer=0):
     return False
 
 def finish_outline(element, diagram, parent):
-    original_parent = parent
-    parent = add_label(element, diagram, parent)
-
-    # if we've added a label, remove the id's from element under the parent <g>
-    if original_parent != parent:
-        for child in parent:
-            if child.get('id', None) is not None:
-                child.attrib.pop('id')
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),
@@ -174,57 +155,43 @@ def finish_outline(element, diagram, parent):
                            parent)
 
 def add_label(element, diagram, parent):
-    # Is there a label associated with point?
-    text = element.text
+    # We'll create a new XML element describing the label
+    el = copy.deepcopy(element)
+    el.tag = 'label'
 
-    # is there a label here?
-    has_text = text is not None and len(text.strip()) > 0
-    all_comments = all([subel.tag is ET.Comment for subel in element])
-    if has_text or not all_comments:    
-        # If there's a label, we'll bundle the label and point in a group
-        group = ET.SubElement(parent, 'g')
-        diagram.add_id(group, element.get('id'))
+    if element.get('alignment', '').strip() == 'e':
+        element.set('alignment', 'east')
+    alignment = util.get_attr(element, 'alignment', 'ne')
+    el.set('alignment', alignment)
+    size = element.get('size', '4')
+    displacement = label.alignment_displacement[alignment]
+    el.set('anchor', util.get_attr(element, 'p', '(0,0)'))
 
-        # Now we'll create a new XML element describing the label
-        el = copy.deepcopy(element)
-        el.tag = 'label'
-
-        if element.get('alignment', '').strip() == 'e':
-            element.set('alignment', 'east')
-        alignment = util.get_attr(element, 'alignment', 'ne')
-        el.set('alignment', alignment)
-        size = element.get('size', '4')
-        displacement = label.alignment_displacement[alignment]
-        el.set('anchor', util.get_attr(element, 'p', '(0,0)'))
-
-        # Determine how far to offset the label
-        # TODO:  improve tactile offsets
-        o = float(size) + 1
-        offset = [2*o*(displacement[0]+0.5),
-                  2*o*(displacement[1]-0.5)]
-        if diagram.output_format() == 'tactile':
+    # Determine how far to offset the label
+    # TODO:  improve tactile offsets
+    o = float(size) + 1
+    offset = [2*o*(displacement[0]+0.5),
+              2*o*(displacement[1]-0.5)]
+    if diagram.output_format() == 'tactile':
+        if offset[0] < 0:
+            offset[0] -= 6
+    else:  # push regular labels a bit more in cardinal directions
+        cardinal_push = 3
+        if abs(offset[0]) < 1e-14:
+            if offset[1] > 0:
+                offset[1] += cardinal_push
+            if offset[1] < 0:
+                offset[1] -= cardinal_push
+        if abs(offset[1]) < 1e-14:
+            if offset[0] > 0:
+                offset[0] += cardinal_push
             if offset[0] < 0:
-                offset[0] -= 6
-        else:  # push regular labels a bit more in cardinal directions
-            cardinal_push = 3
-            if abs(offset[0]) < 1e-14:
-                if offset[1] > 0:
-                    offset[1] += cardinal_push
-                if offset[1] < 0:
-                    offset[1] -= cardinal_push
-            if abs(offset[1]) < 1e-14:
-                if offset[0] > 0:
-                    offset[0] += cardinal_push
-                if offset[0] < 0:
-                    offset[0] -= cardinal_push
+                offset[0] -= cardinal_push
         
-        relative_offset = element.get('offset', None)
-        if relative_offset is not None:
-            offset += un.valid_eval(relative_offset)
-        el.set('abs-offset', util.np2str(offset))
+    relative_offset = element.get('offset', None)
+    if relative_offset is not None:
+        offset += un.valid_eval(relative_offset)
+    el.set('abs-offset', util.np2str(offset))
 
-        # add the label graphical element to the group
-        label.label(el, diagram, group)
-        return group
-    else:
-        return parent
+    # add the label graphical element to the group
+    label.label(el, diagram, parent)

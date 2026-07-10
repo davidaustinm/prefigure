@@ -4,9 +4,10 @@ import copy
 
 log = logging.getLogger('prefigure')
 
-def annotations(element, diagram, parent, outline_status):
+def annotations(element, diagram, parent, outline_group):
     # tactile diagrams have no annotations
-    if diagram.output_format() == 'tactile' and diagram.environment != 'pyodide':
+    if (diagram.output_format() == 'tactile'
+            and diagram.environment != 'pyodide'):
         return
 
     # 4/11/26:  use the top-level annotations element as the top-level
@@ -16,7 +17,7 @@ def annotations(element, diagram, parent, outline_status):
         element.set('ref', 'figure')
         root = ET.Element("annotations")
         root.append(element)
-        annotations(root, diagram, parent, outline_status)
+        annotations(root, diagram, parent, outline_group)
         return
     # traverse the annotation tree and create the XML annotation output
     # We first add default annotations, such as grid-axes

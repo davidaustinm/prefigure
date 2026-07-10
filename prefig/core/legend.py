@@ -15,11 +15,10 @@ log = logging.getLogger('prefigure')
 # as they may not be a good practice for tactile diagrams.
 
 class Legend:
-    def __init__(self, element, diagram, parent, outline_status):
+    def __init__(self, element, diagram, parent, outline_group):
         self.element = element
         self.diagram = diagram
         self.parent = parent
-        self.outline = outline_status == 'add_outline'
         self.tactile = diagram.output_format() == 'tactile'
 
         # we will put everything in a group and apply a final transform to it
@@ -332,12 +331,6 @@ class Legend:
             y += label_dims[1] + interline
 
         
-def legend(element, diagram, parent, outline_status):
-    
-    # if we're finishing outline, we'll wait until
-    # we process the legend at the end
-    if outline_status == 'finish_outline':
-        return
-
-    Legend(element, diagram, parent, outline_status)
+def legend(element, diagram, parent, outline_group):
+    Legend(element, diagram, parent, outline_group)
 

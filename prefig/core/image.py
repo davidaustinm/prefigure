@@ -16,16 +16,14 @@ type_dict = {'jpg':'jpeg',
              'gif':'gif',
              'svg':'svg'}
 
-# Allows a block of XML to repeat with a changing parameter
-
-def image(element, diagram, parent, outline_status):
+def image(element, diagram, parent, outline_group):
     if len(element) == 0:
         log.error("An <image> must contain content to replace the image in a tactile build")
         return;
     
     if diagram.output_format() == 'tactile':
         element.tag = 'group'
-        group.group(element, diagram, parent, outline_status)
+        group.group(element, diagram, parent, outline_group)
         return
         
     source = element.get('source', None)

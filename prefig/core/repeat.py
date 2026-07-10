@@ -31,7 +31,7 @@ epub_dict = {'(': 'p',
 
 # Allows a block of XML to repeat with a changing parameter
 
-def repeat(element, diagram, parent, outline_status):
+def repeat(element, diagram, parent, outline_group):
     try:
         parameter = element.get('parameter')
         fields = parameter.split('=')
@@ -86,19 +86,21 @@ def repeat(element, diagram, parent, outline_status):
             definition.append(copy.deepcopy(child))
         
     annotation = None
-    if element_cp.get('annotate', 'no') == 'yes' and outline_status != 'add_outline':
+    if (element_cp.get('annotate', 'no') == 'yes'
+            and parent.get('data-outline', 'no') == 'no'):
         annotation = ET.Element('annotation')
         for attrib in ['id', 'text', 'circular', 'sonify', 'speech']:
             if element_cp.get(attrib, None) is not None:
                 annotation.set(attrib, element_cp.get(attrib))
         if annotation.get('text', None) is not None:
-            annotation.set('text', label.evaluate_text(annotation.get('text')))
+            annotation.set('text',
+                           label.evaluate_text(annotation.get('text')))
         if annotation.get('speech', None) is not None:
-            annotation.set('speech', label.evaluate_text(annotation.get('speech')))
+            annotation.set('speech',
+                           label.evaluate_text(annotation.get('speech')))
         diagram.push_to_annotation_branch(annotation)
 
-    #diagram.parse(element, parent, outline_status)
-    group.group(element, diagram, parent, outline_status)
+    group.group(element, diagram, parent, outline_group)
 
     if annotation is not None:
         diagram.pop_from_annotation_branch()

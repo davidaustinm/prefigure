@@ -35,6 +35,13 @@ def init(format, environment):
         braille_translator = label_tools.LocalLouisBrailleTranslator()
         math_labels = label_tools.LocalMathLabels(format)
 
+# Is there a label associated with this element
+def has_label(element):
+    text = element.text
+    has_text = text is not None and len(text.strip()) > 0
+    all_comments = all([subel.tag is ET.Comment for subel in element])
+    return has_text or not all_comments
+
 def add_macros(macros):
     math_labels.add_macros(macros)
 
@@ -119,9 +126,7 @@ def get_alignment_from_direction(direction):
 # to be processed together.  As a result, labels will be added to
 # the diagram after all the other components have been processed.
 
-def label(element, diagram, parent, outline_status = None):
-    if outline_status == 'add_outline':  # we're not ready for labels
-        return
+def label(element, diagram, parent, outline_group=None):
 
     # Define a group to hold the label.  
     group = ET.Element('g')
@@ -749,7 +754,7 @@ def mk_m_element(m_tag, diagram, label_group):
 
 # add a caption to a tactile diagram in the upper-left corner
 #   e.g. "Figure 2.3.4"
-def caption(element, diagram, parent, outline_status):
+def caption(element, diagram, parent, outline_group):
     if diagram.caption_suppressed():
         return
     text = element.text

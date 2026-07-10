@@ -9,11 +9,7 @@ from . import utilities as util
 log = logging.getLogger('prefigure')
 
 # Area under a graph and between two graphs
-def area_between_curves(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
-
+def area_between_curves(element, diagram, parent, outline_group):
     polar = element.get('coordinates', 'cartesian') == 'polar'
     util.set_attr(element, 'stroke', 'black')
     util.set_attr(element, 'fill', 'lightgray')
@@ -92,21 +88,21 @@ def area_between_curves(element, diagram, parent, outline_status):
     path.set('d', d)
     util.add_attr(path, util.get_2d_attr(element))
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, path, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, path, parent)
         finish_outline(element, diagram, parent)
     else:
         parent.append(path)
 
-def area_under_curve(element, diagram, parent, outline_status):
+def area_under_curve(element, diagram, parent, outline_group):
     element.set('function1', element.get('function', 'none'))
     un.define('__zero(x) = 0')
     element.set('function2', '__zero')
-    area_between_curves(element, diagram, parent, outline_status)
+    area_between_curves(element, diagram, parent, outline_group)
 
 def finish_outline(element, diagram, parent):
     diagram.finish_outline(element,

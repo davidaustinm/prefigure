@@ -28,9 +28,7 @@ allowed_shapes = {
     'spline'
 }
 
-def define(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        return
+def define(element, diagram, parent, outline_group):
     for child in element:
         if child.tag not in allowed_shapes:
             log.error(f"In <define-shapes>, {child.tag} does not define a shape")
@@ -59,11 +57,7 @@ def define(element, diagram, parent, outline_status):
     
 
 # Process a shape tag
-def shape(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
-
+def shape(element, diagram, parent, outline_group):
     reference = element.get('shapes', None)
     if reference is None:
         reference = element.get('shape', None)
@@ -166,22 +160,17 @@ def shape(element, diagram, parent, outline_status):
 
     util.set_attr(element, 'thickness', '2')
     util.add_attr(path, util.get_2d_attr(element))
-#    path.set('type', 'rectangle')
     util.cliptobbox(path, element, diagram)
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if (
-            element.get('outline', 'no') == 'yes' or
-            diagram.output_format() == 'tactile'
-    ):
+    if outline_group is not None:
+        diagram.add_outline(element, path, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, path, parent)
         finish_outline(element, diagram, parent)
     else:
         parent.append(path)
-
         
 def finish_outline(element, diagram, parent):
     diagram.finish_outline(element,

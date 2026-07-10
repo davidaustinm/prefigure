@@ -11,7 +11,7 @@ log = logging.getLogger('prefigure')
 #    indicates the region in the current coordinate system
 #    into which the new bounding box maps.
 
-def coordinates(element, diagram, root, outline_status):
+def coordinates(element, diagram, root, outline_group):
     ctm, current_bbox = diagram.ctm_bbox()
     destination_str = element.get('destination', None)
     if destination_str is None:
@@ -93,7 +93,7 @@ def coordinates(element, diagram, root, outline_status):
     un.valid_eval(bbox_str, 'bbox')
 
     diagram.push_ctm([ctm, bbox])
-    diagram.parse(element, root, outline_status)
+    diagram.parse(element, root, outline_group)
     diagram.pop_ctm()
     diagram.pop_clippath()
     diagram.pop_scales()

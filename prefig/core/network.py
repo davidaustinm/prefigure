@@ -20,12 +20,7 @@ from . import point
 log = logging.getLogger('prefigure')
 
 # Add a graphical element describing a network
-def network(element, diagram, parent, outline_status):
-    # shouldn't go into this
-    if outline_status == 'finish_outline':
-        coords = diagram.get_network_coordinates(element)
-        coordinates.coordinates(coords, diagram, parent, outline_status)
-        return
+def network(element, diagram, parent, outline_group):
 
     # Is the network directed?
     directed = element.get('directed', 'no') == 'yes'
@@ -656,6 +651,6 @@ def network(element, diagram, parent, outline_status):
             label_element.set('clear-background', 'no')
 
     if auto_layout:
-        coordinates.coordinates(element, diagram, parent, outline_status)
+        coordinates.coordinates(element, diagram, parent, outline_group)
     else:
-        group.group(element,diagram, parent, outline_status)
+        group.group(element,diagram, parent, outline_group)

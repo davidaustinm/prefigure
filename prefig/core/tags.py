@@ -101,7 +101,7 @@ except:
 
 # apply the processing function based on the XML element's tag
 
-def parse_element(element, diagram, root, outline_status = None):
+def parse_element(element, diagram, root, outline_group = None):
     if element.tag is ET.Comment:
         return
     if path.is_path_tag(element.tag):
@@ -136,4 +136,4 @@ def parse_element(element, diagram, root, outline_status = None):
 
         log.debug(msg)
 
-    function(element, diagram, root, outline_status)
+    function(element, diagram, root, outline_group)

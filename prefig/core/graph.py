@@ -14,12 +14,7 @@ log = logging.getLogger('prefigure')
 # Graph of a 1-variable function
 # We'll set up an SVG path element by sampling the graph
 # on an equally spaced mesh
-def graph(element, diagram, parent, outline_status = None):
-    # if we've already added an outline, just plot the graph
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
-
+def graph(element, diagram, parent, outline_group = None):
     polar = element.get('coordinates', 'cartesian') == 'polar'
     # by default, the domain is the width of the bounding box
     bbox = diagram.bbox()
@@ -123,11 +118,11 @@ def graph(element, diagram, parent, outline_status = None):
     util.cliptobbox(path, element, diagram)
 
     # Finish up handling any requested outlines
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, path, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, path, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, path, parent)
         finish_outline(element, diagram, parent)
     else:

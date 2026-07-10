@@ -14,10 +14,7 @@ log = logging.getLogger('prefigure')
 np.seterr(divide="ignore", invalid="ignore")
 
 # Add a graphical element for slope fields
-def slope_field(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def slope_field(element, diagram, parent, outline_group):
 
     try:
         f = un.valid_eval(element.get('function'))
@@ -114,13 +111,10 @@ def slope_field(element, diagram, parent, outline_status):
             y += ry[1]
         x += rx[1]
 
-    group.group(element, diagram, parent, outline_status)
+    group.group(element, diagram, parent, outline_group)
 
 # Add a graphical element for slope fields
-def vector_field(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def vector_field(element, diagram, parent, outline_group):
 
     try:
         f = un.valid_eval(element.get('function'))
@@ -252,5 +246,5 @@ def vector_field(element, diagram, parent, outline_status):
         line_el.set('p2', utilities.pt2long_str(tip, spacer=','))
         element.append(line_el)
 
-    group.group(element, diagram, parent, outline_status)
+    group.group(element, diagram, parent, outline_group)
 

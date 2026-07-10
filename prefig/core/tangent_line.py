@@ -9,10 +9,7 @@ from . import line
 log = logging.getLogger('prefigure')
 
 # Add a graphical element representing the tangent line to a graph
-def tangent(element, diagram, parent, outline_status):
-    if outline_status == 'finish_outline':
-        finish_outline(element, diagram, parent)
-        return
+def tangent(element, diagram, parent, outline_group):
 
     # set up the linear function describing the tangent line
     try:
@@ -89,11 +86,11 @@ def tangent(element, diagram, parent, outline_status):
     element.set('cliptobbox', 'yes')
     util.cliptobbox(line_el, element, diagram)
 
-    if outline_status == 'add_outline':
-        diagram.add_outline(element, line_el, parent)
-        return
-
-    if element.get('outline', 'no') == 'yes' or diagram.output_format() == 'tactile':
+    if outline_group is not None:
+        diagram.add_outline(element, line_el, outline_group)
+        finish_outline(element, diagram, parent)
+    elif (element.get('outline', 'no') == 'yes'
+            or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, line_el, parent)
         finish_outline(element, diagram, parent)
     else:

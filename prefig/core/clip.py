@@ -5,7 +5,7 @@ from . import user_namespace as un
 
 log = logging.getLogger('prefigure')
 
-def clip(element, diagram, parent, outline_status):
+def clip(element, diagram, parent, outline_group):
     shape_ref = element.get('shape', None)
     if shape_ref is None:
         log.error("A <clip> tag needs a @shape attribute")
@@ -23,7 +23,10 @@ def clip(element, diagram, parent, outline_status):
 
     diagram.add_reusable(clip)
 
+    outline_group = ET.SubElement(outline_group, 'g')
+    outline_group.set('clip-path', r'url(#{})'.format(clip.get('id')))
+
     group = ET.SubElement(parent, 'g')
     group.set('clip-path', r'url(#{})'.format(clip.get('id')))
 
-    diagram.parse(element, group, outline_status)
+    diagram.parse(element, group, outline_group)

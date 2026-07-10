@@ -12,33 +12,33 @@ log = logging.getLogger('prefigure')
 # to group graphical components to be annotated as a group or 
 # to place outlines behind all of the grouped components before 
 # stroking them
-def group(element, diagram, parent, outline_status):
+def group(element, diagram, parent, outline_group=None):
     # determine whether we will outline the grouped components together
     outline = element.get('outline', None)
     tactile = diagram.output_format() == 'tactile'
     transform = element.get('transform', None)
     diagram.add_id(element, element.get('id'))
 
-    if outline == 'always' or outline == diagram.output_format():
-        # we'll pass through the grouped components twice first adding
-        # the outline
-        group = ET.SubElement(parent, 'g')
-        diagram.add_id(group, element.get('id')+'-outline')
-        if transform is not None:
-            process_transform(diagram, transform, group, tactile)
-        diagram.parse(element, group, outline_status = 'add_outline')
-        if transform is not None:
-            clean_up_transform(diagram, group, tactile)
+    if (outline_group is None
+            and (outline == 'always' or outline == diagram.output_format())):
+        # we'll form a group for adding the outlines
+        outline_group = ET.SubElement(parent, 'g')
+        outline_group.set('data-outline', 'yes')
+        diagram.add_id(outline_group, element.get('id')+'-outline')
 
-        # then stroking the grouped components
+        # then a group for stroking the grouped components
         group = ET.SubElement(parent, 'g')
         group.set('id', element.get('id'))
-#        diagram.add_id(group, element.get('id'))
         diagram.register_svg_element(element, group)
 
         if transform is not None:
             process_transform(diagram, transform, group, tactile)
-        diagram.parse(element, group, outline_status = 'finish_outline')
+            tform_attr = group.get('transform', None)
+            if tform_attr is not None:
+                outline_group.set('transform', tform_attr)
+
+        diagram.parse(element, group, outline_group)
+        outline_group.attrib.pop('data-outline', None)
         if transform is not None:
             clean_up_transform(diagram, group, tactile)
 
@@ -46,12 +46,20 @@ def group(element, diagram, parent, outline_status):
 
     group = ET.SubElement(parent, 'g')
     group.set('id', element.get('id'))
-#    diagram.add_id(group, element.get('id'))
     diagram.register_svg_element(element, group)
 
     if transform is not None:
         process_transform(diagram, transform, group, tactile)
-    diagram.parse(element, group, outline_status)
+    if outline_group is not None:
+        outline_group = ET.SubElement(outline_group, 'g')
+        diagram.add_id(outline_group, element.get('id')+'-outline')
+        outline_group.set('data-outline', 'yes')
+        tform_attr = group.get('transform', None)
+        if tform_attr is not None:
+            outline_group.set('transform', tform_attr)
+    diagram.parse(element, group, outline_group)
+    if outline_group is not None:
+        outline_group.attrib.pop('data-outline')
     if transform is not None:
         clean_up_transform(diagram, group, tactile)
 
