@@ -15,7 +15,11 @@
         // librsvg2-bin provides rsvg-convert, which prefig uses to convert SVGs into PDFs/PNGs.
         "ghcr.io/devcontainers-extra/features/apt-packages:1": {
             "packages": "libcairo2-dev,librsvg2-bin,vim"
-        }
+        },
+        // Unset the stale NODE_OPTIONS/VSCODE_INSPECTOR_OPTIONS that VS Code's Auto Attach
+        // debugger injects into terminals, which otherwise breaks node/npm with a missing
+        // ms-vscode.js-debug/bootloader.js. Avoids erroneous connections to the host's debugger.
+        "./features/shell-init-rc": {}
     },
     "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
     "hostRequirements": {
