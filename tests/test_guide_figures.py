@@ -1,8 +1,8 @@
 """Smoke coverage for Guide figures that have no snapshot.
 
-Most Guide figures are golden-tested by ``test_snapshots.py``. A handful build
+Most Guide figures are snapshot-tested by ``test_snapshots.py``. A handful build
 to empty/trivial output in isolation (they need external data or are wrapper
-diagrams), so they get no golden — this module still builds them to prove they
+diagrams), so they get no snapshot — this module still builds them to prove they
 do not crash, so every Guide figure stays exercised. Mirrors the intent of
 ``rust/prefig-core/tests/guide_figures.rs``.
 """
@@ -22,7 +22,7 @@ def _all_figures():
     return sorted(GUIDE_DIR.rglob("*.xml"))
 
 
-def _figures_without_golden():
+def _figures_without_snapshot():
     return [
         xml
         for xml in _all_figures()
@@ -36,10 +36,10 @@ def test_enough_guide_figures():
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "xml_path", _figures_without_golden(), ids=lambda p: f"{p.parent.name}/{p.name}"
+    "xml_path", _figures_without_snapshot(), ids=lambda p: f"{p.parent.name}/{p.name}"
 )
-def test_ungolden_guide_figure_builds(xml_path):
-    # No golden (builds to trivial output in isolation); just ensure no crash.
+def test_guide_figure_without_snapshot_builds(xml_path):
+    # No snapshot (builds to trivial output in isolation); just ensure no crash.
     with pushd(xml_path.parent):
         try:
             build_diagram(xml_path.name)

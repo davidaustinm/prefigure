@@ -1,7 +1,7 @@
-"""Snapshot (golden-file) regression tests for the Python renderer.
+"""Snapshot (reference-render) regression tests for the Python renderer.
 
-Builds every source that has a committed golden under ``tests/snapshots/`` and
-compares the SVG within a numeric tolerance. A golden at
+Builds every source that has a committed reference snapshot under
+``tests/snapshots/`` and compares the SVG within a numeric tolerance. A snapshot at
 ``snapshots/<corpus>/<category>/<stem>.svg`` corresponds to the source
 ``tests/<corpus>/<category>/<stem>.xml`` (``corpus`` is ``examples`` or
 ``guide_figures``). This locks the current Python output; it is also the corpus
@@ -18,7 +18,7 @@ selection covers by setting ``UPDATE_SNAPSHOTS=1`` — one exact snapshot:
 
 or a group (``-k`` is a substring match), or all of them (no selector). Then
 review ``git diff tests/snapshots`` before committing. To (re)generate every
-golden — including new sources and annotation files — run
+snapshot — including new sources and annotation files — run
 ``tests/helpers/generate_snapshots.py`` instead.
 """
 
@@ -33,17 +33,17 @@ from helpers.compare import DEFAULT_TOL, compare_svgs
 TESTS_DIR = Path(__file__).resolve().parent
 SNAPSHOTS_DIR = TESTS_DIR / "snapshots"
 
-# When set, a comparison instead rewrites its golden in place (jest `-u` style).
+# When set, a comparison instead rewrites its snapshot in place (jest `-u` style).
 UPDATE_SNAPSHOTS = os.environ.get("UPDATE_SNAPSHOTS", "") not in ("", "0", "false")
 
 
 def _cases():
     cases = []
-    for golden in sorted(SNAPSHOTS_DIR.rglob("*.svg")):
-        rel = golden.relative_to(SNAPSHOTS_DIR)          # e.g. examples/hand-crafted/tangent.svg
+    for snapshot in sorted(SNAPSHOTS_DIR.rglob("*.svg")):
+        rel = snapshot.relative_to(SNAPSHOTS_DIR)        # e.g. examples/hand-crafted/tangent.svg
         source = TESTS_DIR / rel.with_suffix(".xml")     # tests/examples/hand-crafted/tangent.xml
         marks = (pytest.mark.slow,) if rel.parts[0] == "guide_figures" else ()
-        cases.append(pytest.param(source, golden, id=str(rel.with_suffix("")), marks=marks))
+        cases.append(pytest.param(source, snapshot, id=str(rel.with_suffix("")), marks=marks))
     return cases
 
 
@@ -54,9 +54,9 @@ def test_snapshot_corpus_present():
     assert len(guide) >= 120
 
 
-@pytest.mark.parametrize("source_path,golden_path", _cases())
-def test_matches_snapshot(source_path, golden_path):
-    assert source_path.exists(), f"golden {golden_path.name} has no source {source_path}"
+@pytest.mark.parametrize("source_path,snapshot_path", _cases())
+def test_matches_snapshot(source_path, snapshot_path):
+    assert source_path.exists(), f"snapshot {snapshot_path.name} has no source {source_path}"
 
     # <read>/<image> resolve data/ relative to the working directory.
     with pushd(source_path.parent):
@@ -66,11 +66,11 @@ def test_matches_snapshot(source_path, golden_path):
     svg, _annotations = result
 
     if UPDATE_SNAPSHOTS:
-        golden_path.write_text(svg)
+        snapshot_path.write_text(svg)
         return
 
-    diffs = compare_svgs(svg, golden_path.read_text(), DEFAULT_TOL)
-    snapshot_id = str(golden_path.relative_to(SNAPSHOTS_DIR).with_suffix(""))
+    diffs = compare_svgs(svg, snapshot_path.read_text(), DEFAULT_TOL)
+    snapshot_id = str(snapshot_path.relative_to(SNAPSHOTS_DIR).with_suffix(""))
     assert not diffs, (
         f"{source_path.name} differs from its snapshot:\n"
         + "\n".join(diffs)

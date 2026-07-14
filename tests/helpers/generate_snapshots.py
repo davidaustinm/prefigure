@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate the golden SVG snapshots from the current Python implementation.
+"""Regenerate the reference SVG snapshots from the current Python implementation.
 
 Self-contained: builds the vendored sources under ``tests/examples/`` and
 ``tests/guide_figures/`` (no external checkout needed) in the ``pretext``
@@ -7,7 +7,7 @@ environment and writes the results under ``tests/snapshots/<corpus>/<category>/`
 Uses the same ``build_diagram`` routine the snapshot test uses, so building and
 checking cannot drift apart. Diagrams that build to empty/trivial output (e.g. a
 fragment or a missing data file) are skipped rather than checked in as an empty
-golden, and recorded in the manifest.
+snapshot, and recorded in the manifest.
 
 Run from anywhere:
     poetry run python tests/helpers/generate_snapshots.py
@@ -30,7 +30,7 @@ CORPORA = {
 }
 
 # SVGs with only <defs> (or less) mean the diagram did not really build; skip
-# those rather than check in an empty golden.
+# those rather than check in an empty snapshot.
 MIN_MEANINGFUL_CHILDREN = 2
 
 sys.path.insert(0, str(REPO_ROOT))

@@ -1,9 +1,9 @@
 """Build a PreFigure diagram to an in-memory SVG string.
 
-The Python twin of the routine that generates the golden snapshots: parse a
+The Python twin of the routine that generates the reference snapshots: parse a
 source file, strip namespaces exactly like ``engine.py``/``parse.py`` do, and
 call ``mk_diagram(..., return_string=True)`` so nothing is written to disk. Used
-by both ``test_snapshots.py`` (to check against committed goldens) and
+by both ``test_snapshots.py`` (to check against committed snapshots) and
 ``tools/generate_snapshots.py`` (to write them) so building and checking agree.
 """
 
