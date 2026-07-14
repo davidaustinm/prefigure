@@ -15,61 +15,22 @@
   },
   "extracted_from_docs": {
    "built": [
-    "annotated-rs",
-    "attack",
-    "big-zero-include",
-    "fill-patterns",
-    "fonts",
-    "grad-field",
-    "gradient-annotated",
-    "gradient",
-    "iris_scatter_1",
-    "labels_on_line",
-    "loglog-spacing",
-    "loglog",
-    "network-loops",
-    "number-line",
-    "path_decorations",
-    "polar-areas",
-    "polar-graphs",
-    "polar-grid-1",
-    "polar-grid-2",
-    "tangent-annotated",
-    "tick-marks",
-    "ticks-bbox",
-    "transform-3",
-    "vec-field",
-    "vector-field-exponent-1",
-    "vector-field-exponent-2",
-    "vector-field",
-    "vector-labels",
-    "wasatch"
-   ],
-   "skipped": []
-  },
-  "uses_external_data": {
-   "built": [
-    "delta_ode",
-    "histogram",
-    "read_scatter"
-   ],
-   "skipped": []
-  },
-  "guide_code": {
-   "built": [
     "angle-marker",
+    "annotated-rs",
     "arc",
     "area-between",
     "area-under",
     "arrow_angle_def",
     "arrow_def",
     "arrow_properties",
+    "attack",
     "axes-example",
     "axes-framed",
     "axes-x-y-label",
     "axes",
     "bezier-edit",
     "bezier",
+    "big-zero-include",
     "circle",
     "coils",
     "color_labels",
@@ -89,9 +50,14 @@
     "eulers_method",
     "fibonacci",
     "fill-opacity",
+    "fill-patterns",
     "fill-rule",
     "fill",
+    "fonts",
     "gmres",
+    "grad-field",
+    "gradient-annotated",
+    "gradient",
     "graph",
     "grid-axes",
     "grid-basis",
@@ -102,6 +68,9 @@
     "group_transforms_4",
     "implicit-curve",
     "implicit",
+    "iris_histogram",
+    "iris_scatter",
+    "iris_scatter_1",
     "iterator",
     "judson-slope-field",
     "judson-system",
@@ -109,11 +78,14 @@
     "label-example",
     "labels-lines",
     "labels",
+    "labels_on_line",
     "legend",
     "linear-comb",
     "linecap",
     "linejoin",
     "lines",
+    "loglog-spacing",
+    "loglog",
     "margins",
     "mass-spring",
     "matrix-mult",
@@ -123,6 +95,7 @@
     "network-annotations",
     "network-combination",
     "network-intro",
+    "network-loops",
     "network-manual-2",
     "network-manual",
     "network-spanning-1",
@@ -130,6 +103,7 @@
     "network-tree",
     "network-verbose",
     "network",
+    "number-line",
     "opacity",
     "outline-de",
     "outline-group",
@@ -141,6 +115,10 @@
     "paths",
     "pi-format",
     "points",
+    "polar-areas",
+    "polar-graphs",
+    "polar-grid-1",
+    "polar-grid-2",
     "polygon-v-line",
     "polygon",
     "pretext-example",
@@ -174,71 +152,40 @@
     "tangent-3",
     "tangent-4",
     "tangent-annotate",
+    "tangent-annotated",
     "tangent-line",
     "tangent",
     "thickness",
+    "tick-marks",
+    "ticks-bbox",
     "transform-1",
     "transform-2",
+    "transform-3",
     "triangle-intro",
     "triangle",
+    "vec-field",
+    "vector-field-exponent-1",
+    "vector-field-exponent-2",
+    "vector-field",
+    "vector-labels",
     "vectors",
+    "wasatch",
     "zoom"
    ],
    "skipped": [
     [
      "gragg",
      "empty or trivial output"
-    ],
-    [
-     "iris_histogram",
-     "empty or trivial output"
-    ],
-    [
-     "iris_scatter",
-     "empty or trivial output"
-    ],
-    [
-     "iris_scatter_1",
-     "empty or trivial output"
     ]
    ]
   },
-  "guide_images": {
-   "built": [],
-   "skipped": [
-    [
-     "derivatives",
-     "empty or trivial output"
-    ],
-    [
-     "diffeqs",
-     "empty or trivial output"
-    ],
-    [
-     "implicit",
-     "empty or trivial output"
-    ],
-    [
-     "network",
-     "empty or trivial output"
-    ],
-    [
-     "projection",
-     "empty or trivial output"
-    ],
-    [
-     "riemann",
-     "empty or trivial output"
-    ],
-    [
-     "roots_of_unity",
-     "empty or trivial output"
-    ],
-    [
-     "tangent-annotate",
-     "empty or trivial output"
-    ]
-   ]
+  "uses_external_data": {
+   "built": [
+    "delta_ode",
+    "histogram",
+    "read_scatter"
+   ],
+   "skipped": []
   }
  }
 }

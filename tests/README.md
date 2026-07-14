@@ -22,8 +22,9 @@ tests/
     generate_expressions.py   # refresh expected values in expression_tests.json
 
   examples/               # ── neutral inputs ── all source diagrams (+ data/)
-    hand_crafted/  extracted_from_docs/  uses_external_data/   (curated, 40)
-    guide_code/  guide_images/                                 (Guide sweep, ~138)
+    hand_crafted/          # bundled with the package (8)
+    extracted_from_docs/   # from the PreFigure Guide: its examples + code listings (~155)
+    uses_external_data/    # load CSV/images via <read>/<image> (3)
   snapshots/              # ── reference snapshots ── mirror the input tree by name
     examples/<category>/          snapshots for everything that builds (+ annotation .xml)
     manifest.json                 what built vs skipped, per category
@@ -40,8 +41,7 @@ test's build products) goes to `../tmp_test_outputs/`, which is gitignored.
 
 ```bash
 poetry install --all-extras          # needs pycairo; MathJax runs via node
-poetry run pytest                    # everything
-poetry run pytest -m "not slow"      # skip the ~138 Guide-sweep builds
+poetry run pytest                    # everything (~45s)
 poetry run pytest tests/test_snapshots.py -v
 ```
 
@@ -118,15 +118,12 @@ cat tmp_test_outputs/report/comment.md
   Rust `svg_compare` module.
 - `snapshots/` mirrors the input tree: a snapshot at
   `snapshots/examples/<category>/<stem>.svg` is the expected output of
-  `tests/examples/<category>/<stem>.xml`. Comparisons in the `guide_*`
-  categories are marked `slow` (there are ~126); the curated categories always
-  run. The few sources that build to trivial output in isolation get no
-  snapshot and are instead smoke-tested (build-without-crash) by
-  `test_examples_without_snapshots.py`.
+  `tests/examples/<category>/<stem>.xml`. The few sources that build to trivial
+  output in isolation get no snapshot and are instead smoke-tested
+  (build-without-crash) by `test_examples_without_snapshots.py`.
 - Categories: `hand_crafted` (bundled with the package), `extracted_from_docs`
-  (curated diagrams from the PreFigure Guide), `uses_external_data` (load
-  CSV/images via `<read>`/`<image>`; `<histogram>`/delta-forced ODEs),
-  `guide_code` (every code listing swept from the Guide's text), `guide_images`
-  (the Guide's asset diagrams — PreTeXt wrappers that only build in context).
-  Same-named files across categories (e.g. `tangent.xml`) are intentionally
-  different variants, not duplicates.
+  (everything vendored from the PreFigure Guide — its polished examples plus
+  every code listing in its text), `uses_external_data` (load CSV/images via
+  `<read>`/`<image>`; `<histogram>`/delta-forced ODEs). Same-named files across
+  categories (e.g. `tangent.xml`) are intentionally different variants, not
+  duplicates.

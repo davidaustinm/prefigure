@@ -24,15 +24,8 @@ REPO_ROOT = TESTS_DIR.parent
 SNAPSHOTS = TESTS_DIR / "snapshots"
 
 # Input corpus (a directory under tests/) -> its category subdirectories.
-# guide_code/guide_images are the bulk sweep from the PreFigure Guide.
 CORPORA = {
-    "examples": (
-        "hand_crafted",
-        "extracted_from_docs",
-        "uses_external_data",
-        "guide_code",
-        "guide_images",
-    ),
+    "examples": ("hand_crafted", "extracted_from_docs", "uses_external_data"),
 }
 
 # SVGs with only <defs> (or less) mean the diagram did not really build; skip

@@ -1,10 +1,9 @@
 """Smoke coverage for example sources that have no reference snapshot.
 
 Most of ``tests/examples/`` is snapshot-tested by ``test_snapshots.py``. A
-handful of sources build to empty/trivial output in isolation (e.g. the
-``guide_images`` figures are PreTeXt wrappers with no dimensions of their own),
-so they get no snapshot — this module still builds them to prove they do not
-crash, so every committed example stays exercised.
+few sources build to empty/trivial output in isolation, so they get no
+snapshot — this module still builds them to prove they do not crash, so every
+committed example stays exercised.
 """
 
 from pathlib import Path
@@ -31,10 +30,9 @@ def _examples_without_snapshot():
 
 
 def test_enough_examples():
-    assert len(_all_examples()) >= 170  # 40 curated + ~138 swept from the Guide
+    assert len(_all_examples()) >= 160
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "xml_path",
     _examples_without_snapshot(),

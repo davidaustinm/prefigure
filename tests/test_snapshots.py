@@ -6,9 +6,6 @@ at ``snapshots/examples/<category>/<stem>.svg`` corresponds to the source
 ``tests/examples/<category>/<stem>.xml``. This locks the current Python output;
 it is also the corpus the Rust port is checked against.
 
-Comparisons in the ``guide_*`` categories (the ~126 figures swept from the
-PreFigure Guide) are marked ``slow``; the curated categories always run.
-
 To accept an intentional rendering change, rewrite just the snapshots a
 selection covers by setting ``UPDATE_SNAPSHOTS=1`` — one exact snapshot:
 
@@ -41,23 +38,13 @@ def _cases():
     for snapshot in sorted(SNAPSHOTS_DIR.rglob("*.svg")):
         rel = snapshot.relative_to(SNAPSHOTS_DIR)        # e.g. examples/hand_crafted/tangent.svg
         source = TESTS_DIR / rel.with_suffix(".xml")     # tests/examples/hand_crafted/tangent.xml
-        slow = rel.parts[1].startswith("guide_")         # the bulk Guide sweep
-        cases.append(pytest.param(
-            source, snapshot,
-            id=str(rel.with_suffix("")),
-            marks=(pytest.mark.slow,) if slow else (),
-        ))
+        cases.append(pytest.param(source, snapshot, id=str(rel.with_suffix(""))))
     return cases
 
 
 def test_snapshot_corpus_present():
-    curated = [
-        s for s in (SNAPSHOTS_DIR / "examples").rglob("*.svg")
-        if not s.parent.name.startswith("guide_")
-    ]
-    guide = list((SNAPSHOTS_DIR / "examples" / "guide_code").glob("*.svg"))
-    assert len(curated) >= 40    # 8 hand_crafted + 29 extracted_from_docs + 3 uses_external_data
-    assert len(guide) >= 120
+    # 8 hand_crafted + ~155 extracted_from_docs + 3 uses_external_data
+    assert len(list((SNAPSHOTS_DIR / "examples").rglob("*.svg"))) >= 160
 
 
 @pytest.mark.parametrize("source_path,snapshot_path", _cases())
