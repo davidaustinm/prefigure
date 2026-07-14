@@ -1,22 +1,21 @@
-# Posts a sticky PR comment when example diagrams no longer match their
-# committed snapshots (tests/snapshots/examples). The comment lists the
-# differences per example and, when fewer than 8 examples differ, embeds
-# side-by-side PNG renders of the snapshot vs what the PR produces.
+# Builds the examples corpus on every PR and compares it to the reference
+# snapshots (tests/helpers/snapshot_report.py), failing the check when they
+# differ. The resulting report (diff list, ready-to-post comment, side-by-side
+# PNG renders when fewer than 8 examples differ) is uploaded as the
+# `snapshot-report` artifact and shown in the job summary.
 #
-# How the images get into the comment: GitHub comments can only embed hosted
-# images, so the renders are force-pushed to a scratch branch
-# (snapshot-diff/pr-<N>) and referenced by commit SHA through
-# raw.githubusercontent.com. The branch is deleted when the PR closes.
-#
-# Fork PRs: the GITHUB_TOKEN is read-only there, so the push/comment steps are
-# skipped and the report is still available as a workflow artifact and in the
-# job summary.
+# Posting the report onto the PR:
+#   - Same-repo PRs: this workflow pushes the renders to a scratch branch
+#     (snapshot-diff/pr-<N>) and posts the sticky comment directly.
+#   - Fork PRs: the GITHUB_TOKEN here is read-only, so snapshot-comment.yml
+#     (a workflow_run follow-up with write permissions) downloads the artifact
+#     and posts the comment instead.
+# The scratch branch is deleted by snapshot-cleanup.yml when the PR closes.
 
 name: snapshot report
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
     paths:
       - "prefig/**"
       - "tests/**"
@@ -25,8 +24,8 @@ on:
       - ".github/workflows/snapshot-report.yml"
 
 permissions:
-  contents: write # push/delete the snapshot-diff/pr-<N> scratch branch
-  pull-requests: write # post the sticky comment
+  contents: write # push the snapshot-diff/pr-<N> scratch branch (same-repo PRs)
+  pull-requests: write # post the sticky comment (same-repo PRs)
 
 concurrency:
   group: snapshot-report-${{ github.event.pull_request.number }}
@@ -38,7 +37,6 @@ env:
 
 jobs:
   report:
-    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -74,6 +72,8 @@ jobs:
           echo "differing=$(python3 -c "import json;print(len(json.load(open('$REPORT_DIR/report.json'))['differing']))")" >> "$GITHUB_OUTPUT"
           echo "has_renders=$([ -d "$REPORT_DIR/renders" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
+      # The artifact is the hand-off to snapshot-comment.yml for fork PRs, and
+      # a debugging aid for everyone else.
       - name: Upload report artifact
         uses: actions/upload-artifact@v4
         with:
@@ -81,7 +81,7 @@ jobs:
           path: ${{ env.REPORT_DIR }}
           if-no-files-found: warn
 
-      # ---- image hosting (same-repo PRs only: fork tokens cannot push) ----
+      # ---- same-repo PRs: publish + comment directly (fork tokens cannot) ----
       - name: Publish side-by-side renders to scratch branch
         id: publish
         if: >
@@ -103,14 +103,12 @@ jobs:
       - name: Embed hosted image URLs in the comment
         if: steps.publish.outputs.sha
         run: |
-          poetry run python tests/helpers/snapshot_report.py \
-            --out-dir "$REPORT_DIR" --comment-only \
-            --image-base-url "https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.publish.outputs.sha }}"
+          sed -i "s|{{IMAGE_BASE_URL}}|https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.publish.outputs.sha }}|g" \
+            "$REPORT_DIR/comment.md"
 
       - name: Add report to job summary
         run: cat "$REPORT_DIR/comment.md" >> "$GITHUB_STEP_SUMMARY"
 
-      # ---- sticky comment: update in place; only create when something differs ----
       - name: Post or update the PR comment
         if: github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@v7
@@ -148,22 +146,3 @@ jobs:
         run: |
           echo "::error::${{ steps.report.outputs.differing }} example snapshot(s) differ — see the PR comment / job summary. If intentional, update them (tests/README.md)."
           exit 1
-
-  # Delete the scratch image branch when the PR closes.
-  cleanup:
-    if: github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Delete scratch branch
-        uses: actions/github-script@v7
-        with:
-          script: |
-            try {
-              await github.rest.git.deleteRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'heads/' + process.env.IMAGE_BRANCH,
-              });
-            } catch (e) {
-              core.info('No scratch branch to delete: ' + e.message);
-            }

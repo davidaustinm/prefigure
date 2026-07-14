@@ -1,0 +1,35 @@
+# Deletes the snapshot-diff/pr-<N> scratch branch (created by the snapshot
+# report/comment workflows to host side-by-side renders) when its PR closes.
+#
+# Uses pull_request_target so the token has write permission even when the PR
+# came from a fork. That is safe here: no PR code is checked out or executed —
+# the job only deletes a ref derived from the PR number.
+
+name: snapshot cleanup
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete scratch branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ref = 'heads/snapshot-diff/pr-' + context.payload.pull_request.number;
+            try {
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref,
+              });
+              core.info('Deleted ' + ref);
+            } catch (e) {
+              core.info('No scratch branch to delete: ' + e.message);
+            }

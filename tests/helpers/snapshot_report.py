@@ -164,8 +164,12 @@ def write_comment(report: dict, out_dir: Path, image_base_url: str | None, max_v
         visual = [d for d in differing if d["status"] == "differs"]
         if len(differing) < max_visual and visual:
             lines += ["### Side-by-side", ""]
-            if image_base_url and renders_present:
-                base = image_base_url.rstrip("/")
+            if renders_present:
+                # Without a URL, emit a placeholder: the CI workflow substitutes
+                # it after pushing the renders (the hosting commit's SHA is only
+                # known then). A leftover placeholder means images are in the
+                # workflow artifact instead.
+                base = (image_base_url or "{{IMAGE_BASE_URL}}").rstrip("/")
                 for d in visual:
                     name = flat_name(d["id"])
                     lines += [

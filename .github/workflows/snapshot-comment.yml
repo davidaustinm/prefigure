@@ -1,0 +1,137 @@
+# Posts the snapshot report onto PRs that come from forks.
+#
+# The `snapshot report` workflow runs on pull_request with a read-only token
+# for fork PRs, so it cannot push the render branch or comment. This follow-up
+# runs in the base repository with write permissions after that workflow
+# finishes, downloads its `snapshot-report` artifact, and does the posting.
+#
+# SECURITY: this workflow runs with write permissions on behalf of untrusted
+# PRs, so it must never check out or execute PR code. It only moves data: it
+# downloads the artifact, pushes the PNG renders to a scratch branch (git init
+# in a fresh directory — no repo checkout), substitutes the image URL
+# placeholder with sed, and posts the comment text via the API.
+#
+# NOTE: like all workflow_run workflows, this runs from the default branch, so
+# it takes effect only after it has been merged.
+
+name: snapshot comment
+
+on:
+  workflow_run:
+    workflows: ["snapshot report"]
+    types: [completed]
+
+permissions:
+  actions: read # download the triggering run's artifact
+  contents: write # push the snapshot-diff/pr-<N> scratch branch
+  pull-requests: write # post the sticky comment
+
+concurrency:
+  group: snapshot-comment-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  comment:
+    # Fork PRs only: same-repo PRs are commented directly by `snapshot report`.
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Find the pull request for this run
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Resolve via the trusted head SHA from the event payload (the
+            // artifact's contents are untrusted and cannot pick the target PR).
+            const sha = context.payload.workflow_run.head_sha;
+            const { data: prs } =
+              await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: sha,
+              });
+            const pr = prs.find(p => p.state === 'open' && p.head.sha === sha);
+            if (!pr) {
+              core.info(`No open PR found for ${sha}; nothing to do.`);
+              return '';
+            }
+            core.setOutput('number', String(pr.number));
+            return String(pr.number);
+
+      - name: Download the snapshot-report artifact
+        if: steps.pr.outputs.number
+        uses: actions/download-artifact@v4
+        with:
+          name: snapshot-report
+          path: report
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Read report
+        if: steps.pr.outputs.number
+        id: report
+        run: |
+          echo "differing=$(python3 -c "import json;print(len(json.load(open('report/report.json'))['differing']))")" >> "$GITHUB_OUTPUT"
+          echo "has_renders=$([ -d report/renders ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish side-by-side renders to scratch branch
+        id: publish
+        if: >
+          steps.pr.outputs.number &&
+          steps.report.outputs.differing != '0' &&
+          steps.report.outputs.has_renders == 'true'
+        env:
+          IMAGE_BRANCH: snapshot-diff/pr-${{ steps.pr.outputs.number }}
+        run: |
+          cd report/renders
+          git init -q -b "$IMAGE_BRANCH"
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            add -A
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            commit -qm "snapshot renders for PR #${{ steps.pr.outputs.number }} @ ${{ github.event.workflow_run.head_sha }}"
+          git push --force \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            "HEAD:refs/heads/$IMAGE_BRANCH"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Embed hosted image URLs in the comment
+        if: steps.publish.outputs.sha
+        run: |
+          sed -i "s|{{IMAGE_BASE_URL}}|https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.publish.outputs.sha }}|g" \
+            report/comment.md
+
+      - name: Post or update the PR comment
+        if: steps.pr.outputs.number
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- prefigure-snapshot-report -->';
+            const body = fs.readFileSync('report/comment.md', 'utf8');
+            const differing = ${{ steps.report.outputs.differing }};
+            const issue_number = ${{ steps.pr.outputs.number }};
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else if (differing > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number,
+                body,
+              });
+            }

@@ -97,10 +97,15 @@ Mechanics worth knowing:
 
 - GitHub comments can only embed hosted images, so the renders are force-pushed
   to a scratch branch `snapshot-diff/pr-<N>` and referenced by commit SHA via
-  `raw.githubusercontent.com`; the branch is deleted when the PR closes.
-- On PRs from forks the token is read-only, so the comment/branch steps are
-  skipped — the same report still appears in the job summary and as the
-  `snapshot-report` workflow artifact (with the PNGs).
+  `raw.githubusercontent.com`; `snapshot-cleanup.yml` deletes the branch when
+  the PR closes.
+- On PRs from forks the `pull_request` token is read-only, so a follow-up
+  workflow (`snapshot-comment.yml`, triggered by `workflow_run` in the base
+  repository with write permissions) downloads the report artifact and posts
+  the comment instead. It never executes PR code — it only moves data. Like
+  all `workflow_run` workflows it runs from the default branch, so it takes
+  effect only after being merged. The report also always appears in the job
+  summary and as the `snapshot-report` artifact.
 - The runner needs the same toolchain as a local run: cairo, `rsvg-convert`,
   and MathJax (`prefig init`); the workflow installs them.
 
