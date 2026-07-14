@@ -5,6 +5,7 @@ from . import area
 from . import axes
 from . import clip
 from . import circle
+from . import circuit
 from . import coordinates
 from . import CTM
 from . import definition
@@ -43,6 +44,7 @@ tag_dict = {
     'center': CTM.transform_center,
     'change-basis': CTM.transform_basis,
     'circle': circle.circle,
+    'circuit': circuit.circuit,
     'clip': clip.clip,
     'contour': implicit.implicit_curve,
     'coordinates': coordinates.coordinates,

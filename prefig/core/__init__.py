@@ -5,6 +5,7 @@ from . import (
     axes,
     calculus,
     circle,
+    circuit,
     clip,
     coordinates,
     CTM,
