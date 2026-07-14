@@ -99,7 +99,8 @@ class ImplicitCurve():
             element.set('stroke', 'black')
         else:
             util.set_attr(element, 'stroke', 'black')
-        util.set_attr(element, 'thickness', '2')
+        # TEST ONLY (revert me): exercising the PR snapshot report
+        util.set_attr(element, 'thickness', '6')
 
         self.bbox = diagram.bbox()
         try:
