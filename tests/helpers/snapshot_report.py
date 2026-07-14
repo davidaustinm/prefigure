@@ -47,7 +47,7 @@ IMG_WIDTH = 380       # two of these fit a PR comment side by side
 
 
 def flat_name(snapshot_id: str) -> str:
-    """'examples/hand-crafted/tangent' -> 'examples--hand-crafted--tangent'."""
+    """'examples/hand_crafted/tangent' -> 'examples--hand_crafted--tangent'."""
     return snapshot_id.replace("/", "--")
 
 

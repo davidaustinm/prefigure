@@ -25,7 +25,7 @@ SNAPSHOTS = TESTS_DIR / "snapshots"
 
 # Input corpus (a directory under tests/) -> its category subdirectories.
 CORPORA = {
-    "examples": ("hand-crafted", "extracted-from-docs", "uses-external-data"),
+    "examples": ("hand_crafted", "extracted_from_docs", "uses_external_data"),
     "guide_figures": ("code", "images"),
 }
 

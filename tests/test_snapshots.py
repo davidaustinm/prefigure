@@ -14,7 +14,7 @@ To accept an intentional rendering change, rewrite just the snapshots a
 selection covers by setting ``UPDATE_SNAPSHOTS=1`` — one exact snapshot:
 
     UPDATE_SNAPSHOTS=1 poetry run pytest \\
-        "tests/test_snapshots.py::test_matches_snapshot[examples/hand-crafted/tangent]"
+        "tests/test_snapshots.py::test_matches_snapshot[examples/hand_crafted/tangent]"
 
 or a group (``-k`` is a substring match), or all of them (no selector). Then
 review ``git diff tests/snapshots`` before committing. To (re)generate every
@@ -40,8 +40,8 @@ UPDATE_SNAPSHOTS = os.environ.get("UPDATE_SNAPSHOTS", "") not in ("", "0", "fals
 def _cases():
     cases = []
     for snapshot in sorted(SNAPSHOTS_DIR.rglob("*.svg")):
-        rel = snapshot.relative_to(SNAPSHOTS_DIR)        # e.g. examples/hand-crafted/tangent.svg
-        source = TESTS_DIR / rel.with_suffix(".xml")     # tests/examples/hand-crafted/tangent.xml
+        rel = snapshot.relative_to(SNAPSHOTS_DIR)        # e.g. examples/hand_crafted/tangent.svg
+        source = TESTS_DIR / rel.with_suffix(".xml")     # tests/examples/hand_crafted/tangent.xml
         marks = (pytest.mark.slow,) if rel.parts[0] == "guide_figures" else ()
         cases.append(pytest.param(source, snapshot, id=str(rel.with_suffix("")), marks=marks))
     return cases
@@ -50,7 +50,7 @@ def _cases():
 def test_snapshot_corpus_present():
     examples = list((SNAPSHOTS_DIR / "examples").rglob("*.svg"))
     guide = list((SNAPSHOTS_DIR / "guide_figures").rglob("*.svg"))
-    assert len(examples) >= 40    # 8 hand-crafted + 29 extracted-from-docs + 3 uses-external-data
+    assert len(examples) >= 40    # 8 hand_crafted + 29 extracted_from_docs + 3 uses_external_data
     assert len(guide) >= 120
 
 

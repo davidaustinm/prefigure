@@ -22,7 +22,7 @@ tests/
     generate_expressions.py   # refresh expected values in expression_tests.json
 
   examples/               # ── neutral inputs ──  source diagrams (+ data/)
-    hand-crafted/  extracted-from-docs/  uses-external-data/
+    hand_crafted/  extracted_from_docs/  uses_external_data/
   guide_figures/          # ── neutral inputs ── Guide diagrams (code/ + images/)
   snapshots/              # ── reference snapshots ── mirror the input tree by name
     examples/<category>/          snapshots for examples/  (+ annotation .xml)
@@ -60,7 +60,7 @@ command to accept it. To update one snapshot, run its node id with
 
 ```bash
 UPDATE_SNAPSHOTS=1 poetry run pytest \
-    "tests/test_snapshots.py::test_matches_snapshot[examples/hand-crafted/tangent]"
+    "tests/test_snapshots.py::test_matches_snapshot[examples/hand_crafted/tangent]"
 ```
 
 The id is `<corpus>/<category>/<stem>` (shown in pytest output as
@@ -124,8 +124,8 @@ cat tmp_test_outputs/report/comment.md
   `slow` (there are ~126); the curated `examples` snapshots always run. The few
   Guide figures that build to trivial output in isolation get no snapshot and are
   instead smoke-tested (build-without-crash) by `test_guide_figures.py`.
-- `examples/` categories: `hand-crafted` (bundled with the package),
-  `extracted-from-docs` (diagrams from the PreFigure Guide),
-  `uses-external-data` (load CSV/images via `<read>`/`<image>`;
+- `examples/` categories: `hand_crafted` (bundled with the package),
+  `extracted_from_docs` (diagrams from the PreFigure Guide),
+  `uses_external_data` (load CSV/images via `<read>`/`<image>`;
   `<histogram>`/delta-forced ODEs). `guide_figures/` categories: `code` (Guide
   source snippets), `images` (Guide asset diagrams).

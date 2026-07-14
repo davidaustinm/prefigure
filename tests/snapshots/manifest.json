@@ -1,6 +1,6 @@
 {
  "examples": {
-  "hand-crafted": {
+  "hand_crafted": {
    "built": [
     "de-system",
     "derivatives",
@@ -13,7 +13,7 @@
    ],
    "skipped": []
   },
-  "extracted-from-docs": {
+  "extracted_from_docs": {
    "built": [
     "annotated-rs",
     "attack",
@@ -47,7 +47,7 @@
    ],
    "skipped": []
   },
-  "uses-external-data": {
+  "uses_external_data": {
    "built": [
     "delta_ode",
     "histogram",
