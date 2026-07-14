@@ -1,57 +1,246 @@
 {
- "repo": {
-  "built": [
-   "de-system",
-   "derivatives",
-   "diffeqs",
-   "implicit",
-   "projection",
-   "riemann",
-   "roots_of_unity",
-   "tangent"
-  ],
-  "skipped": []
+ "examples": {
+  "hand-crafted": {
+   "built": [
+    "de-system",
+    "derivatives",
+    "diffeqs",
+    "implicit",
+    "projection",
+    "riemann",
+    "roots_of_unity",
+    "tangent"
+   ],
+   "skipped": []
+  },
+  "extracted-from-docs": {
+   "built": [
+    "annotated-rs",
+    "attack",
+    "big-zero-include",
+    "fill-patterns",
+    "fonts",
+    "grad-field",
+    "gradient-annotated",
+    "gradient",
+    "iris_scatter_1",
+    "labels_on_line",
+    "loglog-spacing",
+    "loglog",
+    "network-loops",
+    "number-line",
+    "path_decorations",
+    "polar-areas",
+    "polar-graphs",
+    "polar-grid-1",
+    "polar-grid-2",
+    "tangent-annotated",
+    "tick-marks",
+    "ticks-bbox",
+    "transform-3",
+    "vec-field",
+    "vector-field-exponent-1",
+    "vector-field-exponent-2",
+    "vector-field",
+    "vector-labels",
+    "wasatch"
+   ],
+   "skipped": []
+  },
+  "uses-external-data": {
+   "built": [
+    "delta_ode",
+    "histogram",
+    "read_scatter"
+   ],
+   "skipped": []
+  }
  },
- "docs": {
-  "built": [
-   "annotated-rs",
-   "attack",
-   "big-zero-include",
-   "fill-patterns",
-   "fonts",
-   "grad-field",
-   "gradient-annotated",
-   "gradient",
-   "iris_scatter_1",
-   "labels_on_line",
-   "loglog-spacing",
-   "loglog",
-   "network-loops",
-   "number-line",
-   "path_decorations",
-   "polar-areas",
-   "polar-graphs",
-   "polar-grid-1",
-   "polar-grid-2",
-   "tangent-annotated",
-   "tick-marks",
-   "ticks-bbox",
-   "transform-3",
-   "vec-field",
-   "vector-field-exponent-1",
-   "vector-field-exponent-2",
-   "vector-field",
-   "vector-labels",
-   "wasatch"
-  ],
-  "skipped": []
- },
- "synth": {
-  "built": [
-   "delta_ode",
-   "histogram",
-   "read_scatter"
-  ],
-  "skipped": []
+ "guide_figures": {
+  "code": {
+   "built": [
+    "angle-marker",
+    "arc",
+    "area-between",
+    "area-under",
+    "arrow_angle_def",
+    "arrow_def",
+    "arrow_properties",
+    "axes-example",
+    "axes-framed",
+    "axes-x-y-label",
+    "axes",
+    "bezier-edit",
+    "bezier",
+    "circle",
+    "coils",
+    "color_labels",
+    "coordinates-2",
+    "coordinates",
+    "dash",
+    "de-phase",
+    "de-plot-2",
+    "de-plot",
+    "de-pulse",
+    "de-system",
+    "delta",
+    "derivative",
+    "derivatives",
+    "diffeqs",
+    "euler",
+    "eulers_method",
+    "fibonacci",
+    "fill-opacity",
+    "fill-rule",
+    "fill",
+    "gmres",
+    "graph",
+    "grid-axes",
+    "grid-basis",
+    "grid",
+    "group_transforms_1",
+    "group_transforms_2",
+    "group_transforms_3",
+    "group_transforms_4",
+    "implicit-curve",
+    "implicit",
+    "iterator",
+    "judson-slope-field",
+    "judson-system",
+    "label-clear-background",
+    "label-example",
+    "labels-lines",
+    "labels",
+    "legend",
+    "linear-comb",
+    "linecap",
+    "linejoin",
+    "lines",
+    "margins",
+    "mass-spring",
+    "matrix-mult",
+    "miterlimit",
+    "more-paths",
+    "nested-repeat",
+    "network-annotations",
+    "network-combination",
+    "network-intro",
+    "network-manual-2",
+    "network-manual",
+    "network-spanning-1",
+    "network-spanning-2",
+    "network-tree",
+    "network-verbose",
+    "network",
+    "opacity",
+    "outline-de",
+    "outline-group",
+    "outline-tactile",
+    "outline",
+    "parametric",
+    "path_decorations",
+    "paths-preview",
+    "paths",
+    "pi-format",
+    "points",
+    "polygon-v-line",
+    "polygon",
+    "pretext-example",
+    "projection",
+    "pub_test",
+    "pythagoras",
+    "rcl-circuit",
+    "rectangle",
+    "repeat-annotate",
+    "repeat",
+    "riemann-sum",
+    "riemann",
+    "roll",
+    "roots_of_unity",
+    "shape_clip",
+    "shape_convex",
+    "shape_difference",
+    "shape_intersection",
+    "shape_start",
+    "shape_union",
+    "shape_xor",
+    "sidebyside",
+    "slope-field-2",
+    "slope-field",
+    "spline-domain",
+    "splines",
+    "stroke",
+    "svd",
+    "tan",
+    "tangent-2",
+    "tangent-3",
+    "tangent-4",
+    "tangent-annotate",
+    "tangent-line",
+    "tangent",
+    "thickness",
+    "transform-1",
+    "transform-2",
+    "triangle-intro",
+    "triangle",
+    "vectors",
+    "zoom"
+   ],
+   "skipped": [
+    [
+     "gragg",
+     "empty or trivial output"
+    ],
+    [
+     "iris_histogram",
+     "empty or trivial output"
+    ],
+    [
+     "iris_scatter",
+     "empty or trivial output"
+    ],
+    [
+     "iris_scatter_1",
+     "empty or trivial output"
+    ]
+   ]
+  },
+  "images": {
+   "built": [],
+   "skipped": [
+    [
+     "derivatives",
+     "empty or trivial output"
+    ],
+    [
+     "diffeqs",
+     "empty or trivial output"
+    ],
+    [
+     "implicit",
+     "empty or trivial output"
+    ],
+    [
+     "network",
+     "empty or trivial output"
+    ],
+    [
+     "projection",
+     "empty or trivial output"
+    ],
+    [
+     "riemann",
+     "empty or trivial output"
+    ],
+    [
+     "roots_of_unity",
+     "empty or trivial output"
+    ],
+    [
+     "tangent-annotate",
+     "empty or trivial output"
+    ]
+   ]
+  }
  }
 }

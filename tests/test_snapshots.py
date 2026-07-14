@@ -1,54 +1,80 @@
 """Snapshot (golden-file) regression tests for the Python renderer.
 
-Builds every example diagram with the Python package (``pretext`` environment,
-in memory) and compares the SVG to the committed snapshot under
-``tests/snapshots/`` within a numeric tolerance. This locks the current Python
-output; it is also the corpus the Rust port is checked against.
+Builds every source that has a committed golden under ``tests/snapshots/`` and
+compares the SVG within a numeric tolerance. A golden at
+``snapshots/<corpus>/<category>/<stem>.svg`` corresponds to the source
+``tests/<corpus>/<category>/<stem>.xml`` (``corpus`` is ``examples`` or
+``guide_figures``). This locks the current Python output; it is also the corpus
+the Rust port is checked against.
 
-Regenerate the snapshots with ``tests/tools/generate_snapshots.py`` after an
-intentional rendering change (see tests/README.md).
+Guide-figure comparisons are marked ``slow`` (there are ~126 of them); the
+curated ``examples`` snapshots always run.
+
+To accept an intentional rendering change, rewrite just the snapshots a
+selection covers by setting ``UPDATE_SNAPSHOTS=1`` — one exact snapshot:
+
+    UPDATE_SNAPSHOTS=1 poetry run pytest \\
+        "tests/test_snapshots.py::test_matches_snapshot[examples/hand-crafted/tangent]"
+
+or a group (``-k`` is a substring match), or all of them (no selector). Then
+review ``git diff tests/snapshots`` before committing. To (re)generate every
+golden — including new sources and annotation files — run
+``tests/helpers/generate_snapshots.py`` instead.
 """
 
+import os
 from pathlib import Path
 
 import pytest
 
-from _harness.build_helper import build_diagram, pushd
-from _harness.compare import DEFAULT_TOL, compare_svgs
+from helpers.build_helper import build_diagram, pushd
+from helpers.compare import DEFAULT_TOL, compare_svgs
 
 TESTS_DIR = Path(__file__).resolve().parent
-EXAMPLES_DIR = TESTS_DIR / "examples"
 SNAPSHOTS_DIR = TESTS_DIR / "snapshots"
-CATEGORIES = ("repo", "docs", "synth")
+
+# When set, a comparison instead rewrites its golden in place (jest `-u` style).
+UPDATE_SNAPSHOTS = os.environ.get("UPDATE_SNAPSHOTS", "") not in ("", "0", "false")
 
 
 def _cases():
     cases = []
-    for category in CATEGORIES:
-        cat_dir = EXAMPLES_DIR / category
-        if not cat_dir.is_dir():
-            continue
-        for xml in sorted(cat_dir.glob("*.xml")):
-            snapshot = SNAPSHOTS_DIR / category / f"{xml.stem}.svg"
-            cases.append(pytest.param(xml, snapshot, id=f"{category}/{xml.stem}"))
+    for golden in sorted(SNAPSHOTS_DIR.rglob("*.svg")):
+        rel = golden.relative_to(SNAPSHOTS_DIR)          # e.g. examples/hand-crafted/tangent.svg
+        source = TESTS_DIR / rel.with_suffix(".xml")     # tests/examples/hand-crafted/tangent.xml
+        marks = (pytest.mark.slow,) if rel.parts[0] == "guide_figures" else ()
+        cases.append(pytest.param(source, golden, id=str(rel.with_suffix("")), marks=marks))
     return cases
 
 
 def test_snapshot_corpus_present():
-    # 8 repo + 29 docs + 3 synth = 40 committed example diagrams.
-    assert len(_cases()) >= 40
+    examples = list((SNAPSHOTS_DIR / "examples").rglob("*.svg"))
+    guide = list((SNAPSHOTS_DIR / "guide_figures").rglob("*.svg"))
+    assert len(examples) >= 40    # 8 hand-crafted + 29 extracted-from-docs + 3 uses-external-data
+    assert len(guide) >= 120
 
 
-@pytest.mark.parametrize("xml_path,snapshot_path", _cases())
-def test_matches_snapshot(xml_path, snapshot_path):
-    assert snapshot_path.exists(), f"missing snapshot {snapshot_path}"
-    expected = snapshot_path.read_text()
+@pytest.mark.parametrize("source_path,golden_path", _cases())
+def test_matches_snapshot(source_path, golden_path):
+    assert source_path.exists(), f"golden {golden_path.name} has no source {source_path}"
 
     # <read>/<image> resolve data/ relative to the working directory.
-    with pushd(xml_path.parent):
-        result = build_diagram(xml_path.name)
+    with pushd(source_path.parent):
+        result = build_diagram(source_path.name)
 
-    assert result is not None, f"{xml_path.name} produced no diagram"
+    assert result is not None, f"{source_path.name} produced no diagram"
     svg, _annotations = result
-    diffs = compare_svgs(svg, expected, DEFAULT_TOL)
-    assert not diffs, f"{xml_path.name} differs from snapshot:\n" + "\n".join(diffs)
+
+    if UPDATE_SNAPSHOTS:
+        golden_path.write_text(svg)
+        return
+
+    diffs = compare_svgs(svg, golden_path.read_text(), DEFAULT_TOL)
+    snapshot_id = str(golden_path.relative_to(SNAPSHOTS_DIR).with_suffix(""))
+    assert not diffs, (
+        f"{source_path.name} differs from its snapshot:\n"
+        + "\n".join(diffs)
+        + "\n\nIf this change is intentional, update just this snapshot with:\n"
+        + f'  UPDATE_SNAPSHOTS=1 poetry run pytest "tests/test_snapshots.py::test_matches_snapshot[{snapshot_id}]"\n'
+        + f"  (snapshot: tests/snapshots/{snapshot_id}.svg)"
+    )

@@ -1,9 +1,0 @@
-<diagram dimensions="(250,250)" margins="(30,5,5,5)"
-         xmlns="https://prefigure.org">
-  <read name="df" filename="input.csv"/>
-  <definition>pts=zip_lists(df['a'], df['b'])</definition>
-  <coordinates bbox="(-1,0,3,4)">
-    <grid-axes/>
-    <scatter points="pts" fill="green" size="4"/>
-  </coordinates>
-</diagram>

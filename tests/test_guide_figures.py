@@ -1,36 +1,47 @@
-"""Smoke test: every Guide figure must build without crashing.
+"""Smoke coverage for Guide figures that have no snapshot.
 
-Mirrors ``rust/prefig-core/tests/guide_figures.rs``. The ~138 diagrams vendored
-from the PreFigure Guide are built with the real Python pipeline; a graceful
-"no diagram" result is allowed (some are fragments), but an uncaught exception
-fails. This exercises far more of the renderer than the curated snapshot set.
-
-Building uses MathJax (node), so the parametrized build is marked ``slow`` and
-can be skipped with ``-m "not slow"``.
+Most Guide figures are golden-tested by ``test_snapshots.py``. A handful build
+to empty/trivial output in isolation (they need external data or are wrapper
+diagrams), so they get no golden — this module still builds them to prove they
+do not crash, so every Guide figure stays exercised. Mirrors the intent of
+``rust/prefig-core/tests/guide_figures.rs``.
 """
 
 from pathlib import Path
 
 import pytest
 
-from _harness.build_helper import build_diagram, pushd
+from helpers.build_helper import build_diagram, pushd
 
-GUIDE_DIR = Path(__file__).resolve().parent / "guide_figures"
+TESTS_DIR = Path(__file__).resolve().parent
+GUIDE_DIR = TESTS_DIR / "guide_figures"
+GUIDE_SNAPSHOTS = TESTS_DIR / "snapshots" / "guide_figures"
 
 
-def _figures():
+def _all_figures():
     return sorted(GUIDE_DIR.rglob("*.xml"))
 
 
+def _figures_without_golden():
+    return [
+        xml
+        for xml in _all_figures()
+        if not (GUIDE_SNAPSHOTS / xml.parent.name / f"{xml.stem}.svg").exists()
+    ]
+
+
 def test_enough_guide_figures():
-    assert len(_figures()) >= 130
+    assert len(_all_figures()) >= 130
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("xml_path", _figures(), ids=lambda p: f"{p.parent.name}/{p.name}")
-def test_guide_figure_builds(xml_path):
+@pytest.mark.parametrize(
+    "xml_path", _figures_without_golden(), ids=lambda p: f"{p.parent.name}/{p.name}"
+)
+def test_ungolden_guide_figure_builds(xml_path):
+    # No golden (builds to trivial output in isolation); just ensure no crash.
     with pushd(xml_path.parent):
         try:
-            build_diagram(xml_path.name)  # None is acceptable; a raise is not
+            build_diagram(xml_path.name)
         except Exception as exc:  # noqa: BLE001
             pytest.fail(f"{xml_path.name} raised {exc!r}")

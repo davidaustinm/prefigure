@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from _harness.expr import run_session
+from helpers.expr import run_session
 
 EXPRESSIONS_JSON = Path(__file__).resolve().parent / "expressions" / "expression_tests.json"
 

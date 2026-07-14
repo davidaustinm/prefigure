@@ -32,6 +32,7 @@ pytest = "^8.3.4"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["tests"]
 markers = [
     "slow: builds many diagrams through MathJax; deselect with -m 'not slow'",
 ]
