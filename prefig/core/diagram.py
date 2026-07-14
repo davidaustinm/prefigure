@@ -579,9 +579,6 @@ class Diagram:
             if child.tag is ET.Comment:
                 continue
             child.tag = ET.QName(child).localname
-            # we're publicly using 'at' rather than 'id' for handles
-            if child.get('at') is not None:
-                child.set('id', child.get('at'))
 
             child_id = child.get('id', None)
             if child_id is not None:
