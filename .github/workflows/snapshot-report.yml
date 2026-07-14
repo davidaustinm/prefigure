@@ -1,0 +1,169 @@
+# Posts a sticky PR comment when example diagrams no longer match their
+# committed snapshots (tests/snapshots/examples). The comment lists the
+# differences per example and, when fewer than 8 examples differ, embeds
+# side-by-side PNG renders of the snapshot vs what the PR produces.
+#
+# How the images get into the comment: GitHub comments can only embed hosted
+# images, so the renders are force-pushed to a scratch branch
+# (snapshot-diff/pr-<N>) and referenced by commit SHA through
+# raw.githubusercontent.com. The branch is deleted when the PR closes.
+#
+# Fork PRs: the GITHUB_TOKEN is read-only there, so the push/comment steps are
+# skipped and the report is still available as a workflow artifact and in the
+# job summary.
+
+name: snapshot report
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - "prefig/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - "poetry.lock"
+      - ".github/workflows/snapshot-report.yml"
+
+permissions:
+  contents: write # push/delete the snapshot-diff/pr-<N> scratch branch
+  pull-requests: write # post the sticky comment
+
+concurrency:
+  group: snapshot-report-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  REPORT_DIR: tmp_test_outputs/snapshot_report
+  IMAGE_BRANCH: snapshot-diff/pr-${{ github.event.pull_request.number }}
+
+jobs:
+  report:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js (MathJax)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install system libraries (cairo, rsvg)
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev librsvg2-bin
+
+      - name: Install project
+        run: |
+          python -m pip install poetry
+          poetry install --all-extras
+
+      - name: Install MathJax (prefig init)
+        run: poetry run prefig init
+
+      - name: Build examples and compare to snapshots
+        run: poetry run python tests/helpers/snapshot_report.py --out-dir "$REPORT_DIR"
+
+      - name: Read report
+        id: report
+        run: |
+          echo "differing=$(python3 -c "import json;print(len(json.load(open('$REPORT_DIR/report.json'))['differing']))")" >> "$GITHUB_OUTPUT"
+          echo "has_renders=$([ -d "$REPORT_DIR/renders" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-report
+          path: ${{ env.REPORT_DIR }}
+          if-no-files-found: warn
+
+      # ---- image hosting (same-repo PRs only: fork tokens cannot push) ----
+      - name: Publish side-by-side renders to scratch branch
+        id: publish
+        if: >
+          steps.report.outputs.differing != '0' &&
+          steps.report.outputs.has_renders == 'true' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          cd "$REPORT_DIR/renders"
+          git init -q -b "$IMAGE_BRANCH"
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            add -A
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            commit -qm "snapshot renders for PR #${{ github.event.pull_request.number }} @ ${{ github.event.pull_request.head.sha }}"
+          git push --force \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            "HEAD:refs/heads/$IMAGE_BRANCH"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Embed hosted image URLs in the comment
+        if: steps.publish.outputs.sha
+        run: |
+          poetry run python tests/helpers/snapshot_report.py \
+            --out-dir "$REPORT_DIR" --comment-only \
+            --image-base-url "https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.publish.outputs.sha }}"
+
+      - name: Add report to job summary
+        run: cat "$REPORT_DIR/comment.md" >> "$GITHUB_STEP_SUMMARY"
+
+      # ---- sticky comment: update in place; only create when something differs ----
+      - name: Post or update the PR comment
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- prefigure-snapshot-report -->';
+            const body = fs.readFileSync(process.env.REPORT_DIR + '/comment.md', 'utf8');
+            const differing = ${{ steps.report.outputs.differing }};
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else if (differing > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail if snapshots differ
+        if: steps.report.outputs.differing != '0'
+        run: |
+          echo "::error::${{ steps.report.outputs.differing }} example snapshot(s) differ — see the PR comment / job summary. If intentional, update them (tests/README.md)."
+          exit 1
+
+  # Delete the scratch image branch when the PR closes.
+  cleanup:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete scratch branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'heads/' + process.env.IMAGE_BRANCH,
+              });
+            } catch (e) {
+              core.info('No scratch branch to delete: ' + e.message);
+            }
