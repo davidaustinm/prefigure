@@ -3,7 +3,9 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
-/dist/
+
+# Build output directories (Python wheels at the root, vite bundles in website/)
+dist/
 
 # Node / website workspace
 node_modules/

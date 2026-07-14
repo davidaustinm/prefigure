@@ -54,10 +54,8 @@
     "read_scatter"
    ],
    "skipped": []
-  }
- },
- "guide_figures": {
-  "code": {
+  },
+  "guide_code": {
    "built": [
     "angle-marker",
     "arc",
@@ -205,7 +203,7 @@
     ]
    ]
   },
-  "images": {
+  "guide_images": {
    "built": [],
    "skipped": [
     [

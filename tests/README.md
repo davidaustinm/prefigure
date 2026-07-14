@@ -1,19 +1,19 @@
 # PreFigure test suite
 
 Python tests for the reference implementation, organized so the **test assets
-are language-neutral**: the snapshot corpus, example diagrams, guide figures, and
-expression corpus live in plain folders here that the Python tests read today and
-the Rust port's tests will be re-pointed at later (from the *same* paths). The
-only Python-specific pieces are the `test_*.py` entry points and `helpers/`.
+are language-neutral**: the example diagrams, snapshot corpus, and expression
+corpus live in plain folders here that the Python tests read today and the Rust
+port's tests will be re-pointed at later (from the *same* paths). The only
+Python-specific pieces are the `test_*.py` entry points and `helpers/`.
 
 ## Layout
 
 ```
 tests/
-  test_snapshots.py       # build each example, compare to a committed SVG snapshot
-  test_expressions.py     # replay the expression corpus through user_namespace
-  test_guide_figures.py   # build every Guide figure without crashing (marked slow)
-  test_prefigure.py       # end-to-end `prefig` CLI smoke test
+  test_snapshots.py                    # build each example, compare to its SVG snapshot
+  test_expressions.py                  # replay the expression corpus through user_namespace
+  test_examples_without_snapshots.py   # the few unsnapshotted examples build w/o crashing
+  test_prefigure.py                    # end-to-end `prefig` CLI smoke test
   helpers/                # all Python-side support code
     compare.py            # tolerance SVG structural comparator
     build_helper.py       # build a diagram in memory (+ tmp_test_outputs helpers)
@@ -21,13 +21,12 @@ tests/
     generate_snapshots.py     # regenerate snapshots/ from examples/
     generate_expressions.py   # refresh expected values in expression_tests.json
 
-  examples/               # ── neutral inputs ──  source diagrams (+ data/)
-    hand_crafted/  extracted_from_docs/  uses_external_data/
-  guide_figures/          # ── neutral inputs ── Guide diagrams (code/ + images/)
+  examples/               # ── neutral inputs ── all source diagrams (+ data/)
+    hand_crafted/  extracted_from_docs/  uses_external_data/   (curated, 40)
+    guide_code/  guide_images/                                 (Guide sweep, ~138)
   snapshots/              # ── reference snapshots ── mirror the input tree by name
-    examples/<category>/          snapshots for examples/  (+ annotation .xml)
-    guide_figures/code/           snapshots for Guide figures that build (~126)
-    manifest.json                 what built vs skipped, per corpus/category
+    examples/<category>/          snapshots for everything that builds (+ annotation .xml)
+    manifest.json                 what built vs skipped, per category
   expressions/
     expression_tests.json # ── reference snapshot ── expression corpus
   README.md
@@ -42,13 +41,12 @@ test's build products) goes to `../tmp_test_outputs/`, which is gitignored.
 ```bash
 poetry install --all-extras          # needs pycairo; MathJax runs via node
 poetry run pytest                    # everything
-poetry run pytest -m "not slow"      # skip the ~138 guide-figure builds
+poetry run pytest -m "not slow"      # skip the ~138 Guide-sweep builds
 poetry run pytest tests/test_snapshots.py -v
 ```
 
-Snapshot and expression tests build in memory and write nothing. The snapshot and
-guide-figure tests require MathJax (node) and libcairo, matching a normal
-`prefig build`.
+Snapshot and expression tests build in memory and write nothing. Building
+diagrams requires MathJax (node) and libcairo, matching a normal `prefig build`.
 
 ## Updating a failing snapshot
 
@@ -63,7 +61,7 @@ UPDATE_SNAPSHOTS=1 poetry run pytest \
     "tests/test_snapshots.py::test_matches_snapshot[examples/hand_crafted/tangent]"
 ```
 
-The id is `<corpus>/<category>/<stem>` (shown in pytest output as
+The id is `examples/<category>/<stem>` (shown in pytest output as
 `test_matches_snapshot[...]`). Update a group with `-k <substring>`, or every
 snapshot by running the whole file with `UPDATE_SNAPSHOTS=1`. Always
 `git diff tests/snapshots` and eyeball the change before committing.
@@ -119,13 +117,16 @@ cat tmp_test_outputs/report/comment.md
   compares numbers within a relative tolerance (default `1e-2`), mirroring the
   Rust `svg_compare` module.
 - `snapshots/` mirrors the input tree: a snapshot at
-  `snapshots/<corpus>/<category>/<stem>.svg` is the expected output of
-  `tests/<corpus>/<category>/<stem>.xml`. Guide-figure comparisons are marked
-  `slow` (there are ~126); the curated `examples` snapshots always run. The few
-  Guide figures that build to trivial output in isolation get no snapshot and are
-  instead smoke-tested (build-without-crash) by `test_guide_figures.py`.
-- `examples/` categories: `hand_crafted` (bundled with the package),
-  `extracted_from_docs` (diagrams from the PreFigure Guide),
-  `uses_external_data` (load CSV/images via `<read>`/`<image>`;
-  `<histogram>`/delta-forced ODEs). `guide_figures/` categories: `code` (Guide
-  source snippets), `images` (Guide asset diagrams).
+  `snapshots/examples/<category>/<stem>.svg` is the expected output of
+  `tests/examples/<category>/<stem>.xml`. Comparisons in the `guide_*`
+  categories are marked `slow` (there are ~126); the curated categories always
+  run. The few sources that build to trivial output in isolation get no
+  snapshot and are instead smoke-tested (build-without-crash) by
+  `test_examples_without_snapshots.py`.
+- Categories: `hand_crafted` (bundled with the package), `extracted_from_docs`
+  (curated diagrams from the PreFigure Guide), `uses_external_data` (load
+  CSV/images via `<read>`/`<image>`; `<histogram>`/delta-forced ODEs),
+  `guide_code` (every code listing swept from the Guide's text), `guide_images`
+  (the Guide's asset diagrams — PreTeXt wrappers that only build in context).
+  Same-named files across categories (e.g. `tangent.xml`) are intentionally
+  different variants, not duplicates.

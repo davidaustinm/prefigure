@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Regenerate the reference SVG snapshots from the current Python implementation.
 
-Self-contained: builds the vendored sources under ``tests/examples/`` and
-``tests/guide_figures/`` (no external checkout needed) in the ``pretext``
-environment and writes the results under ``tests/snapshots/<corpus>/<category>/``.
+Self-contained: builds the vendored sources under ``tests/examples/`` (no
+external checkout needed) in the ``pretext`` environment and writes the
+results under ``tests/snapshots/examples/<category>/``.
 Uses the same ``build_diagram`` routine the snapshot test uses, so building and
 checking cannot drift apart. Diagrams that build to empty/trivial output (e.g. a
 fragment or a missing data file) are skipped rather than checked in as an empty
@@ -24,9 +24,15 @@ REPO_ROOT = TESTS_DIR.parent
 SNAPSHOTS = TESTS_DIR / "snapshots"
 
 # Input corpus (a directory under tests/) -> its category subdirectories.
+# guide_code/guide_images are the bulk sweep from the PreFigure Guide.
 CORPORA = {
-    "examples": ("hand_crafted", "extracted_from_docs", "uses_external_data"),
-    "guide_figures": ("code", "images"),
+    "examples": (
+        "hand_crafted",
+        "extracted_from_docs",
+        "uses_external_data",
+        "guide_code",
+        "guide_images",
+    ),
 }
 
 # SVGs with only <defs> (or less) mean the diagram did not really build; skip
