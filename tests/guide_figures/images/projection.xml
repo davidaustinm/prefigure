@@ -1,0 +1,145 @@
+<diagram>
+  <annotations>
+    <annotation id="figure" speech2="A line L, a vector b, and the orthogonal projection of b onto L">
+      <grouped>figure</grouped>
+      <position>1</position>
+      <children>
+        <active>grid-axes</active>
+        <active>grid-axes</active>
+        <active>vector-v</active>
+        <active>vector-bperp</active>
+      </children>
+      <components>
+        <active>grid-axes</active>
+        <active>grid-axes</active>
+        <active>vector-v</active>
+        <active>vector-bperp</active>
+      </components>
+    </annotation>
+    <annotation id="grid-axes" speech2="The coordinate grid and axes">
+      <grouped>grid-axes</grouped>
+      <position>1</position>
+      <children>
+        <active>grid</active>
+        <active>axes</active>
+      </children>
+      <components>
+        <active>grid</active>
+        <active>axes</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid" speech2="The coordinate grid">
+      <active>grid</active>
+      <position>1</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="axes" speech2="The coordinate axes">
+      <active>axes</active>
+      <position>2</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid-axes" speech2="The coordinate grid and axes">
+      <grouped>grid-axes</grouped>
+      <position>2</position>
+      <children>
+        <active>grid</active>
+        <active>axes</active>
+      </children>
+      <components>
+        <active>grid</active>
+        <active>axes</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid" speech2="The coordinate grid">
+      <active>grid</active>
+      <position>1</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="axes" speech2="The coordinate axes">
+      <active>axes</active>
+      <position>2</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="vector-v" speech2="The line L, a vector v parallel to L, and the vector b">
+      <grouped>vector-v</grouped>
+      <position>3</position>
+      <children>
+        <active>line-L</active>
+        <active>vector-v</active>
+        <active>vector-b</active>
+      </children>
+      <components>
+        <active>line-L</active>
+        <active>vector-v</active>
+        <active>vector-b</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="line-L" speech2="The line L">
+      <active>line-L</active>
+      <position>1</position>
+      <parents>
+        <grouped>vector-v</grouped>
+      </parents>
+    </annotation>
+    <annotation id="vector-v" speech2="A vector v that is parallel to L">
+      <active>vector-v</active>
+      <position>2</position>
+      <parents>
+        <grouped>vector-v</grouped>
+      </parents>
+    </annotation>
+    <annotation id="vector-b" speech2="The vector b">
+      <active>vector-b</active>
+      <position>3</position>
+      <parents>
+        <grouped>vector-v</grouped>
+      </parents>
+    </annotation>
+    <annotation id="vector-bperp" speech2="b is decomposed into b hat and b perp">
+      <grouped>vector-bperp</grouped>
+      <position>4</position>
+      <children>
+        <active>vector-bperp</active>
+        <active>vector-bhat</active>
+      </children>
+      <components>
+        <active>vector-bperp</active>
+        <active>vector-bhat</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="vector-bperp" speech2="The vector b perp is orthogonal to L">
+      <active>vector-bperp</active>
+      <position>1</position>
+      <parents>
+        <grouped>vector-bperp</grouped>
+      </parents>
+    </annotation>
+    <annotation id="vector-bhat" speech2="The vector b hat is parallel to L and is the orthogonal projection of b onto L">
+      <active>vector-bhat</active>
+      <position>2</position>
+      <parents>
+        <grouped>vector-bperp</grouped>
+      </parents>
+    </annotation>
+  </annotations>
+</diagram>

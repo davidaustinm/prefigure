@@ -1,0 +1,10 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <definition>centers=((2,2),(3,7),(6,4),(8,7))</definition>
+    <grid-axes decorations="no"/>
+    <repeat parameter="center in centers">
+      <circle center="center" radius="1"
+              fill="springgreen" stroke="black"/>
+    </repeat>
+  </coordinates>
+</diagram>

@@ -1,0 +1,9 @@
+<diagram dimensions="(300,300)" margins="12">
+  <definition>f(t,y) = (y[1],-y[0])</definition>
+  <coordinates bbox="[-1,-4,6,4]">
+    <grid-axes/>
+    <de-solve function="f" t0="0" t1="6" y0="(3,0)" name="oscillator"/>
+    <plot-de-solution solution="oscillator" axes="(t,y0)"/>
+    <plot-de-solution solution="oscillator" axes="(t,y1)" stroke="red"/>
+  </coordinates>
+</diagram>

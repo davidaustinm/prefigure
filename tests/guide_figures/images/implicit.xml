@@ -1,0 +1,101 @@
+<diagram>
+  <annotations>
+    <annotation id="figure" speech2="Level curves of the function y squared minus x cubed plus x">
+      <grouped>figure</grouped>
+      <position>1</position>
+      <children>
+        <active>grid-axes</active>
+        <active>curves</active>
+      </children>
+      <components>
+        <active>grid-axes</active>
+        <active>curves</active>
+      </components>
+    </annotation>
+    <annotation id="grid-axes" speech2="The coordinate grid and axes">
+      <grouped>grid-axes</grouped>
+      <position>1</position>
+      <children>
+        <active>grid</active>
+        <active>axes</active>
+      </children>
+      <components>
+        <active>grid</active>
+        <active>axes</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid" speech2="The coordinate grid">
+      <active>grid</active>
+      <position>1</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="axes" speech2="The coordinate axes">
+      <active>axes</active>
+      <position>2</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="curves" speech2="The level curves">
+      <grouped>curves</grouped>
+      <position>2</position>
+      <children>
+        <active>curve--1</active>
+        <active>curve-0</active>
+        <active>curve-root3</active>
+        <active>curve-1</active>
+        <active>curve-2</active>
+      </children>
+      <components>
+        <active>curve--1</active>
+        <active>curve-0</active>
+        <active>curve-root3</active>
+        <active>curve-1</active>
+        <active>curve-2</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="curve--1" speech2="The level curve minus 1">
+      <active>curve--1</active>
+      <position>1</position>
+      <parents>
+        <grouped>curves</grouped>
+      </parents>
+    </annotation>
+    <annotation id="curve-0" speech2="The level curve 0">
+      <active>curve-0</active>
+      <position>2</position>
+      <parents>
+        <grouped>curves</grouped>
+      </parents>
+    </annotation>
+    <annotation id="curve-root3" speech2="The level curve 2 over 3 root 3">
+      <active>curve-root3</active>
+      <position>3</position>
+      <parents>
+        <grouped>curves</grouped>
+      </parents>
+    </annotation>
+    <annotation id="curve-1" speech2="The level curve 1">
+      <active>curve-1</active>
+      <position>4</position>
+      <parents>
+        <grouped>curves</grouped>
+      </parents>
+    </annotation>
+    <annotation id="curve-2" speech2="The level curve 2">
+      <active>curve-2</active>
+      <position>5</position>
+      <parents>
+        <grouped>curves</grouped>
+      </parents>
+    </annotation>
+  </annotations>
+</diagram>

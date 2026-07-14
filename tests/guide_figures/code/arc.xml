@@ -1,0 +1,13 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid/>
+    <arc center="(-2,2)" radius="2" range="(270,45)" arrows="1"
+         stroke="orange" thickness="5" reverse="yes"/>
+    <definition>points=((4,-2),(1,-2),(3,2))</definition>
+    <arc points="points" radius="2"
+         sector="yes" fill="lightgray"/>
+    <polygon points="points" stroke="black"/>
+    <arc center="(-2,-3)" radius="1" range="(-2*pi/3, 2*pi/3)"
+         degrees="no" stroke="blue" thickness="5"/>
+  </coordinates>
+</diagram>

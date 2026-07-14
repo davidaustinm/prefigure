@@ -1,0 +1,16 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(x)=exp(x/3)*cos(x)</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes ylabel="\real^2"/>
+    <graph function="f"/>
+    <repeat parameter="k=-3..3">
+      <point p="(k,f(k))"/>
+    </repeat>
+    <label p="(2,2)" clear-background="yes">
+      <m>\deriv{y}{x}</m>
+    </label>
+    <point p="(-2,2)" fill="red" size="4"/>
+  </coordinates>
+</diagram>
+      
+      

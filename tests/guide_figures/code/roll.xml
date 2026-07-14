@@ -1,0 +1,12 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <definition>points = ((1,1),(2,6),(6,9),(9,5),(7,2))</definition>
+    <grid-axes decorations="no"/>
+    <repeat parameter="k=1..5">
+      <angle-marker points="points"/>
+      <definition>points=roll(points)</definition>
+    </repeat>
+    
+    <polygon points="points" closed="yes" stroke="blue"/>
+  </coordinates>
+</diagram>

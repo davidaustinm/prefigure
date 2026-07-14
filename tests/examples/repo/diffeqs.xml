@@ -1,0 +1,36 @@
+<diagram dimensions="(300,300)" margins="10">
+  <definition>f(t,y) = t-y</definition>
+  <coordinates bbox="[-4,-4,4,4]">
+    <grid at="grid"/>
+    <axes at="axes" xlabel="t" ylabel="y"/>
+    <slope-field at="slope-field" function="f" arrows="yes" outline="yes"/>
+    <group at="solutions" outline="tactile">
+      <repeat parameter="k=-4..4">
+        <plot-de-solution at="solution" function="f" t0="0" y0="k"
+                          t1="4" stroke="orange" />
+        <point at="initial-value" p="(0,k)" size="4" fill="orange" />
+      </repeat>
+    </group>
+  </coordinates>
+
+  <annotations>
+    <annotation ref="figure" text="Solutions to the differential equation dy dt = t - y">
+      <annotation ref="grid" text="The coordinate grid"/>
+      <annotation ref="axes" text="The coordinate axes"/>
+      <annotation ref="slope-field" text="The slope field"/>
+      <annotation ref="solutions" text="A collection of solution curves">
+        <annotation ref="solution-k_-4" text="The solution with initial value -4"/>
+        <annotation ref="solution-k_-3" text="The solution with initial value -3"/>
+        <annotation ref="solution-k_-2" text="The solution with initial value -2"/>
+        <annotation ref="solution-k_-1" text="The solution with initial value -1"/>
+        <annotation ref="solution-k_0" text="The solution with initial value 0"/>
+        <annotation ref="solution-k_1" text="The solution with initial value 1"/>
+        <annotation ref="solution-k_2" text="The solution with initial value 2"/>
+        <annotation ref="solution-k_3" text="The solution with initial value 3"/>
+        <annotation ref="solution-k_4" text="The solution with initial value 4"/>
+      </annotation>
+    </annotation>
+  </annotations>
+
+</diagram>
+

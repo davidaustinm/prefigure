@@ -1,0 +1,26 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(400,300)"
+         margins="(30,30,5,5)">
+  <read name="df" filename="iris.data"
+        string-columns="['species']"/>
+  <coordinates bbox="(3,0,9,25)">
+    <grid-axes>
+      <ylabel alignment="se">Sepal length</ylabel>
+    </grid-axes>
+
+    <histogram at="histogram" data="df['sepal length']" outline="tactile"
+               min="4" max="9" bins="20"
+               fill="lightskyblue" stroke="black"
+               annotate="yes"
+               text="The histogram with 20 bins"
+               bin-text="A bin from ${__histogram_x[bin_num]}"/>
+
+  </coordinates>
+
+  <annotations>
+    <annotation ref="figure"
+                text="A histogram of irises with 30 bins grouped by sepal length">
+      <annotation ref="histogram"/>
+    </annotation>
+  </annotations>
+</diagram>

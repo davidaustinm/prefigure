@@ -1,0 +1,115 @@
+<diagram>
+  <annotations>
+    <annotation id="figure" speech2="The eighth roots of unity">
+      <grouped>figure</grouped>
+      <position>1</position>
+      <children>
+        <active>axes</active>
+        <active>grid</active>
+        <active>unit-circle</active>
+      </children>
+      <components>
+        <active>axes</active>
+        <active>grid</active>
+        <active>unit-circle</active>
+      </components>
+    </annotation>
+    <annotation id="axes" speech2="The coordinate axes">
+      <active>axes</active>
+      <position>1</position>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid" speech2="The coordinate grid">
+      <active>grid</active>
+      <position>2</position>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="unit-circle" speech2="The unit circle" circular="true">
+      <grouped>unit-circle</grouped>
+      <position>3</position>
+      <children>
+        <active>point-k=0</active>
+        <active>point-k=1</active>
+        <active>point-k=2</active>
+        <active>point-k=3</active>
+        <active>point-k=4</active>
+        <active>point-k=5</active>
+        <active>point-k=6</active>
+        <active>point-k=7</active>
+      </children>
+      <components>
+        <active>point-k=0</active>
+        <active>point-k=1</active>
+        <active>point-k=2</active>
+        <active>point-k=3</active>
+        <active>point-k=4</active>
+        <active>point-k=5</active>
+        <active>point-k=6</active>
+        <active>point-k=7</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="point-k=0" speech2="The primitive eighth root of unity to the power zero" speech="one">
+      <active>point-k=0</active>
+      <position>1</position>
+      <parents>
+        <grouped>unit-circle</grouped>
+      </parents>
+    </annotation>
+    <annotation id="point-k=1" speech2="The primitive eighth root of unity" speech="omega">
+      <active>point-k=1</active>
+      <position>2</position>
+      <parents>
+        <grouped>unit-circle</grouped>
+      </parents>
+    </annotation>
+    <annotation id="point-k=2" speech2="The primitive eighth root of unity squared" speech="i">
+      <active>point-k=2</active>
+      <position>3</position>
+      <parents>
+        <grouped>unit-circle</grouped>
+      </parents>
+    </annotation>
+    <annotation id="point-k=3" speech2="The primitive eighth root of unity cubed" speech="omega cubed">
+      <active>point-k=3</active>
+      <position>4</position>
+      <parents>
+        <grouped>unit-circle</grouped>
+      </parents>
+    </annotation>
+    <annotation id="point-k=4" speech2="The primitive eighth root of unity to the fourth" speech="minus one">
+      <active>point-k=4</active>
+      <position>5</position>
+      <parents>
+        <grouped>unit-circle</grouped>
+      </parents>
+    </annotation>
+    <annotation id="point-k=5" speech2="The primitive eighth root of unity to the fifth" speech="omega to the fifth">
+      <active>point-k=5</active>
+      <position>6</position>
+      <parents>
+        <grouped>unit-circle</grouped>
+      </parents>
+    </annotation>
+    <annotation id="point-k=6" speech2="The primitive eighth root of unity to the sixth" speech="minus i">
+      <active>point-k=6</active>
+      <position>7</position>
+      <parents>
+        <grouped>unit-circle</grouped>
+      </parents>
+    </annotation>
+    <annotation id="point-k=7" speech2="The primitive eighth root of unity to the seventh" speech="omega to the seventh">
+      <active>point-k=7</active>
+      <position>8</position>
+      <parents>
+        <grouped>unit-circle</grouped>
+      </parents>
+    </annotation>
+  </annotations>
+</diagram>

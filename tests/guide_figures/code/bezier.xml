@@ -1,0 +1,45 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>start=(1,3)</definition>
+  <definition>controls1=((2,5),(4,5),(5,3))</definition>
+  <definition>controls2=((6,1),(8,1),(9,3))</definition>
+  <definition>controls3=((4,9),(8,9))</definition>
+  <coordinates bbox="(0,0,10,10)">
+    <grid-axes decorations="no"/>
+    <path start="start" stroke="gray">
+      <lineto point="controls1[0]"/>
+      <moveto point="controls1[1]"/>
+      <lineto point="controls1[2]"/>
+      <moveto point="controls1[2]"/>
+      <lineto point="controls2[0]"/>
+      <moveto point="controls2[1]"/>
+      <lineto point="controls2[2]"/>
+    </path>
+    <path start="start" stroke="blue">
+      <cubic-bezier controls="controls1"/>
+      <cubic-bezier controls="controls2"/>
+    </path>
+    <point p="start"/>
+    <repeat parameter="k=0..2">
+      <point p="controls1[k]"/>
+      <point p="controls2[k]"/>
+    </repeat>
+
+    <label anchor="start" alignment="nw"><m>P_0</m></label>
+    <label anchor="controls1[0]" alignment="nw"><m>P_1</m></label>
+    <label anchor="controls1[1]" alignment="ne"><m>P_2</m></label>
+    <label anchor="controls1[2]" alignment="ne"><m>P_3</m></label>
+
+    <definition>start=(5,7)</definition>
+    <path start="start" stroke="gray">
+      <lineto point="controls3[0]"/>
+      <lineto point="controls3[1]"/>
+    </path>
+    <path start="start" stroke="red">
+      <quadratic-bezier controls="controls3"/>
+    </path>
+    <point p="start"/>
+    <point p="controls3[0]"/>
+    <point p="controls3[1]"/>
+  </coordinates>
+</diagram>
+

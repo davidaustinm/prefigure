@@ -1,0 +1,22 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid/>
+    <definition>points=((-2,1),(-4,2),(-1,4))</definition>
+    <angle-marker points="points" radius="20" arrow="yes">
+      <m>\theta_1</m>
+    </angle-marker>
+    <polygon points="points" stroke="black"/>
+
+    <definition>points=((5,4),(2,2),(4,1))</definition>
+    <angle-marker points="points" radius="20">
+      <m>\theta_2</m>
+    </angle-marker>
+    <polygon points="points" stroke="black"/>
+
+    <definition>points=((3,-3),(-1,-4),(-3,0))</definition>
+    <angle-marker points="points" stroke="red"/>
+    <angle-marker points="roll(points)" stroke="red"/>
+    <angle-marker points="roll(roll(points))" stroke="red"/>
+    <polygon points="points" stroke="blue" closed="yes"/>
+  </coordinates>
+</diagram>

@@ -1,0 +1,21 @@
+<diagram dimensions="(300,150)"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(-1,-1,1,2)">
+    <network directed="yes" arrows="end"
+             node-fill="lightskyblue" node-stroke="black"
+             node-size="25" tactile-node-size="60"
+             labels="yes">
+      <node at="0" p="(-0.5,0)" style="double-circle"
+            loop-orientation="90">
+        <m>S_0</m>
+      </node>
+      <node at="1" p="(0.5,0)" loop-orientation="90">
+        <m>S_1</m>
+      </node>
+      <edge vertices="(1,0)">0</edge>
+      <edge vertices="(0,1)">0</edge>
+      <edge vertices="(0,0)" loop-scale="(0.6,0.5)">1</edge>
+      <edge vertices="(1,1)" loop-scale="(0.6,0.5)">1</edge>
+    </network>
+  </coordinates>
+</diagram>

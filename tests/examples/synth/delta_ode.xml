@@ -1,0 +1,9 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org">
+  <definition>f(t,y) = -y + 3*delta(t, 2) + 2*delta(t, 4)</definition>
+  <coordinates bbox="(0,6,-1,4)">
+    <grid-axes/>
+    <de-solve function="f" t0="0" t1="6" y0="1" name="sol" N="150"/>
+    <plot-de-solution solution="sol" axes="(t,y)" stroke="blue"/>
+  </coordinates>
+</diagram>

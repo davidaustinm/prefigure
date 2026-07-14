@@ -1,0 +1,10 @@
+<diagram dimensions="(300,300)" margins="12">
+  <definition>f(t,y) = t-y</definition>
+  <coordinates bbox="[-4,-4,4,4]">
+    <grid-axes/>
+    <slope-field function="f"/>
+    <de-solve function="f" t0="0" y0="3" t1="4" name="linear"/>
+    <plot-de-solution solution="linear" stroke="red"/>
+    <plot-de-solution function="f" t0="0" y0="-2" t1="4" stroke="red"/>
+  </coordinates>
+</diagram>

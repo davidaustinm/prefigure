@@ -1,0 +1,21 @@
+<diagram dimensions="(300,300)" margins="20">
+  <coordinates bbox="(-1,-1,10,8)">
+    <definition>f(t,y) = 0.1*y*(6-y)</definition>
+    <definition>N=5</definition>
+    <definition>h=10/N</definition>
+    <definition>points = [[0,1]]</definition>
+    <repeat parameter="k=1..N">
+      <definition>t=points[-1][0]</definition>
+      <definition>y=points[-1][1]</definition>
+      <definition>points=append(points, [t+h, y+h*f(t,y)])</definition>
+    </repeat>
+    <grid-axes xlabel="t" ylabel="y"/>
+    <slope-field function="f" stroke="orange"/>
+    <polygon points="points" stroke="blue"/>
+
+    <repeat parameter="k=0..N">
+      <point p="points[k]"/>
+    </repeat>
+  </coordinates>
+</diagram>
+    

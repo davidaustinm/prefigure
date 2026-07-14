@@ -1,0 +1,9 @@
+<diagram dimensions="(300,270)" margins="5">
+  <coordinates bbox="(0,0,10,10)" aspect-ratio="1">
+    <grid-axes decorations="no"/>
+    <circle center="(2,2)" radius="1.5" stroke="blue"/>
+    <definition>vertices=((4,4), (8,1),(7,8))</definition>
+    <triangle vertices="vertices" labels="D,E,F"
+              angle-markers="yes"/>
+  </coordinates>
+</diagram>

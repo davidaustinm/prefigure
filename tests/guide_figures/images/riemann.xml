@@ -1,0 +1,132 @@
+<diagram>
+  <annotations>
+    <annotation id="figure" speech2="The graph of a function and the right Riemann sum with four terms from 1 to 3">
+      <grouped>figure</grouped>
+      <position>1</position>
+      <children>
+        <active>grid-axes</active>
+        <active>grid-axes</active>
+        <active>graph</active>
+        <active>riemann-sum</active>
+      </children>
+      <components>
+        <active>grid-axes</active>
+        <active>grid-axes</active>
+        <active>graph</active>
+        <active>riemann-sum</active>
+      </components>
+    </annotation>
+    <annotation id="grid-axes" speech2="The coordinate grid and axes">
+      <grouped>grid-axes</grouped>
+      <position>1</position>
+      <children>
+        <active>grid</active>
+        <active>axes</active>
+      </children>
+      <components>
+        <active>grid</active>
+        <active>axes</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid" speech2="The coordinate grid">
+      <active>grid</active>
+      <position>1</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="axes" speech2="The coordinate axes">
+      <active>axes</active>
+      <position>2</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid-axes" speech2="The coordinate grid and axes">
+      <grouped>grid-axes</grouped>
+      <position>2</position>
+      <children>
+        <active>grid</active>
+        <active>axes</active>
+      </children>
+      <components>
+        <active>grid</active>
+        <active>axes</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid" speech2="The coordinate grid">
+      <active>grid</active>
+      <position>1</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="axes" speech2="The coordinate axes">
+      <active>axes</active>
+      <position>2</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="graph" speech2="The graph of the function log x plus 1">
+      <active>graph</active>
+      <position>3</position>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="riemann-sum" speech2="The right Riemann sum with four terms">
+      <grouped>riemann-sum</grouped>
+      <position>4</position>
+      <children>
+        <active>riemann-sum-0</active>
+        <active>riemann-sum-1</active>
+        <active>riemann-sum-2</active>
+        <active>riemann-sum-3</active>
+      </children>
+      <components>
+        <active>riemann-sum-0</active>
+        <active>riemann-sum-1</active>
+        <active>riemann-sum-2</active>
+        <active>riemann-sum-3</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="riemann-sum-0" speech2="The first term in the Riemann sum is the area of this rectangle">
+      <active>riemann-sum-0</active>
+      <position>1</position>
+      <parents>
+        <grouped>riemann-sum</grouped>
+      </parents>
+    </annotation>
+    <annotation id="riemann-sum-1" speech2="The second term in the Riemann sum is the area of this rectangle">
+      <active>riemann-sum-1</active>
+      <position>2</position>
+      <parents>
+        <grouped>riemann-sum</grouped>
+      </parents>
+    </annotation>
+    <annotation id="riemann-sum-2" speech2="The third term in the Riemann sum is the area of this rectangle">
+      <active>riemann-sum-2</active>
+      <position>3</position>
+      <parents>
+        <grouped>riemann-sum</grouped>
+      </parents>
+    </annotation>
+    <annotation id="riemann-sum-3" speech2="The fourth term in the Riemann sum is the area of this rectangle">
+      <active>riemann-sum-3</active>
+      <position>4</position>
+      <parents>
+        <grouped>riemann-sum</grouped>
+      </parents>
+    </annotation>
+  </annotations>
+</diagram>

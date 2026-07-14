@@ -1,0 +1,54 @@
+<diagram dimensions="(300,200)" margins="5">
+  <coordinates bbox="(-0.5,-0.5, 1, 0.5)">
+    <definition>dy=0.2</definition>
+    <definition>t=dy/2</definition>
+    <definition>s=2*dy</definition>
+    <definition>A=radians(24)</definition>
+    <definition>B=radians(60)</definition>
+    <definition>l=t/tan(A)+0.1*dy</definition>
+    <definition>x2=l-s/tan(A)</definition>
+    <definition>x1=x2+(s-t)/tan(B)</definition>
+    <definition>start=(0.5,0)</definition>
+
+    <!-- angle markers first -->
+    <angle-marker points="(start+(x2,s), start+(x1,t), start+(x1-1,t))"
+		  offset="(0,-2)" stroke="gray">
+      <m>B</m>
+    </angle-marker>
+    <angle-marker points="(start+(x2,s), start+(0.07*dy,t), start+(0-1,t))"
+		  offset="(-1,2)" stroke="gray">
+      <m>A</m>
+    </angle-marker>
+
+    <!-- faint incoming path -->
+    <path start="(-0.4,0)" stroke="lightgray">
+      <moveto point="(-0.4,-t)"/>
+      <horizontal distance=".9"/>
+      <vertical distance="2*t"/>
+      <horizontal distance="-.9"/>
+    </path>
+
+    <!-- arrow head -->
+    <path start="start" closed="yes" stroke="black">
+      <moveto point="start+(l,0)"/>
+      <lineto point="start+(x2,s)"/>
+      <lineto point="start+(x1,t)"/>
+      <lineto point="start+(x1,-t)"/>
+      <lineto point="start+(x2,-s)"/>
+    </path>
+
+    <!-- width indicator -->
+    <line endpoints="((-0.4,0),(0.9,0))" stroke="gray"/>
+    <line endpoints="((-0.3,0),(-0.3,-s))"
+	  endpoint-offsets="(3,-3)"
+	  stroke="black" arrows="2"/>
+    <path start="(-0.35,-s)" stroke="gray">
+      <horizontal distance="0.1"/>
+    </path>
+    <label anchor="(-0.3,-s/2)" alignment="west">
+      <m>w</m>
+    </label>
+    
+  </coordinates>
+</diagram>
+

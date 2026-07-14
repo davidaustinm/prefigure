@@ -1,0 +1,12 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>v=(2,-1)</definition>
+  <definition>A=((1,2),(2,1))</definition>
+  <definition>Av = A@v</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes/>
+    <vector v="v" stroke="red"/>
+    <vector v="Av"/>
+    <label p="v" alignment="se"><m>{\mathbf v}</m></label>
+    <label p="Av" alignment="ne"><m>A{\mathbf v}</m></label>
+  </coordinates>
+</diagram>

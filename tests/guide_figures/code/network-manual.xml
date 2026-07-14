@@ -1,0 +1,15 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-1,-1,1,1)">
+    <definition>N=5</definition>
+    <definition>f(t)=(cos(2*pi*t/N), sin(2*pi*t/N))</definition>
+    <network scale="0.8" labels="yes"
+             node-fill="#ccf" node-stroke="black"
+             tactile-node-size="40">
+      <node at="0" p="f(0)" edges="[1,2,3,4]"/>
+      <node at="1" p="f(1)" edges="[2,3,4]"/>
+      <node at="2" p="f(2)" edges="[3,4]"/>
+      <node at="3" p="f(3)" edges="[4]"/>
+      <node at="4" p="f(4)"/>
+    </network>
+  </coordinates>
+</diagram>

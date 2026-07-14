@@ -1,0 +1,38 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org">
+  <definition>x0 = 1</definition>
+  <definition>x1 = 2.5</definition>
+  <definition>f(x)=3-(x+0.5)^2/4</definition>
+  <definition>y0 = f(x0)</definition>
+  <definition>y1 = f(x1)</definition>
+  <definition>scale=3.2</definition>
+  <coordinates bbox="(-1,-1,4,4)">
+    <axes decorations="no" xlabel="x" ylabel="y"/>
+    <tick-mark location="x0" axis="horizontal">
+      <m>x_0</m>
+    </tick-mark>
+    <tick-mark location="x1" axis="horizontal">
+      <m>x_1</m>
+    </tick-mark>
+    <tick-mark location="y0" axis="vertical">
+      <m>y_0</m>
+    </tick-mark>
+    <tick-mark location="y1" axis="vertical">
+      <m>y_1</m>
+    </tick-mark>
+    <line endpoints="((x0,f(x0)),(x1,f(x1)))" stroke="red" infinite="yes"/>
+    <graph function="f"/>
+    <point p="(x0,f(x0))"/>
+    <point p="(x1,f(x1))"/>
+    <line endpoints="((scale,y0),(scale,y1))" stroke="black"/>
+    <tick-mark location="(scale, y0)" axis="vertical" size="5"
+               alignment="east" offset="(8,0)">
+      <m>y_0</m>
+    </tick-mark>
+    <tick-mark location="(scale, y1)" axis="vertical" size="5"
+               alignment="east" offset="(8,0)">
+      <m>y_1</m>
+    </tick-mark>
+  </coordinates>
+</diagram>
+    

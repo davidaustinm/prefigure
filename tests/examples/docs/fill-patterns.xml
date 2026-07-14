@@ -1,0 +1,24 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(300, 300)" margins="5">
+  <definition>f(k)=2.5*(cos(2*pi*k/6), sin(2*pi*k/6))</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <axes decorations="no"/>
+    <circle center="f(0)" radius="1" stroke="blue"
+            fill-pattern="horizontal" fill="orange"/>
+    <circle center="f(1)" radius="1" stroke="blue"
+            fill-pattern="vertical" fill="red"/>
+    <circle center="f(2)" radius="1" stroke="blue"
+            fill-pattern="diagonal" fill="magenta"/>
+    <define-shapes>
+      <circle at="c4" center="f(3)" radius="1"/>
+    </define-shapes>
+    <shape shape="c4" fill="white"/>
+    <shape shape="c4" stroke="blue"
+            fill-pattern="backdiagonal" fill="rgb(127, 127, 0)"/>
+    <circle center="f(4)" radius="1" stroke="blue"
+            fill-pattern="dot" fill="#777"/>
+    <circle center="f(5)" radius="1" stroke="blue"
+            fill-pattern="diamond" fill="blue"/>
+  </coordinates>
+</diagram>
+    

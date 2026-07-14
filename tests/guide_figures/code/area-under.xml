@@ -1,0 +1,12 @@
+<diagram dimensions="(300, 300)" margins="5">
+  <definition>f(x)=2*sqrt(x)</definition>
+  <coordinates bbox="[-1,-1,5,5]">
+    <grid-axes />
+    <area-under-curve function="f" domain="(1,4)"
+                      fill="lightgray" stroke="black"/>
+    <graph function="f" domain="(0,5)"/>
+  </coordinates>
+  
+</diagram>
+
+

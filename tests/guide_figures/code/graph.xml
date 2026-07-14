@@ -1,0 +1,9 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(x)=x^3/8 - 1.5*x</definition>
+  <definition>g(s)=-sqrt(s+2)-1</definition>
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid-axes decorations="no"/>
+    <graph function="f"/>
+    <graph function="g" domain="(-2,5)" stroke="green"/>
+  </coordinates>
+</diagram>

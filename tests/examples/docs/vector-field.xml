@@ -1,0 +1,11 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org"> 
+  <definition>f(x,y)=(-y,x)</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes/>
+    <repeat parameter="k=1..6">
+      <circle center="(0,0)" radius="k" stroke="orange"/>
+    </repeat>
+    <vector-field function="f"/>
+  </coordinates>
+</diagram>

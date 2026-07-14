@@ -1,0 +1,24 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org">
+  <templates>
+    <label font="monospace" font-size="24"/>
+  </templates>
+  <coordinates bbox="(0,0,10,10)">
+    <grid/>
+    <label font="serif" font-size="20" alignment="c" anchor="(3,9)">
+      Serif
+    </label>
+    <label font="sans-serif" font-size="18" alignment="w" anchor="(8,7)">
+      Sans-serif
+    </label>
+    <label font="monospace" font-size="24" alignment="sw" anchor="(7,6)">
+      <b>Monospace</b>
+    </label>
+    <point p="(2,4)" alignment="se">
+      Point label
+    </point>
+    <label anchor="(10,1)" alignment="nw">
+      Monospace default
+    </label>
+  </coordinates>
+</diagram>

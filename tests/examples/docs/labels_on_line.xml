@@ -1,0 +1,18 @@
+<diagram dimensions="(400, 250)" margins="5"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(0,0,10,10)">
+    <grid-axes decorations="no"/>
+    <line endpoints="((5,9),(9,5))" offset="(0,10)"
+          clear-background="yes">
+      <m>x+y=14</m>
+    </line>
+    <line endpoints="((2,2),(8,1))" label-location="0.3">
+      <m>x+6y=14</m>
+    </line>
+    <line endpoints="((4,10),(1,5))" label-location="-0.3"
+          clear-background="yes" infinite="yes">
+      a line
+    </line>
+  </coordinates>
+</diagram>
+    

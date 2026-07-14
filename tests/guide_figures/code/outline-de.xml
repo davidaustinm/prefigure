@@ -1,0 +1,12 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(y,t)=t-y</definition>
+  <coordinates bbox="(-1,-1,4,4)">
+    <grid-axes/>
+    <plot-de-solution function="f" t0="0" y0="0"
+                      domain="[0,4]" outline="yes"/>
+    <plot-de-solution function="f" t0="0" y0="2"
+                      domain="[0,4]" outline="yes"/>
+    <point p="(0,2)"/>
+    <point p="(0,0)"/>
+  </coordinates>
+</diagram>

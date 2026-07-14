@@ -1,0 +1,13 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org">
+  <definition>F(x,y)=(y,x)</definition>
+  <definition>r1(t)=(3*cos(t),3*sin(t))</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes decorations="no"/>
+    <parametric-curve function="r1" domain="(0,2*pi)" stroke="magenta"/>
+    <vector-field function="F" curve="r1"
+                  domain="(0,2*pi)" N="13"
+                  scale="0.4"/>
+  </coordinates>
+</diagram>
+

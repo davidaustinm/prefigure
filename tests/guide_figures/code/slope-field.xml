@@ -1,0 +1,7 @@
+<diagram dimensions="(300,300)" margins="10">
+  <definition>f(t,y) = t-y</definition>
+  <coordinates bbox="[-4,-4,4,4]">
+    <grid-axes xlabel="t" ylabel="y"/>
+    <slope-field function="f"/>
+  </coordinates>
+</diagram>

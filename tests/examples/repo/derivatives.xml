@@ -1,0 +1,48 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition> f(x)=0.1*(x^4-10*x^2)</definition>
+  <derivative name="fp" function="f"/>
+  <derivative name="fpp" function="fp"/>
+  <coordinates bbox="[-4,-4,4,4]">
+
+    <grid-axes xlabel="x" ylabel="y"/>
+    <group at="graph-derivatives">
+      <group at="f">
+        <graph function="f" />
+        <label anchor="(3.3,1)" alignment="center" clear-background="yes">
+          <m>f</m>
+        </label>
+      </group>
+
+      <group at="fp">
+        <graph function="fp" stroke="red" cliptobbox="yes" />
+        <label anchor="(2.5,1)" alignment="center" clear-background="yes">
+	  <m>f'</m>
+        </label>
+      </group>
+
+      <group at="fpp">
+        <graph function="fpp" stroke="lawngreen" />
+        <label anchor="(1.6,1)" alignment="center" clear-background="yes">
+	  <m>f''</m>
+        </label>
+      </group>
+    </group>
+  </coordinates>
+
+  <annotations>
+    <annotation ref="figure" text="The graph of a function and its first two derivatives">
+      <annotation ref="axes" text="The coordinate axes" />
+      <annotation ref="grid" text="The coordinate grid" />
+      <annotation ref="graph-derivatives"
+		  text="The graph of f, its derivative f prime, and its second derivative f double prime">
+        <annotation ref="f" text="The graph of f" sonify="yes"/>
+        <annotation ref="fp" text="The graph of the derivative of f"
+                    sonify="yes" />
+        <annotation ref="fpp" text="The graph of the second derivative of f"
+                    sonify="yes"/>
+      </annotation>
+    </annotation>
+  </annotations>
+
+</diagram>
+

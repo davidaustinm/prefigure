@@ -1,0 +1,319 @@
+<diagram>
+  <annotations>
+    <annotation id="figure" speech2="A network with eight nodes labeled a through h and directed weighted edges">
+      <grouped>figure</grouped>
+      <position>1</position>
+      <children>
+        <active>a</active>
+        <active>b</active>
+        <active>c</active>
+        <active>d</active>
+        <active>e</active>
+        <active>f</active>
+        <active>g</active>
+        <active>h-pt</active>
+      </children>
+      <components>
+        <active>a</active>
+        <active>b</active>
+        <active>c</active>
+        <active>d</active>
+        <active>e</active>
+        <active>f</active>
+        <active>g</active>
+        <active>h-pt</active>
+      </components>
+    </annotation>
+    <annotation id="a" speech2="The node a and outgoing edges">
+      <grouped>a</grouped>
+      <position>1</position>
+      <children>
+        <active>a-pt</active>
+        <active>ac</active>
+        <active>ae</active>
+        <active>af</active>
+      </children>
+      <components>
+        <active>a-pt</active>
+        <active>ac</active>
+        <active>ae</active>
+        <active>af</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="a-pt" speech2="The node a">
+      <active>a-pt</active>
+      <position>1</position>
+      <parents>
+        <grouped>a</grouped>
+      </parents>
+    </annotation>
+    <annotation id="ac" speech2="An edge from a to c with weight 47">
+      <active>ac</active>
+      <position>2</position>
+      <parents>
+        <grouped>a</grouped>
+      </parents>
+    </annotation>
+    <annotation id="ae" speech2="An edge from a to e with weight 70">
+      <active>ae</active>
+      <position>3</position>
+      <parents>
+        <grouped>a</grouped>
+      </parents>
+    </annotation>
+    <annotation id="af" speech2="An edge from a to f with weight 24">
+      <active>af</active>
+      <position>4</position>
+      <parents>
+        <grouped>a</grouped>
+      </parents>
+    </annotation>
+    <annotation id="b" speech2="The node b and outgoing edges">
+      <grouped>b</grouped>
+      <position>2</position>
+      <children>
+        <active>b-pt</active>
+        <active>bd</active>
+        <active>bg</active>
+        <active>bh</active>
+      </children>
+      <components>
+        <active>b-pt</active>
+        <active>bd</active>
+        <active>bg</active>
+        <active>bh</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="b-pt" speech2="The node b">
+      <active>b-pt</active>
+      <position>1</position>
+      <parents>
+        <grouped>b</grouped>
+      </parents>
+    </annotation>
+    <annotation id="bd" speech2="An edge from b to d with weight 31">
+      <active>bd</active>
+      <position>2</position>
+      <parents>
+        <grouped>b</grouped>
+      </parents>
+    </annotation>
+    <annotation id="bg" speech2="An edge from b to g with weight 74">
+      <active>bg</active>
+      <position>3</position>
+      <parents>
+        <grouped>b</grouped>
+      </parents>
+    </annotation>
+    <annotation id="bh" speech2="An edge from b to h with weight 79">
+      <active>bh</active>
+      <position>4</position>
+      <parents>
+        <grouped>b</grouped>
+      </parents>
+    </annotation>
+    <annotation id="c" speech2="The node c and outgoing edges">
+      <grouped>c</grouped>
+      <position>3</position>
+      <children>
+        <active>c-pt</active>
+        <active>cb</active>
+        <active>cd</active>
+        <active>ce</active>
+        <active>cg</active>
+      </children>
+      <components>
+        <active>c-pt</active>
+        <active>cb</active>
+        <active>cd</active>
+        <active>ce</active>
+        <active>cg</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="c-pt" speech2="The node c">
+      <active>c-pt</active>
+      <position>1</position>
+      <parents>
+        <grouped>c</grouped>
+      </parents>
+    </annotation>
+    <annotation id="cb" speech2="An edge from c to b with weight 55">
+      <active>cb</active>
+      <position>2</position>
+      <parents>
+        <grouped>c</grouped>
+      </parents>
+    </annotation>
+    <annotation id="cd" speech2="An edge from c to d with weight 88">
+      <active>cd</active>
+      <position>3</position>
+      <parents>
+        <grouped>c</grouped>
+      </parents>
+    </annotation>
+    <annotation id="ce" speech2="An edge from c to e with weight 23">
+      <active>ce</active>
+      <position>4</position>
+      <parents>
+        <grouped>c</grouped>
+      </parents>
+    </annotation>
+    <annotation id="cg" speech2="An edge from c to g with weight 66">
+      <active>cg</active>
+      <position>5</position>
+      <parents>
+        <grouped>c</grouped>
+      </parents>
+    </annotation>
+    <annotation id="d" speech2="The node d and an outgoing edge">
+      <grouped>d</grouped>
+      <position>4</position>
+      <children>
+        <active>d-pt</active>
+        <active>dh</active>
+      </children>
+      <components>
+        <active>d-pt</active>
+        <active>dh</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="d-pt" speech2="The node d">
+      <active>d-pt</active>
+      <position>1</position>
+      <parents>
+        <grouped>d</grouped>
+      </parents>
+    </annotation>
+    <annotation id="dh" speech2="An edge from d to h with weight 29">
+      <active>dh</active>
+      <position>2</position>
+      <parents>
+        <grouped>d</grouped>
+      </parents>
+    </annotation>
+    <annotation id="e" speech2="The node e and outgoing edges">
+      <grouped>e</grouped>
+      <position>5</position>
+      <children>
+        <active>e-pt</active>
+        <active>eb</active>
+        <active>eg</active>
+      </children>
+      <components>
+        <active>e-pt</active>
+        <active>eb</active>
+        <active>eg</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="e-pt" speech2="The node e">
+      <active>e-pt</active>
+      <position>1</position>
+      <parents>
+        <grouped>e</grouped>
+      </parents>
+    </annotation>
+    <annotation id="eb" speech2="An edge from e to b with weight 31">
+      <active>eb</active>
+      <position>2</position>
+      <parents>
+        <grouped>e</grouped>
+      </parents>
+    </annotation>
+    <annotation id="eg" speech2="An edge from e to g with weight 42">
+      <active>eg</active>
+      <position>3</position>
+      <parents>
+        <grouped>e</grouped>
+      </parents>
+    </annotation>
+    <annotation id="f" speech2="The node f and outgoing edges">
+      <grouped>f</grouped>
+      <position>6</position>
+      <children>
+        <active>f-pt</active>
+        <active>fc</active>
+        <active>fd</active>
+      </children>
+      <components>
+        <active>f-pt</active>
+        <active>fc</active>
+        <active>fd</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="f-pt" speech2="The node f">
+      <active>f-pt</active>
+      <position>1</position>
+      <parents>
+        <grouped>f</grouped>
+      </parents>
+    </annotation>
+    <annotation id="fc" speech2="An edge from f to c with weight 25">
+      <active>fc</active>
+      <position>2</position>
+      <parents>
+        <grouped>f</grouped>
+      </parents>
+    </annotation>
+    <annotation id="fd" speech2="An edge from f to d with weight 120">
+      <active>fd</active>
+      <position>3</position>
+      <parents>
+        <grouped>f</grouped>
+      </parents>
+    </annotation>
+    <annotation id="g" speech2="The node g and an outgoing edge">
+      <grouped>g</grouped>
+      <position>7</position>
+      <children>
+        <active>g-pt</active>
+        <active>gh</active>
+      </children>
+      <components>
+        <active>g-pt</active>
+        <active>gh</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="g-pt" speech2="The node g">
+      <active>g-pt</active>
+      <position>1</position>
+      <parents>
+        <grouped>g</grouped>
+      </parents>
+    </annotation>
+    <annotation id="gh" speech2="An edge from g to h with weight 66">
+      <active>gh</active>
+      <position>2</position>
+      <parents>
+        <grouped>g</grouped>
+      </parents>
+    </annotation>
+    <annotation id="h-pt" speech2="The node h has no outgoing edges">
+      <active>h-pt</active>
+      <position>8</position>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+  </annotations>
+</diagram>

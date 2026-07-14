@@ -1,0 +1,11 @@
+<diagram dimensions="(300, 300)" margins="5">
+  <definition>f(x,y) = y^2 - x^3 + x</definition>
+  <coordinates bbox="[-2,-2,2,2]">
+    <grid-axes />
+    <implicit-curve function="f" k="-1" stroke="orange" />
+    <implicit-curve function="f" k="1" stroke="orange" />
+  </coordinates>
+  
+</diagram>
+
+

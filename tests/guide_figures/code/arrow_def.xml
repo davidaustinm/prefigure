@@ -1,0 +1,26 @@
+<diagram dimensions="(300,200)" margins="5">
+  <coordinates bbox="(-0.5,-0.5, 2.5, 1.5)">
+    <line endpoints="((0,1),(2,1))" arrows="1"
+	  thickness="20"/>
+
+    <definition>dy=0.2</definition>
+    <definition>t=dy/2</definition>
+    <definition>s=2*dy</definition>
+    <definition>A=radians(24)</definition>
+    <definition>B=radians(60)</definition>
+    <definition>l=t/tan(A)+0.1*dy</definition>
+    <definition>x2=l-s/tan(A)</definition>
+    <definition>x1=x2+(s-t)/tan(B)</definition>
+    <definition>start=(2,0)</definition>
+    <path start="start" closed="yes" stroke="black">
+      <moveto point="start+(l,0)"/>
+      <lineto point="start+(x2,s)"/>
+      <lineto point="start+(x1,t)"/>
+      <lineto point="start+(x1,-t)"/>
+      <lineto point="start+(x2,-s)"/>
+    </path>
+    <rectangle lower-left="(0,-t)" dimensions="(2,dy)"
+	       stroke="black"/>
+  </coordinates>
+</diagram>
+

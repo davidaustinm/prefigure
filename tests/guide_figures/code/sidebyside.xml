@@ -1,0 +1,11 @@
+<diagram dimensions="(410, 200)"
+         margins="5">
+  <coordinates bbox="(0,0,1,1)" destination="(0,0,200,200)">
+    <rectangle lower-left="(0,0)" dimensions="(1,1)"
+               fill="blue"/>
+  </coordinates>
+  <coordinates bbox="(0,0,1,1)" destination="(210,0,410,200)">
+    <rectangle lower-left="(0,0)" dimensions="(1,1)"
+               fill="red"/>
+  </coordinates>
+</diagram>

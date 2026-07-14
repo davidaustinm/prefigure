@@ -1,0 +1,11 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(x)=x^3-3*x+1</definition>
+  <derivative name="fp" function="f"/>
+  <coordinates bbox="(-3,-3,3,3)">
+    <grid-axes/>
+    <graph function="f"/>
+    <graph function="fp" stroke="green"/>
+    <label p="(1.8,f(1.8))" alignment="se"><m>f(x)</m></label>
+    <label p="(0.5,fp(0.5))" alignment="se"><m>f'(x)</m></label>
+  </coordinates>
+</diagram>

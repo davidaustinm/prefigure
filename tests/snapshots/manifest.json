@@ -1,0 +1,57 @@
+{
+ "repo": {
+  "built": [
+   "de-system",
+   "derivatives",
+   "diffeqs",
+   "implicit",
+   "projection",
+   "riemann",
+   "roots_of_unity",
+   "tangent"
+  ],
+  "skipped": []
+ },
+ "docs": {
+  "built": [
+   "annotated-rs",
+   "attack",
+   "big-zero-include",
+   "fill-patterns",
+   "fonts",
+   "grad-field",
+   "gradient-annotated",
+   "gradient",
+   "iris_scatter_1",
+   "labels_on_line",
+   "loglog-spacing",
+   "loglog",
+   "network-loops",
+   "number-line",
+   "path_decorations",
+   "polar-areas",
+   "polar-graphs",
+   "polar-grid-1",
+   "polar-grid-2",
+   "tangent-annotated",
+   "tick-marks",
+   "ticks-bbox",
+   "transform-3",
+   "vec-field",
+   "vector-field-exponent-1",
+   "vector-field-exponent-2",
+   "vector-field",
+   "vector-labels",
+   "wasatch"
+  ],
+  "skipped": []
+ },
+ "synth": {
+  "built": [
+   "delta_ode",
+   "histogram",
+   "read_scatter"
+  ],
+  "skipped": []
+ }
+}

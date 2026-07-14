@@ -1,0 +1,10 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes decorations="yes" xlabel="t" ylabel="y"/>
+    <definition>
+      f(t,y)=(y[1],-y[0]-y[1]+5*delta(t,-2)+3*delta(t,1))
+    </definition>
+    <plot-de-solution function="f" t0="-4" t1="4" y0="(0,0)"/>
+  </coordinates>
+</diagram>
+

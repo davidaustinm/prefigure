@@ -1,0 +1,10 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(x) = 2*log(x+2)</definition>
+  <coordinates bbox="[-1,-1,5,5]">
+    <grid-axes/>
+    <riemann-sum function="f" domain="(1,4)" rule="right"
+                 N="6" fill="lawngreen" stroke="black"/>
+    <graph function="f"/>
+
+  </coordinates>
+</diagram>

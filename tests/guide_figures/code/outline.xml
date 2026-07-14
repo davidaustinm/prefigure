@@ -1,0 +1,10 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>a=1</definition>
+  <definition>f(x)=exp(x/3)*cos(x)</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <rectangle center="(0,0)" dimensions="(8,8)"
+               fill="lightgray"/>
+    <graph function="f" outline="yes"/>
+    <point p="(a,f(a))" size="10" outline="yes"/>
+  </coordinates>
+</diagram>

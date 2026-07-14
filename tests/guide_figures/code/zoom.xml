@@ -1,0 +1,22 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(x)=3-x^2/2</definition>
+  <definition>a=1</definition>
+  <definition>side=0.5</definition>
+  <coordinates bbox="(0,0,4,4)">
+    <grid-axes decorations="no"/>
+    <graph function="f"/>
+    <tangent-line function="f" point="a"/>
+    <point p="(a,f(a))"/>
+    <rectangle center="(a,f(a))" dimensions="(side, side)"
+               stroke="gray"/>
+    <coordinates bbox="(a-side/2,f(a)-side/2,a+side/2,f(a)+side/2)"
+                 destination="(2.25,2.25,3.75,3.75)">
+      <rectangle center="(a,f(a))" dimensions="(side, side)"
+                 stroke="gray" fill="white"/>
+      <graph function="f"/>
+      <tangent-line function="f" point="a"/>
+      <point p="(a,f(a))"/>
+    </coordinates>
+  </coordinates>
+</diagram>
+      

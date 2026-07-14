@@ -1,0 +1,15 @@
+<diagram dimensions="(300, 150)">
+  <coordinates bbox="(0,0,8,4)">
+    <rectangle lower-left="(0,0)" dimensions="(8,4)"
+	       fill="#6666ff"/>
+    <rectangle center="(2,2)" dimensions="(1.8,1.8)"
+	       fill-opacity="1.0"
+	       fill="red"/>
+    <rectangle center="(4,2)" dimensions="(1.8,1.8)"
+	       fill-opacity="0.6"
+	       fill="red"/>
+    <rectangle center="(6,2)" dimensions="(1.8,1.8)"
+	       fill-opacity="0.2"
+	       fill="red"/>
+  </coordinates>
+</diagram>

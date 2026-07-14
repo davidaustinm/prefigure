@@ -1,0 +1,33 @@
+<diagram xmlns="https://prefigure.org"
+    dimensions="(300, 300)" margins="5">
+  <coordinates bbox="(-4,-4,4,4)">
+    <definition>f(x) = 2*exp(x/4)*sin(2*x)</definition>
+    <grid-axes decorations="no"/>
+    <definition>
+      ordinals=('first', 'second', 'third', 'fourth', 'fifth', 'sixth')
+    </definition>
+    <riemann-sum at="rs" function="f"
+                 fill="lightblue" stroke="black"
+                 partition="(-3, -2, -1.5, -1, 0.5, 2, 3)"
+                 samples="(-2.5, -2, -1.2, 0.2, 1, 2.8)"
+                 miterlimit="1"
+                 annotate="yes" circular="yes"
+                 text="A Riemann sum for the function f over the interval from
+                       -3 to 3 with six subintervals defined by the partition
+                       attribute."
+                 subinterval-text="The ${ordinals[_interval]} interval
+                                   starts at x=${_left} and ends at
+                                   x=${_right} with height ${_height}"/>
+    <graph at="graph" function="f"/>
+  </coordinates>
+
+  <annotations>
+    <annotation ref="figure"
+                text="This diagram demonstrates how to annotate a Riemann sum">
+      <annotation ref="graph"
+                  text="The graph of the function f"
+                  sonify="yes"/>
+      <annotation ref="rs"/>
+    </annotation>
+  </annotations>
+</diagram>

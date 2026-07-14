@@ -1,0 +1,8 @@
+<diagram dimensions="(300,250)" margins="(35,30,50,30)">
+  <coordinates bbox="(-4, -4, 4, 4)">
+    <axes decorations="no">
+      <xlabel>Time <m>t</m></xlabel>
+      <ylabel alignment="ne">Temperature <m>F</m></ylabel>
+    </axes>
+  </coordinates>
+</diagram>

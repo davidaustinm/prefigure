@@ -1,0 +1,16 @@
+<diagram dimensions="(250,250)" margins="5"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(-1,-1,1,1)">
+    <definition>graph={0:[0,1], 1:[0]}</definition>
+    <definition>labels={0:'a', 1:'b'}</definition>
+    <network directed="yes" graph="graph" arrows="middle"
+             seed="1" node-size="15" scale="0.5" node-fill="white"
+             labels="yes" label-dictionary="labels">
+      <node at="2" style="double-circle"><m>S</m></node>
+      <edge vertices="(2,2)">1</edge>
+      <edge vertices="(2,1)"/>
+      <edge vertices="(2,0)"/>
+      <edge vertices="(0,0)" label-location="0.6">1</edge>
+    </network>
+  </coordinates>
+</diagram>

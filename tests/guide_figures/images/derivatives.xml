@@ -1,0 +1,110 @@
+<diagram>
+  <annotations>
+    <annotation id="figure" speech2="The graph of a function and its first two derivatives">
+      <grouped>figure</grouped>
+      <position>1</position>
+      <children>
+        <active>grid-axes</active>
+        <active>axes</active>
+        <active>grid</active>
+        <active>graph-derivatives</active>
+      </children>
+      <components>
+        <active>grid-axes</active>
+        <active>axes</active>
+        <active>grid</active>
+        <active>graph-derivatives</active>
+      </components>
+    </annotation>
+    <annotation id="grid-axes" speech2="The coordinate grid and axes">
+      <grouped>grid-axes</grouped>
+      <position>1</position>
+      <children>
+        <active>grid</active>
+        <active>axes</active>
+      </children>
+      <components>
+        <active>grid</active>
+        <active>axes</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid" speech2="The coordinate grid">
+      <active>grid</active>
+      <position>1</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="axes" speech2="The coordinate axes">
+      <active>axes</active>
+      <position>2</position>
+      <parents>
+        <grouped>grid-axes</grouped>
+      </parents>
+    </annotation>
+    <annotation id="axes" speech2="The coordinate axes">
+      <active>axes</active>
+      <position>2</position>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="grid" speech2="The coordinate grid">
+      <active>grid</active>
+      <position>3</position>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="graph-derivatives" speech2="The graph of f, its derivative f prime, and its second derivative f double prime">
+      <grouped>graph-derivatives</grouped>
+      <position>4</position>
+      <children>
+        <active>f</active>
+        <active>fp</active>
+        <active>fpp</active>
+      </children>
+      <components>
+        <active>f</active>
+        <active>fp</active>
+        <active>fpp</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="f" speech2="The graph of f" sonify="yes">
+      <active>f</active>
+      <position>1</position>
+      <parents>
+        <grouped>graph-derivatives</grouped>
+      </parents>
+      <sonification>
+        <ACTIVE>f</ACTIVE>
+      </sonification>
+    </annotation>
+    <annotation id="fp" speech2="The graph of the derivative of f" sonify="yes">
+      <active>fp</active>
+      <position>2</position>
+      <parents>
+        <grouped>graph-derivatives</grouped>
+      </parents>
+      <sonification>
+        <ACTIVE>fp</ACTIVE>
+      </sonification>
+    </annotation>
+    <annotation id="fpp" speech2="The graph of the second derivative of f" sonify="yes">
+      <active>fpp</active>
+      <position>3</position>
+      <parents>
+        <grouped>graph-derivatives</grouped>
+      </parents>
+      <sonification>
+        <ACTIVE>fpp</ACTIVE>
+      </sonification>
+    </annotation>
+  </annotations>
+</diagram>

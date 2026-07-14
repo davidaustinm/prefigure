@@ -1,0 +1,133 @@
+<diagram>
+  <annotations>
+    <annotation id="figure" speech2="Solutions to the differential equation dy dt = t - y">
+      <grouped>figure</grouped>
+      <position>1</position>
+      <children>
+        <active>grid</active>
+        <active>axes</active>
+        <active>slope-field</active>
+        <active>solutions</active>
+      </children>
+      <components>
+        <active>grid</active>
+        <active>axes</active>
+        <active>slope-field</active>
+        <active>solutions</active>
+      </components>
+    </annotation>
+    <annotation id="grid" speech2="The coordinate grid">
+      <active>grid</active>
+      <position>1</position>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="axes" speech2="The coordinate axes">
+      <active>axes</active>
+      <position>2</position>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="slope-field" speech2="The slope field">
+      <active>slope-field</active>
+      <position>3</position>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solutions" speech2="A collection of solution curves">
+      <grouped>solutions</grouped>
+      <position>4</position>
+      <children>
+        <active>solution-k=-4</active>
+        <active>solution-k=-3</active>
+        <active>solution-k=-2</active>
+        <active>solution-k=-1</active>
+        <active>solution-k=0</active>
+        <active>solution-k=1</active>
+        <active>solution-k=2</active>
+        <active>solution-k=3</active>
+        <active>solution-k=4</active>
+      </children>
+      <components>
+        <active>solution-k=-4</active>
+        <active>solution-k=-3</active>
+        <active>solution-k=-2</active>
+        <active>solution-k=-1</active>
+        <active>solution-k=0</active>
+        <active>solution-k=1</active>
+        <active>solution-k=2</active>
+        <active>solution-k=3</active>
+        <active>solution-k=4</active>
+      </components>
+      <parents>
+        <grouped>figure</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solution-k=-4" speech2="The solution with initial value -4">
+      <active>solution-k=-4</active>
+      <position>1</position>
+      <parents>
+        <grouped>solutions</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solution-k=-3" speech2="The solution with initial value -3">
+      <active>solution-k=-3</active>
+      <position>2</position>
+      <parents>
+        <grouped>solutions</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solution-k=-2" speech2="The solution with initial value -2">
+      <active>solution-k=-2</active>
+      <position>3</position>
+      <parents>
+        <grouped>solutions</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solution-k=-1" speech2="The solution with initial value -1">
+      <active>solution-k=-1</active>
+      <position>4</position>
+      <parents>
+        <grouped>solutions</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solution-k=0" speech2="The solution with initial value 0">
+      <active>solution-k=0</active>
+      <position>5</position>
+      <parents>
+        <grouped>solutions</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solution-k=1" speech2="The solution with initial value 1">
+      <active>solution-k=1</active>
+      <position>6</position>
+      <parents>
+        <grouped>solutions</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solution-k=2" speech2="The solution with initial value 2">
+      <active>solution-k=2</active>
+      <position>7</position>
+      <parents>
+        <grouped>solutions</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solution-k=3" speech2="The solution with initial value 3">
+      <active>solution-k=3</active>
+      <position>8</position>
+      <parents>
+        <grouped>solutions</grouped>
+      </parents>
+    </annotation>
+    <annotation id="solution-k=4" speech2="The solution with initial value 4">
+      <active>solution-k=4</active>
+      <position>9</position>
+      <parents>
+        <grouped>solutions</grouped>
+      </parents>
+    </annotation>
+  </annotations>
+</diagram>

@@ -1,0 +1,12 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org"> 
+  <definition>f(x,y)=x^2+y^2</definition>
+  <definition>del_f(x,y)=grad(f, (x,y))</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes stroke="gray"/>
+    <repeat parameter="k=1..6">
+      <circle center="(0,0)" radius="k" stroke="orange"/>
+    </repeat>
+    <vector-field function="del_f" spacings="((-3,1,3),(-3,1,3))"/>
+  </coordinates>
+</diagram>

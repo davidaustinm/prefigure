@@ -1,0 +1,10 @@
+<diagram dimensions="(300,300)" margins="5">
+  <read filename="gragg_data.csv" name="data" delimiter=' '/>
+  <definition>x = data['x']</definition>
+  <definition>y = data['y']</definition>
+  <definition>points=zip_lists(x,y)</definition>
+  <coordinates bbox="(-15,-8,15,8)">
+    <grid-axes xlabel="x" ylabel="y"/>
+    <polygon points="points" stroke="blue"/>
+  </coordinates>
+</diagram>

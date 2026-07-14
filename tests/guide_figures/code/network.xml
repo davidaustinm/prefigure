@@ -1,0 +1,87 @@
+<diagram xml:id="figure" width="300" height="300" margins="25">
+
+  <group outline="tactile">
+  <network id="path-network" edgedefault="directed" seed="1">
+    <node id="a" label="a" fill="orangered" />
+    <node id="b" label="b" />
+    <node id="c" label="c" />
+    <node id="d" label="d" />
+    <node id="e" label="e" />
+    <node id="f" label="f" />
+    <node id="g" label="g" />
+    <node id="h" label="h" />
+
+    <edge source="a" target="f" id="af" weight="24" />
+    <edge source="a" target="c" id="ac" weight="47" />
+    <edge source="a" target="e" id="ae" weight="70" />
+    <edge source="f" target="d" id="fd" weight="120" />
+    <edge source="f" target="c" id="fc" weight="25" />
+    <edge source="c" target="d" id="cd" weight="88" />
+    <edge source="c" target="b" id="cb" weight="55" />
+    <edge source="c" target="e" id="ce" weight="23" />
+    <edge source="c" target="g" id="cg" weight="66" offset="(12, -4)"/>
+    <edge source="e" target="b" id="eb" weight="31" />
+    <edge source="e" target="g" id="eg" weight="42" />
+    <edge source="d" target="h" id="dh" weight="29" />
+    <edge source="b" target="d" id="bd" weight="31" />
+    <edge source="b" target="h" id="bh" weight="79" />
+    <edge source="b" target="g" id="bg" weight="74" />
+    <edge source="g" target="h" id="gh" weight="66" />
+  </network>
+  </group>
+
+  <annotations>
+    <annotation id="figure"
+	       text="A network with eight nodes labeled a through h and directed weighted edges">
+
+      <annotation id="a" text="The node a and outgoing edges">
+	<annotation id="a-pt" text="The node a" />
+	<annotation id="ac" text="An edge from a to c with weight 47"/>
+	<annotation id="ae" text="An edge from a to e with weight 70"/>
+	<annotation id="af" text="An edge from a to f with weight 24"/>
+      </annotation>
+
+      <annotation id="b" text="The node b and outgoing edges">
+	<annotation id="b-pt" text="The node b" />
+	<annotation id="bd" text="An edge from b to d with weight 31"/>
+	<annotation id="bg" text="An edge from b to g with weight 74"/>
+	<annotation id="bh" text="An edge from b to h with weight 79"/>
+      </annotation>
+      
+      <annotation id="c" text="The node c and outgoing edges">
+	<annotation id="c-pt" text="The node c" />
+	<annotation id="cb" text="An edge from c to b with weight 55"/>
+	<annotation id="cd" text="An edge from c to d with weight 88"/>
+	<annotation id="ce" text="An edge from c to e with weight 23"/>
+	<annotation id="cg" text="An edge from c to g with weight 66"/>
+      </annotation>
+
+      <annotation id="d" text="The node d and an outgoing edge">
+	<annotation id="d-pt" text="The node d" />
+	<annotation id="dh" text="An edge from d to h with weight 29"/>
+      </annotation>
+
+      <annotation id="e" text="The node e and outgoing edges">
+	<annotation id="e-pt" text="The node e" />
+	<annotation id="eb" text="An edge from e to b with weight 31"/>
+	<annotation id="eg" text="An edge from e to g with weight 42"/>
+      </annotation>
+
+      <annotation id="f" text="The node f and outgoing edges">
+	<annotation id="f-pt" text="The node f" />
+	<annotation id="fc" text="An edge from f to c with weight 25"/>
+	<annotation id="fd" text="An edge from f to d with weight 120"/>
+      </annotation>
+
+      <annotation id="g" text="The node g and an outgoing edge">
+	<annotation id="g-pt" text="The node g" />
+	<annotation id="gh" text="An edge from g to h with weight 66"/>
+      </annotation>
+
+      <annotation id="h-pt" text="The node h has no outgoing edges"/>
+    </annotation>
+
+  </annotations>
+  
+</diagram>
+

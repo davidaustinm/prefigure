@@ -1,0 +1,50 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(400,300)"
+         margins="(30,30,5,5)">
+  <read name="df" filename="iris.data"
+        string-columns="['species']"/>
+  <coordinates bbox="(4,0,9,3)">
+    <grid-axes>
+      <xlabel alignment="nw">Sepal length</xlabel>
+      <ylabel alignment="se">Petal width</ylabel>
+    </grid-axes>
+
+    <scatter at="setosa" data="df"
+             x="sepal length" y="petal width"
+             filter="('species','Iris-setosa')"
+             fill="blue"
+             annotate="yes" text="Data from 50 Iris setosas"
+             point-text="An iris setosa"/>
+
+    <scatter at="versicolor" data="df"
+             x="sepal length" y="petal width"
+             filter="('species','Iris-versicolor')"
+             fill="red" style="box" size="4"
+             annotate="yes" text="Data from 50 Iris versicolor"
+             point-text="An iris versicolor"/>
+
+    <scatter at="virginica" data="df"
+             x="sepal length" y="petal width"
+             filter="('species','Iris-virginica')"
+             fill="green" style="diamond" size="4"
+             annotate="yes" text="Data from 50 Iris virginica"
+             point-text="An iris virginica"/>
+
+    <legend anchor="(bbox[2],0.3)"
+            alignment="nw" opacity="0.9">
+      <item ref="setosa-point">Iris-setosa</item>
+      <item ref="versicolor-point">Iris-versicolor</item>
+      <item ref="virginica-point">Iris-virginica</item>
+    </legend>
+
+  </coordinates>
+
+  <annotations>
+    <annotation ref="figure"
+                text="Scatter plot of the iris data set">
+      <annotation ref="setosa"/>
+      <annotation ref="versicolor"/>
+      <annotation ref="virginica"/>
+    </annotation>
+  </annotations>
+</diagram>

@@ -1,0 +1,26 @@
+<diagram dimensions="(250,270)" margins="5">
+  <definition>a=3</definition>
+  <definition>b=4</definition>
+  <definition>c=sqrt(a^2+b^2)</definition>
+  <definition>phi=acos(a/c)</definition>
+  <definition>d=a*cos(phi)</definition>
+  <definition>p=a*(cos(phi), sin(phi))</definition>
+  <coordinates bbox="(-2.5,-5,7.5,6)" aspect-ratio="1">
+    <rectangle lower-left="(0,-c)" dimensions="(d,c)"
+               fill="skyblue"/>
+    <rectangle lower-left="(d,-c)" dimensions="(c-d,c)"
+               fill="springgreen"/>
+    <transform>
+      <rotate by="phi-pi/2" degrees="no"/>
+      <rectangle lower-left="(-a,0)" dimensions="(a,a)"
+                 fill="skyblue" stroke="black"/>
+      <rectangle lower-left="(0,a)" dimensions="(b,b)"
+                 fill="springgreen" stroke="black"/>
+    </transform>
+    <rectangle lower-left="(0,-c)" dimensions="(c,c)"
+               stroke="black"/>
+    <line endpoints="(p,(d,-c))" dash="8 8" stroke="black"/>
+    <triangle at="triangle" vertices="((0,0),(c,0),p)" stroke="black"/>
+  </coordinates>
+</diagram>
+    

@@ -1,0 +1,28 @@
+<diagram dimensions="(300, 200)" margins="5">
+  <definition>phi=(sqrt(5)+1)/2</definition>
+  <definition>height=0.25</definition>
+  <definition>width=5+8*phi</definition>
+  <definition>colors={0:'blue', 1:'red'}</definition>
+  <definition>widths={0:phi, 1:1}</definition>
+  <definition>tiling2=[0,1,0,0,1]</definition>
+  <definition>tiling1=[0,1,0,0,1,0,1,0]</definition>
+  <definition>tiling0=[0,1,0,0,1,0,1,0,0,1,0,0,1]</definition>
+  <definition>tilings=[tiling0, tiling1, tiling2]</definition>
+  <coordinates bbox="(0,-0.5,width,2.5)">
+    <transform>
+      <repeat parameter="tiling in tilings">
+        <transform>
+          <repeat parameter="type in tiling">
+            <rectangle lower-left="(0,0)"
+                       dimensions="(widths[type], height)"
+                       fill="${colors[type]}" stroke="black"/>
+            <translate by="(widths[type],0)"/>
+          </repeat>
+        </transform>
+        <scale by="(phi, 1)"/>
+        <translate by="(0,1)"/>
+      </repeat>
+    </transform>
+  </coordinates>
+</diagram>
+               

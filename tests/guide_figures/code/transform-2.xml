@@ -1,0 +1,23 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <grid-axes decorations="no"/>
+    <transform>
+      <translate by="(1,6)"/>
+      <rectangle lower-left="(0,0)" dimensions="(1,2)"
+                 fill="green" stroke="black"/>
+    </transform>
+    <definition>p=(4,3)</definition>
+    <transform>
+      <rotate by="135" about="p"/>
+      <rectangle lower-left="(0,0)" dimensions="(1,2)"
+                 fill="blue" stroke="black"/>
+    </transform>
+    <point p="p"/>
+    <transform>
+      <translate by="(6,6)"/>
+      <scale by="(3,1.5)"/>
+      <rectangle lower-left="(0,0)" dimensions="(1,2)"
+                 fill="red" stroke="black"/>
+    </transform>
+  </coordinates>
+</diagram>

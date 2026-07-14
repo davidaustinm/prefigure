@@ -1,0 +1,7 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-2,-2,5,5)">
+    <axes xlabel="\alpha" ylabel="g(\alpha)"
+          hticks="(-2,1,5)" hlabels="(-2,1,5)"
+          arrows="1"/>
+  </coordinates>
+</diagram>

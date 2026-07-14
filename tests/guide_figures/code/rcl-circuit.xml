@@ -1,0 +1,17 @@
+<diagram dimensions="(300,200)" margins="5">
+  <coordinates bbox="(0,0,10,9)">
+    <path start="(1,1)" stroke="black">
+      <lineto point="(1,8)"/>
+      <lineto point="(9,8)"
+              decoration="coil; number=5; dimensions=(10,10)"/>
+      <lineto point="(9,1)"
+              decoration="capacitor; dimensions=(12,15)"/>
+      <lineto point="(1,1)"
+              decoration="zigzag; number=5; dimensions=(10,10)"/>
+    </path>
+
+    <point p="(1,4.5)" size="20" fill="white" stroke="black"/>
+
+  </coordinates>
+</diagram>
+

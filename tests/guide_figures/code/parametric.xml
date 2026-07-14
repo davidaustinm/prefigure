@@ -1,0 +1,11 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(t)=3*(cos(t), sin(t)) + (cos(10*t),sin(10*t))</definition>
+  <definition>g(t)=(t^2,t^3)</definition>
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid-axes decorations="no"/>
+    <parametric-curve function="f" domain="(0,2*pi)"
+                      N="200" closed="yes"/>
+    <parametric-curve function="g" domain="(-2,2)"
+                      stroke="red"/>
+  </coordinates>
+</diagram>

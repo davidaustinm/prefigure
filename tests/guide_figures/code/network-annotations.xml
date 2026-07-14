@@ -1,0 +1,54 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org"> 
+  <definition>graph={1:[3,4,5,5],2:[4,5],3:[4,5],6:[2,4]}</definition>
+  <network directed="yes" graph="graph" scale="0.7"
+           node-fill="#fcf" node-stroke="black"
+           node-style="circle" node-size="15"
+           arrows="end" seed="1" labels="yes"
+           tactile-node-size="45">
+    <edge vertices="(1,2)">4</edge>
+    <edge vertices="(2,2)" label-location="0.3"
+          loop-scale="(0.8,0.8)">
+      <m>\alpha</m>
+    </edge>
+    <node at="2" style="double-circle"/>
+  </network>
+  
+  <annotations>
+    <annotation ref="figure" text="A directed network with nodes and edges">
+      <annotation ref="node-1" text="The node 1">
+        <annotation ref="edge-1-2" text="An edge with label 4 from node 1 to node 2"/>
+        <annotation ref="edge-1-3" text="An edge from node 1 to node 3"/>
+        <annotation ref="edge-1-4" text="An edge from node 1 to node 4"/>
+        <annotation ref="edge-1-5-0" text="An edge from node 1 to node 5"/>
+        <annotation ref="edge-1-5-1" text="A second edge from node 1 to node 5"/>
+      </annotation>
+      <annotation ref="node-2" text="The node 2">
+        <annotation ref="edge-2-4" text="An edge from node 2 to node 4"/>
+        <annotation ref="edge-2-5" text="An edge from node 2 to node 5"/>
+        <annotation ref="loop-2" text="A loop with label alpha from node 2 to itself"/>
+      </annotation>
+      <annotation ref="node-3" text="The node 3">
+        <annotation ref="edge-1-3" text="An incoming edge from node 1"/>
+        <annotation ref="edge-3-4" text="An edge from node 3 to node 4"/>
+        <annotation ref="edge-3-5" text="An edge from node 3 to node 5"/>
+      </annotation>
+      <annotation ref="node-4" text="The node 4 and four incoming edges">
+        <annotation ref="edge-1-4" text="An incoming edge from node 1"/>
+        <annotation ref="edge-2-4" text="An incoming edge from node 2"/>
+        <annotation ref="edge-3-4" text="An incoming edge from node 3"/>
+        <annotation ref="edge-6-4" text="An incoming edge from node 6"/>
+      </annotation>
+      <annotation ref="node-5" text="The node 5 and four incoming edges">
+        <annotation ref="edge-1-5-0" text="An incoming edge from node 1"/>
+        <annotation ref="edge-1-5-1" text="A second incoming edge from node 1"/>
+        <annotation ref="edge-2-5" text="An incoming edge from node 2"/>
+        <annotation ref="edge-3-5" text="An incoming edge from node 3"/>
+      </annotation>
+      <annotation ref="node-6" text="The node 6">
+        <annotation ref="edge-6-2" text="An edge from node 6 to node 2"/>
+        <annotation ref="edge-6-4" text="An edge from node 6 to node 4"/>
+      </annotation>
+    </annotation>
+  </annotations>
+</diagram>

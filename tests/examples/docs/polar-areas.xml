@@ -1,0 +1,20 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org">
+  <definition>f(t)=4*cos(2*t)</definition>
+  <definition>g(t)=2+cos(3*t)</definition>
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid-axes coordinates="polar"
+               clear-background="yes"/>
+    <graph function="g" coordinates="polar" stroke="gray"
+           domain="(90,270)" domain-degrees="yes"/>
+    <area-under-curve function="f" coordinates="polar"
+                      domain="(-30,30)" domain-degrees="yes"
+                      fill="cornflowerblue" stroke="blue"/>
+    <area-between-curves functions="(f,g)" coordinates="polar"
+                      domain="(150,210)" domain-degrees="yes"
+                      fill="orange" stroke="red"/>
+
+  </coordinates>
+</diagram>
+   
+    
