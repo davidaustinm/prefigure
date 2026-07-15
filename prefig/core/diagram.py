@@ -862,6 +862,14 @@ class Diagram:
                 elem.set('marker-start',
                          value.replace('arrow-head-end', 'arrow-head-start'))
 
+        # Any other marker still carrying SVG 2's auto-start-reverse (e.g. the
+        # mid-path arrowheads, referenced only by marker-mid where the two
+        # values render identically) falls back to plain auto, which SVG 1.1
+        # understands.
+        for marker in root.iter('marker'):
+            if marker.get('orient') == 'auto-start-reverse':
+                marker.set('orient', 'auto')
+
         return root
 
     def add_texture(self, texture, color):

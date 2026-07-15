@@ -2,8 +2,9 @@
 """Regenerate the reference SVG snapshots from the current Python implementation.
 
 Self-contained: builds the vendored sources under ``tests/examples/`` (no
-external checkout needed) in the ``pretext`` environment and writes the
-results under ``tests/snapshots/examples/<category>/``.
+external checkout needed) the way ``prefig build`` does — the ``pf_cli``
+environment, with each category's ``pf_publication.xml`` applied — and writes
+the results under ``tests/snapshots/examples/<category>/``.
 Uses the same ``build_diagram`` routine the snapshot test uses, so building and
 checking cannot drift apart. Diagrams that build to empty/trivial output (e.g. a
 fragment or a missing data file) are skipped rather than checked in as an empty
@@ -51,6 +52,8 @@ def build_category(corpus: str, category: str):
     built, skipped = [], []
     for xml_path in sorted(src.glob("*.xml")):
         name = xml_path.stem
+        if xml_path.name == "pf_publication.xml":
+            continue  # publication file, not a diagram source
         try:
             with pushd(xml_path.parent):
                 result = build_diagram(xml_path.name)

@@ -10,9 +10,11 @@ Python-specific pieces are the `test_*.py` entry points and `helpers/`.
 
 ```
 tests/
-  test_snapshots.py                    # build each example, compare to its SVG snapshot
+  test_snapshots.py                    # build each example, compare SVG + annotation
+                                       # snapshots, check annotation ids resolve
   test_expressions.py                  # replay the expression corpus through user_namespace
   test_examples_without_snapshots.py   # the few unsnapshotted examples build w/o crashing
+  test_pretext_svg11.py                # pretext mode's SVG 1.1 conversion (double arrows)
   test_prefigure.py                    # end-to-end `prefig` CLI smoke test
   helpers/                # all Python-side support code
     compare.py            # tolerance SVG structural comparator
@@ -25,6 +27,8 @@ tests/
     hand_crafted/          # bundled with the package (8)
     extracted_from_docs/   # from the PreFigure Guide: its examples + code listings (~155)
     uses_external_data/    # load CSV/images via <read>/<image> (3)
+                           # (data categories carry a pf_publication.xml with
+                           #  <directories data="data"/>, like a CLI project)
   snapshots/              # ── reference snapshots ── mirror the input tree by name
     examples/<category>/          snapshots for everything that builds (+ annotation .xml)
     manifest.json                 what built vs skipped, per category
@@ -32,6 +36,15 @@ tests/
     expression_tests.json # ── reference snapshot ── expression corpus
   README.md
 ```
+
+Everything is built exactly the way `prefig build` builds it: the **`pf_cli`**
+environment, with any `pf_publication.xml` found from the working directory
+upward applied (that's how the data categories point `<read>`/`<image>` at
+`data/`). The one exception is `test_pretext_svg11.py`, which deliberately
+builds a few double-arrow figures in the **pretext** environment: pretext
+additionally emits an SVG 1.1-compliant `<stem>-11.svg` (backward arrowheads
+can't use SVG 2's `orient="auto-start-reverse"` there), and the test verifies
+that conversion.
 
 `helpers/` is importable during a test run via `pythonpath = ["tests"]` in
 `pyproject.toml`, so no `conftest.py` is needed. Ephemeral output (the CLI smoke
@@ -126,6 +139,16 @@ cat tmp_test_outputs/report/comment.md
   `tests/examples/<category>/<stem>.xml`. The few sources that build to trivial
   output in isolation get no snapshot and are instead smoke-tested
   (build-without-crash) by `test_examples_without_snapshots.py`.
+- Sources whose build produces annotations also have an annotation snapshot
+  (`<stem>.xml` next to the SVG one). `test_snapshots.py` compares those and
+  additionally checks that **every annotation id resolves to an SVG element
+  id** — that lookup is what drives diagcess highlighting, so an unresolved id
+  is a silently broken annotation. Examples that fail this today (stale refs,
+  or the `<annotation id=...>` syntax that prefigure does not prefix) are
+  recorded with reasons in [`KNOWN_UNRESOLVED.yml`](KNOWN_UNRESOLVED.yml) as
+  strict xfails. When an issue is resolved, its test XPASSes and fails the
+  suite until the corresponding line is deleted from that file — so resolving
+  an issue means editing just that file.
 - Categories: `hand_crafted` (bundled with the package), `extracted_from_docs`
   (everything vendored from the PreFigure Guide — its polished examples plus
   every code listing in its text), `uses_external_data` (load CSV/images via

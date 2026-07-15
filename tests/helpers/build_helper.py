@@ -40,18 +40,41 @@ def temp_workdir(name):
         yield workdir
 
 
-def build_diagram(xml_path, environment="pretext"):
-    """Build the first <diagram> in *xml_path*; return (svg, annotations) or None.
+def find_publication():
+    """Locate and load a ``pf_publication.xml``, mirroring the CLI exactly.
 
-    The "pretext" environment resolves ``<read>``/``<image>`` files relative to
-    the working directory, so callers should ``pushd`` into the source's
-    category directory (which holds ``data/``) first.
+    ``prefig build`` (``engine.build``) walks up from the working directory
+    looking for ``pf_publication.xml``; ``core.parse.parse`` then extracts its
+    ``<prefigure>`` element and strips namespaces from the children. Returns
+    that element, or None when no publication file is found.
     """
-    from prefig.core import parse, user_namespace
+    pub_path = None
+    cwd = Path.cwd()
+    for directory in [cwd, *cwd.parents]:
+        candidate = directory / "pf_publication.xml"
+        if candidate.exists():
+            pub_path = candidate
+            break
+    if pub_path is None:
+        return None
+    publication = ET.parse(str(pub_path))
+    pubs = publication.xpath("//pf:prefigure", namespaces=_NS) + publication.xpath(
+        "//prefigure"
+    )
+    if not pubs:
+        return None
+    publication = pubs[0]
+    for child in publication:
+        if child.tag is not ET.Comment:
+            child.tag = ET.QName(child).localname
+    return publication
 
-    xml_path = Path(xml_path)
-    importlib.reload(user_namespace)
-    tree = ET.parse(str(xml_path))
+
+def load_source(xml_path):
+    """Parse *xml_path* and return its first namespace-stripped <diagram>, or None."""
+    from prefig.core import parse
+
+    tree = ET.parse(str(Path(xml_path)))
     diagrams = tree.xpath("//pf:diagram", namespaces=_NS) + tree.xpath("//diagram")
     if not diagrams:
         return None
@@ -60,13 +83,62 @@ def build_diagram(xml_path, environment="pretext"):
         if not isinstance(elem, (ET._Comment, ET._ProcessingInstruction)):
             elem.tag = ET.QName(elem).localname
     parse.check_duplicate_handles(diagram, set())
+    return diagram
+
+
+def build_diagram(xml_path, environment="pf_cli"):
+    """Build the first <diagram> in *xml_path*; return (svg, annotations) or None.
+
+    Builds the way ``prefig build`` does: in the ``pf_cli`` environment, with
+    any ``pf_publication.xml`` found from the working directory upward applied.
+    Data files (``<read>``/``<image>``) resolve relative to the working
+    directory — through the publication's ``<directories data="...">`` when one
+    is present — so callers should ``pushd`` into the source's category
+    directory first.
+    """
+    from prefig.core import parse, user_namespace
+
+    xml_path = Path(xml_path)
+    importlib.reload(user_namespace)
+    diagram = load_source(xml_path)
+    if diagram is None:
+        return None
     return parse.mk_diagram(
         diagram,
         "svg",
-        None,            # publication
+        find_publication(),
         xml_path.stem,   # filename -> id prefix
         False,           # suppress caption
         None,            # diagram number
         environment,
         return_string=True,
     )
+
+
+def build_diagram_files(xml_path, environment="pretext"):
+    """Build *xml_path* through the file-writing pipeline; return the output dir.
+
+    Unlike :func:`build_diagram`, this runs ``end_figure`` — the path pretext
+    uses — which writes ``output/<stem>.svg`` under the working directory plus
+    the environment's extra artifacts (for pretext: the SVG 1.1 conversion
+    ``<stem>-11.svg`` and, when annotated, ``<stem>-annotations.xml`` and the
+    diagcess SVG). Call inside :func:`temp_workdir` to keep the tree clean.
+    """
+    from prefig.core import parse, user_namespace
+
+    xml_path = Path(xml_path)
+    importlib.reload(user_namespace)
+    diagram = load_source(xml_path)
+    if diagram is None:
+        return None
+    parse.mk_diagram(
+        diagram,
+        "svg",
+        find_publication(),
+        xml_path.stem,
+        False,
+        None,
+        environment,
+        return_string=False,
+    )
+    return Path.cwd() / "output"

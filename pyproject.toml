@@ -29,6 +29,7 @@ prefig = "prefig.cli:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
+pyyaml = "^6.0.3"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -18,7 +18,10 @@ SNAPSHOTS_DIR = TESTS_DIR / "snapshots"
 
 
 def _all_examples():
-    return sorted(EXAMPLES_DIR.rglob("*.xml"))
+    return sorted(
+        xml for xml in EXAMPLES_DIR.rglob("*.xml")
+        if xml.name != "pf_publication.xml"   # publication files, not diagrams
+    )
 
 
 def _examples_without_snapshot():
