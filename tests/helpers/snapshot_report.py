@@ -99,7 +99,8 @@ def collect() -> dict:
     new_sources = [
         str(x.relative_to(TESTS_DIR).with_suffix(""))
         for x in sorted(EXAMPLES.rglob("*.xml"))
-        if not (TESTS_DIR / "snapshots" / x.relative_to(TESTS_DIR)).with_suffix(".svg").exists()
+        if x.name != "pf_publication.xml"   # publication files, not diagrams
+        and not (TESTS_DIR / "snapshots" / x.relative_to(TESTS_DIR)).with_suffix(".svg").exists()
     ]
     return {"total": total, "differing": differing, "new_sources": new_sources}
 
