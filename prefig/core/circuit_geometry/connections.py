@@ -34,23 +34,47 @@ def connection(element, diagram, parent, data):
 
     for child in element:
         if child.tag == "wire":
-            next_cmds, current_pt = wire(child, diagram, parent, current_pt,
-                                         current_direction, data)
+            next_cmds, current_pt, current_direction = wire(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
             cmds += next_cmds
             continue
         if child.tag == "resistor":
-            next_cmds, current_pt = resistor(child, diagram, parent, current_pt,
-                                             current_direction, data)
+            next_cmds, current_pt, current_direction = resistor(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
             cmds += next_cmds
             continue
         if child.tag == "inductor":
-            next_cmds, current_pt = inductor(child, diagram, parent, current_pt,
-                                             current_direction, data)
+            next_cmds, current_pt, current_direction = inductor(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
             cmds += next_cmds
             continue
         if child.tag == "capacitor":
-            next_cmds, current_pt = capacitor(child, diagram, parent, current_pt,
-                                              current_direction, data)
+            next_cmds, current_pt, current_direction = capacitor(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
             cmds += next_cmds
             continue
     path.set('stroke', 'black')
@@ -58,6 +82,9 @@ def connection(element, diagram, parent, data):
     path.set('fill', 'none')
 
 def log_pt(pt):
+    if pt is None:
+        log.error('None')
+        return
     log.error((pt[0], pt[1]))
 
 def plot_path(current_pt, current_direction, end_pt, end_direction):
@@ -235,7 +262,9 @@ def wire(child, diagram, parent, current_pt, current_direction, data):
 
     waypts = plot_path(current_pt, current_direction,
                        end_pt, end_direction)
-    return mk_path(waypts), end_pt
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return mk_path(waypts), end_pt, end_direction
 
 def inductor(child, diagram, parent, current_pt,
              current_direction, data):
@@ -269,7 +298,7 @@ def inductor(child, diagram, parent, current_pt,
 
     segments = zip(waypts[:-1], waypts[1:])
     longest = np.argmax([math_util.length(p-q) for p,q in segments])
-    
+
     diff = waypts[longest+1] - waypts[longest]
     mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
     angle = math.degrees(math.atan2(diff[1], diff[0]))
@@ -316,7 +345,9 @@ def inductor(child, diagram, parent, current_pt,
     if has_label:
         add_label(child, diagram, parent, mid_pt, b_up, diff)
 
-    return cmds, end_pt
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
 
 def resistor(child, diagram, parent, current_pt,
              current_direction, data):
@@ -347,7 +378,7 @@ def resistor(child, diagram, parent, current_pt,
 
     segments = zip(waypts[:-1], waypts[1:])
     longest = np.argmax([math_util.length(p-q) for p,q in segments])
-    
+
     diff = waypts[longest+1] - waypts[longest]
     mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
     angle = math.degrees(math.atan2(diff[1], diff[0]))
@@ -380,7 +411,9 @@ def resistor(child, diagram, parent, current_pt,
     if has_label:
         add_label(child, diagram, parent, mid_pt, H, diff)
 
-    return cmds, end_pt
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
 
 def capacitor(child, diagram, parent, current_pt,
               current_direction, data):
@@ -401,9 +434,17 @@ def capacitor(child, diagram, parent, current_pt,
     if p is None:
         log.error(f"A {child.tag} element needs an attribute to")
         return
-    to_pt = diagram.transform(un.valid_eval(p))
-    diff = to_pt - current_pt
-    mid_pt = 1/2*(to_pt + current_pt)
+    p = un.valid_eval(p)
+    end_pt, end_direction = find_terminal(p)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction,
+                       end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
     angle = math.degrees(math.atan2(diff[1], diff[0]))
     ctm = CTM.CTM()
     ctm.translate(*mid_pt)
@@ -412,9 +453,9 @@ def capacitor(child, diagram, parent, current_pt,
     # wire to left plate, then jump path to right plate and wire to destination
     left_pt  = ctm.transform(np.array((-gap_half, 0)))
     right_pt = ctm.transform(np.array(( gap_half, 0)))
-    cmds = ['L ', util.pt2str(left_pt),
-            'M ', util.pt2str(right_pt),
-            'L ', util.pt2str(to_pt)]
+    first_path = waypts[:longest+1] + [left_pt]
+    second_path = [right_pt] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
 
     # left plate
     p1 = ctm.transform(np.array((-gap_half, -plate_half)))
@@ -431,7 +472,9 @@ def capacitor(child, diagram, parent, current_pt,
     if has_label:
         add_label(child, diagram, parent, mid_pt, plate_half, diff)
 
-    return cmds, to_pt
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
 
 def add_label(element, diagram, parent, anchor, initial_offset, direction):
     element = copy.deepcopy(element)
