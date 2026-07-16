@@ -2,11 +2,32 @@ import Editor from "@monaco-editor/react";
 import React, { useEffect, useState } from "react";
 import { useStoreState, useStoreActions } from "../state";
 import { convert } from "@naman22khater/data-converter";
-import { Button, ButtonGroup, Nav, ToggleButton } from "react-bootstrap";
+import { Alert, Button, ButtonGroup, Nav, ToggleButton } from "react-bootstrap";
 import { Download, Trash } from "react-bootstrap-icons";
 import { saveAs } from "file-saver";
 
 type EditingMode = "xml" | "yaml";
+
+/**
+ * Pick out the one line worth showing by default from a raw error string.
+ *
+ * Compiling runs Python inside Pyodide, so a failure often arrives as a full
+ * Python traceback (itself wrapped by Pyodide's own call stack). The last
+ * line of that traceback is the actual `ExceptionType: message`; the rest is
+ * interpreter plumbing that isn't useful at a glance. Anything that isn't a
+ * traceback (e.g. a plain JS Error) is already short, so it's shown as-is.
+ */
+function summarizeError(raw: string): string {
+    const trimmed = raw.trim();
+    if (!trimmed.includes("Traceback (most recent call last):")) {
+        return trimmed;
+    }
+    const lines = trimmed
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+    return lines[lines.length - 1] || trimmed;
+}
 
 const CONTENT_AFTER_CLEAR = `<diagram dimensions="(300, 300)" margins="5">
 
@@ -51,6 +72,8 @@ export function SourceEditor() {
     const setSourceXml = useStoreActions((actions) => actions.setSource);
     const toolbarRef = React.useRef<HTMLDivElement>(null);
     const error = useStoreState((state) => state.errorState);
+    const setErrorState = useStoreActions((actions) => actions.setErrorState);
+    const [showErrorDetails, setShowErrorDetails] = useState(false);
 
     // The editor may be working in XML or YAML. However, the source is always stored in XML, so `contentXmlOrYaml`
     // effectively shadows `sourceXml`, but could be a YAML string which gets translated to XML on the fly.
@@ -75,6 +98,13 @@ export function SourceEditor() {
             // These should not happen as the selection box will be grayed out.
         }
     }, [editingMode]);
+
+    // Collapse the details section whenever the error changes (including
+    // when it's cleared), so a new failure doesn't inherit the old expanded
+    // state and a dismissed error doesn't leave stale details lying around.
+    useEffect(() => {
+        setShowErrorDetails(false);
+    }, [error]);
 
     return (
         <div className="panel-frame">
@@ -118,6 +148,35 @@ export function SourceEditor() {
                     }}
                 />
             </div>
+            {error && (
+                <Alert
+                    variant="danger"
+                    onClose={() => setErrorState("")}
+                    dismissible
+                    className="compile-error-alert"
+                >
+                    <div className="compile-error-summary">
+                        <strong>Compile error:</strong> {summarizeError(error)}
+                    </div>
+                    {summarizeError(error) !== error.trim() && (
+                        <Button
+                            size="sm"
+                            variant="link"
+                            className="compile-error-toggle"
+                            onClick={() =>
+                                setShowErrorDetails((shown) => !shown)
+                            }
+                        >
+                            {showErrorDetails
+                                ? "Hide details"
+                                : "Show details"}
+                        </Button>
+                    )}
+                    {showErrorDetails && (
+                        <pre className="compile-error-details">{error}</pre>
+                    )}
+                </Alert>
+            )}
             <Nav className="panel-toolbar" ref={toolbarRef} tabIndex={0}>
                 <Button
                     size="sm"
