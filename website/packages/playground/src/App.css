@@ -136,3 +136,35 @@ body,
 .version-grid .version-value {
     color: var(--bs-primary-color);
 }
+
+/* Compile-error banner shown below the source editor (editor.tsx). Flex-shrink
+   is disabled so it can't be squeezed to nothing by the editor above it, and
+   the details <pre> is capped/scrollable since a full Python traceback can be
+   long. */
+.compile-error-alert {
+    flex-shrink: 0;
+    margin: 8px;
+    margin-bottom: 0;
+    max-height: 40%;
+    overflow-y: auto;
+}
+.compile-error-summary {
+    font-family: monospace;
+    font-size: 0.85em;
+    overflow-wrap: break-word;
+}
+.compile-error-toggle {
+    padding: 0;
+    font-size: 0.8em;
+}
+.compile-error-details {
+    margin: 8px 0 0 0;
+    padding: 8px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    font-size: 0.75em;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+}
