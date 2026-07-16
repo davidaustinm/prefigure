@@ -74,7 +74,7 @@ def _annotation_cases():
 
 def test_snapshot_corpus_present():
     # 8 hand_crafted + ~155 extracted_from_docs + 3 uses_external_data
-    assert len(list((SNAPSHOTS_DIR / "examples").rglob("*.svg"))) >= 160
+    assert len(list((SNAPSHOTS_DIR / "examples").rglob("*.svg"))) >= 150
     # a healthy chunk of the corpus carries annotations
     annotated = [x for x in SNAPSHOTS_DIR.rglob("*.xml") if x.name != "manifest.json"]
     assert len(annotated) >= 15

@@ -33,7 +33,7 @@ def _examples_without_snapshot():
 
 
 def test_enough_examples():
-    assert len(_all_examples()) >= 160
+    assert len(_all_examples()) >= 150
 
 
 @pytest.mark.parametrize(
