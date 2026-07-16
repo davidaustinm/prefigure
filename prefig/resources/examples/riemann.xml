@@ -1,10 +1,16 @@
 <diagram dimensions="(300,240)" margins="5">
   <definition>f(x) = log(x+1)</definition>
+  <definition>ordinals=('first', 'second', 'third', 'fourth')</definition>
   <coordinates bbox="[-0.2,-0.2,4,2]">
 
     <grid-axes at="grid-axes" xlabel="x" ylabel="y" vlabels="(0,1,2)"/>
     <riemann-sum at = "riemann-sum" function="f" domain="(1,3)" rule="right"
-                 N="4" fill="lawngreen" stroke="black" thickness="1"/>
+                 N="4" fill="lawngreen" stroke="black" thickness="1"
+                 annotate="yes"
+                 text="A right Riemann sum for the function on the interval from one to three with four subintervals"
+                 subinterval-text="The ${ordinals[_interval]} interval
+                                   starts at x=${_left} and ends at
+                                   x=${_right} with height ${_height}"/>
     <graph at="graph" function="f"/>
 
     <label at="a1" anchor="(1.25, 0.5*f(1))" clear-background="yes" background-margin="3">
@@ -27,26 +33,9 @@
   <annotations>
     <annotation ref="figure"
                 text="The graph of a function and the right Riemann sum with four terms from 1 to 3">
-      <annotation ref="grid-axes"
-                  text="The coordinate grid and axes">
-        <annotation ref="grid"
-                    text="The coordinate grid" />
-        <annotation ref="axes"
-                    text="The coordinate axes" />
-      </annotation>
       <annotation ref="graph"
                   text="The graph of the function log x plus 1"/>
-      <annotation ref="riemann-sum"
-                  text="The right Riemann sum with four terms">
-        <annotation ref="riemann-sum-0"
-                    text="The first term in the Riemann sum is the area of this rectangle" />
-        <annotation ref="riemann-sum-1"
-                    text="The second term in the Riemann sum is the area of this rectangle" />
-        <annotation ref="riemann-sum-2"
-                    text="The third term in the Riemann sum is the area of this rectangle" />
-        <annotation ref="riemann-sum-3"
-                    text="The fourth term in the Riemann sum is the area of this rectangle" />
-      </annotation>
+      <annotation ref="riemann-sum"/>
     </annotation>
 
   </annotations>

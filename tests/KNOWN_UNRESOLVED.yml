@@ -11,19 +11,11 @@
 #
 # Reason classes:
 #
-#   stale-refs
-#     The annotation refs use ids the implementation no longer generates:
-#     riemann-sum terms are emitted as <handle>_<n> (underscore, see
-#     prefig/core/riemann_sum.py), while the annotations reference
-#     <handle>-<n> (hyphen). Fix: update the refs in the example source.
-#
 #   group-without-element
 #     A grouping annotation references a handle that no element in the
 #     diagram carries, so there is nothing to highlight (its children still
 #     resolve). Fix: wrap the intended elements in a <group at="..."> with
 #     that handle in the example source.
-
-examples/hand_crafted/riemann: stale-refs (riemann-sum-N vs riemann-sum_N)
 
 examples/extracted_from_docs/diffeqs: group-without-element (diffeqs-solutions)
 examples/extracted_from_docs/tangent-2: group-without-element (graph-tangent)
