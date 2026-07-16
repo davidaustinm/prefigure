@@ -11,13 +11,6 @@
 #
 # Reason classes:
 #
-#   unprefixed-id-syntax
-#     The source writes <annotation id="..."> instead of <annotation
-#     ref="...">. prefigure prefixes every SVG element id with the file stem
-#     but does not prefix annotation ids written with the id= syntax, so none
-#     of the file's annotations resolve. Fix: convert the source to ref=
-#     syntax, or fix the prefixing upstream in prefig/core/annotations.py.
-#
 #   stale-refs
 #     The annotation refs use ids the implementation no longer generates:
 #     riemann-sum terms are emitted as <handle>_<n> (underscore, see
@@ -29,14 +22,6 @@
 #     diagram carries, so there is nothing to highlight (its children still
 #     resolve). Fix: wrap the intended elements in a <group at="..."> with
 #     that handle in the example source.
-
-examples/extracted_from_docs/derivatives: unprefixed-id-syntax
-examples/extracted_from_docs/implicit: unprefixed-id-syntax
-examples/extracted_from_docs/network: unprefixed-id-syntax
-examples/extracted_from_docs/projection: unprefixed-id-syntax
-examples/extracted_from_docs/riemann: unprefixed-id-syntax + stale-refs
-examples/extracted_from_docs/roots_of_unity: unprefixed-id-syntax
-examples/extracted_from_docs/tan: unprefixed-id-syntax
 
 examples/hand_crafted/riemann: stale-refs (riemann-sum-N vs riemann-sum_N)
 
