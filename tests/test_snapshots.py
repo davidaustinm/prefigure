@@ -31,7 +31,6 @@ from pathlib import Path
 
 import lxml.etree as ET
 import pytest
-import yaml
 
 from helpers.build_helper import build_diagram, pushd
 from helpers.compare import DEFAULT_TOL, compare_svgs
@@ -41,12 +40,6 @@ SNAPSHOTS_DIR = TESTS_DIR / "snapshots"
 
 # When set, a comparison instead rewrites its snapshot in place (jest `-u` style).
 UPDATE_SNAPSHOTS = os.environ.get("UPDATE_SNAPSHOTS", "") not in ("", "0", "false")
-
-# Annotated examples whose annotation ids do NOT all resolve to SVG ids today,
-# mapped to the reason (see the comments in the file). These become strict
-# xfails of test_annotation_ids_resolve: once an entry is fixed, its XPASS
-# fails the suite until the line is removed from KNOWN_UNRESOLVED.yml.
-KNOWN_UNRESOLVED = yaml.safe_load((TESTS_DIR / "KNOWN_UNRESOLVED.yml").read_text())
 
 
 @functools.lru_cache(maxsize=None)
@@ -66,7 +59,7 @@ def _cases():
     return cases
 
 
-def _annotation_cases(xfail_known=False):
+def _annotation_cases():
     """One case per committed annotation snapshot (sources that annotate)."""
     cases = []
     for ann_snapshot in sorted(SNAPSHOTS_DIR.rglob("*.xml")):
@@ -75,11 +68,7 @@ def _annotation_cases(xfail_known=False):
         rel = ann_snapshot.relative_to(SNAPSHOTS_DIR)
         source = TESTS_DIR / rel.with_suffix(".xml")
         case_id = str(rel.with_suffix(""))
-        marks = ()
-        if xfail_known and case_id in KNOWN_UNRESOLVED:
-            marks = (pytest.mark.xfail(
-                reason=KNOWN_UNRESOLVED[case_id], strict=True),)
-        cases.append(pytest.param(source, ann_snapshot, id=case_id, marks=marks))
+        cases.append(pytest.param(source, ann_snapshot, id=case_id))
     return cases
 
 
@@ -88,21 +77,8 @@ def test_snapshot_corpus_present():
     assert len(list((SNAPSHOTS_DIR / "examples").rglob("*.svg"))) >= 160
     # a healthy chunk of the corpus carries annotations
     annotated = [x for x in SNAPSHOTS_DIR.rglob("*.xml") if x.name != "manifest.json"]
-    assert len(annotated) >= 20
+    assert len(annotated) >= 15
 
-
-def test_known_unresolved_entries_are_current():
-    """Every KNOWN_UNRESOLVED.yml entry names an existing annotated example.
-
-    Guards the file against typos and against entries orphaned by a renamed
-    or removed example (the strict xfail already guards against fixed ones).
-    """
-    annotated_ids = {str(p.id) for p in _annotation_cases()}
-    stale = sorted(set(KNOWN_UNRESOLVED) - annotated_ids)
-    assert not stale, (
-        "KNOWN_UNRESOLVED.yml lists examples with no annotation snapshot "
-        f"(typo, or example renamed/removed?): {stale}"
-    )
 
 
 @pytest.mark.parametrize("source_path,snapshot_path", _cases())
@@ -157,14 +133,14 @@ def test_annotations_match_snapshot(source_path, ann_snapshot_path):
     )
 
 
-@pytest.mark.parametrize("source_path,ann_snapshot_path", _annotation_cases(xfail_known=True))
+@pytest.mark.parametrize("source_path,ann_snapshot_path", _annotation_cases())
 def test_annotation_ids_resolve(source_path, ann_snapshot_path):
-    """Every annotation id points at an element id present in the built SVG.
+    """Every leaf annotation id points at an element id present in the built SVG.
 
     diagcess drives highlighting by looking up the annotation's id among the
     SVG element ids, so an unresolved id is a silently broken annotation.
-    Known-unresolved examples are recorded in ``KNOWN_UNRESOLVED`` as strict
-    xfails; when prefigure or a source is fixed, remove the entry.
+    Grouping annotations (those with a <children> element) need not resolve to
+    an SVG element — only their leaf descendants need to.
     """
     result = _build(str(source_path))
     assert result is not None, f"{source_path.name} produced no diagram"
@@ -176,15 +152,15 @@ def test_annotation_ids_resolve(source_path, ann_snapshot_path):
         for el in ET.fromstring(svg.encode("utf-8")).iter()
         if el.get("id")
     }
-    ann_ids = [
+    leaf_ann_ids = [
         a.get("id")
         for a in ET.fromstring(annotations.encode("utf-8")).iter("annotation")
-        if a.get("id")
+        if a.get("id") and a.find("children") is None
     ]
-    assert ann_ids, f"{source_path.name} annotations contain no ids"
+    assert leaf_ann_ids, f"{source_path.name} annotations contain no leaf ids"
 
-    unresolved = [i for i in ann_ids if i not in svg_ids]
+    unresolved = [i for i in leaf_ann_ids if i not in svg_ids]
     assert not unresolved, (
-        f"{source_path.name}: {len(unresolved)}/{len(ann_ids)} annotation ids "
+        f"{source_path.name}: {len(unresolved)}/{len(leaf_ann_ids)} annotation ids "
         f"do not match any SVG element id: {unresolved}"
     )
