@@ -77,6 +77,28 @@ def connection(element, diagram, parent, data):
             )
             cmds += next_cmds
             continue
+        if child.tag == "battery":
+            next_cmds, current_pt, current_direction = battery(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "dc-current-source":
+            next_cmds, current_pt, current_direction = dc_current_source(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
     path.set('stroke', 'black')
     path.set('d', ''.join(cmds))
     path.set('fill', 'none')
@@ -475,6 +497,145 @@ def capacitor(child, diagram, parent, current_pt,
     p0, p1 = waypts[-2:]
     end_direction = p1 - p0
     return cmds, end_pt, end_direction
+
+def battery(child, diagram, parent, current_pt, current_direction, data):
+    has_label = label.has_label(child)
+    if has_label:
+        parent = ET.SubElement(parent, 'g')
+        id_element = parent
+    path = ET.SubElement(parent, 'path')
+    if not has_label:
+        id_element = path
+    diagram.add_id(id_element, child.get('id'))
+
+    scale = data['scale']
+    W = 0.3 * scale   # half battery thickness along the wire
+    H = 0.6 * scale   # long plate half-length perpendicular to wire
+
+    invert = child.get('invert', 'no') == 'yes'
+
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p = un.valid_eval(p)
+    end_pt, end_direction = find_terminal(p)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction, end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
+    angle = math.degrees(math.atan2(diff[1], diff[0]))
+    ctm = CTM.CTM()
+    ctm.translate(*mid_pt)
+    ctm.rotate(angle)
+
+    body_start = ctm.transform(np.array((-W, 0)))
+    body_end   = ctm.transform(np.array(( W, 0)))
+    first_path = waypts[:longest+1] + [body_start]
+    second_path = [body_end] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
+
+    # Four plates along the wire; default: positive (long plate) at incoming side
+    plate_xs     = [-W, -W/3, W/3, W]
+    plate_halves = [H, H/2, H, H/2]
+    if invert:
+        plate_halves = list(reversed(plate_halves))
+
+    d = ''
+    for x, half in zip(plate_xs, plate_halves):
+        p1 = ctm.transform(np.array((x, -half)))
+        p2 = ctm.transform(np.array((x,  half)))
+        d += f"M {p1[0]} {p1[1]} L {p2[0]} {p2[1]} "
+    path.set('d', d.strip())
+    path.set('stroke', 'black')
+    path.set('fill', 'none')
+
+    if has_label:
+        add_label(child, diagram, parent, mid_pt, H, diff)
+
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
+
+
+def dc_current_source(child, diagram, parent, current_pt, current_direction, data):
+    scale      = 1.2 * data['scale']
+    radius     = 0.6  * scale
+    arrow_len  = 0.15 * scale
+    arrow_half = 0.08 * scale
+
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    invert = child.get('invert', 'no') == 'yes'
+    sign = -1 if invert else 1
+
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p = un.valid_eval(p)
+    end_pt, end_direction = find_terminal(p)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction, end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
+    angle = math.degrees(math.atan2(diff[1], diff[0]))
+    ctm = CTM.CTM()
+    ctm.translate(*mid_pt)
+    ctm.rotate(angle)
+
+    body_start = ctm.transform(np.array((-radius, 0.0)))
+    body_end   = ctm.transform(np.array(( radius, 0.0)))
+    first_path  = waypts[:longest+1] + [body_start]
+    second_path = [body_end] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
+
+    # Circle
+    circle = ET.SubElement(g, 'circle')
+    circle.set('cx', str(mid_pt[0]))
+    circle.set('cy', str(mid_pt[1]))
+    circle.set('r',  str(radius))
+    circle.set('stroke', 'black')
+    circle.set('fill', 'none')
+
+    # Arrow shaft
+    arrow_x = sign * 0.5 * radius
+    shaft_start = ctm.transform(np.array((-sign * 0.7 * radius, 0.0)))
+    shaft_end   = ctm.transform(np.array((arrow_x - sign * arrow_len / 2, 0.0)))
+    line_el = ET.SubElement(g, 'line')
+    line_el.set('x1', str(shaft_start[0]))
+    line_el.set('y1', str(shaft_start[1]))
+    line_el.set('x2', str(shaft_end[0]))
+    line_el.set('y2', str(shaft_end[1]))
+    line_el.set('stroke', 'black')
+    line_el.set('thickness', '2')
+
+    # Filled arrowhead
+    tip   = ctm.transform(np.array((arrow_x + sign * arrow_len / 2,  0.0       )))
+    base1 = ctm.transform(np.array((arrow_x - sign * arrow_len / 2, -arrow_half)))
+    base2 = ctm.transform(np.array((arrow_x - sign * arrow_len / 2,  arrow_half)))
+    poly = ET.SubElement(g, 'polygon')
+    poly.set('points',
+             f"{tip[0]},{tip[1]} {base1[0]},{base1[1]} {base2[0]},{base2[1]}")
+    poly.set('fill', 'black')
+    poly.set('stroke', 'none')
+
+    if label.has_label(child):
+        add_label(child, diagram, g, mid_pt, radius, diff)
+
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
+
 
 def add_label(element, diagram, parent, anchor, initial_offset, direction):
     element = copy.deepcopy(element)

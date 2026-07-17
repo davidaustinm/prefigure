@@ -12,6 +12,7 @@ log = logging.getLogger('prefigure')
 tags = {
     'battery': circuit_geometry.shapes.battery,
     'op-amp': circuit_geometry.shapes.op_amp,
+    'dc-current-source': circuit_geometry.shapes.dc_current_source,
     'connection': circuit_geometry.connections.connection,
 }
 
