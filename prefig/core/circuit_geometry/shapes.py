@@ -11,6 +11,80 @@ from .. import label as label_module
 
 log = logging.getLogger('prefigure')
 
+def ground(element, diagram, parent, data):
+    scale = data['scale']
+    step = 0.5*scale
+
+    parent = ET.SubElement(parent, 'g')
+    diagram.add_id(parent, element.get('id'))
+
+    location_str = element.get('location')
+    if location_str is None:
+        log.error('ground element needs a location attribute')
+        return
+    origin = un.valid_eval(location_str)
+    origin = diagram.transform(origin)
+
+    ctm = CTM.CTM()
+    ctm.translate(*origin)
+
+    common = element.get('common', 'no') == 'yes'
+    stub_y = step if common else 1.2 * step
+
+    # Vertical stub from connection point downward
+    p1 = ctm.transform(np.array((0.0,    0.0  )))
+    p2 = ctm.transform(np.array((0.0, stub_y  )))
+    stub = ET.SubElement(parent, 'line')
+    stub.set('x1', str(p1[0])); stub.set('y1', str(p1[1]))
+    stub.set('x2', str(p2[0])); stub.set('y2', str(p2[1]))
+    stub.set('stroke', 'black')
+
+    if not common:
+        # Standard earth ground: three horizontal bars of decreasing width
+        for y_pos, half_w in [(1.2*step, 0.6*step),
+                              (1.4*step, 0.4*step),
+                              (1.6*step, 0.25*step)]:
+            q1 = ctm.transform(np.array((-half_w, y_pos)))
+            q2 = ctm.transform(np.array(( half_w, y_pos)))
+            bar = ET.SubElement(parent, 'line')
+            bar.set('x1', str(q1[0])); bar.set('y1', str(q1[1]))
+            bar.set('x2', str(q2[0])); bar.set('y2', str(q2[1]))
+            bar.set('stroke', 'black')
+    else:
+        # Signal/common ground: downward-pointing triangle
+        tl  = ctm.transform(np.array((-0.6*step, step    )))
+        tr  = ctm.transform(np.array(( 0.6*step, step    )))
+        tip = ctm.transform(np.array(( 0.0,      1.8*step)))
+        poly = ET.SubElement(parent, 'polygon')
+        poly.set('points',
+                 f"{tl[0]},{tl[1]} {tr[0]},{tr[1]} {tip[0]},{tip[1]}")
+        poly.set('stroke', 'black')
+        poly.set('fill', 'none')
+
+    # Label defaults to the right of the top bar
+    if label_module.has_label(element):
+        alignment = element.get('alignment', 'east')
+        anchor = ctm.transform(np.array((0.6*step, 1.2*step)))
+        el = ET.SubElement(parent, 'label')
+        el.text = element.text
+        for child in element:
+            el.append(copy.deepcopy(child))
+        el.set('anchor', f"({anchor[0]}, {anchor[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if element.get('offset', None) is not None:
+            el.set('offset', element.get('offset'))
+        label_module.label(el, diagram, parent, None)
+
+    # Terminal dictionary — one connection point at the top
+    at_name = element.get('at', None)
+    if at_name is not None:
+        center_pt = diagram.inverse_transform(ctm.transform(np.array((0.0, 0.0))))
+        center_svg = ctm.transform(np.array((0.0, 0.0)))
+        up_dir = ctm.transform(np.array((0.0, -1.0))) - center_svg
+        terminals = {'center': [center_pt, up_dir]}
+        un.enter_namespace(at_name, terminals)
+
 def battery(element, diagram, parent, data):
     convention = data['convention']
 

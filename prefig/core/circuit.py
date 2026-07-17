@@ -10,6 +10,7 @@ from . import circuit_geometry
 log = logging.getLogger('prefigure')
 
 tags = {
+    'ground': circuit_geometry.shapes.ground,
     'battery': circuit_geometry.shapes.battery,
     'op-amp': circuit_geometry.shapes.op_amp,
     'dc-current-source': circuit_geometry.shapes.dc_current_source,
@@ -26,6 +27,8 @@ def circuit(element, diagram, parent, outline_group):
         'scale': scale,
     }
     for child in element:
+        if isinstance(child, (ET._Comment, ET._ProcessingInstruction)):
+            continue
         function = tags.get(child.tag, None)
         if function is None:
             log.error(f"{child.tag} element is not allowed in a <circuit>")
