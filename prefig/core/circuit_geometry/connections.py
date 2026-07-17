@@ -33,6 +33,8 @@ def connection(element, diagram, parent, data):
     current_pt = start
 
     for child in element:
+        if isinstance(child, (ET._Comment, ET._ProcessingInstruction)):
+            continue
         if child.tag == "wire":
             next_cmds, current_pt, current_direction = wire(
                 child,
@@ -121,14 +123,14 @@ def log_pt(pt):
     log.error((pt[0], pt[1]))
 
 def plot_path(current_pt, current_direction, end_pt, end_direction):
-    waypts = [current_pt]
     if current_direction is None and end_direction is None:
         diff = end_pt - current_pt
         if np.isclose(diff[0], 0) or np.isclose(diff[1], 0):
             waypts = [current_pt, end_pt]
             return waypts
-        waypts.append(((current_pt[0]+end_pt[0])/2, current_pt[1]))
-        waypts.append(((current_pt[0]+end_pt[0])/2, end_pt[1]))
+        waypts = [current_pt]
+        waypts.append(np.array(((current_pt[0]+end_pt[0])/2, current_pt[1])))
+        waypts.append(np.array(((current_pt[0]+end_pt[0])/2, end_pt[1])))
         waypts.append(end_pt)
         return waypts
 
@@ -146,6 +148,7 @@ def plot_path(current_pt, current_direction, end_pt, end_direction):
     def_step = 30
     end = ctm.inverse_transform(end_pt)
     if current_direction is not None and end_direction is None:
+        waypts = [current_pt]
         if end[0] > 0:
             waypts.append(ctm.transform((end[0],0)))
             waypts.append(end_pt)
@@ -166,10 +169,11 @@ def plot_path(current_pt, current_direction, end_pt, end_direction):
         if reversed:
             waypts.reverse()
         return waypts
-    
+
     # now we have directions on both ends of the wire
     end_direction = math_util.rotate(end_direction, -angle)
     end_direction *= -1
+    waypts = [current_pt]
     if np.isclose(end[1], 0):  # end point is on axis
         if end[0] > 0:  # end point on positive axis
             if np.isclose(end_direction[1], 0):
