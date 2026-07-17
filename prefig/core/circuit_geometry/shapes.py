@@ -146,6 +146,7 @@ def op_amp(element, diagram, parent, data):
         el.set('font-size', font_size)
         label_module.label(el, diagram, parent, None)
 
+    font_size = str(round(0.4 * scale, 1))
     if label_module.has_label(element):
         el = ET.SubElement(parent, 'label')
         el.text = element.text
@@ -155,6 +156,7 @@ def op_amp(element, diagram, parent, data):
         el.set('anchor', f"({anchor[0]}, {anchor[1]})")
         el.set('alignment', 'center')
         el.set('user-coords', 'no')
+        el.set('font-size', font_size)
         label_module.label(el, diagram, parent, None)
 
     at_name = element.get('at', None)
