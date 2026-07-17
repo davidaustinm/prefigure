@@ -13,6 +13,7 @@ tags = {
     'battery': circuit_geometry.shapes.battery,
     'op-amp': circuit_geometry.shapes.op_amp,
     'dc-current-source': circuit_geometry.shapes.dc_current_source,
+    'diode': circuit_geometry.shapes.diode,
     'connection': circuit_geometry.connections.connection,
 }
 
