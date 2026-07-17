@@ -270,3 +270,83 @@ def dc_current_source(element, diagram, parent, data):
             terminals = {'in':  [right_pt, right_dir],
                          'out': [left_pt,  left_dir]}
         un.enter_namespace(at_name, terminals)
+
+def diode(element, diagram, parent, data):
+    scale = data['scale']
+    half_w = 0.4 * scale
+    half_h = 0.5 * scale
+
+    parent = ET.SubElement(parent, 'g')
+    diagram.add_id(parent, element.get('id'))
+
+    location_str = element.get('location')
+    if location_str is None:
+        log.error('diode element needs a location attribute')
+        return
+    origin = un.valid_eval(location_str)
+    origin = diagram.transform(origin)
+
+    ctm = CTM.CTM()
+    ctm.translate(*origin)
+    rotation_str = element.get('rotate', None)
+    if rotation_str is not None:
+        rotation = un.valid_eval(rotation_str)
+        ctm.rotate(-rotation)
+
+    invert = element.get('invert', 'no') == 'yes'
+    sign = -1 if invert else 1
+
+    # Triangle: base on left, tip pointing right (or flipped if invert)
+    apex  = ctm.transform(np.array(( sign * half_w,  0.0   )))
+    base1 = ctm.transform(np.array((-sign * half_w, -half_h)))
+    base2 = ctm.transform(np.array((-sign * half_w,  half_h)))
+    poly = ET.SubElement(parent, 'polygon')
+    poly.set('points',
+             f"{apex[0]},{apex[1]} {base1[0]},{base1[1]} {base2[0]},{base2[1]}")
+    poly.set('fill', 'none')
+    poly.set('stroke', 'black')
+
+    # Cathode bar at the tip (right side, or left if inverted)
+    bar_top = ctm.transform(np.array(( sign * half_w, -half_h)))
+    bar_bot = ctm.transform(np.array(( sign * half_w,  half_h)))
+    bar = ET.SubElement(parent, 'line')
+    bar.set('x1', str(bar_top[0]))
+    bar.set('y1', str(bar_top[1]))
+    bar.set('x2', str(bar_bot[0]))
+    bar.set('y2', str(bar_bot[1]))
+    bar.set('stroke', 'black')
+
+    # Label
+    center = ctm.transform(np.array((0.0, 0.0)))
+    if label_module.has_label(element):
+        alignment = element.get('alignment', None)
+        if alignment is None:
+            direction = ctm.transform(np.array((0.0, -1.0))) - center
+            direction[1] *= -1
+            alignment = label_module.get_alignment_from_direction(direction)
+        anchor = ctm.transform(np.array((0.0, -half_h)))
+        el = ET.SubElement(parent, 'label')
+        el.text = element.text
+        for child in element:
+            el.append(copy.deepcopy(child))
+        el.set('anchor', f"({anchor[0]}, {anchor[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if element.get('offset', None) is not None:
+            el.set('offset', element.get('offset'))
+        label_module.label(el, diagram, parent, None)
+
+    # Terminal dictionary
+    at_name = element.get('at', None)
+    if at_name is not None:
+        left_dir  = ctm.transform(np.array((-1.0, 0.0))) - center
+        right_dir = ctm.transform(np.array(( 1.0, 0.0))) - center
+        anode_pt   = diagram.inverse_transform(ctm.transform(np.array((-half_w, 0.0))))
+        cathode_pt = diagram.inverse_transform(ctm.transform(np.array(( half_w, 0.0))))
+        if not invert:
+            terminals = {'anode':   [anode_pt,   left_dir],
+                         'cathode': [cathode_pt, right_dir]}
+        else:
+            terminals = {'anode':   [cathode_pt, right_dir],
+                         'cathode': [anode_pt,   left_dir]}
+        un.enter_namespace(at_name, terminals)

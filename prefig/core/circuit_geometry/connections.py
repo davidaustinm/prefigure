@@ -99,6 +99,17 @@ def connection(element, diagram, parent, data):
             )
             cmds += next_cmds
             continue
+        if child.tag == "diode":
+            next_cmds, current_pt, current_direction = diode(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
     path.set('stroke', 'black')
     path.set('d', ''.join(cmds))
     path.set('fill', 'none')
@@ -631,6 +642,70 @@ def dc_current_source(child, diagram, parent, current_pt, current_direction, dat
 
     if label.has_label(child):
         add_label(child, diagram, g, mid_pt, radius, diff)
+
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
+
+
+def diode(child, diagram, parent, current_pt, current_direction, data):
+    scale  = data['scale']
+    half_w = 0.4 * scale
+    half_h = 0.5 * scale
+
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    invert = child.get('invert', 'no') == 'yes'
+    sign = -1 if invert else 1
+
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p = un.valid_eval(p)
+    end_pt, end_direction = find_terminal(p)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction, end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
+    angle = math.degrees(math.atan2(diff[1], diff[0]))
+    ctm = CTM.CTM()
+    ctm.translate(*mid_pt)
+    ctm.rotate(angle)
+
+    body_start = ctm.transform(np.array((-half_w, 0.0)))
+    body_end   = ctm.transform(np.array(( half_w, 0.0)))
+    first_path  = waypts[:longest+1] + [body_start]
+    second_path = [body_end] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
+
+    # Triangle: base at -sign*half_w, apex (tip) at +sign*half_w
+    apex  = ctm.transform(np.array(( sign * half_w,  0.0   )))
+    base1 = ctm.transform(np.array((-sign * half_w, -half_h)))
+    base2 = ctm.transform(np.array((-sign * half_w,  half_h)))
+    poly = ET.SubElement(g, 'polygon')
+    poly.set('points',
+             f"{apex[0]},{apex[1]} {base1[0]},{base1[1]} {base2[0]},{base2[1]}")
+    poly.set('fill', 'none')
+    poly.set('stroke', 'black')
+
+    # Cathode bar at the apex side
+    bar_top = ctm.transform(np.array(( sign * half_w, -half_h)))
+    bar_bot = ctm.transform(np.array(( sign * half_w,  half_h)))
+    bar = ET.SubElement(g, 'line')
+    bar.set('x1', str(bar_top[0]))
+    bar.set('y1', str(bar_top[1]))
+    bar.set('x2', str(bar_bot[0]))
+    bar.set('y2', str(bar_bot[1]))
+    bar.set('stroke', 'black')
+
+    if label.has_label(child):
+        add_label(child, diagram, g, mid_pt, half_h, diff)
 
     p0, p1 = waypts[-2:]
     end_direction = p1 - p0
