@@ -178,3 +178,95 @@ def op_amp(element, diagram, parent, data):
             'down':  [user_pt(( 0.0,     half_h / 2)), down_dir],
         }
         un.enter_namespace(at_name, terminals)
+
+def dc_current_source(element, diagram, parent, data):
+    scale = 1.2*data['scale']
+    radius     = 0.6  * scale
+    arrow_len  = 0.15 * scale   # arrowhead length
+    arrow_half = 0.08 * scale   # arrowhead half-width
+
+    parent = ET.SubElement(parent, 'g')
+    diagram.add_id(parent, element.get('id'))
+
+    location_str = element.get('location')
+    if location_str is None:
+        log.error('dc_current_source element needs a location attribute')
+        return
+    origin = un.valid_eval(location_str)
+    origin = diagram.transform(origin)
+
+    ctm = CTM.CTM()
+    ctm.translate(*origin)
+    rotation_str = element.get('rotate', None)
+    if rotation_str is not None:
+        rotation = un.valid_eval(rotation_str)
+        ctm.rotate(-rotation)
+
+    invert = element.get('invert', 'no') == 'yes'
+    sign = -1 if invert else 1
+
+    # Circle
+    center = ctm.transform(np.array((0.0, 0.0)))
+    circle = ET.SubElement(parent, 'circle')
+    circle.set('cx', str(center[0]))
+    circle.set('cy', str(center[1]))
+    circle.set('r',  str(radius))
+    circle.set('stroke', 'black')
+    circle.set('fill', 'none')
+
+    # Arrow shaft ending at the base of the arrowhead
+    arrow_x = sign * 0.5 * radius
+    shaft_start = ctm.transform(np.array((-sign * 0.7 * radius, 0.0)))
+    shaft_end   = ctm.transform(np.array((arrow_x - sign * arrow_len / 2, 0.0)))
+    line = ET.SubElement(parent, 'line')
+    line.set('x1', str(shaft_start[0]))
+    line.set('y1', str(shaft_start[1]))
+    line.set('x2', str(shaft_end[0]))
+    line.set('y2', str(shaft_end[1]))
+    line.set('stroke', 'black')
+    line.set('thickness', '2')
+
+    # Filled arrowhead triangle
+    tip   = ctm.transform(np.array((arrow_x + sign * arrow_len / 2,  0.0       )))
+    base1 = ctm.transform(np.array((arrow_x - sign * arrow_len / 2, -arrow_half)))
+    base2 = ctm.transform(np.array((arrow_x - sign * arrow_len / 2,  arrow_half)))
+    poly = ET.SubElement(parent, 'polygon')
+    poly.set('points',
+             f"{tip[0]},{tip[1]} {base1[0]},{base1[1]} {base2[0]},{base2[1]}")
+    poly.set('fill', 'black')
+    poly.set('stroke', 'none')
+
+    # Label
+    if label_module.has_label(element):
+        alignment = element.get('alignment', None)
+        if alignment is None:
+            direction = ctm.transform(np.array((0.0, -1.0))) - center
+            direction[1] *= -1
+            alignment = label_module.get_alignment_from_direction(direction)
+        anchor = ctm.transform(np.array((0.0, -radius)))
+        el = ET.SubElement(parent, 'label')
+        el.text = element.text
+        for child in element:
+            el.append(copy.deepcopy(child))
+        el.set('anchor', f"({anchor[0]}, {anchor[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if element.get('offset', None) is not None:
+            el.set('offset', element.get('offset'))
+        label_module.label(el, diagram, parent, None)
+
+    # Terminal dictionary
+    at_name = element.get('at', None)
+    if at_name is not None:
+        center_pt = ctm.transform(np.array((0.0, 0.0)))
+        left_dir  = ctm.transform(np.array((-1.0, 0.0))) - center_pt
+        right_dir = ctm.transform(np.array(( 1.0, 0.0))) - center_pt
+        left_pt   = diagram.inverse_transform(ctm.transform(np.array((-radius, 0.0))))
+        right_pt  = diagram.inverse_transform(ctm.transform(np.array(( radius, 0.0))))
+        if not invert:
+            terminals = {'in':  [left_pt,  left_dir],
+                         'out': [right_pt, right_dir]}
+        else:
+            terminals = {'in':  [right_pt, right_dir],
+                         'out': [left_pt,  left_dir]}
+        un.enter_namespace(at_name, terminals)
