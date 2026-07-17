@@ -18,7 +18,7 @@ tags = {
 # Process a circuit tag
 def circuit(element, diagram, parent, outline_group):
     convention = element.get('convention', 'US')
-    scale = 14 * un.valid_eval(element.get('scale', '1'))
+    scale = 20 * un.valid_eval(element.get('scale', '1'))
     data = {
         'convention': convention,
         'scale': scale,

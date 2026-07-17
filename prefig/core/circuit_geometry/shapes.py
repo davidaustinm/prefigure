@@ -1,6 +1,8 @@
 import lxml.etree as ET
 import logging
 import numpy as np
+import math
+import copy
 from .. import user_namespace as un
 from .. import utilities as util
 from .. import math_utilities as math_util
@@ -11,6 +13,9 @@ log = logging.getLogger('prefigure')
 
 def battery(element, diagram, parent, data):
     convention = data['convention']
+
+    parent = ET.SubElement(parent, 'g')
+    diagram.add_id(parent, element.get('id'))
 
     location_str = element.get('location')
     if location_str is None:
@@ -50,6 +55,26 @@ def battery(element, diagram, parent, data):
         line.set('y2', f"{p2[1]}")
         line.set('stroke', 'black')
 
+    if label_module.has_label(element):
+        alignment = element.get('alignment', None)
+        if alignment is None:
+            direction = ctm.transform(negative) - ctm.transform(positive)
+            direction[1] *= -1
+            direction = math_util.rotate(direction,
+                                         math.pi/2)
+            alignment = label_module.get_alignment_from_direction(direction)
+        anchor = ctm.transform((H, 0))
+        el = ET.SubElement(parent, 'label')
+        el.text = element.text
+        for child in element:
+            el.append(copy.deepcopy(child))
+        el.set('anchor', f"({anchor[0]}, {anchor[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if element.get('offset', None) is not None:
+            el.set('offset', element.get('offset'))
+        label_module.label(el, diagram, parent, None)
+
     center = ctm.transform((0,0))
     positive_direction = ctm.transform((0,-1)) - center
     negative_direction = ctm.transform((0, 1)) - center
@@ -63,7 +88,10 @@ def battery(element, diagram, parent, data):
         un.enter_namespace(id, terminals)
 
 def op_amp(element, diagram, parent, data):
-    scale = data['scale']
+    scale = 1.4*data['scale']
+
+    parent = ET.SubElement(parent, 'g')
+    diagram.add_id(parent, element.get('id'))
 
     half_h  = 0.9  * scale   # half the total height (~1.29x ctz default)
     half_w  = 1.1  * scale   # half the total width / terminal reach
@@ -80,8 +108,13 @@ def op_amp(element, diagram, parent, data):
     ctm = CTM.CTM()
     ctm.translate(*origin)
     rotation_str = element.get('rotate', None)
+    offset_direction = np.array((1,0))
     if rotation_str is not None:
-        ctm.rotate(-un.valid_eval(rotation_str))
+        angle = -un.valid_eval(rotation_str)
+        ctm.rotate(angle)
+        rad_angle = math.radians(-angle)
+        offset_direction = math_util.rotate(offset_direction,
+                                            -rad_angle)
 
     # Triangle (left edge vertical, tip pointing right)
     top_left  = ctm.transform(np.array((-body_x, -half_h)))
@@ -98,15 +131,30 @@ def op_amp(element, diagram, parent, data):
 
     # +/- labels inside the triangle, just right of the left edge
     font_size = str(round(0.7 * scale, 1))
-    label_x = -body_x + 0.15 * scale
+    offset_scale = {'-': 6, '+': 6}
     for sign, y in [('-', -input_h), ('+', input_h)]:
-        pt = ctm.transform(np.array((label_x, y)))
+        label_pos = np.array((-body_x, y))
+        pt = ctm.transform(label_pos)
+        pt += offset_scale[sign] * offset_direction
         el = ET.Element('label')
-        el.text = sign
+        math_el = ET.SubElement(el, 'm')
+        math_el.text = sign
+        el.set('anchor', f"({pt[0]}, {pt[1]})")
         el.set('alignment', 'center')
-        el.set('p', f"({pt[0]}, {pt[1]})")
+        el.set('scale', f"{0.75*data['scale']/20}")
         el.set('user-coords', 'no')
         el.set('font-size', font_size)
+        label_module.label(el, diagram, parent, None)
+
+    if label_module.has_label(element):
+        el = ET.SubElement(parent, 'label')
+        el.text = element.text
+        for child in element:
+            el.append(copy.deepcopy(child))
+        anchor = ctm.transform((0,0))
+        el.set('anchor', f"({anchor[0]}, {anchor[1]})")
+        el.set('alignment', 'center')
+        el.set('user-coords', 'no')
         label_module.label(el, diagram, parent, None)
 
     at_name = element.get('at', None)
