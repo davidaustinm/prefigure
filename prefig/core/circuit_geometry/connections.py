@@ -293,8 +293,16 @@ def wire(child, diagram, parent, current_pt, current_direction, data):
     if p is None:
         log.error(f"A {child.tag} element needs an attribute to")
         return
-    p = un.valid_eval(p)
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
     end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
     end_pt = diagram.transform(end_pt)
 
     waypts = plot_path(current_pt, current_direction,
@@ -327,8 +335,16 @@ def inductor(child, diagram, parent, current_pt,
     if p is None:
         log.error(f"A {child.tag} element needs an attribute to")
         return
-    p = un.valid_eval(p)
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
     end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
     end_pt = diagram.transform(end_pt)
     waypts = plot_path(current_pt, current_direction,
                        end_pt, end_direction)
@@ -407,8 +423,16 @@ def resistor(child, diagram, parent, current_pt,
     if p is None:
         log.error(f"A {child.tag} element needs an attribute to")
         return
-    p = un.valid_eval(p)
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
     end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
     end_pt = diagram.transform(end_pt)
     waypts = plot_path(current_pt, current_direction,
                        end_pt, end_direction)
@@ -471,8 +495,16 @@ def capacitor(child, diagram, parent, current_pt,
     if p is None:
         log.error(f"A {child.tag} element needs an attribute to")
         return
-    p = un.valid_eval(p)
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
     end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
     end_pt = diagram.transform(end_pt)
     waypts = plot_path(current_pt, current_direction,
                        end_pt, end_direction)
@@ -533,8 +565,16 @@ def battery(child, diagram, parent, current_pt, current_direction, data):
     if p is None:
         log.error(f"A {child.tag} element needs an attribute to")
         return
-    p = un.valid_eval(p)
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
     end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
     end_pt = diagram.transform(end_pt)
     waypts = plot_path(current_pt, current_direction, end_pt, end_direction)
 
@@ -593,8 +633,16 @@ def dc_current_source(child, diagram, parent, current_pt, current_direction, dat
     if p is None:
         log.error(f"A {child.tag} element needs an attribute to")
         return
-    p = un.valid_eval(p)
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
     end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
     end_pt = diagram.transform(end_pt)
     waypts = plot_path(current_pt, current_direction, end_pt, end_direction)
 
@@ -667,8 +715,16 @@ def diode(child, diagram, parent, current_pt, current_direction, data):
     if p is None:
         log.error(f"A {child.tag} element needs an attribute to")
         return
-    p = un.valid_eval(p)
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
     end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
     end_pt = diagram.transform(end_pt)
     waypts = plot_path(current_pt, current_direction, end_pt, end_direction)
 
