@@ -448,6 +448,12 @@ def inductor(child, diagram, parent, current_pt,
     if has_label:
         add_label(child, diagram, parent, mid_pt, b_up, diff)
 
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   + body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] + body_end))
+        un.enter_namespace(handle, {'in': in_pt, 'out': out_pt})
+
     p0, p1 = waypts[-2:]
     end_direction = p1 - p0
     return cmds, end_pt, end_direction
@@ -522,6 +528,13 @@ def resistor(child, diagram, parent, current_pt,
     if has_label:
         add_label(child, diagram, parent, mid_pt, H, diff)
 
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt = diagram.inverse_transform(1/2*(waypts[longest] + body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] + body_end))
+        handle_dict = {'in': in_pt, 'out': out_pt}
+        un.enter_namespace(handle, handle_dict)
+
     p0, p1 = waypts[-2:]
     end_direction = p1 - p0
     return cmds, end_pt, end_direction
@@ -590,6 +603,12 @@ def capacitor(child, diagram, parent, current_pt,
 
     if has_label:
         add_label(child, diagram, parent, mid_pt, plate_half, diff)
+
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   + left_pt))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] + right_pt))
+        un.enter_namespace(handle, {'in': in_pt, 'out': out_pt})
 
     p0, p1 = waypts[-2:]
     end_direction = p1 - p0
@@ -661,6 +680,12 @@ def battery(child, diagram, parent, current_pt, current_direction, data):
 
     if has_label:
         add_label(child, diagram, parent, mid_pt, H, diff)
+
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   + body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] + body_end))
+        un.enter_namespace(handle, {'in': in_pt, 'out': out_pt})
 
     p0, p1 = waypts[-2:]
     end_direction = p1 - p0
@@ -745,6 +770,12 @@ def dc_current_source(child, diagram, parent, current_pt, current_direction, dat
     if label.has_label(child):
         add_label(child, diagram, g, mid_pt, radius, diff)
 
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   + body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] + body_end))
+        un.enter_namespace(handle, {'in': in_pt, 'out': out_pt})
+
     p0, p1 = waypts[-2:]
     end_direction = p1 - p0
     return cmds, end_pt, end_direction
@@ -816,6 +847,12 @@ def diode(child, diagram, parent, current_pt, current_direction, data):
 
     if label.has_label(child):
         add_label(child, diagram, g, mid_pt, half_h, diff)
+
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   + body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] + body_end))
+        un.enter_namespace(handle, {'in': in_pt, 'out': out_pt})
 
     p0, p1 = waypts[-2:]
     end_direction = p1 - p0
