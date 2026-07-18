@@ -11,6 +11,48 @@ from .. import label as label_module
 
 log = logging.getLogger('prefigure')
 
+def node(element, diagram, parent, data):
+    parent = ET.SubElement(parent, 'g')
+    diagram.add_id(parent, element.get('id'))
+
+    location_str = element.get('location')
+    if location_str is None:
+        log.error('node element needs a location attribute')
+        return
+    origin = un.valid_eval(location_str)
+    pt = diagram.transform(origin)
+
+    filled = element.get('filled', 'yes') == 'yes'
+
+    circle = ET.SubElement(parent, 'circle')
+    circle.set('cx', str(pt[0]))
+    circle.set('cy', str(pt[1]))
+    circle.set('r', '3')
+    if filled:
+        circle.set('fill', 'black')
+        circle.set('stroke', 'none')
+    else:
+        circle.set('fill', 'white')
+        circle.set('stroke', 'black')
+
+    if label_module.has_label(element):
+        alignment = element.get('alignment', 'northeast')
+        el = ET.SubElement(parent, 'label')
+        el.text = element.text
+        for child in element:
+            el.append(copy.deepcopy(child))
+        el.set('anchor', f"({pt[0]}, {pt[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if element.get('offset', None) is not None:
+            offset = un.valid_eval(element.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
+        label_module.label(el, diagram, parent, None)
+
+    at_name = element.get('at', None)
+    if at_name is not None:
+        un.enter_namespace(at_name, {'location': origin})
+
 def ground(element, diagram, parent, data):
     scale = data['scale']
     step = 0.5*scale
@@ -73,7 +115,8 @@ def ground(element, diagram, parent, data):
         el.set('user-coords', 'no')
         el.set('alignment', alignment)
         if element.get('offset', None) is not None:
-            el.set('offset', element.get('offset'))
+            offset = un.valid_eval(element.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
         label_module.label(el, diagram, parent, None)
 
     # Terminal dictionary — one connection point at the top
@@ -146,7 +189,8 @@ def battery(element, diagram, parent, data):
         el.set('user-coords', 'no')
         el.set('alignment', alignment)
         if element.get('offset', None) is not None:
-            el.set('offset', element.get('offset'))
+            offset = un.valid_eval(element.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
         label_module.label(el, diagram, parent, None)
 
     center = ctm.transform((0,0))
@@ -326,7 +370,8 @@ def dc_current_source(element, diagram, parent, data):
         el.set('user-coords', 'no')
         el.set('alignment', alignment)
         if element.get('offset', None) is not None:
-            el.set('offset', element.get('offset'))
+            offset = un.valid_eval(element.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
         label_module.label(el, diagram, parent, None)
 
     # Terminal dictionary
@@ -407,7 +452,8 @@ def diode(element, diagram, parent, data):
         el.set('user-coords', 'no')
         el.set('alignment', alignment)
         if element.get('offset', None) is not None:
-            el.set('offset', element.get('offset'))
+            offset = un.valid_eval(element.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
         label_module.label(el, diagram, parent, None)
 
     # Terminal dictionary
