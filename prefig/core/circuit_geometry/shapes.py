@@ -12,6 +12,13 @@ from .. import line as line_module
 
 log = logging.getLogger('prefigure')
 
+def _parse_location(location_str):
+    value = un.valid_eval(location_str)
+    # A connection terminal stores [point, direction]; extract just the point
+    if hasattr(value[0], '__len__'):
+        return np.array(value[0])
+    return np.array(value)
+
 def node(element, diagram, parent, data):
     parent = ET.SubElement(parent, 'g')
     diagram.add_id(parent, element.get('id'))
@@ -20,7 +27,7 @@ def node(element, diagram, parent, data):
     if location_str is None:
         log.error('node element needs a location attribute')
         return
-    origin = un.valid_eval(location_str)
+    origin = _parse_location(location_str)
     pt = diagram.transform(origin)
 
     filled = element.get('filled', 'yes') == 'yes'
@@ -65,7 +72,7 @@ def ground(element, diagram, parent, data):
     if location_str is None:
         log.error('ground element needs a location attribute')
         return
-    origin = un.valid_eval(location_str)
+    origin = _parse_location(location_str)
     origin = diagram.transform(origin)
 
     ctm = CTM.CTM()
@@ -139,7 +146,7 @@ def battery(element, diagram, parent, data):
     if location_str is None:
         log.error('battery element needs a location attribute')
         return
-    origin = un.valid_eval(location_str)
+    origin = _parse_location(location_str)
     origin = diagram.transform(origin)
 
     scale = data['scale']
@@ -221,7 +228,7 @@ def op_amp(element, diagram, parent, data):
     if location_str is None:
         log.error('op_amp element needs a location attribute')
         return
-    origin = un.valid_eval(location_str)
+    origin = _parse_location(location_str)
     origin = diagram.transform(origin)
 
     ctm = CTM.CTM()
@@ -311,7 +318,7 @@ def dc_current_source(element, diagram, parent, data):
     if location_str is None:
         log.error('dc_current_source element needs a location attribute')
         return
-    origin = un.valid_eval(location_str)
+    origin = _parse_location(location_str)
     origin = diagram.transform(origin)
 
     ctm = CTM.CTM()
@@ -403,7 +410,7 @@ def diode(element, diagram, parent, data):
     if location_str is None:
         log.error('diode element needs a location attribute')
         return
-    origin = un.valid_eval(location_str)
+    origin = _parse_location(location_str)
     origin = diagram.transform(origin)
 
     ctm = CTM.CTM()
@@ -486,7 +493,7 @@ def transistor(element, diagram, parent, data):
     if location_str is None:
         log.error('bjt element needs a location attribute')
         return
-    origin = un.valid_eval(location_str)
+    origin = _parse_location(location_str)
     origin = diagram.transform(origin)
 
     ctm = CTM.CTM()
