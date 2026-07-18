@@ -8,6 +8,7 @@ from .. import utilities as util
 from .. import math_utilities as math_util
 from .. import CTM
 from .. import label as label_module
+from .. import line as line_module
 
 log = logging.getLogger('prefigure')
 
@@ -469,4 +470,130 @@ def diode(element, diagram, parent, data):
         else:
             terminals = {'anode':   [cathode_pt, right_dir],
                          'cathode': [anode_pt,   left_dir]}
+        un.enter_namespace(at_name, terminals)
+
+def transistor(element, diagram, parent, data):
+    scale = data['scale']
+    W   = 0.6  * scale
+    H   = 1.1  * scale
+    bh  = 0.4          # fraction of H where diagonal meets base bar
+    bh2 = 0.15         # fraction of H where diagonal meets right edge
+
+    parent = ET.SubElement(parent, 'g')
+    diagram.add_id(parent, element.get('id'))
+
+    location_str = element.get('location')
+    if location_str is None:
+        log.error('bjt element needs a location attribute')
+        return
+    origin = un.valid_eval(location_str)
+    origin = diagram.transform(origin)
+
+    ctm = CTM.CTM()
+    ctm.translate(*origin)
+    rotation_str = element.get('rotate', None)
+    if rotation_str is not None:
+        rotation = un.valid_eval(rotation_str)
+        ctm.rotate(-rotation)
+
+    pnp = element.get('type', 'npn') == 'pnp'
+
+    # x of vertical base bar in local SVG coords
+    # bar_x = -W keeps diagonal angles proportional to ctz (base_width=0.5, width=0.6, height=1.1)
+    bar_x = -W
+
+    def p(x, y):
+        return ctm.transform(np.array((x, y)))
+
+    # Collector:  (0,-H) → (0,-bh*H) → (bar_x, -bh2*H)
+    # Base bar:   (bar_x, -bh*H) → (bar_x, +bh*H)
+    # Base lead:  (bar_x, 0) → (-2W, 0)
+    # Emitter:    (bar_x, +bh2*H) → (0, +bh*H) → (0, +H)
+    pts = {
+        'coll_end':   p(0,     -H      ),
+        'coll_elbow': p(0,     -bh*H   ),
+        'coll_joint': p(bar_x, -bh2*H  ),
+        'bar_top':    p(bar_x, -bh*H   ),
+        'bar_bot':    p(bar_x,  bh*H   ),
+        'base_arm':   p(bar_x,  0      ),
+        'base_end':   p(-2*W,   0      ),
+        'emit_joint': p(bar_x,  bh2*H  ),
+        'emit_elbow': p(0,      bh*H   ),
+        'emit_end':   p(0,      H      ),
+    }
+
+    def pt(name):
+        return util.pt2str(pts[name])
+
+    path = ET.SubElement(parent, 'path')
+    d = (f"M {pt('coll_end')} L {pt('coll_elbow')} L {pt('coll_joint')} "
+         f"M {pt('base_arm')} L {pt('base_end')} "
+         f"M {pt('emit_joint')} L {pt('emit_elbow')} L {pt('emit_end')}")
+    path.set('d', d)
+    path.set('stroke', 'black')
+    path.set('fill', 'none')
+
+    bar = ET.SubElement(parent, 'path')
+    bar.set('d', f"M {pt('bar_top')} L {pt('bar_bot')}")
+    bar.set('stroke', 'black')
+    bar.set('stroke-width', '1.5')
+    bar.set('fill', 'none')
+
+    # Arrow on emitter diagonal: lower for npn, upper (collector side) for pnp
+    if pnp:
+        # pnp emitter is the upper terminal; arrow goes inward (elbow → bar joint)
+        A = np.array((bar_x, -bh2 * H))
+        B = np.array((0.0,   -bh  * H))
+        arrow_p1 = B + 0.25 * (A - B)
+        arrow_p2 = B + 0.75 * (A - B)
+    else:
+        # npn emitter is the lower terminal; arrow goes outward (bar joint → elbow)
+        A = np.array((bar_x, bh2 * H))
+        B = np.array((0.0,   bh  * H))
+        arrow_p1 = A + 0.25 * (B - A)
+        arrow_p2 = A + 0.75 * (B - A)
+
+    p1_user = diagram.inverse_transform(ctm.transform(arrow_p1))
+    p2_user = diagram.inverse_transform(ctm.transform(arrow_p2))
+    line_el = ET.Element('line')
+    line_el.set('endpoints',
+                f"(({p1_user[0]}, {p1_user[1]}), ({p2_user[0]}, {p2_user[1]}))")
+    line_el.set('stroke', 'black')
+    line_el.set('thickness', '1')
+    line_el.set('arrows', '1')
+    line_el.set('arrow-width', '5')
+    line_el.set('arrow-angles', '(25, 90)')
+    line_module.line(line_el, diagram, parent, None)
+
+    # Label
+    center = ctm.transform(np.array((0.0, 0.0)))
+    if label_module.has_label(element):
+        alignment = element.get('alignment', 'east')
+        el = ET.SubElement(parent, 'label')
+        el.text = element.text
+        for child in element:
+            el.append(copy.deepcopy(child))
+        el.set('anchor', f"({center[0]}, {center[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if element.get('offset', None) is not None:
+            offset = un.valid_eval(element.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
+        label_module.label(el, diagram, parent, None)
+
+    # Terminals
+    at_name = element.get('at', None)
+    if at_name is not None:
+        up_dir   = ctm.transform(np.array((0.0, -1.0))) - center
+        down_dir = ctm.transform(np.array((0.0,  1.0))) - center
+        left_dir = ctm.transform(np.array((-1.0, 0.0))) - center
+
+        def user_pt(x, y):
+            return diagram.inverse_transform(ctm.transform(np.array((x, y))))
+
+        terminals = {
+            'collector': [user_pt(0,    -H), up_dir  ],
+            'emitter':   [user_pt(0,     H), down_dir],
+            'base':      [user_pt(-2*W, 0), left_dir],
+        }
         un.enter_namespace(at_name, terminals)
