@@ -35,6 +35,17 @@ def connection(element, diagram, parent, data):
     for child in element:
         if isinstance(child, (ET._Comment, ET._ProcessingInstruction)):
             continue
+        if child.tag == "node":
+            next_cmds, current_pt, current_direction = node(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
         if child.tag == "wire":
             next_cmds, current_pt, current_direction = wire(
                 child,
@@ -149,12 +160,12 @@ def plot_path(current_pt, current_direction, end_pt, end_direction):
     end = ctm.inverse_transform(end_pt)
     if current_direction is not None and end_direction is None:
         waypts = [current_pt]
-        if end[0] > 0:
-            waypts.append(ctm.transform((end[0],0)))
-            waypts.append(end_pt)
-        elif end[0] == 0:
+        if np.isclose(end[0], 0):
             waypts.append(ctm.transform((def_step,0)))
             waypts.append(ctm.transform((def_step,end[1])))
+            waypts.append(end_pt)
+        elif end[0] > 0:
+            waypts.append(ctm.transform((end[0],0)))
             waypts.append(end_pt)
         else:
             waypts.append(ctm.transform((def_step,0)))
@@ -287,6 +298,45 @@ def mk_path(waypts):
     for p in waypts:
         cmds += ['L ', util.pt2str(p)]
     return cmds
+
+def node(child, diagram, parent, current_pt, current_direction, data):
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    filled = child.get('filled', 'yes') == 'yes'
+
+    circle = ET.SubElement(g, 'circle')
+    circle.set('cx', str(current_pt[0]))
+    circle.set('cy', str(current_pt[1]))
+    circle.set('r', '3')
+    if filled:
+        circle.set('fill', 'black')
+        circle.set('stroke', 'none')
+    else:
+        circle.set('fill', 'white')
+        circle.set('stroke', 'black')
+
+    if label.has_label(child):
+        alignment = child.get('alignment', 'northeast')
+        el = ET.SubElement(g, 'label')
+        el.text = child.text
+        for grandchild in child:
+            el.append(copy.deepcopy(grandchild))
+        el.set('anchor', f"({current_pt[0]}, {current_pt[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if child.get('offset', None) is not None:
+            offset = un.valid_eval(child.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
+        label.label(el, diagram, g, None)
+
+    at_name = child.get('at', None)
+    current_direction *= -1
+    if at_name is not None:
+        user_pt = diagram.inverse_transform(current_pt)
+        un.enter_namespace(at_name, {'location': [user_pt, current_direction]})
+
+    return [], current_pt, current_direction
 
 def wire(child, diagram, parent, current_pt, current_direction, data):
     p = child.get("to", None)

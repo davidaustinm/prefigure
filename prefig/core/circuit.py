@@ -10,6 +10,7 @@ from . import circuit_geometry
 log = logging.getLogger('prefigure')
 
 tags = {
+    'node': circuit_geometry.shapes.node,
     'ground': circuit_geometry.shapes.ground,
     'battery': circuit_geometry.shapes.battery,
     'op-amp': circuit_geometry.shapes.op_amp,
