@@ -17,6 +17,8 @@ tags = {
     'dc-current-source': circuit_geometry.shapes.dc_current_source,
     'diode': circuit_geometry.shapes.diode,
     'transistor': circuit_geometry.shapes.transistor,
+    'vcc': circuit_geometry.shapes.voltage_rail,
+    'vee': circuit_geometry.shapes.voltage_rail,
     'connection': circuit_geometry.connections.connection,
 }
 
