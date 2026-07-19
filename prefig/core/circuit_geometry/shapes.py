@@ -478,6 +478,11 @@ def diode(element, diagram, parent, data):
             terminals = {'anode':   [cathode_pt, right_dir],
                          'cathode': [anode_pt,   left_dir]}
         un.enter_namespace(at_name, terminals)
+def log_pt(pt):
+    if pt is None:
+        log.error("none")
+    else:
+        log.error((pt[0],pt[1]))
 
 def transistor(element, diagram, parent, data):
     scale = data['scale']
@@ -604,3 +609,63 @@ def transistor(element, diagram, parent, data):
             'base':      [user_pt(-2*W, 0), left_dir],
         }
         un.enter_namespace(at_name, terminals)
+
+
+def voltage_rail(element, diagram, parent, data):
+    scale = data['scale']
+    step = 0.4 * scale   # 2× ctz width of 0.2, consistent with 2× scaling used elsewhere
+
+    parent = ET.SubElement(parent, 'g')
+    diagram.add_id(parent, element.get('id'))
+
+    location_str = element.get('location')
+    if location_str is None:
+        log.error(f'{element.tag} element needs a location attribute')
+        return
+    origin = _parse_location(location_str)
+    origin = diagram.transform(origin)
+
+    ctm = CTM.CTM()
+    ctm.translate(*origin)
+
+    vcc = (element.tag == 'vcc')
+    sign = -1 if vcc else 1  # SVG: -1 = visually up, +1 = visually down
+
+    tip_y  = sign * 1.5 * step
+    wing_y = sign * 0.8 * step
+    tip  = ctm.transform(np.array((0.0,          tip_y )))
+    lw   = ctm.transform(np.array((-0.5 * step,  wing_y)))
+    rw   = ctm.transform(np.array(( 0.5 * step,  wing_y)))
+    base = ctm.transform(np.array((0.0,           0.0  )))
+
+    stub = ET.SubElement(parent, 'line')
+    stub.set('x1', str(base[0])); stub.set('y1', str(base[1]))
+    stub.set('x2', str(tip[0]));  stub.set('y2', str(tip[1]))
+    stub.set('stroke', 'black')
+
+    chevron = ET.SubElement(parent, 'path')
+    chevron.set('d', f"M {lw[0]},{lw[1]} L {tip[0]},{tip[1]} L {rw[0]},{rw[1]}")
+    chevron.set('stroke', 'black')
+    chevron.set('stroke-width', '1.5')
+    chevron.set('fill', 'none')
+
+    if label_module.has_label(element):
+        alignment = element.get('alignment', 'northeast' if vcc else 'southeast')
+        anchor = tip
+        el = ET.SubElement(parent, 'label')
+        el.text = element.text
+        for child in element:
+            el.append(copy.deepcopy(child))
+        el.set('anchor', f"({anchor[0]}, {anchor[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if element.get('offset', None) is not None:
+            offset = un.valid_eval(element.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
+        label_module.label(el, diagram, parent, None)
+
+    at_name = element.get('at', None)
+    if at_name is not None:
+        user_tip = diagram.inverse_transform(tip)
+        direction = np.array((0.0, 1.0)) if vcc else np.array((0.0, -1.0))
+        un.enter_namespace(at_name, [user_tip, direction])

@@ -123,6 +123,28 @@ def connection(element, diagram, parent, data):
             )
             cmds += next_cmds
             continue
+        if child.tag in ("vcc", "vee"):
+            next_cmds, current_pt, current_direction = voltage_rail(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "ground":
+            next_cmds, current_pt, current_direction = ground(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
     path.set('stroke', 'black')
     path.set('d', ''.join(cmds))
     path.set('fill', 'none')
@@ -331,10 +353,125 @@ def node(child, diagram, parent, current_pt, current_direction, data):
         label.label(el, diagram, g, None)
 
     at_name = child.get('at', None)
-    current_direction *= -1
+    if current_direction is not None:
+        current_direction *= -1
     if at_name is not None:
         user_pt = diagram.inverse_transform(current_pt)
         un.enter_namespace(at_name, {'location': [user_pt, current_direction]})
+
+    return [], current_pt, current_direction
+
+def voltage_rail(child, diagram, parent, current_pt, current_direction, data):
+    scale = data['scale']
+    step = 0.4 * scale
+
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    ctm = CTM.CTM()
+    ctm.translate(*current_pt)
+
+    vcc = (child.tag == 'vcc')
+    sign = -1 if vcc else 1
+
+    tip_y  = sign * 1.5 * step
+    wing_y = sign * 0.8 * step
+    tip = ctm.transform(np.array((0.0,         tip_y )))
+    lw  = ctm.transform(np.array((-0.5 * step, wing_y)))
+    rw  = ctm.transform(np.array(( 0.5 * step, wing_y)))
+
+    stub = ET.SubElement(g, 'line')
+    stub.set('x1', str(current_pt[0])); stub.set('y1', str(current_pt[1]))
+    stub.set('x2', str(tip[0]));        stub.set('y2', str(tip[1]))
+    stub.set('stroke', 'black')
+
+    chevron = ET.SubElement(g, 'path')
+    chevron.set('d', f"M {lw[0]},{lw[1]} L {tip[0]},{tip[1]} L {rw[0]},{rw[1]}")
+    chevron.set('stroke', 'black')
+    chevron.set('stroke-width', '1.5')
+    chevron.set('fill', 'none')
+
+    if label.has_label(child):
+        alignment = child.get('alignment', 'northeast' if vcc else 'southeast')
+        el = ET.SubElement(g, 'label')
+        el.text = child.text
+        for grandchild in child:
+            el.append(copy.deepcopy(grandchild))
+        el.set('anchor', f"({tip[0]}, {tip[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if child.get('offset', None) is not None:
+            offset = un.valid_eval(child.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
+        label.label(el, diagram, g, None)
+
+    at_name = child.get('at', None)
+    if at_name is not None:
+        user_tip = diagram.inverse_transform(tip)
+        direction = np.array((0.0, 1.0)) if vcc else np.array((0.0, -1.0))
+        un.enter_namespace(at_name, [user_tip, direction])
+
+    return [], current_pt, current_direction
+
+def ground(child, diagram, parent, current_pt, current_direction, data):
+    scale = data['scale']
+    step = 0.5 * scale
+
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    ctm = CTM.CTM()
+    ctm.translate(*current_pt)
+
+    common = child.get('common', 'no') == 'yes'
+    stub_y = step if common else 1.2 * step
+
+    p2 = ctm.transform(np.array((0.0, stub_y)))
+    stub = ET.SubElement(g, 'line')
+    stub.set('x1', str(current_pt[0])); stub.set('y1', str(current_pt[1]))
+    stub.set('x2', str(p2[0]));         stub.set('y2', str(p2[1]))
+    stub.set('stroke', 'black')
+
+    if not common:
+        for y_pos, half_w in [(1.2*step, 0.6*step),
+                              (1.4*step, 0.4*step),
+                              (1.6*step, 0.25*step)]:
+            q1 = ctm.transform(np.array((-half_w, y_pos)))
+            q2 = ctm.transform(np.array(( half_w, y_pos)))
+            bar = ET.SubElement(g, 'line')
+            bar.set('x1', str(q1[0])); bar.set('y1', str(q1[1]))
+            bar.set('x2', str(q2[0])); bar.set('y2', str(q2[1]))
+            bar.set('stroke', 'black')
+    else:
+        tl  = ctm.transform(np.array((-0.6*step, step    )))
+        tr  = ctm.transform(np.array(( 0.6*step, step    )))
+        tip = ctm.transform(np.array(( 0.0,      1.8*step)))
+        poly = ET.SubElement(g, 'polygon')
+        poly.set('points',
+                 f"{tl[0]},{tl[1]} {tr[0]},{tr[1]} {tip[0]},{tip[1]}")
+        poly.set('stroke', 'black')
+        poly.set('fill', 'none')
+
+    if label.has_label(child):
+        alignment = child.get('alignment', 'east')
+        anchor = ctm.transform(np.array((0.6*step, 1.2*step)))
+        el = ET.SubElement(g, 'label')
+        el.text = child.text
+        for grandchild in child:
+            el.append(copy.deepcopy(grandchild))
+        el.set('anchor', f"({anchor[0]}, {anchor[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if child.get('offset', None) is not None:
+            offset = un.valid_eval(child.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
+        label.label(el, diagram, g, None)
+
+    at_name = child.get('at', None)
+    if at_name is not None:
+        user_pt = diagram.inverse_transform(current_pt)
+        up_dir = ctm.transform(np.array((0.0, -1.0))) - current_pt
+        un.enter_namespace(at_name, [user_pt, up_dir])
 
     return [], current_pt, current_direction
 
