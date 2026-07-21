@@ -1,126 +1,106 @@
-"""Pretext-mode SVG 1.1 compliance for double-arrow figures.
+"""SVG 1.1 downgrade regression tests (pf_cli, snapshot-based).
 
-The snapshot corpus builds in the CLI mode (``pf_cli``); pretext mode
-additionally writes an SVG 1.1-compliant conversion (``<stem>-11.svg``).
-The conversion matters exactly when a line/curve has arrowheads at *both*
-ends: the backward arrowhead relies on ``orient="auto-start-reverse"``, an
-SVG 2 feature, which SVG 1.1 renderers ignore (the arrowhead points the
-wrong way). The conversion instead materializes a rotated ``…-start``
-marker and rewrites ``marker-start`` references; it also moves ``<use
-href>`` to the ``xlink:href`` form SVG 1.1 requires.
+Examples that use SVG 2 features (auto-start-reverse for backward arrowheads,
+or <use href> for symbol reuse) are detected automatically by scanning the
+committed SVG 2 snapshots. For each, the SVG 1.1 output is produced via
+pf_cli and compared against a committed -11.svg snapshot placed next to the
+SVG 2 one. Regressions in the conversion are caught the same way as any other
+rendering change.
 
-This module builds a few representative double-arrow examples through the
-real pretext file-writing pipeline and checks the ``-11.svg`` output:
-
-* no ``auto-start-reverse`` anywhere (the SVG 2 feature is gone),
-* every ``marker-start/mid/end`` reference resolves to a defined marker,
-* every ``<use>`` carries ``xlink:href`` rather than SVG 2's ``href``,
-* and (sanity) the regular output *does* use ``auto-start-reverse``, so
-  these examples genuinely exercise the conversion.
+To create -11.svg snapshots for newly detected examples, or to regenerate
+them after an intentional conversion change:
+    UPDATE_SNAPSHOTS=1 poetry run pytest tests/test_pretext_svg11.py
 """
 
-import re
+import os
 from pathlib import Path
 
 import lxml.etree as ET
 import pytest
 
-from helpers.build_helper import build_diagram_files, temp_workdir
+from helpers.build_helper import build_diagram, pushd
+from helpers.compare import DEFAULT_TOL, compare_svgs
 
 TESTS_DIR = Path(__file__).resolve().parent
-
-# Double-arrow (arrows="2") examples covering <line> and <path>/curve cases.
-DOUBLE_ARROW_EXAMPLES = [
-    "extracted_from_docs/arrow_properties",   # double-arrow lines
-    "extracted_from_docs/paths",              # double-arrow path (curves)
-    "extracted_from_docs/arrow_angle_def",    # line with custom arrow angles
-]
+SNAPSHOTS_DIR = TESTS_DIR / "snapshots"
+UPDATE_SNAPSHOTS = os.environ.get("UPDATE_SNAPSHOTS", "") not in ("", "0", "false")
 
 XLINK_HREF = "{http://www.w3.org/1999/xlink}href"
-MARKER_REF = re.compile(r"url\(#([^)]+)\)")
 
 
-@pytest.fixture(scope="module", params=DOUBLE_ARROW_EXAMPLES, ids=lambda p: p)
-def pretext_outputs(request):
-    """Build one example in pretext mode; yield (name, svg2_tree, svg11_tree)."""
+def _svg2_feature_examples():
+    """Committed SVG 2 snapshots that contain features requiring SVG 1.1 downgrade.
+
+    Two SVG 2 features trigger downgrade:
+    - marker-start: a backward arrowhead using auto-start-reverse
+    - <use href=: symbol reuse via SVG 2 href (must become xlink:href)
+    """
+    cases = []
+    for snapshot in sorted((SNAPSHOTS_DIR / "examples").rglob("*.svg")):
+        if snapshot.stem.endswith("-11"):
+            continue
+        content = snapshot.read_text()
+        has_backward_arrow = 'marker-start' in content
+        has_use_href = ('<use' in content or '<image' in content) and ' href=' in content
+        if not (has_backward_arrow or has_use_href):
+            continue
+        rel = str(snapshot.relative_to(SNAPSHOTS_DIR / "examples").with_suffix(""))
+        cases.append(pytest.param(rel, id=rel))
+    return cases
+
+
+@pytest.fixture(scope="module", params=_svg2_feature_examples())
+def svg_outputs(request):
+    """Build one example via pf_cli; return (rel, svg2_str, svg11_str)."""
     rel = request.param
     source = TESTS_DIR / "examples" / Path(rel).with_suffix(".xml")
-    name = source.stem
-    with temp_workdir(f"pretext_svg11/{name}"):
-        out_dir = build_diagram_files(source, environment="pretext")
-        assert out_dir is not None, f"{name} did not build"
-        svg2_path = out_dir / f"{name}.svg"
-        svg11_path = out_dir / f"{name}-11.svg"
-        assert svg2_path.exists(), f"pretext build wrote no {svg2_path.name}"
-        assert svg11_path.exists(), (
-            f"pretext build wrote no {svg11_path.name}; "
-            "the SVG 1.1 conversion did not run"
-        )
-        svg2 = ET.parse(str(svg2_path)).getroot()
-        svg11 = ET.parse(str(svg11_path)).getroot()
-    return name, svg2, svg11
+    with pushd(source.parent):
+        svg2, _ = build_diagram(source.name)
+        svg11, _ = build_diagram(source.name, format="svg11")
+    return rel, svg2, svg11
 
 
 def _local(tag):
     return tag.rsplit("}", 1)[-1] if isinstance(tag, str) else tag
 
 
-def test_regular_output_uses_svg2_arrowheads(pretext_outputs):
-    """Sanity: these examples rely on auto-start-reverse in the SVG 2 output."""
-    name, svg2, _svg11 = pretext_outputs
-    orients = {m.get("orient") for m in svg2.iter() if _local(m.tag) == "marker"}
-    assert "auto-start-reverse" in orients, (
-        f"{name} has no auto-start-reverse marker in its regular output; "
-        "it does not exercise the SVG 1.1 conversion (pick another example)"
+def test_regular_output_uses_svg2_features(svg_outputs):
+    """Sanity: the built SVG 2 output still contains the SVG 2 feature detected in its snapshot."""
+    rel, svg2, _ = svg_outputs
+    root = ET.fromstring(svg2.encode())
+    has_auto_start_reverse = any(
+        m.get("orient") == "auto-start-reverse"
+        for m in root.iter()
+        if _local(m.tag) == "marker"
     )
-    assert any(el.get("marker-start") for el in svg2.iter()), (
-        f"{name} has no marker-start (backward arrowhead) in its regular output"
+    has_use_href = any(
+        el.get("href") is not None
+        for el in root.iter()
+        if _local(el.tag) in ("use", "image")
     )
-
-
-def test_svg11_has_no_svg2_marker_orientation(pretext_outputs):
-    name, _svg2, svg11 = pretext_outputs
-    offenders = [
-        m.get("id")
-        for m in svg11.iter()
-        if _local(m.tag) == "marker" and m.get("orient") == "auto-start-reverse"
-    ]
-    assert not offenders, (
-        f"{name}-11.svg still uses SVG 2's auto-start-reverse on markers: {offenders}"
+    assert has_auto_start_reverse or has_use_href, (
+        f"{rel} no longer contains auto-start-reverse or <use href> in its built output; "
+        "remove it from the SVG 1.1 test corpus or pick a different example"
     )
 
 
-def test_svg11_marker_references_resolve(pretext_outputs):
-    """marker-start/mid/end all point at markers that exist in the -11 output."""
-    name, _svg2, svg11 = pretext_outputs
-    marker_ids = {m.get("id") for m in svg11.iter() if _local(m.tag) == "marker"}
-    unresolved = []
-    starts_checked = 0
-    for el in svg11.iter():
-        for attr in ("marker-start", "marker-mid", "marker-end"):
-            value = el.get(attr)
-            if not value:
-                continue
-            match = MARKER_REF.fullmatch(value.strip())
-            if match is None or match.group(1) not in marker_ids:
-                unresolved.append((attr, value))
-            if attr == "marker-start":
-                starts_checked += 1
-                # the backward arrowhead must use the materialized start marker
-                assert "arrow-head-start" in value, (
-                    f"{name}-11.svg marker-start still references the end "
-                    f"marker: {value}"
-                )
-    assert starts_checked > 0, f"{name}-11.svg lost its marker-start arrowheads"
-    assert not unresolved, f"{name}-11.svg has dangling marker references: {unresolved}"
-
-
-def test_svg11_uses_xlink_href(pretext_outputs):
-    """SVG 1.1 <use> requires xlink:href; SVG 2's plain href must be gone."""
-    name, _svg2, svg11 = pretext_outputs
-    uses = [el for el in svg11.iter() if _local(el.tag) == "use"]
-    plain = [el for el in uses if el.get("href")]
-    assert not plain, f"{name}-11.svg has <use href=...>; SVG 1.1 needs xlink:href"
-    # every <use> must still reference something, now via xlink
-    for el in uses:
-        assert el.get(XLINK_HREF), f"{name}-11.svg has a <use> with no xlink:href"
+def test_svg11_matches_snapshot(svg_outputs):
+    """The SVG 1.1 output matches its committed snapshot."""
+    rel, _, svg11 = svg_outputs
+    snapshot = SNAPSHOTS_DIR / f"examples/{rel}-11.svg"
+    if UPDATE_SNAPSHOTS:
+        snapshot.parent.mkdir(parents=True, exist_ok=True)
+        snapshot.write_text(svg11)
+        return
+    assert snapshot.exists(), (
+        f"no SVG 1.1 snapshot at {snapshot.relative_to(TESTS_DIR)}; "
+        "run UPDATE_SNAPSHOTS=1 to create it"
+    )
+    diffs = compare_svgs(svg11, snapshot.read_text(), DEFAULT_TOL)
+    snapshot_id = str(snapshot.relative_to(SNAPSHOTS_DIR).with_suffix(""))
+    assert not diffs, (
+        f"{rel} SVG 1.1 output differs from its snapshot:\n"
+        + "\n".join(diffs)
+        + "\n\nIf intentional, update with:\n"
+        + f'  UPDATE_SNAPSHOTS=1 poetry run pytest "tests/test_pretext_svg11.py::test_svg11_matches_snapshot[{rel}]"'
+    )

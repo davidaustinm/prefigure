@@ -554,9 +554,12 @@ class Diagram:
     # If we only want a string, we assemble the XML tree
     # consisting of the SVG and annotations and return as a string
     def end_figure_to_string(self):
-        svg_string = ET.tostring(self.root).decode('utf-8')
+        root = self.root
+        if self.output_format() == 'svg11':
+            root = self.svg11_conversion(root)
+        svg_string = ET.tostring(root).decode('utf-8')
         annotation_string = None
-        if self.annotations_root is not None:
+        if self.annotations_root is not None and self.output_format() != 'svg11':
             diagram = ET.Element("diagram")
             diagram.append(self.annotations_root)
             annotation_string = ET.tostring(diagram).decode('utf-8')
@@ -813,11 +816,11 @@ class Diagram:
         SVG_NS = "http://www.w3.org/2000/svg"
         XLINK_NS = "http://www.w3.org/1999/xlink"
 
-        # Replace href with xlink:href in all <use> elements
-        for use_elem in root.iter('use'):
-            if 'href' in use_elem.attrib:
-                value = use_elem.attrib.pop('href')
-                use_elem.attrib[f'{{{XLINK_NS}}}href'] = value
+        # Replace href with xlink:href in <use> and <image> elements
+        for elem in root.iter('use', 'image'):
+            if 'href' in elem.attrib:
+                value = elem.attrib.pop('href')
+                elem.attrib[f'{{{XLINK_NS}}}href'] = value
 
         # Handle arrow-head-end markers
         for defs in root.iter('defs'):

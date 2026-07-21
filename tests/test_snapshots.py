@@ -53,6 +53,8 @@ def _build(source_path_str):
 def _cases():
     cases = []
     for snapshot in sorted(SNAPSHOTS_DIR.rglob("*.svg")):
+        if snapshot.stem.endswith("-11"):
+            continue  # SVG 1.1 snapshots are tested by test_pretext_svg11.py
         rel = snapshot.relative_to(SNAPSHOTS_DIR)        # e.g. examples/hand_crafted/tangent.svg
         source = TESTS_DIR / rel.with_suffix(".xml")     # tests/examples/hand_crafted/tangent.xml
         cases.append(pytest.param(source, snapshot, id=str(rel.with_suffix(""))))

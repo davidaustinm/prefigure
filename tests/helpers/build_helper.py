@@ -86,7 +86,7 @@ def load_source(xml_path):
     return diagram
 
 
-def build_diagram(xml_path, environment="pf_cli"):
+def build_diagram(xml_path, environment="pf_cli", format="svg"):
     """Build the first <diagram> in *xml_path*; return (svg, annotations) or None.
 
     Builds the way ``prefig build`` does: in the ``pf_cli`` environment, with
@@ -105,7 +105,7 @@ def build_diagram(xml_path, environment="pf_cli"):
         return None
     return parse.mk_diagram(
         diagram,
-        "svg",
+        format,
         find_publication(),
         xml_path.stem,   # filename -> id prefix
         False,           # suppress caption
