@@ -1,15 +1,29 @@
-.venv
-node_modules
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Build output directories (Python wheels at the root, vite bundles in website/)
+dist/
+
+# Node / website workspace
+node_modules/
 package-lock.json
-__pycache__
-output
-test
-dist
-mj_sre
-dev
-wasm
-*~
-.vscode
 *.tsbuildinfo
+.vite/
+
+# Editors / OS
+.vscode/
+*~
 *.swp
-.vite
+
+# PreFigure MathJax bundle (installed by `prefig init`)
+/prefig/core/mj_sre/
+
+# PreFigure CLI build output (`prefig build` writes an output/ next to the source)
+output/
+
+# Ephemeral test output — never commit anything here except the placeholder README
+/tmp_test_outputs/*
+!/tmp_test_outputs/README.md

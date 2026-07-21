@@ -1,0 +1,17 @@
+<diagram dimensions="(300,200)" margins="10">
+  <rectangle lower-left="(-10,-10)"
+	     dimensions="(320,220)"
+	     stroke="gray"
+	     thickness="4"/>
+  <coordinates bbox="(-3,-2,9,6)">
+    <rectangle lower-left="(-3,-2)"
+	       stroke="black"
+	       dimensions="(12,8)"/>
+    <point p="(-3,-2)" alignment="ne">
+      <m>(-3,-2)</m>
+    </point>
+    <point p="(9,6)" alignment="sw">
+      <m>(9,6)</m>
+    </point>
+  </coordinates>
+</diagram>

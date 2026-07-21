@@ -1,0 +1,6 @@
+<prefigure>
+  <!-- The examples are built the way `prefig build` builds them (the pf_cli
+       environment), where <read>/<image> paths resolve through this node
+       rather than pretext mode's automatic data/ prefix. -->
+  <directories data="data"/>
+</prefigure>

@@ -1,0 +1,24 @@
+<diagram dimensions="(300,300)" margins="7">
+  <coordinates bbox="(-5,-5,5,5)">
+    <axes decorations="no"/>
+    <definition>R=[[0,-1],[1,0]]</definition>
+    <definition>v=(2,1)</definition>
+    <definition>tail=1.8*v</definition>
+    <definition>Rv = R@v</definition>
+    <line endpoints="((0,0), v)" infinite="yes" tactile-dash="9 9"
+	  dash="4 4"/>
+    <vector v="Rv" tail="tail" stroke="red" thickness="2"/>
+    <label p="-1.8*v" alignment="se">
+      <m>AK_n</m>
+    </label>
+    <label p="tail" alignment="se">
+      <m>AQ_ny</m>
+    </label>
+    <angle-marker points="(Rv+tail, tail, (0,0))"/>
+    <label p="Rv+tail" alignment="nw">
+      <m>b</m>
+    </label>
+  </coordinates>
+</diagram>
+    
+      

@@ -1,0 +1,11 @@
+<diagram dimensions="(300,180)" margins="5">
+  <coordinates bbox="(0,0,10,6)">
+    <define-shapes>
+      <circle at="A" center="(4,3)" radius="2"/>
+    </define-shapes>
+
+    <shape shape="A" fill="magenta" stroke="black"/>
+
+    <rectangle lower-left="(0,0)" dimensions="(10,6)" stroke="black"/>
+  </coordinates>
+</diagram>

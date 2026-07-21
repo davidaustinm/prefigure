@@ -1,0 +1,11 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="[-1,-1,5,5]">
+    <grid/>
+    <repeat parameter="row=0..4">
+      <repeat parameter="col=0..4">
+        <rectangle at="rectangle" center="(col, row)"
+                   dimensions="(3/4,3/4)" fill="blue"/>
+      </repeat>
+    </repeat>
+  </coordinates>
+</diagram>

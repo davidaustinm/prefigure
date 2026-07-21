@@ -1,0 +1,20 @@
+<diagram dimensions="(300, 120)">
+  <coordinates bbox="(0,1,8,5)">
+    <line endpoints="((1,4), (4,4))"
+	  dash="4 4"
+	  stroke="green"
+	  thickness="2"/>
+    <label p="(4.2,4)" alignment="east">dash="4 4"</label>
+    <line endpoints="((1,3), (4,3))"
+	  stroke="green"
+	  dash="9 9"
+	  thickness="2"/>
+    <label p="(4.2,3)" alignment="east">dash="9 9"</label>
+    <line endpoints="((1,2), (4,2))"
+	  stroke="green"
+	  dash="10 4 7 4"
+	  thickness="2"/>
+    <label p="(4.2,2)" alignment="east">dash="10 4 7 4"</label>
+
+  </coordinates>
+</diagram>

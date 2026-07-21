@@ -1,0 +1,27 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <define-shapes>
+      <circle at="circle" center="(6,7)" radius="2"/>
+      <rectangle at="lower-rectangle"
+                 center="(4,4)" dimensions="(5,4)"
+                 corner-radius="10"/>
+      <rectangle at="upper-rectangle"
+                 center="(4,7.5)" dimensions="(5,1)"
+                 corner-radius="10"/>
+      <shape shapes="circle,lower-rectangle,upper-rectangle"
+             operation="sym-diff"
+             at="sym-diff"/>
+      <circle at="right-circle" 
+              center="(8.5,8.5)" radius="1"/>
+    </define-shapes>
+    <grid-axes decorations="no"/>
+    <shape shapes="sym-diff,right-circle" operation="convex-hull"
+           stroke="red" thickness="8"/>
+    <shape shapes="sym-diff" fill="magenta" stroke="black"/>
+    <shape shapes="circle" stroke="black"/>
+    <shape shapes="upper-rectangle" stroke="black"/>
+    <shape shapes="lower-rectangle" stroke="black"/>
+    <shape shape="right-circle" fill="blue" stroke="black"/>
+
+  </coordinates>
+</diagram>

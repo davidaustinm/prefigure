@@ -1,0 +1,18 @@
+<diagram dimensions="(300,180)" margins="5">
+  <coordinates bbox="(0,0,10,6)">
+    <define-shapes>
+      <circle at="A" center="(4,3)" radius="2"/>
+      <circle at="B" center="(6,3)" radius="2"/>
+    </define-shapes>
+
+    <shape shapes="A,B" operation="intersection"
+	   fill="magenta" stroke="black"/>
+    <shape shape="A" stroke="black"/>
+    <shape shape="B" stroke="black"/>
+    <rectangle lower-left="(0,0)" dimensions="(10,6)" stroke="black"/>
+
+    <label anchor="(2,3)" alignment="nw"><m>A</m></label>
+    <label anchor="(8,3)" alignment="ne"><m>B</m></label>
+    <label anchor="(5,0.5)"><m>A\cap B</m></label>
+  </coordinates>
+</diagram>

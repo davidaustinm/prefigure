@@ -1,0 +1,8 @@
+<diagram dimensions="(300,250)" margins="(30,5,5,5)">
+  <coordinates bbox="(-pi, -pi, 10*pi, pi)">
+    <definition>f(x)=2*cos(x/4-1)</definition>
+    <grid-axes h-pi-format="yes"
+               v-pi-format="yes"/>
+    <graph function="f"/>
+  </coordinates>
+</diagram>

@@ -1,0 +1,7 @@
+<diagram dimensions="(300,200)" margin="5">
+  <coordinates bbox="(0,0,5,5)">
+    <line endpoints="((1,1),(1,4))" thickness="10"/>
+    <line endpoints="((1,4),(2,4))" thickness="10"/>
+    <polygon points="((3,1),(3,4),(4,4))" thickness="10" stroke="black"/>
+  </coordinates>
+</diagram>

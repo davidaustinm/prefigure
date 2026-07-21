@@ -1,0 +1,14 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(0,0,10,10)">
+    <image lower-left="(0,0)" dimensions="(10,10)"
+           source="images/wasatch.png" opacity="0.6">
+      <label anchor="(0,10)" alignment="se">
+        A topological map with a vector
+      </label>
+    </image>
+    <definition>tail=(4.6,5.6)</definition>
+    <vector tail="tail" v="(2,2.5)" stroke="blue"/>
+    <point p="tail"/>
+  </coordinates>
+</diagram>

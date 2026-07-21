@@ -1,0 +1,16 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <grid-axes decorations="no"/>
+
+    <path start="(1,3)" stroke="blue">
+      <cubic-bezier controls="((2,5),(4,5),(5,3))"/>
+      <cubic-bezier controls="((6,1),(8,1),(9,3))"/>
+    </path>
+
+    <path start="(5,7)" stroke="red">
+      <quadratic-bezier controls="((4,9),(8,9))"/>
+    </path>
+
+  </coordinates>
+</diagram>
+

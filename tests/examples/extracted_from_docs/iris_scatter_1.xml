@@ -1,0 +1,18 @@
+<diagram dimensions="(300,300)" margins="(30,30,5,5)"
+         xmlns="https://prefigure.org">
+  <read name="df" filename="iris.data"
+        string-columns="['species']"/>
+  <definition>x=filter(df, 'sepal length', 'species', 'Iris-versicolor')</definition>
+  <definition>y=filter(df, 'petal width', 'species', 'Iris-versicolor')</definition>
+  <definition>points=zip_lists(x, y)</definition>
+  
+  <coordinates bbox="(4,0,9,3)">
+    <grid-axes>
+      <xlabel alignment="nw">Sepal length</xlabel>
+      <ylabel alignment="se">Petal width</ylabel>
+    </grid-axes>
+
+    <scatter points="points" fill="blue"/>
+
+  </coordinates>
+</diagram>

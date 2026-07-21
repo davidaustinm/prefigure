@@ -1,0 +1,10 @@
+<diagram dimensions="(300, 150)">
+  <coordinates bbox="(0,0,8,4)">
+    <rectangle center="(2,2)" dimensions="(1.8,1.8)"
+	       fill="red"/>
+    <rectangle center="(4,2)" dimensions="(1.8,1.8)"
+	       fill="green"/>
+    <rectangle center="(6,2)" dimensions="(1.8,1.8)"
+	       fill="blue"/>
+  </coordinates>
+</diagram>

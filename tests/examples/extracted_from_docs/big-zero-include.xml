@@ -1,0 +1,13 @@
+<diagram dimensions="(500,300)" margins="(60,30,15,15)"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(0,-0.1,130,4500)">
+    <grid-axes
+      vticks="(0,250,4500)"
+      hticks="(0,5,130)"
+      hlabels="(0,10,130)"
+      vlabels="(0,500,4500)"
+      h-zero-label="yes"
+      v-zero-label="yes"
+      spacings="((0,5,130),(0,250,4500))"/>
+  </coordinates>
+</diagram>

@@ -1,0 +1,21 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <grid-axes decorations="no"/>
+    <definition>f(x)=3*sin((x-1)/8*pi)+5</definition>
+    <path start="(1,1)" stroke="blue" closed="yes">
+      <vertical distance="4"/>
+      <graph function="f" domain="(1,5)"/>
+      <lineto point="(5,1)"/>
+    </path>
+
+    <definition>f(t)=(8-0.25*sin(2*(t-1)*pi),t)</definition>
+    <path start="(8,1)" stroke="red">
+      <parametric-curve function="f" domain="(1,6)"/>
+      <polygon points="((8,6),(9,8),(8,9),(7,8),(8,6))"/>
+      <moveto point="(7,8)"/>
+      <horizontal distance="2"/>
+      <moveto point="(8,6)"/>
+      <vertical distance="3"/>
+    </path>
+  </coordinates>
+</diagram>

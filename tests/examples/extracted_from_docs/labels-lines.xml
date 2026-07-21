@@ -1,0 +1,26 @@
+<diagram dimensions="(350,200)" margins="5">
+  <coordinates bbox="(0,0,10,5)">
+    <grid/>
+    <label anchor="(1,4)" alignment="e" justify="left"
+           clear-background="yes">
+      This is a <b>bold</b> statement
+      <newline/>
+      but we can have <it>itatics</it>
+      <newline/>
+      and <it>italicized <b>bold</b></it> as well
+    </label>
+
+    <label anchor="(5,2)" alignment="c" justify="center"
+           clear-background="yes" interline="10">
+      Math can still appear:
+      <newline/>
+      The <it>derivative</it> of <m>e^x</m> is <m>e^x</m>
+    </label>
+
+    <label anchor="(1,1)" alignment="se" scale="0.6"
+           clear-background="yes">
+      Use the @scale attribute to change the font size.
+    </label>
+  </coordinates>
+</diagram>
+	 

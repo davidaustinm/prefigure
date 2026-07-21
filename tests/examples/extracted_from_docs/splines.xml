@@ -1,0 +1,14 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-4,-4,4,4)">
+    <definition>f(k)=3*(cos(pi*k/2), sin(pi*k/2))</definition>
+    
+    <grid-axes xlabel="t" ylabel="y"/>
+    <spline points="(0,2,1,2,4)" stroke="red"/>
+    <spline points="((1,0),(2,0),(2,1),(1,2),(-1,2),(-2,0),(-1,-2),(1,0))"
+            t-values="(0,2,3,3.5,4,5,7,9)"
+            closed="yes" stroke="blue"/>
+    <spline points="f(k)" parameter="k=0..4" closed="yes" stroke="orange"/>
+    <circle center="(0,0)" radius="3" stroke="green"/>
+  </coordinates>
+</diagram>
+

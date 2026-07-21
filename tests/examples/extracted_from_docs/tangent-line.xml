@@ -1,0 +1,10 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(x)=x^3/8 - 1.5*x</definition>
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid-axes decorations="no"/>
+    <graph function="f"/>
+    <tangent-line function="f" point="-1.5"/>
+    <tangent-line function="f" point="1.5"
+                  domain="(0,3)" stroke="green"/>
+  </coordinates>
+</diagram>

@@ -1,0 +1,14 @@
+<diagram dimensions="(300, 300)" margins="5">
+  <definition>f(x)=sqrt(x)</definition>
+  <definition>g(x)=-2*atan(x)</definition>
+  <coordinates bbox="[-1,-3,5,3]">
+    <grid-axes />
+    <area-between-curves function1="f" function2="g" domain="(1,3)"
+                         fill="lightgray" stroke="black"/>
+    <graph function="f" domain="(0,5)"/>
+    <graph function="g" domain="(0,5)"/>
+  </coordinates>
+  
+</diagram>
+
+

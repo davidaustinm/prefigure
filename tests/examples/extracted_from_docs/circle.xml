@@ -1,0 +1,8 @@
+<diagram dimensions="(300,180)" margins="5">
+  <coordinates bbox="(-5,0,5,6)">
+    <grid/>
+    <circle center="(-2,3)" radius="2" fill="blue" thickness="5"/>
+    <ellipse center="(2,3)" axes="(1,2)" stroke="red"
+             rotate="pi/6" degrees="no"/>
+  </coordinates>
+</diagram>

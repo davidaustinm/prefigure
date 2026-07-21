@@ -1,0 +1,27 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org">
+  <definition>g(x,y)=x*y</definition>
+  <definition>del_g(x,y)=grad(g, (x,y))</definition>
+  <coordinates bbox="(-1,-1,4,4)">
+    <grid-axes decorations="no" spacings="((-1,1,4),(-1,1,4))"/>
+    <spline points="((-0.5,3),(1,3),(2,2.5),(3,1.5),(2,0))"
+            name="s" stroke="magenta" thickness="2"/>
+    <definition>ds(t)=deriv(s,t)</definition>
+    <definition>T(t)=1/length(ds(t))*ds(t)</definition>
+    <vector-field function="T" curve="s"
+                  domain="(0,4)" N="5"/>
+    <vector-field function="del_g" curve="s"
+                  domain="(0,4)" N="5" scale="0.2"/>
+    <definition>p=s(3)</definition>
+    <definition>g=0.2*del_g(*p)</definition>
+    <label anchor="p+T(3)" alignment="se">
+      <m>{\mathbf T}</m>
+    </label>
+    <label anchor="p+g" alignment="n">
+      <m>\nabla f</m>
+    </label>
+    <angle-marker points="(p+T(3),p,p+g)">
+      <m>\theta</m>
+    </angle-marker>
+  </coordinates>
+</diagram>

@@ -1,0 +1,13 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid/>
+    <polygon points="((-2,-1),(-4,-1),(-4,2))" closed="yes"
+             fill="blue"/>
+    <polygon points="(2,1)+2*(cos(k*pi/4),sin(k*pi/4))"
+             parameter="k=0..7" closed="yes"
+             stroke="red" thickness="4"/>
+    <polygon points="((-4,4),(-1,4),(-1,-3),(3,-3))"
+             corner-radius="10" arrows="1" thickness="5"
+             stroke="green"/>
+  </coordinates>
+</diagram>

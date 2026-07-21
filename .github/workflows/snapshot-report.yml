@@ -1,0 +1,148 @@
+# Builds the examples corpus on every PR and compares it to the reference
+# snapshots (tests/helpers/snapshot_report.py), failing the check when they
+# differ. The resulting report (diff list, ready-to-post comment, side-by-side
+# PNG renders when fewer than 8 examples differ) is uploaded as the
+# `snapshot-report` artifact and shown in the job summary.
+#
+# Posting the report onto the PR:
+#   - Same-repo PRs: this workflow pushes the renders to a scratch branch
+#     (snapshot-diff/pr-<N>) and posts the sticky comment directly.
+#   - Fork PRs: the GITHUB_TOKEN here is read-only, so snapshot-comment.yml
+#     (a workflow_run follow-up with write permissions) downloads the artifact
+#     and posts the comment instead.
+# The scratch branch is deleted by snapshot-cleanup.yml when the PR closes.
+
+name: snapshot report
+
+on:
+  pull_request:
+    paths:
+      - "prefig/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - "poetry.lock"
+      - ".github/workflows/snapshot-report.yml"
+
+permissions:
+  contents: write # push the snapshot-diff/pr-<N> scratch branch (same-repo PRs)
+  pull-requests: write # post the sticky comment (same-repo PRs)
+
+concurrency:
+  group: snapshot-report-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  REPORT_DIR: tmp_test_outputs/snapshot_report
+  IMAGE_BRANCH: snapshot-diff/pr-${{ github.event.pull_request.number }}
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js (MathJax)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install system libraries (cairo, rsvg)
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev librsvg2-bin
+
+      - name: Install project
+        run: |
+          python -m pip install poetry
+          poetry install --all-extras
+
+      - name: Install MathJax (prefig init)
+        run: poetry run prefig init
+
+      - name: Build examples and compare to snapshots
+        run: poetry run python tests/helpers/snapshot_report.py --out-dir "$REPORT_DIR"
+
+      - name: Read report
+        id: report
+        run: |
+          echo "differing=$(python3 -c "import json;print(len(json.load(open('$REPORT_DIR/report.json'))['differing']))")" >> "$GITHUB_OUTPUT"
+          echo "has_renders=$([ -d "$REPORT_DIR/renders" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      # The artifact is the hand-off to snapshot-comment.yml for fork PRs, and
+      # a debugging aid for everyone else.
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-report
+          path: ${{ env.REPORT_DIR }}
+          if-no-files-found: warn
+
+      # ---- same-repo PRs: publish + comment directly (fork tokens cannot) ----
+      - name: Publish side-by-side renders to scratch branch
+        id: publish
+        if: >
+          steps.report.outputs.differing != '0' &&
+          steps.report.outputs.has_renders == 'true' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          cd "$REPORT_DIR/renders"
+          git init -q -b "$IMAGE_BRANCH"
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            add -A
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            commit -qm "snapshot renders for PR #${{ github.event.pull_request.number }} @ ${{ github.event.pull_request.head.sha }}"
+          git push --force \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            "HEAD:refs/heads/$IMAGE_BRANCH"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Embed hosted image URLs in the comment
+        if: steps.publish.outputs.sha
+        run: |
+          sed -i "s|{{IMAGE_BASE_URL}}|https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.publish.outputs.sha }}|g" \
+            "$REPORT_DIR/comment.md"
+
+      - name: Add report to job summary
+        run: cat "$REPORT_DIR/comment.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post or update the PR comment
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- prefigure-snapshot-report -->';
+            const body = fs.readFileSync(process.env.REPORT_DIR + '/comment.md', 'utf8');
+            const differing = ${{ steps.report.outputs.differing }};
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else if (differing > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail if snapshots differ
+        if: steps.report.outputs.differing != '0'
+        run: |
+          echo "::error::${{ steps.report.outputs.differing }} example snapshot(s) differ — see the PR comment / job summary. If intentional, update them (tests/README.md)."
+          exit 1

@@ -1,0 +1,28 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <define-shapes>
+      <rectangle at="square1"
+                 center="(4,4)" dimensions="(3,3)"
+                 corner-radius="10"/>
+      <rectangle at="square2"
+                 center="(3,6)" dimensions="(2,2)"
+                 corner-radius="5"/>
+      <shape at="clip" shapes="square1, square2"
+             operation="union"/>
+      <circle at="circle"
+              center="(6,6)" radius="3"/>
+    </define-shapes>
+
+    <shape shape="circle" fill="lightgray" stroke="gray"/>
+    <clip shape="clip">
+      <shape shape="circle" fill="blue" stroke="black"/>
+    </clip>
+    <shape shape="clip" stroke="black"/>
+    <rectangle lower-left="(0,0)" dimensions="(10,10)"
+               xstroke="black"/>
+      
+  </coordinates>
+</diagram>
+
+    
+    

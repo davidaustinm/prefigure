@@ -1,0 +1,14 @@
+<diagram dimensions="(300,300)" margins="25"
+         xmlns="https://prefigure.org">
+  <definition>F(x,y)=(x*y,1-x)</definition>
+  <coordinates bbox="(-2,-2,2,2)">
+    <axes decorations="no">
+      <xlabel offset="(5,0)"><m>x</m></xlabel>
+      <ylabel alignment="ne" offset="(5,0)"><m>y</m></ylabel>
+    </axes>
+    
+    <vector-field function="F" exponent="1" stroke="blue"
+                  spacings="((-2,0.5,2),(-2,0.5,2))"/>
+ 
+  </coordinates>
+</diagram>

@@ -1,0 +1,9 @@
+<diagram dimensions="(300,300)" margins="(40,40,5,5)"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(0.05,0.01,10, 10^14)" scales="loglog">
+    <grid-axes xlabel="x" ylabel="y"
+               spacings="((0.05,10,10),(0.01,1/2,10^14))"
+               vlabels="(1,1/2,10^12)"/>
+
+  </coordinates>
+</diagram>

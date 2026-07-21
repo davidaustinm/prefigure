@@ -1,0 +1,12 @@
+<diagram dimensions="(300,300)" margins="(40,40,5,5)"
+         xmlns="https://prefigure.org">
+  <definition>a=10</definition>
+  <definition>f(x) = x^2</definition>
+  <coordinates bbox="(10^-2,10^-2,10^3, 10^5)" scales="loglog">
+    <grid-axes xlabel="x" ylabel="y"/>
+    <graph function="f"/>
+    <point p="(a,f(a))" alignment="se">
+      <m>P</m>
+    </point>
+  </coordinates>
+</diagram>

@@ -3,25 +3,33 @@ name: tests
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: ["*"]
   workflow_dispatch:
 
 jobs:
   test:
-    runs-on: windows-latest
+    # ubuntu, to match the environment the reference snapshots were generated
+    # in (cairo text metrics depend on the installed fonts; see tests/README.md)
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'  # Replace with your desired Python version
-    - name: Install Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'  # Replace with your desired Node.js version
-    - name: Install poetry
-      run: python -m pip install poetry
-    - name: Initialize project
-      run: python -m poetry install --all-extras
-    - name: Run Tests
-      run: python -m poetry run pytest -vv
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Node.js (MathJax)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install system libraries (cairo, rsvg)
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev librsvg2-bin
+      - name: Install poetry
+        run: python -m pip install poetry
+      - name: Initialize project
+        run: python -m poetry install --all-extras
+      - name: Install MathJax (prefig init)
+        run: python -m poetry run prefig init
+      - name: Run Tests
+        run: python -m poetry run pytest -vv

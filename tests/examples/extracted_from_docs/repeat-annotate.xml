@@ -1,0 +1,28 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-1,-1,5,5)">
+    <definition>ordinals=['first', 'second', 'third', 'fourth', 'fifth']</definition>
+    <grid at="grid"/>
+    <repeat at="array" parameter="col=0..4"
+            annotate="yes"
+            text="The array of squares">
+      <repeat at="column" parameter="row=0..4-col"
+              annotate="yes" circular="yes"
+              text="A column of ${5-col} squares">
+        <rectangle at="square" center="(col, row)"
+                   dimensions="(0.5,0.5)"
+                   stroke="black" fill="green"
+                   annotate="yes"
+                   text="The ${ordinals[row]} square in the ${ordinals[col]} column"/>
+      </repeat>
+    </repeat>
+  </coordinates>
+
+  <annotations>
+    <annotation ref="figure"
+                text="A triangular array of squares">
+      <annotation ref="grid"
+                  text="A rectangular grid"/>
+      <annotation ref="array"/>
+    </annotation>
+  </annotations>
+</diagram>

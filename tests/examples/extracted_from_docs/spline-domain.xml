@@ -1,0 +1,13 @@
+<diagram dimensions="(250,250)" margins="5"
+         xmlns="https://prefigure.org">
+  <definition>points=((8,6),(6.5,7),(5,7.5),(3,8),(1.5,8),(0.5,7),(0.75,5),(2,3),(5,1),(7,0.5),(9,1),(9.5,2),(9.5,3),(9,4.5),(8,6))</definition>
+  <coordinates bbox="(0,0,10,10)">
+    <grid/>
+    <spline points="points" arrows="1" arrow-location="2.5"
+            stroke="blue" thickness="4" closed="yes"/>
+
+    <spline points="points" domain="(4,10)" 
+            thickness="2" stroke="red"/>
+
+  </coordinates>
+</diagram>

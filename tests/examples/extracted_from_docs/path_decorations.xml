@@ -1,0 +1,32 @@
+<diagram dimensions="(400,250)" margins="5"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(-3,0,10,10)">
+
+    <path start="(1,9)" closed="no" arrows="2" stroke="blue">
+      <rlineto point="(8,0)"
+	      decoration="coil; number=10; dimensions=(10,10)"/>
+    </path>
+    <label anchor="(0,9)" alignment="w">coil</label>
+    <path start="(1,7)" closed="no" arrows="2" stroke="blue">
+      <rlineto point="(8,0)"
+	      decoration="wave; number=10; dimensions=(10,10)"/>
+    </path>
+    <label anchor="(0,7)" alignment="w">wave</label>
+    <path start="(1,5)" closed="no" arrows="2" stroke="blue">
+      <rlineto point="(8,0)"
+	      decoration="capacitor; dimensions=(10,10)"/>
+    </path>
+    <label anchor="(0,5)" alignment="w">capacitor</label>
+    <path start="(1,3)" closed="no" arrows="2" stroke="blue">
+      <rlineto point="(8,0)"
+	      decoration="zigzag; number=10; dimensions=(10,10)"/>
+    </path>
+    <label anchor="(0,3)" alignment="w">zigzag</label>
+    <path start="(1,1)" closed="no" arrows="0" stroke="blue">
+      <rlineto point="(8,0)"
+	      decoration="ragged; step=7; offset=4; seed=11"/>
+    </path>
+    <label anchor="(0,1)" alignment="w">ragged</label>
+
+  </coordinates>
+</diagram>

@@ -1,0 +1,41 @@
+<diagram dimensions="(540, 240)" margins="5"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(0,0,9,4)"> 
+    <rectangle lower-left="(8,0)" dimensions="(1,2)"
+               fill="yellow" stroke="none" fill-opacity="0.3"/>
+    <path start="(0,0)" closed="yes" fill="lightsteelblue">
+      <lineto point="(0,2)"/>
+      <lineto point="(8.1,2)"
+              decoration="ragged; step=7; offset=4; seed=1"/>
+      <lineto point="(8.1,0)"
+              decoration="ragged; step=7; offset=4; seed=1"/>
+    </path>
+    <image center="(1.5,1)" dimensions="(3,1)"
+           source="images/shark.png" scale="(-1,1)">
+      <point p="(1.5,1)">
+        Shark
+      </point>
+    </image>
+    <image center="(5,1)" dimensions="(1,2)"
+           source="images/swimmer.png">
+      <point p="(5,1)">
+        Swimmer
+      </point>
+    </image>
+    <rectangle center="(5,1)" dimensions="(1,2)"
+               dash="9 9" stroke="gray"/>
+    <line endpoints="((1.5,3),(8,3))" stroke="black"/>
+    <tick-mark location="(1.5,3)" size="(5,5)"
+               alignment="n" offset="(0,4)">
+      <m>70 \mathrm{ m}</m>
+    </tick-mark>
+    <tick-mark location="(5,3)" size="(5,5)"
+               alignment="n" offset="(0,4)">
+      <m>50 \mathrm{ m}</m>
+    </tick-mark>
+    <tick-mark location="(8,3)" size="(5,5)"
+               alignment="n" offset="(0,4)">
+      <m>0 \mathrm{ m}</m>
+    </tick-mark>
+  </coordinates>
+</diagram>

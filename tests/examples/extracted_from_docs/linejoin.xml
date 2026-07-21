@@ -1,0 +1,15 @@
+<diagram dimensions="(300, 120)">
+  <coordinates bbox="(0,-0.5,8,4)">
+    <polygon points="((1.5,0.5),(2,3),(2.5,0.5))"
+	     stroke="blue"
+	     linejoin="bevel"
+	     thickness="10"/>
+    <label p="(2,0.25)" alignment="south">linejoin="bevel"</label>
+    <polygon points="((5,0.5),(5.5,3),(6,0.5))"
+	     stroke="blue"
+	     linejoin="round"
+	     thickness="10"/>
+    <label p="(5.5,0.25)" alignment="south">linejoin="round"</label>
+
+  </coordinates>
+</diagram>

@@ -1,0 +1,14 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>v=(2,-1)</definition>
+  <definition>w=(-2,3)</definition>
+  <definition>comb=2*v+w</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes/>
+    <vector v="v"/>
+    <vector v="w"/>
+    <vector v="comb" stroke="red"/>
+    <label p="v" alignment="se"><m>{\mathbf v}</m></label>
+    <label p="w" alignment="ne"><m>{\mathbf w}</m></label>
+    <label p="comb" alignment="ne"><m>2{\mathbf v}+{\mathbf w}</m></label>
+  </coordinates>
+</diagram>

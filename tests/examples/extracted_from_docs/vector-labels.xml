@@ -1,0 +1,16 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(300, 300)" margins="5">
+  <definition>v1=(2,1)</definition>
+  <definition>v2=(1,2)</definition>
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid spacings="((-6,2,6),(-6,2,6))" stroke="#ddd"/>
+    <grid basis="(v1,v2)" stroke="lightgray"/>
+    <axes decorations="no"/>
+    <vector v="v1" alignment="se">
+      <m>{\mathbf v}_1</m>
+    </vector>
+    <vector v="v2" alignment="nw">
+      <m>{\mathbf v}_2</m>
+    </vector>
+  </coordinates>
+</diagram>

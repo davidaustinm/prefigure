@@ -1,0 +1,11 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid coordinates="polar"
+          spacings="((0,0.5,5),(0,15,360))"
+          spacing-degrees="yes" stroke="lightgray"/>
+    <grid coordinates="polar"
+          spacings="((0,1,5),(0,30,360))"
+          spacing-degrees="yes" stroke="gray"/>
+  </coordinates>
+</diagram>

@@ -1,0 +1,19 @@
+<diagram dimensions="(300,300)" margins="5">
+  <definition>f(t,y) = (0.4*y[0] - 0.01*y[0]*y[1],-0.3*y[1] + 0.005*y[0]*y[1])</definition>
+  <coordinates bbox="[-15,-15,70,100]">
+    <grid-axes xlabel="t"/>
+    <de-solve function="f" t0="0" t1="100" y0="(70,50)" name="oscillator"
+              N="200"/>
+    <plot-de-solution at="lynx" solution="oscillator" axes="(t,y0)" />
+    <plot-de-solution at="snowshoe" tactile-dash="9 9"
+                      solution="oscillator" axes="(t,y1)" stroke="red"/>
+    <legend at="legend" anchor="(bbox[2], bbox[3])" 
+            alignment="sw" scale="0.8" opacity="0.5">
+      <item ref="lynx"><m>F(t)</m></item>
+      <item ref="snowshoe"><m>H(t)</m></item>
+    </legend>
+  </coordinates>
+</diagram>
+
+
+  

@@ -1,0 +1,14 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <grid-axes decorations="no"/>
+    <rectangle lower-left="(2,2)" dimensions="(4,2)"
+               fill="blue" stroke="black"/>
+    <transform>
+      <translate by="(2,4)"/>
+      <rectangle lower-left="(2,2)" dimensions="(4,2)"
+                 fill="green" stroke="black"/>
+    </transform>
+    <circle center="(8,4)" radius="1"
+            fill="red" stroke="black"/>
+  </coordinates>
+</diagram>

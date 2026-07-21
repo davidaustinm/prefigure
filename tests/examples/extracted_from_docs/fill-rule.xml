@@ -1,0 +1,14 @@
+<diagram dimensions="(300, 150)">
+  <coordinates bbox="(0,0,8,4)">
+    <polygon points="(2,2)+1.8*(cos((4*k+0.5)*pi/5),sin((4*k+0.5)*pi/5))"
+	     parameter="k=0..4"
+	     closed="yes"
+	     fill-rule="nonzero"
+	     fill="blue"/>
+    <polygon points="(6,2)+1.8*(cos((4*k+0.5)*pi/5),sin((4*k+0.5)*pi/5))"
+	     parameter="k=0..4"
+	     closed="yes"
+	     fill-rule="evenodd"
+	     fill="blue"/>
+  </coordinates>
+</diagram>

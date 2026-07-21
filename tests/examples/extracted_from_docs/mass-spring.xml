@@ -1,0 +1,21 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,5,4)" destination="(10,160,300,300)">
+    <polygon points="((0,4),(0,0),(5,0))" stroke="black"/>
+    <path start="(0,1)" stroke="black">
+      <lineto point="(3.5,1)"
+              decoration="coil; number=5 ; dimensions=(15,10)"/>
+    </path>
+    <rectangle center="(4,1)" dimensions="(1,2)"
+               fill="lightblue" stroke="black"/>
+  </coordinates>
+
+  <coordinates bbox="(0,0,5,4)" destination="(10,10,300,150)">
+    <polygon points="((0,4),(0,0),(5,0))" stroke="black"/>
+    <path start="(0,1)" stroke="black">
+      <lineto point="(2,1)"
+              decoration="coil; number=5 ; dimensions=(6,10)"/>
+    </path>
+    <rectangle center="(2.5,1)" dimensions="(1,2)"
+               fill="lightblue" stroke="black"/>
+  </coordinates>
+</diagram>

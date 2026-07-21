@@ -1,0 +1,15 @@
+<diagram dimensions="(300,200)" margins="10">
+  <rectangle lower-left="(-10,-10)"
+	     dimensions="(320,220)"
+	     stroke="gray"
+	     thickness="4"/>
+  <rectangle lower-left="(0,0)"
+	     stroke="black"
+	     dimensions="(300,200)"/>
+  <point p="(0,0)" alignment="ne">
+    <m>(0,0)</m>
+  </point>
+  <point p="(300,200)" alignment="sw">
+    <m>(300,200)</m>
+  </point>
+</diagram>

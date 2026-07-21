@@ -1,0 +1,18 @@
+<diagram dimensions="(400,150)" margins="5">
+  <coordinates bbox="(0,0,10,3)">
+    <grid-axes decorations="no"/>
+    <label anchor="(1,2)" alignment="east" color="red"
+           scale="1.5" clear-background="yes">
+      Everything <it>is in <b>red</b></it>: <m>\int_0^1 e^x~dx</m>
+    </label>
+
+    <label anchor="(1,1)" alignment="east" scale="1.5"
+           clear-background="yes">
+      <plain color="blue">Individual</plain>
+      parts
+      <it color="green">are</it>
+      <b color="red">colored:</b>
+      <m color="magenta">e^x</m>
+    </label>
+  </coordinates>
+</diagram>

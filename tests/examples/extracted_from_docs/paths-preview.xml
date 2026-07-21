@@ -1,0 +1,19 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(0,0,10,10)">
+    <grid-axes decorations="no"/>
+    <path start="(1,1)" stroke="blue" arrows="1">
+      <lineto point="(3,2)"/>
+      <moveto point="(4,2)"/>
+      <horizontal distance="2"/>
+      <vertical distance="4"
+		decoration="zigzag; number=5; dimensions=(5,5)"/>
+      <arc center="(7.5,6)" radius="1.5" range="(180,0)"/>
+      <cubic-bezier controls="((9,2), (8,2), (7,2))"/>
+    </path>
+
+    <path start="(1,5)" stroke="red" arrows="2">
+      <quadratic-bezier controls="((1,8),(5,8))"/>
+    </path>
+  </coordinates>
+</diagram>
+

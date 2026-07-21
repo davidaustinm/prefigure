@@ -1,0 +1,12 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-1,-1,5,5)">
+    <definition>f(x) = exp(-x) + 2</definition>
+    <definition>g(x) = -exp(-x) + 2</definition>
+    <grid-axes/>
+    <group outline="tactile">
+      <graph function="f"/>
+      <graph function="g"/>
+    </group>
+  </coordinates>
+</diagram>
+    

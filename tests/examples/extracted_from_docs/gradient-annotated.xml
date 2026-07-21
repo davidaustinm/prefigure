@@ -1,0 +1,28 @@
+<diagram dimensions="(300, 300)" margins="5">
+  <definition>f(x,y)=y^2 + y + x^3 + 3*x^2 - 2</definition>
+  <definition>x0 = (1,1)</definition>
+  <definition>dg = 0.2*grad(f, x0)</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes/>
+    <contour at="contour" function="f" value="4" stroke="blue"/>
+    <vector at="gradient" v="dg" tail="x0"/>
+    <point at="x0" p="x0" alignment="sw">
+      <m>x_0</m>
+    </point>
+    <label at="grad-label" anchor="0.5*dg+x0" alignment="se">
+      <m>\nabla f(x_0)</m>
+    </label>
+  </coordinates>
+  
+  <annotations
+      text="A contour of a function of two variables, a point on that contour, and the gradient of the function at that point">
+    <annotation ref="contour"
+                text="A contour of the function.  The value of the function at each point of the contour is four."/>
+    <annotation ref="x0"
+                text="A point x naught on the contour"/>
+    <annotation ref="gradient"
+                text="The gradient of the function at the point x naught is orthogonal to the contour">
+      <annotation ref="grad-label"/>
+    </annotation>
+  </annotations>
+</diagram>

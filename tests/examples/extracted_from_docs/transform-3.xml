@@ -1,0 +1,21 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(300, 300)" margins="5">
+  <definition>v1=(2,1)</definition>
+  <definition>v2=(1,2)</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid/>
+    <transform>
+      <change-basis basis="(v1,v2)"/>
+      <rectangle lower-left="(0,0)" dimensions="(1,1)" fill="lightgray"/>
+      <grid stroke="gray" cliptobbox="yes"/>
+      <vector v="(1,0)" stroke="blue">
+        <m>{\mathbf v}_1</m>
+      </vector>
+      <vector v="(0,1)" stroke="blue">
+        <m>{\mathbf v}_2</m>
+      </vector>
+    </transform>
+    <axes decorations="no"/>
+  </coordinates>
+</diagram>
+    

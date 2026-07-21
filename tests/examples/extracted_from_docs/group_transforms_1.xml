@@ -1,0 +1,15 @@
+<diagram dimensions="(300,300)" margins="5"
+         xmlns="https://prefigure.org">
+  <coordinates bbox="(0,0,10,10)">
+    <grid/>
+    <group>
+      <rectangle center="(5,5)" dimensions="(6,8)" thickness="2"
+                 stroke="black" fill="none"/>
+      <point p="(2,1)" alignment="ne" fill="red"><m>A</m></point>
+      <point p="(8,1)" alignment="nw" fill="blue"><m>B</m></point>
+      <point p="(8,9)" alignment="sw" fill="green"><m>C</m></point>
+      <point p="(2,9)" alignment="se" fill="orange"><m>D</m></point>
+    </group>
+    <point p="(5,5)" alignment="ne">Center</point>
+  </coordinates>
+</diagram>

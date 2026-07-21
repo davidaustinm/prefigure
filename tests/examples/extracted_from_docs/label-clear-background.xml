@@ -1,0 +1,8 @@
+<diagram dimensions="(250,250)" margins="5">
+  <coordinates bbox="(0,0,4,4)">
+    <rectangle lower-left="(0,0)" dimensions="(4,4)" fill="lightgray"/>
+    <label anchor="(2,2)" clear-background="yes">
+      <m>a^2 + b^2 = c^2</m>
+    </label>
+  </coordinates>
+</diagram>

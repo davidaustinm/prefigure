@@ -1,0 +1,10 @@
+<diagram dimensions="(300,300)" margins="5">
+  <coordinates bbox="(-5,-5,5,5)">
+    <grid/>
+    <rectangle lower-left="(-4,0)" dimensions="(4,3)"
+               fill="green"/>
+    <rectangle center="(2,-2)" dimensions="(2,4)" rotate="60"
+               stroke="blue" thickness="5" fill="white"
+               corner-radius="10"/>
+  </coordinates>
+</diagram>
