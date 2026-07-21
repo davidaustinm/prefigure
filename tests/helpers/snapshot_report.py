@@ -56,6 +56,8 @@ def collect() -> dict:
     differing = []
     total = 0
     for snapshot in sorted(SNAPSHOTS.rglob("*.svg")):
+        if snapshot.stem.endswith("-11"):
+            continue  # SVG 1.1 snapshots share their source with the SVG 2 snapshot
         rel = snapshot.relative_to(TESTS_DIR / "snapshots")   # examples/<cat>/<stem>.svg
         snapshot_id = str(rel.with_suffix(""))
         source = TESTS_DIR / rel.with_suffix(".xml")
