@@ -4,8 +4,6 @@ The PreFigure language server. It runs unchanged in a browser Web Worker (the
 playground) and, later, in a VS Code web extension — one JSON-RPC server over
 `postMessage`.
 
-See `../../../LSP_PLAN.md` for the full roadmap.
-
 ## Status: Phase 0 — XML well-formedness only
 
 The server validates **syntax only**. Nothing here knows about the PreFigure
