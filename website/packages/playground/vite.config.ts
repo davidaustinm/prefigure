@@ -19,6 +19,9 @@ export default defineConfig({
         format: "es",
     },
     server: {
+        // Listen on all interfaces so the dev server is reachable from outside
+        // the container it runs in (e.g. from the host when developing in a
+        // Docker/devcontainer, or across the LAN). Intentional.
         host: "0.0.0.0",
     },
     build: {
