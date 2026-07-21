@@ -27,3 +27,6 @@ output/
 # Ephemeral test output — never commit anything here except the placeholder README
 /tmp_test_outputs/*
 !/tmp_test_outputs/README.md
+
+# Local scratch directory (see CLAUDE.md)
+tmp/
