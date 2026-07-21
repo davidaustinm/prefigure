@@ -28,5 +28,4 @@ output/
 /tmp_test_outputs/*
 !/tmp_test_outputs/README.md
 
-# Local scratch directory (see CLAUDE.md)
 tmp/
