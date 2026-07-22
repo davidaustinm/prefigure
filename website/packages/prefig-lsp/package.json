@@ -1,0 +1,30 @@
+{
+    "name": "@prefigure/lsp",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "description": "PreFigure language server (browser Worker + VS Code web extension). Phase 0: XML well-formedness only.",
+    "license": "GPL-3.0-or-later",
+    "main": "./src/index.ts",
+    "exports": {
+        ".": "./src/index.ts",
+        "./server": "./src/server.ts"
+    },
+    "scripts": {
+        "test": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@lezer/common": "^1.2.1",
+        "@lezer/xml": "^1.0.5",
+        "saxes": "^6.0.0",
+        "vscode-languageserver": "^9.0.1",
+        "vscode-languageserver-textdocument": "^1.0.12"
+    },
+    "devDependencies": {
+        "typescript": "~5.7.2",
+        "vitest": "^2.1.8",
+        "vscode-jsonrpc": "^8.2.1",
+        "vscode-languageserver-protocol": "^3.17.5"
+    }
+}
