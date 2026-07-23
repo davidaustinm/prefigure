@@ -17,7 +17,9 @@ import lxml.etree as ET
 _NS = {"pf": "https://prefigure.org"}
 
 # Repo-root scratch dir for tests/tools that must write to disk (gitignored).
-TMP_OUTPUTS_DIR = Path(__file__).resolve().parents[2] / "tmp_test_outputs"
+# This file is packages/tests/helpers/build_helper.py, so the repo root is
+# four levels up (helpers -> tests -> packages -> repo root).
+TMP_OUTPUTS_DIR = Path(__file__).resolve().parents[3] / "tmp_test_outputs"
 
 
 @contextlib.contextmanager

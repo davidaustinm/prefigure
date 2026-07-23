@@ -50,9 +50,10 @@ function vitePluginPyodide(): PluginOption {
                 ],
                 dest: "assets/pyodide",
             },
-            // Copy our currently build PreFigure wheel
+            // Copy our currently built PreFigure wheel (repo-root dist/, two
+            // levels up from packages/playground/)
             {
-                src: [join("../../../dist", "prefig-0.*.*-py3-none-any.whl")],
+                src: [join("../../dist", "prefig-0.*.*-py3-none-any.whl")],
                 dest: "assets/pyodide",
             },
         ],

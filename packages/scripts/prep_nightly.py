@@ -21,9 +21,10 @@ def main() -> None:
         print("No recent commit:", lastcommit)
         return
 
-    # Update version in runner's pyproject.toml:
+    # Update version in runner's pyproject.toml (repo root: this file is
+    # packages/scripts/prep_nightly.py, so the root is two levels up).
     for line in fileinput.input(
-        Path(__file__).parent.parent / "pyproject.toml", inplace=True
+        Path(__file__).parents[2] / "pyproject.toml", inplace=True
     ):
         if line.startswith("version"):
             version = str(line.split('"')[1])

@@ -8,7 +8,11 @@ repository = "https://github.com/davidaustinm/prefigure"
 authors = ["David Austin <david.austin.m@gmail.com>"]
 license = "GPL-3.0-or-later"
 
-include = ["resources"]
+# The package source lives under packages/ (monorepo layout); the manifest
+# stays at the repo root. `from` maps the `prefig` import package onto
+# packages/prefig/.
+packages = [{ include = "prefig", from = "packages" }]
+include = ["packages/prefig/resources"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -32,8 +36,8 @@ pytest = "^8.3.4"
 pyyaml = "^6.0.3"
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["tests"]
+testpaths = ["packages/tests"]
+pythonpath = ["packages/tests"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,0 +1,32 @@
+{
+    "name": "prefigure",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Monorepo for PreFigure: the Python package (packages/prefig), the web playground and language server, and (later) the Rust port.",
+    "workspaces": [
+        "packages/playground",
+        "packages/prefig-lsp"
+    ],
+    "scripts": {
+        "test": "npm run test:js && npm run test:py",
+        "test:js": "npm run test --workspaces --if-present -- run",
+        "test:py": "poetry run pytest",
+        "build": "npm run build:js && npm run build:py",
+        "build:js": "npm run build --workspace packages/playground",
+        "build:py": "poetry build",
+        "dev": "npm run dev --workspace packages/playground",
+        "install:py": "poetry install --all-extras"
+    },
+    "author": "",
+    "license": "GPL-3.0-only",
+    "devDependencies": {
+        "prettier": "^3.4.2",
+        "vitest": "^2.1.8"
+    },
+    "prettier": {
+        "tabWidth": 4
+    },
+    "dependencies": {
+        "speech-rule-engine": "^5.0.0-alpha.1"
+    }
+}
