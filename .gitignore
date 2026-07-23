@@ -25,4 +25,4 @@ package-lock.json
 output/
 
 # Ephemeral test output — created automatically on first test run
-/tmp_test_outputs/
+tmp*
