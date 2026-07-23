@@ -48,8 +48,8 @@ const {AllPackages} = require('mathjax-full/js/input/tex/AllPackages.js');
 //
 //  Get the command-line arguments
 //
-var argv = require('yargs')
-    .demand(0).strict()
+const argv = yargs(hideBin(process.argv))
+    .demand(1, 'an HTML input file is required').strict()
     .usage('$0 [options] infile.html > outfile.html')
     .options({
       speech: {
@@ -99,7 +99,7 @@ var argv = require('yargs')
         describe: 'the packages to use, e.g. "base, ams"'
       },
       rules: {
-        default: 'mathspeak',
+        default: 'clearspeak',
         describe: 'the rule set to use for speech output'
       }
     })
@@ -156,6 +156,7 @@ function action(state, code, setup = null) {
 //
 newState('PRETEXT', STATE.METRICS + 10);
 newState('PRETEXTACTION', STATE.PRETEXT + 10);
+newState('PRETEXTCLEAN', STATE.PRETEXTACTION + 10);
 
 //
 //  The renderActions to use
@@ -247,16 +248,53 @@ if (argv.braille) {
 }
 
 //
-// Patch MathJax 3.0.5 SVG bug:
+// Cleanup Actions
+// Remove the pretext data from the math document if the element is empty.
 //
-if (mathjax.version === '3.0.5') {
-  const {SVGWrapper} = require('mathjax-full/js/output/svg/Wrapper.js');
-  const CommonWrapper = SVGWrapper.prototype.__proto__;
-  SVGWrapper.prototype.unicodeChars = function (text, variant) {
-    if (!variant) variant = this.variant || 'normal';
-    return CommonWrapper.unicodeChars.call(this, text, variant);
+
+//
+//  Remove empty SVG elements (empty defs + only g in body) from all math items
+//
+function isEmptySVG(node, adaptor) {
+  if (adaptor.kind(node) !== 'svg') return false;
+  for (const child of adaptor.childNodes(node)) {
+    const kind = adaptor.kind(child);
+    if (kind === 'defs') {
+      if (adaptor.childNodes(child).length > 0) return false;
+    } else if (kind !== 'g') {
+      return false;
+    }
   }
+  return true;
 }
+
+function isEmptyNode(node, adaptor, tag) {
+  if (adaptor.kind(node) !== tag) return false;
+  if (adaptor.childNodes(node).length > 2) return false;
+  if (adaptor.childNodes(node).length === 0) return true;
+  const child = adaptor.firstChild(node);
+  return adaptor.kind(child) === '#text' && child.value === '';
+}
+
+
+const emptyFilter = () => {
+  if (argv.svg) {
+    return node => !isEmptySVG(node, adaptor);
+  }
+  if (argv.svgenhanced) {
+    return node => adaptor.kind(node) === 'mjx-container' &&
+      !isEmptySVG(adaptor.firstChild(node), adaptor);
+  }
+  return node => !isEmptyNode(
+    node,
+    adaptor,
+    argv.mathml ? 'math' : (argv.braille ? 'mjx-braille' : (argv.speech ? 'mjx-speech' : 'mjx-data'))
+  );
+};
+
+renderActions.clean = action(STATE.PRETEXTCLEAN, (math, doc, adaptor) => {
+  math.outputData.pretext = math.outputData.pretext.filter(emptyFilter());
+});
 
 //
 //  Create an HTML document using the html file and a new TeX input jax
