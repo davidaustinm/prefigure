@@ -1087,6 +1087,14 @@
         <attribute name="thickness"/>
       </optional>
       <optional>
+        <attribute name="hticks"/>
+      </optional>
+      <optional>
+        <attribute name="vticks">
+          <ref name="test"/>
+        </attribute>
+      </optional>
+      <optional>
         <attribute name="tick-size"/>
       </optional>
       <optional>
@@ -1263,6 +1271,16 @@
             <value>yes</value>
             <value>no</value>
           </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="hticks">
+          <ref name="test"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="vticks">
+          <ref name="test"/>
         </attribute>
       </optional>
       <optional>
