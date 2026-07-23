@@ -8,6 +8,22 @@ from . import user_namespace
 
 log = logging.getLogger('prefigure')
 
+# `user_namespace` implements <definition> by writing straight into its own
+# module globals (`globals()[name] = value`), so a definition that happens to
+# reuse a Python builtin's name (e.g. `<definition>dir = ...</definition>`)
+# overwrites that builtin *in the module's own namespace*. That's normally
+# invisible, since a standalone `prefig build` is a fresh process every time.
+# But `importlib.reload()` re-executes a module's source using its *existing*
+# globals dict rather than a fresh one, so in a long-lived process (the
+# playground's Pyodide session, or anything else building multiple diagrams
+# without restarting Python) the clobbered name survives into the next
+# build's reload and can break the module's own top-level code (e.g. its own
+# `dir(math)` call resolves to the leftover value instead of the builtin).
+# We snapshot the pristine name set once, right after first import, and strip
+# anything else out before every reload so each build starts from a clean
+# module namespace, matching what a fresh process would give it.
+_USER_NAMESPACE_BASELINE = frozenset(vars(user_namespace).keys())
+
 # This function does the main work of constructing a diagram.
 # This can be called from outside the project to allow, say,
 # for generating assets in a pretext document
@@ -20,6 +36,9 @@ def mk_diagram(element,
                environment,
                return_string=False):
 
+    for name in list(vars(user_namespace).keys()):
+        if name not in _USER_NAMESPACE_BASELINE:
+            delattr(user_namespace, name)
     importlib.reload(user_namespace)
     output = None # add at a later date
     diag = diagram.Diagram(element, filename, diagram_number, 
@@ -47,7 +66,11 @@ def mk_diagram(element,
         log.error("Debugging information is available with 'prefig -vv build filename'")
         return
     log.debug("Writing the diagram and any annotations")
-    diag.annotate_source()
+    try:
+        diag.annotate_source()
+    except:
+        log.error("There was a problem generating annotations for this diagram")
+        log.error("Debugging information is available with 'prefig -vv build filename'")
     try:
         if return_string:
             return diag.end_figure_to_string()

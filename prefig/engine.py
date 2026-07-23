@@ -82,7 +82,15 @@ def build(
 # Build from an input string and return a string formed from
 # an XML tree containing the SVG and annotation trees
 def build_from_string(format, input_string, environment="pyodide"):
-    tree = ET.fromstring(input_string)
+    try:
+        tree = ET.fromstring(input_string)
+    except ET.XMLSyntaxError as e:
+        # Malformed source (e.g. a mismatched/unclosed tag) is a normal
+        # authoring mistake, not an internal error, so we raise a short,
+        # single-line message instead of letting the raw lxml exception
+        # (and, in the playground, a Pyodide traceback around it) reach
+        # whoever is calling us.
+        raise ValueError(f"PreFigure source is not well-formed XML: {e}") from None
     log.setLevel(logging.DEBUG)
     ns = {'pf': 'https://prefigure.org'}
     diagrams_with_ns = tree.xpath('//pf:diagram', namespaces=ns)

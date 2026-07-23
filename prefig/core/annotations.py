@@ -178,6 +178,11 @@ label_subelements = {
 def diagram_to_speech(diagram, source_to_svg):
     element_num = 0
     for element in diagram.getiterator():
+        # Comments and processing instructions have no tag/attributes to
+        # speak of (literally: lxml raises if you try to .set() on one), and
+        # they carry nothing worth narrating, so skip them like elsewhere.
+        if isinstance(element, (ET._Comment, ET._ProcessingInstruction)):
+            continue
         if element.tag == 'annotation':  # skip over annotations we have added
             continue
         if element.tag in label_subelements.keys():
