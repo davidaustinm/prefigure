@@ -4,12 +4,11 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
-# Build output directories (Python wheels at the root, vite bundles in website/)
+# Build output directories (Python wheels at the root, vite bundles under packages/)
 dist/
 
 # Node / website workspace
 node_modules/
-package-lock.json
 *.tsbuildinfo
 .vite/
 
@@ -19,10 +18,16 @@ package-lock.json
 *.swp
 
 # PreFigure MathJax bundle (installed by `prefig init`)
-/prefig/core/mj_sre/
+/packages/prefig/core/mj_sre/
 
 # PreFigure CLI build output (`prefig build` writes an output/ next to the source)
 output/
 
 # Ephemeral test output — created automatically on first test run
+tmp_test_outputs/
 tmp*
+.claude
+CLAUDE.md
+
+#Ignore Rust build caches
+target/
