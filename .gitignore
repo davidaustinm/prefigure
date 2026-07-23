@@ -24,6 +24,5 @@ package-lock.json
 # PreFigure CLI build output (`prefig build` writes an output/ next to the source)
 output/
 
-# Ephemeral test output — never commit anything here except the placeholder README
-/tmp_test_outputs/*
-!/tmp_test_outputs/README.md
+# Ephemeral test output — created automatically on first test run
+/tmp_test_outputs/
