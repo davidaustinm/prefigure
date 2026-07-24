@@ -4,13 +4,14 @@ import type { editor as MonacoEditor } from "monaco-editor";
 import { useStoreState, useStoreActions } from "../state";
 import { convert } from "@naman22khater/data-converter";
 import { Alert, Button, ButtonGroup, Nav, ToggleButton } from "react-bootstrap";
-import { Download, Trash } from "react-bootstrap-icons";
+import { Download, Share, Trash } from "react-bootstrap-icons";
 import { saveAs } from "file-saver";
 import { Diagnostic, PrefigureLspClient } from "../lsp-client/client";
 import {
     compileErrorToDiagnostics,
     summarizeError,
 } from "../lsp-client/compile-error";
+import { encodeSourceForQueryParam } from "../utils/source-query-param";
 
 type EditingMode = "xml" | "yaml";
 
@@ -370,18 +371,31 @@ export function SourceEditor() {
                         YAML
                     </ToggleButton>
                 </ButtonGroup>
-                <Button
-                    size="sm"
-                    onClick={() => {
-                        const blob = new Blob([sourceXml], {
-                            type: "text/plain",
-                        });
-                        saveAs(blob, "figure.xml");
-                    }}
-                    title="Download the XML source code"
-                >
-                    <Download /> Download Source
-                </Button>
+                <div>
+                    <Button
+                        size="sm"
+                        onClick={() => {
+                            const blob = new Blob([sourceXml], {
+                                type: "text/plain",
+                            });
+                            saveAs(blob, "figure.xml");
+                        }}
+                        title="Download the XML source code"
+                    >
+                        <Download /> Download Source
+                    </Button>
+                    <Button
+                        size="sm"
+                        onClick={() => {
+                            const url = new URL(window.location.href);
+                            url.search = `?s=${encodeSourceForQueryParam(sourceXml)}`;
+                            window.location.href = url.toString();
+                        }}
+                        title="Reload the page with the current source encoded in the URL"
+                    >
+                        <Share /> Share Link
+                    </Button>
+                </div>
             </Nav>
         </div>
     );
