@@ -3,8 +3,8 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { useStoreState, useStoreActions } from "../state";
 import { convert } from "@naman22khater/data-converter";
-import { Alert, Button, ButtonGroup, Nav, ToggleButton } from "react-bootstrap";
-import { Download, Share, Trash } from "react-bootstrap-icons";
+import { Alert, Button, ButtonGroup, Form, InputGroup, Modal, Nav, ToggleButton } from "react-bootstrap";
+import { Clipboard, ClipboardCheck, Download, Share, Trash } from "react-bootstrap-icons";
 import { saveAs } from "file-saver";
 import { Diagnostic, PrefigureLspClient } from "../lsp-client/client";
 import {
@@ -83,6 +83,9 @@ export function SourceEditor() {
     const error = useStoreState((state) => state.errorState);
     const setErrorState = useStoreActions((actions) => actions.setErrorState);
     const [showErrorDetails, setShowErrorDetails] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareUrl, setShareUrl] = useState("");
+    const [copied, setCopied] = useState(false);
 
     // The editor may be working in XML or YAML. However, the source is always stored in XML, so `contentXmlOrYaml`
     // effectively shadows `sourceXml`, but could be a YAML string which gets translated to XML on the fly.
@@ -249,6 +252,7 @@ export function SourceEditor() {
     }, [contentXmlOrYaml, editingMode]);
 
     return (
+        <>
         <div className="panel-frame">
             <div className="editor-buffer">
                 <Editor
@@ -389,14 +393,46 @@ export function SourceEditor() {
                         onClick={() => {
                             const url = new URL(window.location.href);
                             url.search = `?s=${encodeSourceForQueryParam(sourceXml)}`;
-                            window.location.href = url.toString();
+                            setShareUrl(url.toString());
+                            setCopied(false);
+                            setShowShareModal(true);
                         }}
-                        title="Reload the page with the current source encoded in the URL"
+                        title="Get a shareable link for the current source"
                     >
                         <Share /> Share Link
                     </Button>
                 </div>
             </Nav>
         </div>
+        <Modal
+            show={showShareModal}
+            onHide={() => setShowShareModal(false)}
+            centered
+        >
+            <Modal.Header closeButton>
+                <Modal.Title>Share Link</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <InputGroup>
+                    <Form.Control
+                        readOnly
+                        value={shareUrl}
+                        onFocus={(e) => e.currentTarget.select()}
+                    />
+                    <Button
+                        variant={copied ? "success" : "outline-secondary"}
+                        onClick={() => {
+                            navigator.clipboard.writeText(shareUrl);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                        }}
+                    >
+                        {copied ? <ClipboardCheck /> : <Clipboard />}{" "}
+                        {copied ? "Copied!" : "Copy"}
+                    </Button>
+                </InputGroup>
+            </Modal.Body>
+        </Modal>
+        </>
     );
 }
