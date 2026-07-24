@@ -96,6 +96,11 @@ body,
     border-top: 1px solid #e5e5e5;
 }
 
+.toolbar-actions {
+    display: flex;
+    gap: 8px;
+}
+
 .editor-buffer {
     flex-grow: 1;
     overflow: hidden;

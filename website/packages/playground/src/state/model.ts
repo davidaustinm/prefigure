@@ -12,6 +12,7 @@ import { PreFigureCompiler } from "../worker/compiler";
 import * as Comlink from "comlink";
 import Worker from "../worker?worker";
 import type { api } from "../worker";
+import { getSourceFromQueryParam } from "../utils/source-query-param";
 
 // Make a local version of the compiler
 let compiler = new PreFigureCompiler();
@@ -52,7 +53,9 @@ export interface PlaygroundModel {
 }
 
 export const playgroundModel: PlaygroundModel = {
-    source: `<diagram dimensions="(300,300)" margins="5">
+    source:
+        getSourceFromQueryParam() ??
+        `<diagram dimensions="(300,300)" margins="5">
   <definition>f(x)=2.5-x^2/2</definition>
   <definition>a = 1</definition>
   <coordinates bbox="(-4,-4,4,4)">
