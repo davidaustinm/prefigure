@@ -13,6 +13,36 @@ import * as Comlink from "comlink";
 import Worker from "../worker?worker";
 import type { api } from "../worker";
 
+/**
+ * Reads the `s` query parameter, if present, and decodes it as a base64
+ * (standard or URL-safe) encoded UTF-8 string. Used to pre-populate the
+ * editor from a shared link, e.g. `?s=<base64>`.
+ */
+function getSourceFromQueryParam(): string | undefined {
+    const raw = new URLSearchParams(window.location.search).get("s");
+    if (!raw) {
+        return undefined;
+    }
+    try {
+        // Undo the `+` -> ` ` substitution `URLSearchParams` applies, and
+        // accept the URL-safe base64 alphabet (`-`/`_` instead of `+`/`/`).
+        const base64 = raw
+            .replace(/ /g, "+")
+            .replace(/-/g, "+")
+            .replace(/_/g, "/");
+        const padded = base64.padEnd(
+            base64.length + ((4 - (base64.length % 4)) % 4),
+            "=",
+        );
+        const binary = atob(padded);
+        const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+        return new TextDecoder().decode(bytes);
+    } catch {
+        console.warn("Ignoring malformed `s` query parameter");
+        return undefined;
+    }
+}
+
 // Make a local version of the compiler
 let compiler = new PreFigureCompiler();
 (window as any).comp = compiler;
@@ -52,7 +82,9 @@ export interface PlaygroundModel {
 }
 
 export const playgroundModel: PlaygroundModel = {
-    source: `<diagram dimensions="(300,300)" margins="5">
+    source:
+        getSourceFromQueryParam() ??
+        `<diagram dimensions="(300,300)" margins="5">
   <definition>f(x)=2.5-x^2/2</definition>
   <definition>a = 1</definition>
   <coordinates bbox="(-4,-4,4,4)">
