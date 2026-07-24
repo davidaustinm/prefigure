@@ -371,7 +371,7 @@ export function SourceEditor() {
                         YAML
                     </ToggleButton>
                 </ButtonGroup>
-                <div>
+                <div className="toolbar-actions">
                     <Button
                         size="sm"
                         onClick={() => {
