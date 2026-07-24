@@ -114,7 +114,7 @@ def parse(filename, format, pub_file, suppress_caption, environment):
 
     for diagram_number, element in enumerate(diagrams):
 
-        for elem in element.getiterator():
+        for elem in element.iter():
             # Skip comments and processing instructions,
             # because they do not have names
             if not (
@@ -127,6 +127,12 @@ def parse(filename, format, pub_file, suppress_caption, environment):
         if len(diagrams) == 1:
             diagram_number = None
             check_duplicate_handles(element, set())
+
+            # we're publicly using 'at' rather than 'id' for handles
+            for elem in element.iter():
+                if elem.get('at', None) is not None:
+                    elem.set('id', elem.get('at'))
+
             mk_diagram(element, format, publication,
                        filename, suppress_caption, diagram_number,
                        environment)
