@@ -32,11 +32,11 @@ import sys
 from pathlib import Path
 
 TESTS_DIR = Path(__file__).resolve().parents[1]
-REPO_ROOT = TESTS_DIR.parent
+PACKAGES_DIR = TESTS_DIR.parent   # packages/ — the dir that contains prefig/
 SNAPSHOTS = TESTS_DIR / "snapshots" / "examples"
 EXAMPLES = TESTS_DIR / "examples"
 
-sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(PACKAGES_DIR))   # so `import prefig` finds packages/prefig
 sys.path.insert(0, str(TESTS_DIR))
 from helpers.build_helper import build_diagram, pushd  # noqa: E402
 from helpers.compare import DEFAULT_TOL, compare_svgs  # noqa: E402

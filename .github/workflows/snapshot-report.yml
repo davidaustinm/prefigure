@@ -1,5 +1,5 @@
 # Builds the examples corpus on every PR and compares it to the reference
-# snapshots (tests/helpers/snapshot_report.py), failing the check when they
+# snapshots (packages/tests/helpers/snapshot_report.py), failing the check when they
 # differ. The resulting report (diff list, ready-to-post comment, side-by-side
 # PNG renders when fewer than 8 examples differ) is uploaded as the
 # `snapshot-report` artifact and shown in the job summary.
@@ -17,8 +17,8 @@ name: snapshot report
 on:
   pull_request:
     paths:
-      - "prefig/**"
-      - "tests/**"
+      - "packages/prefig/**"
+      - "packages/tests/**"
       - "pyproject.toml"
       - "poetry.lock"
       - ".github/workflows/snapshot-report.yml"
@@ -64,7 +64,7 @@ jobs:
         run: poetry run prefig init
 
       - name: Build examples and compare to snapshots
-        run: poetry run python tests/helpers/snapshot_report.py --out-dir "$REPORT_DIR"
+        run: poetry run python packages/tests/helpers/snapshot_report.py --out-dir "$REPORT_DIR"
 
       - name: Read report
         id: report
@@ -144,5 +144,5 @@ jobs:
       - name: Fail if snapshots differ
         if: steps.report.outputs.differing != '0'
         run: |
-          echo "::error::${{ steps.report.outputs.differing }} example snapshot(s) differ — see the PR comment / job summary. If intentional, update them (tests/README.md)."
+          echo "::error::${{ steps.report.outputs.differing }} example snapshot(s) differ — see the PR comment / job summary. If intentional, update them (packages/tests/README.md)."
           exit 1

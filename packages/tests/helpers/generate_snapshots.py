@@ -21,7 +21,7 @@ from pathlib import Path
 import lxml.etree as ET
 
 TESTS_DIR = Path(__file__).resolve().parents[1]
-REPO_ROOT = TESTS_DIR.parent
+PACKAGES_DIR = TESTS_DIR.parent   # packages/ — the dir that contains prefig/
 SNAPSHOTS = TESTS_DIR / "snapshots"
 
 # Input corpus (a directory under tests/) -> its category subdirectories.
@@ -33,7 +33,7 @@ CORPORA = {
 # those rather than check in an empty snapshot.
 MIN_MEANINGFUL_CHILDREN = 2
 
-sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(PACKAGES_DIR))   # so `import prefig` finds packages/prefig
 sys.path.insert(0, str(TESTS_DIR))
 from helpers.build_helper import build_diagram, pushd  # noqa: E402
 

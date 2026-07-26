@@ -35,7 +35,7 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "npm"
-                  cache-dependency-path: ./website/package-lock.json
+                  cache-dependency-path: ./package-lock.json
 
             - name: Install ciaro deps
               run: |
@@ -57,21 +57,18 @@ jobs:
             
             - name: Run website tests
               run: |
-                  cd website/
                   npm ci
-                  npm run test
+                  npm run test:js
 
             - name: Build website
               run: |
-                  cd website/
                   npm ci
-                  cd ./packages/playground
-                  npm run build
-            
+                  npm run build:js
+
             - name: Prepare for Github Pages
               run: |
                   mkdir -p ./website_dist
-                  cp -r ./website/packages/playground/dist/* ./website_dist
+                  cp -r ./packages/playground/dist/* ./website_dist
                   echo "These are the files that will be packaged"
                   ls ./website_dist
 

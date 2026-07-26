@@ -38,7 +38,7 @@ jobs:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
           echo "Updating version number"
-          output=$(poetry run python scripts/prep_nightly.py)
+          output=$(poetry run python packages/scripts/prep_nightly.py)
           echo "Completed nightly prep"
           echo "Output: $output"
           if [[ $output == *"OK to deploy"* ]]; then
