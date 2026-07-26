@@ -85,6 +85,9 @@ def load_source(xml_path):
         if not isinstance(elem, (ET._Comment, ET._ProcessingInstruction)):
             elem.tag = ET.QName(elem).localname
     parse.check_duplicate_handles(diagram, set())
+    for elem in diagram.iter():
+        if elem.get('at', None) is not None:
+            elem.set('id', elem.get('at'))
     return diagram
 
 

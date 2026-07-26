@@ -83,6 +83,27 @@ alignment_displacement = {
     'xl': [-1, 1]
 }
 
+alignment_directions = {
+    'center': (0,0),
+    'east': (1,0),
+    'northeast': (1,-1),
+    'north': (0,-1),
+    'northwest': (-1,-1),
+    'west': (-1,0),
+    'southwest': (-1,1),
+    'south': (0,1),
+    'southeast': (1,1),
+    'c': (0,0),
+    'e': (1,0),
+    'ne': (1,-1),
+    'n': (0,1),
+    'nw': (-1,-1),
+    'w': (-1,0),
+    'sw': (-1,1),
+    's': (0,-1),
+    'se': (1,1)
+}
+
 braille_displacement = {
     'southeast': [0, -1],
     'east': [0, -0.5],

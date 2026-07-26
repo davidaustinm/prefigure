@@ -1,0 +1,1025 @@
+import lxml.etree as ET
+import logging
+import numpy as np
+import math
+import copy
+from .. import user_namespace as un
+from .. import utilities as util
+from .. import math_utilities as math_util
+from .. import CTM
+from .. import label
+
+log = logging.getLogger('prefigure')
+
+def find_terminal(terminal):
+    if isinstance(terminal[0], np.ndarray):
+        return terminal
+    return terminal, None
+
+def connection(element, diagram, parent, data):
+    convention = data['convention']
+
+    start = element.get('start', None)
+    if start is None:
+        log.error('A connection element needs a start attribute')
+        return
+
+    start = un.valid_eval(start)
+    start, current_direction = find_terminal(start)
+
+    start = diagram.transform(start)
+    path = ET.SubElement(parent, 'path')
+    cmds = ['M ', util.pt2str(start)]
+    current_pt = start
+
+    for child in element:
+        if isinstance(child, (ET._Comment, ET._ProcessingInstruction)):
+            continue
+        if child.tag == "node":
+            next_cmds, current_pt, current_direction = node(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "wire":
+            next_cmds, current_pt, current_direction = wire(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "resistor":
+            next_cmds, current_pt, current_direction = resistor(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "inductor":
+            next_cmds, current_pt, current_direction = inductor(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "capacitor":
+            next_cmds, current_pt, current_direction = capacitor(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "battery":
+            next_cmds, current_pt, current_direction = battery(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "dc-current-source":
+            next_cmds, current_pt, current_direction = dc_current_source(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "diode":
+            next_cmds, current_pt, current_direction = diode(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag in ("vcc", "vee"):
+            next_cmds, current_pt, current_direction = voltage_rail(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+        if child.tag == "ground":
+            next_cmds, current_pt, current_direction = ground(
+                child,
+                diagram,
+                parent,
+                current_pt,
+                current_direction,
+                data
+            )
+            cmds += next_cmds
+            continue
+    path.set('stroke', 'black')
+    path.set('d', ''.join(cmds))
+    path.set('fill', 'none')
+
+def log_pt(pt):
+    if pt is None:
+        log.error('None')
+        return
+    log.error((pt[0], pt[1]))
+
+def plot_path(current_pt, current_direction, end_pt, end_direction):
+    if current_direction is None and end_direction is None:
+        diff = end_pt - current_pt
+        if np.isclose(diff[0], 0) or np.isclose(diff[1], 0):
+            waypts = [current_pt, end_pt]
+            return waypts
+        waypts = [current_pt]
+        waypts.append(np.array(((current_pt[0]+end_pt[0])/2, current_pt[1])))
+        waypts.append(np.array(((current_pt[0]+end_pt[0])/2, end_pt[1])))
+        waypts.append(end_pt)
+        return waypts
+
+    reversed = False
+    if current_direction is None and end_direction is not None:
+        current_pt, end_pt = end_pt, current_pt
+        current_direction, end_direction = end_direction, current_direction
+        reversed = True
+
+    ctm = CTM.CTM()
+    ctm.translate(*current_pt)
+    angle = math.atan2(current_direction[1], current_direction[0])
+    ctm.rotate(angle, units="radians")
+
+    def_step = 30
+    end = ctm.inverse_transform(end_pt)
+    if current_direction is not None and end_direction is None:
+        waypts = [current_pt]
+        if np.isclose(end[0], 0):
+            waypts.append(ctm.transform((def_step,0)))
+            waypts.append(ctm.transform((def_step,end[1])))
+            waypts.append(end_pt)
+        elif end[0] > 0:
+            waypts.append(ctm.transform((end[0],0)))
+            waypts.append(end_pt)
+        else:
+            waypts.append(ctm.transform((def_step,0)))
+            if np.isclose(end[1], 0):
+                waypts.append(ctm.transform((def_step,0)))
+                waypts.append(ctm.transform((def_step,def_step)))
+                waypts.append(ctm.transform((end[0],def_step)))
+                waypts.append(end_pt)
+            else:
+                waypts.append(ctm.transform((def_step,end[1])))
+                waypts.append(end_pt)
+        if reversed:
+            waypts.reverse()
+        return waypts
+
+    # now we have directions on both ends of the wire
+    end_direction = math_util.rotate(end_direction, -angle)
+    end_direction *= -1
+    waypts = [current_pt]
+    if np.isclose(end[1], 0):  # end point is on axis
+        if end[0] > 0:  # end point on positive axis
+            if np.isclose(end_direction[1], 0):
+                if end_direction[0] > 0:
+                    waypts.append(end_pt)
+                    return waypts
+                else:
+                    waypts.append(ctm.transform((end[0]-def_step,0)))
+                    waypts.append(ctm.transform((end[0]-def_step,def_step)))
+                    waypts.append(ctm.transform((end[0]+def_step,def_step)))
+                    waypts.append(ctm.transform((end[0]+def_step,0)))
+                    waypts.append(end_pt)
+                    return waypts
+            else:
+                if end_direction[1] < 0:
+                    end_direction[1] *= -1
+                    ctm.scale(1,-1)
+                waypts.append(ctm.transform((end[0]-def_step,0)))
+                waypts.append(ctm.transform((end[0]-def_step,-def_step)))
+                waypts.append(ctm.transform((end[0],-def_step)))
+                waypts.append(end_pt)
+                return waypts
+        # end point on negative axis
+        if np.isclose(end_direction[1], 0):
+            if end_direction[0] > 0:
+                waypts.append(ctm.transform((def_step,0)))
+                waypts.append(ctm.transform((def_step,def_step)))
+                waypts.append(ctm.transform((end[0]-def_step, def_step)))
+                waypts.append(ctm.transform((end[0]-def_step, 0)))
+                waypts.append(end_pt)
+                return waypts
+            else:
+                waypts.append(ctm.transform((def_step,0)))
+                waypts.append(ctm.transform((def_step,def_step)))
+                waypts.append(ctm.transform((end[0]+def_step, def_step)))
+                waypts.append(ctm.transform((end[0]+def_step, 0)))
+                waypts.append(end_pt)
+                return waypts
+        if end_direction[1] < 0:
+            ctm.scale(1,-1)
+            end_direction[1] *= -1
+        waypts.append(ctm.transform((def_step,0)))
+        waypts.append(ctm.transform((def_step,-def_step)))
+        waypts.append(ctm.transform((end[0], -def_step)))
+        waypts.append(end_pt)
+        return waypts
+                
+    if end[0] > 0: # in quadrant 1 or 4
+        if end[1] < 0:
+            ctm.scale(1, -1)
+            end[1] *= -1
+            end_direction[1] *= -1
+        if np.isclose(end_direction[0], 0): # end direction is vertical
+            if end_direction[1] > 0:
+                waypts.append(ctm.transform((end[0],0)))
+                waypts.append(end_pt)
+                return waypts
+            else:
+                waypts.append(ctm.transform((end[0]/2,0)))
+                waypts.append(ctm.transform((end[0]/2,end[1] + def_step)))
+                waypts.append(ctm.transform((end[0],end[1] + def_step)))
+                waypts.append(end_pt)
+                return waypts
+        else: # end direction is horizontal
+            if end_direction[0] > 0:
+                waypts.append(ctm.transform((end[0]/2,0)))
+                waypts.append(ctm.transform((end[0]/2,end[1])))
+                waypts.append(end_pt)
+                return waypts
+            else:
+                waypts.append(ctm.transform((end[0]+def_step,0)))
+                waypts.append(ctm.transform((end[0]+def_step,end[1])))
+                waypts.append(end_pt)
+                return waypts
+
+    # we're in quadrant 2 or 3
+    if end[1] < 0:
+        ctm.scale(1, -1)
+        end[1] *= -1
+        end_direction[1] *= -1
+        
+    if np.isclose(end_direction[0], 0):  # vertical final direction
+        if end_direction[1] > 0:
+            waypts.append(ctm.transform((def_step,0)))
+            waypts.append(ctm.transform((def_step,end[1]/2)))
+            waypts.append(ctm.transform((end[0],end[1]/2)))
+            waypts.append(end_pt)
+            return waypts
+        else:
+            waypts.append(ctm.transform((def_step,0)))
+            waypts.append(ctm.transform((def_step,end[1] + def_step)))
+            waypts.append(ctm.transform((end[0],end[1] + def_step)))
+            waypts.append(end_pt)
+            return waypts
+    if end_direction[0] < 0:
+        waypts.append(ctm.transform((def_step,0)))
+        waypts.append(ctm.transform((def_step,end[1])))
+        waypts.append(end_pt)
+        return waypts
+    else: 
+        waypts.append(ctm.transform((def_step,0)))
+        waypts.append(ctm.transform((def_step,end[1]/2)))
+        waypts.append(ctm.transform((end[0]-def_step,end[1]/2)))
+        waypts.append(ctm.transform((end[0]-def_step,end[1])))
+        waypts.append(end_pt)
+        return waypts
+
+def mk_path(waypts):
+    p0 = waypts.pop(0)
+    cmds = ['M ', util.pt2str(p0)]
+    for p in waypts:
+        cmds += ['L ', util.pt2str(p)]
+    return cmds
+
+def node(child, diagram, parent, current_pt, current_direction, data):
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    filled = child.get('filled', 'yes') == 'yes'
+
+    circle = ET.SubElement(g, 'circle')
+    circle.set('cx', str(current_pt[0]))
+    circle.set('cy', str(current_pt[1]))
+    circle.set('r', '3')
+    if filled:
+        circle.set('fill', 'black')
+        circle.set('stroke', 'none')
+    else:
+        circle.set('fill', 'white')
+        circle.set('stroke', 'black')
+
+    if label.has_label(child):
+        alignment = child.get('alignment', 'northeast')
+        el = ET.SubElement(g, 'label')
+        el.text = child.text
+        for grandchild in child:
+            el.append(copy.deepcopy(grandchild))
+        el.set('anchor', f"({current_pt[0]}, {current_pt[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if child.get('offset', None) is not None:
+            offset = un.valid_eval(child.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
+        label.label(el, diagram, g, None)
+
+    at_name = child.get('at', None)
+    if current_direction is not None:
+        current_direction *= -1
+    if at_name is not None:
+        user_pt = diagram.inverse_transform(current_pt)
+        un.enter_namespace(at_name, {'location': [user_pt, None]})
+
+    return [], current_pt, current_direction
+
+def voltage_rail(child, diagram, parent, current_pt, current_direction, data):
+    scale = data['scale']
+    step = 0.4 * scale
+
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    ctm = CTM.CTM()
+    ctm.translate(*current_pt)
+
+    vcc = (child.tag == 'vcc')
+    sign = -1 if vcc else 1
+
+    tip_y  = sign * 1.5 * step
+    wing_y = sign * 0.8 * step
+    tip = ctm.transform(np.array((0.0,         tip_y )))
+    lw  = ctm.transform(np.array((-0.5 * step, wing_y)))
+    rw  = ctm.transform(np.array(( 0.5 * step, wing_y)))
+
+    stub = ET.SubElement(g, 'line')
+    stub.set('x1', str(current_pt[0])); stub.set('y1', str(current_pt[1]))
+    stub.set('x2', str(tip[0]));        stub.set('y2', str(tip[1]))
+    stub.set('stroke', 'black')
+
+    chevron = ET.SubElement(g, 'path')
+    chevron.set('d', f"M {lw[0]},{lw[1]} L {tip[0]},{tip[1]} L {rw[0]},{rw[1]}")
+    chevron.set('stroke', 'black')
+    chevron.set('stroke-width', '1.5')
+    chevron.set('fill', 'none')
+
+    if label.has_label(child):
+        alignment = child.get('alignment', 'northeast' if vcc else 'southeast')
+        el = ET.SubElement(g, 'label')
+        el.text = child.text
+        for grandchild in child:
+            el.append(copy.deepcopy(grandchild))
+        el.set('anchor', f"({tip[0]}, {tip[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if child.get('offset', None) is not None:
+            offset = un.valid_eval(child.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
+        label.label(el, diagram, g, None)
+
+    at_name = child.get('at', None)
+    if at_name is not None:
+        user_tip = diagram.inverse_transform(tip)
+        direction = np.array((0.0, 1.0)) if vcc else np.array((0.0, -1.0))
+        un.enter_namespace(at_name, [user_tip, direction])
+
+    return [], current_pt, current_direction
+
+def ground(child, diagram, parent, current_pt, current_direction, data):
+    scale = data['scale']
+    step = 0.5 * scale
+
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    ctm = CTM.CTM()
+    ctm.translate(*current_pt)
+
+    common = child.get('common', 'no') == 'yes'
+    stub_y = step if common else 1.2 * step
+
+    p2 = ctm.transform(np.array((0.0, stub_y)))
+    stub = ET.SubElement(g, 'line')
+    stub.set('x1', str(current_pt[0])); stub.set('y1', str(current_pt[1]))
+    stub.set('x2', str(p2[0]));         stub.set('y2', str(p2[1]))
+    stub.set('stroke', 'black')
+
+    if not common:
+        for y_pos, half_w in [(1.2*step, 0.6*step),
+                              (1.4*step, 0.4*step),
+                              (1.6*step, 0.25*step)]:
+            q1 = ctm.transform(np.array((-half_w, y_pos)))
+            q2 = ctm.transform(np.array(( half_w, y_pos)))
+            bar = ET.SubElement(g, 'line')
+            bar.set('x1', str(q1[0])); bar.set('y1', str(q1[1]))
+            bar.set('x2', str(q2[0])); bar.set('y2', str(q2[1]))
+            bar.set('stroke', 'black')
+    else:
+        tl  = ctm.transform(np.array((-0.6*step, step    )))
+        tr  = ctm.transform(np.array(( 0.6*step, step    )))
+        tip = ctm.transform(np.array(( 0.0,      1.8*step)))
+        poly = ET.SubElement(g, 'polygon')
+        poly.set('points',
+                 f"{tl[0]},{tl[1]} {tr[0]},{tr[1]} {tip[0]},{tip[1]}")
+        poly.set('stroke', 'black')
+        poly.set('fill', 'none')
+
+    if label.has_label(child):
+        alignment = child.get('alignment', 'east')
+        anchor = ctm.transform(np.array((0.6*step, 1.2*step)))
+        el = ET.SubElement(g, 'label')
+        el.text = child.text
+        for grandchild in child:
+            el.append(copy.deepcopy(grandchild))
+        el.set('anchor', f"({anchor[0]}, {anchor[1]})")
+        el.set('user-coords', 'no')
+        el.set('alignment', alignment)
+        if child.get('offset', None) is not None:
+            offset = un.valid_eval(child.get('offset'))
+            el.set('offset', f"({offset[0]}, {offset[1]})")
+        label.label(el, diagram, g, None)
+
+    at_name = child.get('at', None)
+    if at_name is not None:
+        user_pt = diagram.inverse_transform(current_pt)
+        up_dir = ctm.transform(np.array((0.0, -1.0))) - current_pt
+        un.enter_namespace(at_name, [user_pt, up_dir])
+
+    return [], current_pt, current_direction
+
+def wire(child, diagram, parent, current_pt, current_direction, data):
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
+    end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
+    end_pt = diagram.transform(end_pt)
+
+    waypts = plot_path(current_pt, current_direction,
+                       end_pt, end_direction)
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return mk_path(waypts), end_pt, end_direction
+
+def inductor(child, diagram, parent, current_pt,
+             current_direction, data):
+    has_label = label.has_label(child)
+    if has_label:
+        parent = ET.SubElement(parent, 'g')
+        id_element = parent
+    path = ET.SubElement(parent, 'path')
+    if not has_label:
+        id_element = path
+    diagram.add_id(id_element, child.get('id'))
+
+    scale = data['scale']
+    N = int(un.valid_eval(child.get('coils', '4')))
+    other = 0.1 * scale        # x-radius of small return arc (fixed per-coil geometry)
+    step = 0.275 * scale       # x-radius of large arc (fixed per-coil geometry, from N=4 default)
+    body_half = N * step - (N - 1) * other  # widens with more coils
+    b_up = 0.3 * scale        # y-radius of large arcs (above wire)
+    b_down = 0.15 * scale     # y-radius of small return arcs (below wire)
+    k = 4 * (math.sqrt(2) - 1) / 3  # quarter-ellipse Bezier constant ≈ 0.5523
+
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
+    end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction,
+                       end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
+    angle = math.degrees(math.atan2(diff[1], diff[0]))
+    ctm = CTM.CTM()
+    ctm.translate(*mid_pt)
+    ctm.rotate(angle)
+
+    body_start = ctm.transform(np.array((-body_half, 0)))
+    body_end   = ctm.transform(np.array(( body_half, 0)))
+    first_path = waypts[:longest+1] + [body_start]
+    second_path = [body_end] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
+
+    x = -body_half
+    d = 'M ' + util.pt2str(ctm.transform(np.array((x, 0))))
+    for i in range(N):
+        # large arc above: (x,0) → (x+2*step,0) through peak (x+step, -b_up)
+        xc, x1 = x + step, x + 2 * step
+        cp1 = ctm.transform(np.array((x,          -k * b_up)))
+        cp2 = ctm.transform(np.array((xc - k*step, -b_up   )))
+        p3  = ctm.transform(np.array((xc,          -b_up   )))
+        d += f' C {util.pt2str(cp1)} {util.pt2str(cp2)} {util.pt2str(p3)}'
+        cp1 = ctm.transform(np.array((xc + k*step, -b_up   )))
+        cp2 = ctm.transform(np.array((x1,          -k*b_up )))
+        p3  = ctm.transform(np.array((x1,          0       )))
+        d += f' C {util.pt2str(cp1)} {util.pt2str(cp2)} {util.pt2str(p3)}'
+        x = x1
+        if i < N - 1:
+            # small return arc below: (x,0) → (x-2*other,0) through (x-other, +b_down)
+            xc, x1 = x - other, x - 2 * other
+            cp1 = ctm.transform(np.array((x,              k * b_down)))
+            cp2 = ctm.transform(np.array((xc + k*other,   b_down    )))
+            p3  = ctm.transform(np.array((xc,             b_down    )))
+            d += f' C {util.pt2str(cp1)} {util.pt2str(cp2)} {util.pt2str(p3)}'
+            cp1 = ctm.transform(np.array((xc - k*other,   b_down    )))
+            cp2 = ctm.transform(np.array((x1,             k * b_down)))
+            p3  = ctm.transform(np.array((x1,             0         )))
+            d += f' C {util.pt2str(cp1)} {util.pt2str(cp2)} {util.pt2str(p3)}'
+            x = x1
+    path.set('d', d)
+    path.set('stroke', 'black')
+    path.set('fill', 'none')
+
+    if has_label:
+        add_label(child, diagram, parent, mid_pt, b_up, diff)
+
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   +body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] +body_end))
+        un.enter_namespace(handle, {'entry': in_pt, 'exit': out_pt})
+
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
+
+def resistor(child, diagram, parent, current_pt,
+             current_direction, data):
+    has_label = label.has_label(child)
+    if has_label:
+        parent = ET.SubElement(parent, 'g')
+        id_element = parent
+    path = ET.SubElement(parent, 'path')
+    if not has_label:
+        id_element = path
+    diagram.add_id(id_element, child.get('id'))
+
+    scale = data['scale']
+    T = int(un.valid_eval(child.get('teeth', '3')))
+    H = 0.3 * scale
+    step = 0.8 * scale / 6    # per-tooth geometry fixed at teeth=3 default
+    body_half = 2 * T * step  # widens with more teeth
+
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
+    end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction,
+                       end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
+    angle = math.degrees(math.atan2(diff[1], diff[0]))
+    ctm = CTM.CTM()
+    ctm.translate(*mid_pt)
+    ctm.rotate(angle)
+
+    body_start = ctm.transform(np.array((-body_half, 0)))
+    body_end   = ctm.transform(np.array(( body_half, 0)))
+    first_path = waypts[:longest+1] + [body_start]
+    second_path = [body_end] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
+
+    vert = -1
+    pt = np.array((-body_half, 0))
+    d = 'M ' + util.pt2str(ctm.transform(pt))
+    pt += np.array((step, vert * H))
+    d += ' L ' + util.pt2str(ctm.transform(pt))
+    for _ in range(2 * T - 1):
+        vert *= -1
+        pt += np.array((2*step, vert * 2*H))
+        d += ' L ' + util.pt2str(ctm.transform(pt))
+    vert *= -1
+    pt += np.array((step, vert * H))
+    d += ' L ' + util.pt2str(ctm.transform(pt))
+    path.set('d', d)
+    path.set('stroke', 'black')
+    path.set('fill', 'none')
+
+    if has_label:
+        add_label(child, diagram, parent, mid_pt, H, diff)
+
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt = diagram.inverse_transform(1/2*(waypts[longest] + body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] +body_end))
+        un.enter_namespace(handle, {'entry': in_pt, 'exit': out_pt})
+
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
+
+def capacitor(child, diagram, parent, current_pt,
+              current_direction, data):
+    has_label = label.has_label(child)
+    if has_label:
+        parent = ET.SubElement(parent, 'g')
+        id_element = parent
+    path = ET.SubElement(parent, 'path')
+    if not has_label:
+        id_element = path
+    diagram.add_id(id_element, child.get('id'))
+    
+    scale = data['scale']
+    gap_half = 0.2 * scale    # half the gap between plates
+    plate_half = 0.6 * scale  # half the plate length
+
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
+    end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction,
+                       end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
+    angle = math.degrees(math.atan2(diff[1], diff[0]))
+    ctm = CTM.CTM()
+    ctm.translate(*mid_pt)
+    ctm.rotate(angle)
+
+    # wire to left plate, then jump path to right plate and wire to destination
+    left_pt  = ctm.transform(np.array((-gap_half, 0)))
+    right_pt = ctm.transform(np.array(( gap_half, 0)))
+    first_path = waypts[:longest+1] + [left_pt]
+    second_path = [right_pt] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
+
+    # left plate
+    p1 = ctm.transform(np.array((-gap_half, -plate_half)))
+    p2 = ctm.transform(np.array((-gap_half,  plate_half)))
+    d = f"M {p1[0]} {p1[1]} L {p2[0]} {p2[1]} "
+
+    # right plate
+    p1 = ctm.transform(np.array(( gap_half, -plate_half)))
+    p2 = ctm.transform(np.array(( gap_half,  plate_half)))
+    d += f"M {p1[0]} {p1[1]} L {p2[0]} {p2[1]}"
+    path.set('d', d)
+    path.set('stroke', 'black')
+
+    if has_label:
+        add_label(child, diagram, parent, mid_pt, plate_half, diff)
+
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   +left_pt))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] +right_pt))
+        un.enter_namespace(handle, {'entry': in_pt, 'exit': out_pt})
+
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
+
+def battery(child, diagram, parent, current_pt, current_direction, data):
+    has_label = label.has_label(child)
+    if has_label:
+        parent = ET.SubElement(parent, 'g')
+        id_element = parent
+    path = ET.SubElement(parent, 'path')
+    if not has_label:
+        id_element = path
+    diagram.add_id(id_element, child.get('id'))
+
+    scale = data['scale']
+    W = 0.3 * scale   # half battery thickness along the wire
+    H = 0.6 * scale   # long plate half-length perpendicular to wire
+
+    invert = child.get('invert', 'no') == 'yes'
+
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
+    end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction, end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
+    angle = math.degrees(math.atan2(diff[1], diff[0]))
+    ctm = CTM.CTM()
+    ctm.translate(*mid_pt)
+    ctm.rotate(angle)
+
+    body_start = ctm.transform(np.array((-W, 0)))
+    body_end   = ctm.transform(np.array(( W, 0)))
+    first_path = waypts[:longest+1] + [body_start]
+    second_path = [body_end] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
+
+    # Four plates along the wire; default: positive (long plate) at incoming side
+    plate_xs     = [-W, -W/3, W/3, W]
+    plate_halves = [H, H/2, H, H/2]
+    if invert:
+        plate_halves = list(reversed(plate_halves))
+
+    d = ''
+    for x, half in zip(plate_xs, plate_halves):
+        p1 = ctm.transform(np.array((x, -half)))
+        p2 = ctm.transform(np.array((x,  half)))
+        d += f"M {p1[0]} {p1[1]} L {p2[0]} {p2[1]} "
+    path.set('d', d.strip())
+    path.set('stroke', 'black')
+    path.set('fill', 'none')
+
+    if has_label:
+        add_label(child, diagram, parent, mid_pt, H, diff)
+
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   +body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] +body_end))
+        un.enter_namespace(handle, {'entry': in_pt, 'exit': out_pt})
+
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
+
+
+def dc_current_source(child, diagram, parent, current_pt, current_direction, data):
+    scale      = 1.2 * data['scale']
+    radius     = 0.6  * scale
+    arrow_len  = 0.15 * scale
+    arrow_half = 0.08 * scale
+
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    invert = child.get('invert', 'no') == 'yes'
+    sign = -1 if invert else 1
+
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
+    end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction, end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
+    angle = math.degrees(math.atan2(diff[1], diff[0]))
+    ctm = CTM.CTM()
+    ctm.translate(*mid_pt)
+    ctm.rotate(angle)
+
+    body_start = ctm.transform(np.array((-radius, 0.0)))
+    body_end   = ctm.transform(np.array(( radius, 0.0)))
+    first_path  = waypts[:longest+1] + [body_start]
+    second_path = [body_end] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
+
+    # Circle
+    circle = ET.SubElement(g, 'circle')
+    circle.set('cx', str(mid_pt[0]))
+    circle.set('cy', str(mid_pt[1]))
+    circle.set('r',  str(radius))
+    circle.set('stroke', 'black')
+    circle.set('fill', 'none')
+
+    # Arrow shaft
+    arrow_x = sign * 0.5 * radius
+    shaft_start = ctm.transform(np.array((-sign * 0.7 * radius, 0.0)))
+    shaft_end   = ctm.transform(np.array((arrow_x - sign * arrow_len / 2, 0.0)))
+    line_el = ET.SubElement(g, 'line')
+    line_el.set('x1', str(shaft_start[0]))
+    line_el.set('y1', str(shaft_start[1]))
+    line_el.set('x2', str(shaft_end[0]))
+    line_el.set('y2', str(shaft_end[1]))
+    line_el.set('stroke', 'black')
+    line_el.set('thickness', '2')
+
+    # Filled arrowhead
+    tip   = ctm.transform(np.array((arrow_x + sign * arrow_len / 2,  0.0       )))
+    base1 = ctm.transform(np.array((arrow_x - sign * arrow_len / 2, -arrow_half)))
+    base2 = ctm.transform(np.array((arrow_x - sign * arrow_len / 2,  arrow_half)))
+    poly = ET.SubElement(g, 'polygon')
+    poly.set('points',
+             f"{tip[0]},{tip[1]} {base1[0]},{base1[1]} {base2[0]},{base2[1]}")
+    poly.set('fill', 'black')
+    poly.set('stroke', 'none')
+
+    if label.has_label(child):
+        add_label(child, diagram, g, mid_pt, radius, diff)
+
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   +body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] +body_end))
+        un.enter_namespace(handle, {'entry': in_pt, 'exit': out_pt})
+
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
+
+
+def diode(child, diagram, parent, current_pt, current_direction, data):
+    scale  = data['scale']
+    half_w = 0.4 * scale
+    half_h = 0.5 * scale
+
+    g = ET.SubElement(parent, 'g')
+    diagram.add_id(g, child.get('id'))
+
+    invert = child.get('invert', 'no') == 'yes'
+    sign = -1 if invert else 1
+
+    p = child.get("to", None)
+    if p is None:
+        log.error(f"A {child.tag} element needs an attribute to")
+        return
+    p_clean = p.strip()
+    if p_clean[0] == '+':
+        relative_move = True
+        p_clean = p_clean[1:]
+    else:
+        relative_move = False
+    p = un.valid_eval(p_clean)
+    end_pt, end_direction = find_terminal(p)
+    if relative_move:
+        end_pt = end_pt + diagram.inverse_transform(current_pt)
+    end_pt = diagram.transform(end_pt)
+    waypts = plot_path(current_pt, current_direction, end_pt, end_direction)
+
+    segments = zip(waypts[:-1], waypts[1:])
+    longest = np.argmax([math_util.length(p-q) for p,q in segments])
+
+    diff = waypts[longest+1] - waypts[longest]
+    mid_pt = 1/2*(waypts[longest] + waypts[longest+1])
+    angle = math.degrees(math.atan2(diff[1], diff[0]))
+    ctm = CTM.CTM()
+    ctm.translate(*mid_pt)
+    ctm.rotate(angle)
+
+    body_start = ctm.transform(np.array((-half_w, 0.0)))
+    body_end   = ctm.transform(np.array(( half_w, 0.0)))
+    first_path  = waypts[:longest+1] + [body_start]
+    second_path = [body_end] + waypts[longest+1:]
+    cmds = mk_path(first_path) + mk_path(second_path)
+
+    # Triangle: base at -sign*half_w, apex (tip) at +sign*half_w
+    apex  = ctm.transform(np.array(( sign * half_w,  0.0   )))
+    base1 = ctm.transform(np.array((-sign * half_w, -half_h)))
+    base2 = ctm.transform(np.array((-sign * half_w,  half_h)))
+    poly = ET.SubElement(g, 'polygon')
+    poly.set('points',
+             f"{apex[0]},{apex[1]} {base1[0]},{base1[1]} {base2[0]},{base2[1]}")
+    poly.set('fill', 'none')
+    poly.set('stroke', 'black')
+
+    # Cathode bar at the apex side
+    bar_top = ctm.transform(np.array(( sign * half_w, -half_h)))
+    bar_bot = ctm.transform(np.array(( sign * half_w,  half_h)))
+    bar = ET.SubElement(g, 'line')
+    bar.set('x1', str(bar_top[0]))
+    bar.set('y1', str(bar_top[1]))
+    bar.set('x2', str(bar_bot[0]))
+    bar.set('y2', str(bar_bot[1]))
+    bar.set('stroke', 'black')
+
+    if label.has_label(child):
+        add_label(child, diagram, g, mid_pt, half_h, diff)
+
+    handle = child.get('at', None)
+    if handle is not None:
+        in_pt  = diagram.inverse_transform(1/2*(waypts[longest]   +body_start))
+        out_pt = diagram.inverse_transform(1/2*(waypts[longest+1] +body_end))
+        un.enter_namespace(handle, {'entry': in_pt, 'exit': out_pt})
+
+    p0, p1 = waypts[-2:]
+    end_direction = p1 - p0
+    return cmds, end_pt, end_direction
+
+
+def add_label(element, diagram, parent, anchor, initial_offset, direction):
+    element = copy.deepcopy(element)
+    alignment = element.get('alignment')
+    if alignment is not None:
+        offset_direction = label.alignment_directions.get(alignment, (0,0))
+        if math_util.length(offset_direction) > 0:
+            offset_direction = math_util.normalize(offset_direction)
+    else:
+        offset_direction = math_util.rotate(direction, -math.pi/2)
+        if offset_direction[1] > 0:
+            offset_direction[1] *= -1
+        offset_direction = math_util.normalize(offset_direction)
+
+    anchor = np.array(anchor) + initial_offset * offset_direction
+    offset = un.valid_eval(element.get('offset', '(0,0)'))
+
+    if alignment is None:
+        offset_direction[1] *= -1
+        alignment = label.get_alignment_from_direction(offset_direction)
+        element.set('alignment', alignment)
+
+    element.attrib.pop('at', None)
+    element.attrib.pop('id', None)
+    element.set('anchor', f"({anchor[0]}, {anchor[1]})")
+    element.set('offset', f"({offset[0]}, {offset[1]})")
+    element.set('user-coords', 'no')
+    element.tag = 'label'
+    label.label(element, diagram, parent, None)

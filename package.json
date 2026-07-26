@@ -28,5 +28,9 @@
     },
     "dependencies": {
         "speech-rule-engine": "^5.0.0-alpha.1"
+    },
+    "allowScripts": {
+        "esbuild@0.24.0": true,
+        "esbuild@0.21.5": true
     }
 }
