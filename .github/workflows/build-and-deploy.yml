@@ -1,6 +1,3 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: Build and deploy to github pages
 
 on:
@@ -9,61 +6,60 @@ on:
     pull_request:
         branches: ["*"]
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages, and
+# packages:write so the built dev container image can be cached to GHCR.
 permissions:
     contents: read
     pages: write
     id-token: write
+    packages: write
 
 jobs:
     build:
         name: Build and Test
         runs-on: ubuntu-latest
-        env:
-            CI: false
-
-        strategy:
-            matrix:
-                node-version: [20.x]
-                # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
         steps:
-            - uses: actions/checkout@v3
-            
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v3
+            - uses: actions/checkout@v7
+
+            # Log in to GHCR so devcontainers/ci can pull the cached dev
+            # container image and (on main-branch pushes) push the updated one.
+            - name: Log in to GitHub Container Registry
+              uses: docker/login-action@v4
               with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: "npm"
-                  cache-dependency-path: ./package-lock.json
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ github.token }}
 
-            - name: Install ciaro deps
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install libcairo2-dev
-            
-            - name: Set up Python
-              uses: actions/setup-python@v3
+            # Build and test inside the repo's dev container (.devcontainer/),
+            # which provides all toolchains: Python 3.12 + poetry, Node, the
+            # Rust toolchain with the wasm32 target and wasm-pack, and cairo /
+            # rsvg. The wasm-pack toolchain is required because the playground
+            # build (`build:js`) now compiles the Rust port to WebAssembly and
+            # bundles it; wireit builds the Python wheel and both wasm flavors
+            # before Vite runs. The workspace is mounted, so the resulting
+            # packages/playground/dist/ is available to the steps below.
+            #
+            # Caching: the image is layer-cached in GHCR. `push: filter` only
+            # pushes on pushes to the default branch (main), so PR runs reuse
+            # the cache without publishing. This workflow is the publisher;
+            # tests.yml consumes the same image as a read-only cache source.
+            - name: Build and test in dev container
+              uses: devcontainers/ci@v0.3
               with:
-                  python-version: "3.12"
-
-            - name: Install poetry
-              run: python -m pip install poetry
-
-            - name: Build .whl file
-              run: |
-                  python -m poetry install --all-extras
-                  python -m poetry build
-            
-            - name: Run website tests
-              run: |
-                  npm ci
-                  npm run test:js
-
-            - name: Build website
-              run: |
-                  npm ci
-                  npm run build:js
+                  configFile: .devcontainer/devcontainer.json
+                  imageName: ghcr.io/${{ github.repository }}/devcontainer
+                  cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
+                  push: filter
+                  # poetry is installed with `pip install --user`; put it on PATH
+                  # for this non-interactive shell. cargo/wasm-pack are already on
+                  # the global PATH from the Rust dev container feature.
+                  env: |
+                      CI=false
+                  runCmd: |
+                      export PATH="$HOME/.local/bin:$PATH"
+                      npm run test:js
+                      npm run build:js
 
             - name: Prepare for Github Pages
               run: |
@@ -73,7 +69,7 @@ jobs:
                   ls ./website_dist
 
             - name: Package website deployment
-              uses: actions/upload-pages-artifact@v3
+              uses: actions/upload-pages-artifact@v5
               id: website_dist
               with:
                   path: ./website_dist
@@ -87,4 +83,4 @@ jobs:
         steps:
             - name: Deploy to GitHub Pages
               id: website_dist
-              uses: actions/deploy-pages@v4
+              uses: actions/deploy-pages@v5
