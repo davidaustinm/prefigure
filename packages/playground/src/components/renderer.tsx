@@ -11,7 +11,6 @@ import { Download } from "react-bootstrap-icons";
 import { saveAs } from "file-saver";
 import * as diagcess from "diagcess";
 
-
 /**
  * Renders and displays the currently active PreFigure source code.
  */
@@ -69,11 +68,13 @@ export function Renderer() {
         loadPyodide();
     }, []);
 
-    if (status === "loadingPyodide") {
+    if (status === "loadingPyodide" || status === "loadingWasm") {
         return (
             <div className="loading">
                 <Spinner animation="border" style={{ marginRight: "5px" }} />{" "}
-                Loading Pyodide...
+                {status === "loadingWasm"
+                    ? "Loading WebAssembly engine..."
+                    : "Loading Pyodide..."}
             </div>
         );
     }
@@ -82,8 +83,12 @@ export function Renderer() {
         <div className="panel-frame">
             <div className="render-buffer">
                 <div className="render-content">
-                    {sourceForDisplay.startsWith("<svg") ?
-                        <AnnotateSvg svg={sourceForDisplay} annotations={annotations}/> : (
+                    {sourceForDisplay.startsWith("<svg") ? (
+                        <AnnotateSvg
+                            svg={sourceForDisplay}
+                            annotations={annotations}
+                        />
+                    ) : (
                         compiledSource
                     )}
                 </div>
@@ -148,31 +153,35 @@ export function Renderer() {
     );
 }
 
-
-function AnnotateSvg({svg, annotations}: {
-  svg: string,
-  annotations: string
+function AnnotateSvg({
+    svg,
+    annotations,
+}: {
+    svg: string;
+    annotations: string;
 }) {
-  React.useEffect(() => {
-    if (annotations) {
-      diagcess.Base.init(true)
-    };
-  });
+    React.useEffect(() => {
+        if (annotations) {
+            diagcess.Base.init(true);
+        }
+    });
 
-  return (
-    <div className="ChemAccess-element">
-      <div className="svg"
-           dangerouslySetInnerHTML={{
-             __html: svg,
-           }}
-      ></div>
-      <div className="cml"
-           dangerouslySetInnerHTML={{
-             __html: annotations,
-           }}
-      ></div>
-    </div>
-  );
+    return (
+        <div className="ChemAccess-element">
+            <div
+                className="svg"
+                dangerouslySetInnerHTML={{
+                    __html: svg,
+                }}
+            ></div>
+            <div
+                className="cml"
+                dangerouslySetInnerHTML={{
+                    __html: annotations,
+                }}
+            ></div>
+        </div>
+    );
 }
 
 export const diagcessVersion = diagcess.version;

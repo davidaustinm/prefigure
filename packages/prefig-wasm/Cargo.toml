@@ -1,0 +1,26 @@
+[package]
+name = "prefig-wasm"
+version = "0.7.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/davidaustinm/prefigure"
+description = "PreFigure compiled to WebAssembly for use in the browser and Node"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# Render math with the pure-Rust RaTeX engine embedded in the wasm module — no
+# processMath host callback, no JS engine, nothing from the host. This is the
+# host-free wasm math path; the other wasm option is the default build, which
+# calls the host's MathJax via `processMath`. (The `mathjax-js`/QuickJS engine
+# is native-only — it does not build for wasm32.)
+ratex = ["prefig-core/ratex"]
+
+[dependencies]
+# WASM build: everything pure-Rust — XML parsing, XAST, ODE/diffeqs, boolean
+# <shape> ops (geo), and <network> auto-layout (petgraph). Excluded: only the
+# native host integrations (cairo text, liblouis braille, node MathJax).
+prefig-core = { path = "../prefig-rust/prefig-core", default-features = false, features = ["xml-parse", "xast", "diffeqs", "shapes", "network"] }
+wasm-bindgen = "0.2"
+js-sys = "0.3"

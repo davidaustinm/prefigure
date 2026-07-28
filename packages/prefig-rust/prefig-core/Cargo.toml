@@ -1,0 +1,60 @@
+[package]
+name = "prefig-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Rust port of PreFigure: an authoring system for mathematical diagrams"
+
+[features]
+default = ["xml-parse", "diffeqs", "network", "shapes", "xast"]
+xml-parse = ["dep:quick-xml"]
+xast = ["dep:serde", "dep:serde_json"]
+diffeqs = []
+network = ["dep:petgraph"]
+shapes = ["dep:geo"]
+# text measurement through the system libcairo (native builds only)
+text-cairo = []
+# braille via the system liblouis (native tactile builds only)
+braille-liblouis = []
+# Render math labels with QuickJS running MathJax in-process, so no external
+# `node`/MathJax process is required. Native only: QuickJS does not build for
+# wasm32, and wasm math instead goes through the host (browser MathJax) or the
+# pure-Rust `ratex` engine below.
+mathjax-js = ["xml-parse", "dep:rquickjs"]
+# Render math labels with the pure-Rust RaTeX engine (LaTeX -> self-contained
+# SVG paths, KaTeX fonts embedded). Needs no JavaScript engine at all and works
+# identically on native and wasm with nothing from the host. Output is
+# KaTeX-styled, not MathJax-styled (see core/ratex_math.rs).
+ratex = ["xml-parse", "dep:ratex-parser", "dep:ratex-layout", "dep:ratex-svg"]
+
+[dependencies]
+log = "0.4"
+indexmap = "2"
+peg = "0.8"
+quick-xml = { version = "0.37", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }
+petgraph = { version = "0.8", optional = true }
+geo = { version = "0.30", optional = true }
+
+# Pure-Rust LaTeX -> SVG for the `ratex` feature (native and wasm).
+ratex-parser = { version = "0.1", optional = true }
+ratex-layout = { version = "0.1", optional = true }
+ratex-svg = { version = "0.1", features = ["embed-fonts"], optional = true }
+
+# QuickJS engine for the `mathjax-js` feature. Native only: it runs MathJax at
+# full fidelity but does not build for wasm32 (wasm math uses the host or ratex).
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+rquickjs = { version = "0.9", optional = true }
+
+[dev-dependencies]
+# enable cairo text measurement for the parity tests
+prefig-core = { path = ".", features = ["text-cairo"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+quick-xml = "0.37"
+regex = "1"
+
+[dev-dependencies.env_logger]
+version = "0.11"

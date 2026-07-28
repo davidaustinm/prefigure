@@ -1,0 +1,7 @@
+# Generated wasm-pack output (rebuilt by `npm run build:*`).
+/pkg
+/pkg-native
+/pkg-web
+/pkg-web-native
+node_modules
+.wireit

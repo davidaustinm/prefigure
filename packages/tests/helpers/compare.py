@@ -1,6 +1,6 @@
 """Structural SVG comparison with numeric tolerance.
 
-The Python twin of ``rust/prefig-core/tests/svg_compare.rs``: parse two SVG
+The Python twin of ``packages/prefig-rust/prefig-core/tests/svg_compare.rs``: parse two SVG
 strings and walk the element trees in lockstep, comparing tags/text/attributes.
 Numeric values (coordinates, path data, transforms, dash arrays, style numbers)
 are compared within a relative tolerance so float-formatting noise — especially

@@ -118,6 +118,46 @@ body,
     background-color: #0d6efd;
 }
 
+/* Engine picker at the top of the "Versions" dropdown. The dropdown menu has a
+   blue (#0d6efd) background, so header/items/dividers are recolored to stay
+   legible against it. */
+.version-menu .dropdown-header {
+    color: rgba(248, 249, 250, 0.75);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.version-menu .dropdown-divider {
+    border-top-color: rgba(248, 249, 250, 0.25);
+}
+
+.version-menu .engine-option {
+    display: flex;
+    align-items: center;
+    color: #f8f9fa;
+    font-size: 0.85rem;
+}
+
+.version-menu .engine-option:hover,
+.version-menu .engine-option:focus {
+    color: #0d6efd;
+    background-color: #f8f9fa;
+}
+
+.version-menu .engine-option.active,
+.version-menu .engine-option:active {
+    color: #f8f9fa;
+    background-color: rgba(248, 249, 250, 0.2);
+}
+
+/* Fixed-width gutter so engine labels line up whether or not the check shows */
+.version-menu .engine-check {
+    display: inline-flex;
+    width: 1.2em;
+    flex: 0 0 1.2em;
+}
+
 /* Version dropdown grid — two aligned columns, theme-aware colors */
 .version-grid {
     display: grid;
