@@ -12,6 +12,9 @@ node_modules/
 *.tsbuildinfo
 .vite/
 
+# wireit incremental-build caches
+.wireit/
+
 # Editors / OS
 .vscode/
 *~

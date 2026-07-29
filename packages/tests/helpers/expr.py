@@ -1,6 +1,6 @@
 """Expression-evaluation harness.
 
-The Python twin of ``rust/prefig-core/tests/expression_tests.rs``: replay each
+The Python twin of ``packages/prefig-rust/prefig-core/tests/expression_tests.rs``: replay each
 session's steps through a fresh ``prefig.core.user_namespace`` and compare the
 result to the committed snapshot in ``tests/expressions/expression_tests.json``.
 ``to_jsonable`` matches the generator's serialization exactly, so re-evaluated

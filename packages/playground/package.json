@@ -4,11 +4,40 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
+        "dev": "wireit",
         "test": "vitest",
-        "build": "tsc -b && vite build",
+        "build": "wireit",
         "lint": "eslint .",
         "preview": "vite preview"
+    },
+    "wireit": {
+        "build": {
+            "command": "tsc -b && vite build",
+            "dependencies": [
+                "../prefig-wasm:build:web",
+                "../..:build:py"
+            ],
+            "files": [
+                "src/**",
+                "public/**",
+                "index.html",
+                "vite.config.ts",
+                "tsconfig*.json",
+                "pyodide_packages/**/*.whl",
+                "pyodide_packages/**/*.zip"
+            ],
+            "output": [
+                "dist/**"
+            ]
+        },
+        "dev": {
+            "command": "vite",
+            "service": true,
+            "dependencies": [
+                "../prefig-wasm:build:web",
+                "../..:build:py"
+            ]
+        }
     },
     "dependencies": {
         "@codemirror/lang-python": "^6.1.6",
@@ -41,6 +70,7 @@
         "react-bootstrap": "^2.10.6",
         "typescript": "~5.7.2",
         "vite": "^6.0.3",
-        "vite-plugin-static-copy": "^2.2.0"
+        "vite-plugin-static-copy": "^2.2.0",
+        "wireit": "^0.14.9"
     }
 }

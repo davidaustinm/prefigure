@@ -1,0 +1,62 @@
+{
+    "name": "@prefigure/prefig-wasm",
+    "version": "0.7.0",
+    "private": true,
+    "type": "module",
+    "description": "PreFigure compiled to WebAssembly",
+    "license": "GPL-3.0-only",
+    "scripts": {
+        "build": "npm run build:mathjax",
+        "build:mathjax": "wasm-pack build --target nodejs --out-dir pkg",
+        "build:native": "wasm-pack build --target nodejs --out-dir pkg-native --out-name prefig_wasm -- --features ratex && node scripts/label-native-pkg.mjs pkg-native",
+        "build:all": "npm run build:mathjax && npm run build:native",
+        "build:web": "wireit",
+        "build:web:mathjax": "wireit",
+        "build:web:ratex": "wireit",
+        "test": "npm run build:all && vitest run",
+        "test:only": "vitest run",
+        "typecheck": "tsc --noEmit"
+    },
+    "wireit": {
+        "build:web": {
+            "dependencies": [
+                "build:web:mathjax",
+                "build:web:ratex"
+            ]
+        },
+        "build:web:mathjax": {
+            "command": "wasm-pack build --target web --out-dir pkg-web",
+            "files": [
+                "src/**",
+                "Cargo.toml",
+                "Cargo.lock",
+                "../prefig-rust/**/*.rs",
+                "../prefig-rust/**/Cargo.toml",
+                "!../prefig-rust/**/target/**"
+            ],
+            "output": [
+                "pkg-web/**"
+            ]
+        },
+        "build:web:ratex": {
+            "command": "wasm-pack build --target web --out-dir pkg-web-native --out-name prefig_wasm -- --features ratex && node scripts/label-native-pkg.mjs pkg-web-native",
+            "files": [
+                "src/**",
+                "Cargo.toml",
+                "Cargo.lock",
+                "scripts/label-native-pkg.mjs",
+                "../prefig-rust/**/*.rs",
+                "../prefig-rust/**/Cargo.toml",
+                "!../prefig-rust/**/target/**"
+            ],
+            "output": [
+                "pkg-web-native/**"
+            ]
+        }
+    },
+    "devDependencies": {
+        "typescript": "~5.7.2",
+        "vitest": "^2.1.8",
+        "wireit": "^0.14.9"
+    }
+}
