@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Validation entry point for standalone PreFigure source.
+  A diagram may be authored in no namespace or entirely in the
+  PreFigure namespace (for xi:inclusion in a PreTeXt document).
+  pf_schema.rnc stays namespace-free so it can be copied verbatim
+  to the pretext repository, whose own adapter supplies the namespace.
+-->
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+  <start>
+    <choice>
+      <externalRef href="pf_schema.rng"/>
+      <externalRef href="pf_schema.rng" ns="https://prefigure.org"/>
+    </choice>
+  </start>
+</grammar>
