@@ -644,6 +644,14 @@ Network = element network {
     attribute node-thickness {text}?,
     attribute node-style {text}?,
     attribute node-size {text}?,
+    attribute tactile-edge-stroke {text}?,
+    attribute tactile-edge-thickness {text}?,
+    attribute tactile-edge-dash {text}?,
+    attribute tactile-node-fill {text}?,
+    attribute tactile-node-stroke {text}?,
+    attribute tactile-node-thickness {text}?,
+    attribute tactile-node-style {text}?,
+    attribute tactile-node-size {text}?,
     attribute labels {"yes"|"no"}?,
     attribute label-dictionary {text}?,
     (
@@ -762,6 +770,7 @@ Riemann-Sum = element riemann-sum {
     attribute N {text},
     attribute domain {text}?,
     attribute rule {text}?,
+    attribute subinterval-text {text}?,
     FillAttributes,
     CommonAttributes
 }
@@ -803,6 +812,7 @@ Spline = element spline {
     attribute at {text}?,
     attribute bc {text}?,
     attribute points {text},
+    attribute t-values {text}?,
     attribute parameter {text}?,
     attribute N {text}?,
     attribute arrows {text}?,
