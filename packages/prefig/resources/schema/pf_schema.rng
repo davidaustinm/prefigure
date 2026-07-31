@@ -180,23 +180,13 @@
   </define>
   <!-- the next elements group other elements together -->
   <define name="GroupElements">
-    <interleave>
-      <optional>
-        <ref name="Coordinates"/>
-      </optional>
-      <optional>
-        <ref name="Group"/>
-      </optional>
-      <optional>
-        <ref name="Repeat"/>
-      </optional>
-      <optional>
-        <ref name="Clip"/>
-      </optional>
-      <optional>
-        <ref name="Transform"/>
-      </optional>
-    </interleave>
+    <choice>
+      <ref name="Coordinates"/>
+      <ref name="Group"/>
+      <ref name="Repeat"/>
+      <ref name="Clip"/>
+      <ref name="Transform"/>
+    </choice>
   </define>
   <!-- coordinates are special in that they can contain everything a diagram can -->
   <define name="Coordinates">
@@ -216,20 +206,14 @@
           </choice>
         </attribute>
       </optional>
-      <interleave>
-        <zeroOrMore>
+      <zeroOrMore>
+        <choice>
           <ref name="DefinitionElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GraphicalElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GroupElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="TransformElements"/>
-        </zeroOrMore>
-      </interleave>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
   <define name="Group">
@@ -244,20 +228,14 @@
         <attribute name="transform"/>
       </optional>
       <ref name="CommonAttributes"/>
-      <interleave>
-        <zeroOrMore>
+      <zeroOrMore>
+        <choice>
           <ref name="DefinitionElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GraphicalElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GroupElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="TransformElements"/>
-        </zeroOrMore>
-      </interleave>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
   <define name="Repeat">
@@ -267,20 +245,14 @@
         <attribute name="at"/>
       </optional>
       <ref name="CommonAttributes"/>
-      <interleave>
-        <zeroOrMore>
+      <zeroOrMore>
+        <choice>
           <ref name="DefinitionElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GraphicalElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GroupElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="TransformElements"/>
-        </zeroOrMore>
-      </interleave>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
   <define name="Clip">
@@ -290,74 +262,54 @@
       </optional>
       <attribute name="shape"/>
       <ref name="CommonAttributes"/>
-      <interleave>
-        <zeroOrMore>
+      <zeroOrMore>
+        <choice>
           <ref name="DefinitionElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GraphicalElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GroupElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="TransformElements"/>
-        </zeroOrMore>
-      </interleave>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
   <define name="Transform">
     <element name="transform">
-      <interleave>
-        <zeroOrMore>
+      <zeroOrMore>
+        <choice>
           <ref name="DefinitionElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GraphicalElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="GroupElements"/>
-        </zeroOrMore>
-        <zeroOrMore>
           <ref name="TransformElements"/>
-        </zeroOrMore>
-      </interleave>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
   <define name="TransformElements">
-    <interleave>
-      <zeroOrMore>
-        <element name="translate">
-          <attribute name="by"/>
-        </element>
-      </zeroOrMore>
-      <zeroOrMore>
-        <element name="rotate">
-          <attribute name="by"/>
-          <optional>
-            <attribute name="about"/>
-          </optional>
-          <optional>
-            <attribute name="degrees">
-              <choice>
-                <value>yes</value>
-                <value>no</value>
-              </choice>
-            </attribute>
-          </optional>
-        </element>
-      </zeroOrMore>
-      <zeroOrMore>
-        <element name="scale">
-          <attribute name="by"/>
-        </element>
-      </zeroOrMore>
-      <zeroOrMore>
-        <element name="change-basis">
-          <attribute name="basis"/>
-        </element>
-      </zeroOrMore>
-    </interleave>
+    <choice>
+      <element name="translate">
+        <attribute name="by"/>
+      </element>
+      <element name="rotate">
+        <attribute name="by"/>
+        <optional>
+          <attribute name="about"/>
+        </optional>
+        <optional>
+          <attribute name="degrees">
+            <choice>
+              <value>yes</value>
+              <value>no</value>
+            </choice>
+          </attribute>
+        </optional>
+      </element>
+      <element name="scale">
+        <attribute name="by"/>
+      </element>
+      <element name="change-basis">
+        <attribute name="basis"/>
+      </element>
+    </choice>
   </define>
   <!-- attributes and text for labels -->
   <define name="LabelAttributes">
@@ -1090,9 +1042,7 @@
         <attribute name="hticks"/>
       </optional>
       <optional>
-        <attribute name="vticks">
-          <ref name="test"/>
-        </attribute>
+        <attribute name="vticks"/>
       </optional>
       <optional>
         <attribute name="tick-size"/>
@@ -1274,14 +1224,10 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="hticks">
-          <ref name="test"/>
-        </attribute>
+        <attribute name="hticks"/>
       </optional>
       <optional>
-        <attribute name="vticks">
-          <ref name="test"/>
-        </attribute>
+        <attribute name="vticks"/>
       </optional>
       <optional>
         <attribute name="tick-size"/>
