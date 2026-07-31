@@ -77,33 +77,35 @@ pub fn shape(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
         operation = Some("union".to_string());
     }
 
-    let path = if operation.is_none() {
+    let path = match operation {
         // a single shape with no operation is just a <use> of it
-        let use_el = xml::sub_element(parent, "use");
-        let full_reference = diagram.prepend_id_prefix(&reference);
-        use_el
-            .borrow_mut()
-            .set("href", &format!("#{full_reference}"));
-        use_el
-    } else {
-        let operation = operation.unwrap();
-        let mut paths: Vec<String> = Vec::new();
-        for shape_ref in &shape_refs {
-            match diagram.recall_shape(shape_ref) {
-                Some(shape) => {
-                    if let Some(d) = shape.borrow().get("d") {
-                        paths.push(d);
-                    }
-                }
-                None => log::error!("{shape_ref} is not a reference to a shape"),
-            }
+        None => {
+            let use_el = xml::sub_element(parent, "use");
+            let full_reference = diagram.prepend_id_prefix(&reference);
+            use_el
+                .borrow_mut()
+                .set("href", &format!("#{full_reference}"));
+            use_el
         }
-        let Some(d) = apply_operation(&operation, &paths) else {
-            return;
-        };
-        let path = xml::sub_element(parent, "path");
-        path.borrow_mut().set("d", &d);
-        path
+        Some(operation) => {
+            let mut paths: Vec<String> = Vec::new();
+            for shape_ref in &shape_refs {
+                match diagram.recall_shape(shape_ref) {
+                    Some(shape) => {
+                        if let Some(d) = shape.borrow().get("d") {
+                            paths.push(d);
+                        }
+                    }
+                    None => log::error!("{shape_ref} is not a reference to a shape"),
+                }
+            }
+            let Some(d) = apply_operation(&operation, &paths) else {
+                return;
+            };
+            let path = xml::sub_element(parent, "path");
+            path.borrow_mut().set("d", &d);
+            path
+        }
     };
 
     let id = element.borrow().get("id");
@@ -195,9 +197,7 @@ fn apply_operation(operation: &str, paths: &[String]) -> Option<String> {
                 .fold(geometries[0].clone(), |acc, g| acc.xor(g))
         }
         "convex-hull" | "convex hull" => {
-            let Some(first) = geometries.first().cloned() else {
-                return None;
-            };
+            let first = geometries.first().cloned()?;
             let unioned = geometries
                 .iter()
                 .skip(1)

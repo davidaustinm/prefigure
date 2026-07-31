@@ -1,0 +1,19 @@
+# Rust build output for the plugin crate and its tools.
+wasm-interface/target/
+wasm-interface/tools/*/target/
+
+# Typst test/example render output. (examples/images/*.png — the README
+# screenshots — are checked in and *not* matched by examples/*.png.)
+tests/out*
+tests/*.png
+examples/*.pdf
+examples/*.png
+
+# make_dist.sh output: the assembled, publishable package and its scratch
+# validation copies.
+dist/
+examples/.validate-*.typ
+
+# NOTE: src/prefig_typst_plugin.wasm is intentionally NOT ignored — it is the
+# shipped artifact the package loads, checked in so prefig-typst works without a
+# Rust toolchain. Rebuild it with wasm-interface/build.sh.

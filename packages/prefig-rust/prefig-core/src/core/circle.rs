@@ -323,7 +323,7 @@ pub fn angle(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
 
     // heuristically determined radius
     let mut default_radius = (27.0 / angle_measure) as i64;
-    default_radius = default_radius.min(30).max(15);
+    default_radius = default_radius.clamp(15, 30);
     let mut default_radius = default_radius as f64;
     if diagram.output_format() == "tactile" {
         default_radius *= 1.5;

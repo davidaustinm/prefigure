@@ -77,7 +77,7 @@ impl Graph {
         self.nodes.len()
     }
 
-    fn into_positions(&self, coords: Vec<[f64; 2]>) -> Positions {
+    fn positions_from(&self, coords: Vec<[f64; 2]>) -> Positions {
         self.nodes.iter().cloned().zip(coords).collect()
     }
 }
@@ -92,14 +92,14 @@ pub fn circular(graph: &Graph) -> Positions {
             [theta.cos(), theta.sin()]
         })
         .collect();
-    graph.into_positions(coords)
+    graph.positions_from(coords)
 }
 
 /// Uniform random positions in the unit square (seeded, deterministic).
 pub fn random(graph: &Graph, seed: u64) -> Positions {
     let mut rng = Rng::new(seed);
     let coords: Vec<[f64; 2]> = (0..graph.n()).map(|_| [rng.unit(), rng.unit()]).collect();
-    graph.into_positions(coords)
+    graph.positions_from(coords)
 }
 
 /// Fruchterman–Reingold force-directed layout (seeded initial positions).
@@ -153,7 +153,7 @@ pub fn spring(graph: &Graph, seed: u64) -> Positions {
         }
         temp -= cooling;
     }
-    graph.into_positions(pos)
+    graph.positions_from(pos)
 }
 
 /// Spectral layout: coordinates from the eigenvectors of the graph Laplacian
@@ -165,10 +165,10 @@ pub fn spectral(graph: &Graph) -> Positions {
     }
     // Laplacian L = D - A
     let mut l = vec![vec![0.0f64; n]; n];
-    for i in 0..n {
-        l[i][i] = graph.adj[i].len() as f64;
+    for (i, row) in l.iter_mut().enumerate() {
+        row[i] = graph.adj[i].len() as f64;
         for &j in &graph.adj[i] {
-            l[i][j] -= 1.0;
+            row[j] -= 1.0;
         }
     }
     let (evals, evecs) = jacobi_eigen(l);
@@ -178,7 +178,7 @@ pub fn spectral(graph: &Graph) -> Positions {
     let ax = order[1.min(n - 1)];
     let ay = order[2.min(n - 1)];
     let coords: Vec<[f64; 2]> = (0..n).map(|i| [evecs[i][ax], evecs[i][ay]]).collect();
-    graph.into_positions(coords)
+    graph.positions_from(coords)
 }
 
 /// BFS layout: x is the BFS layer from `start`, y spreads nodes within a layer.
@@ -219,7 +219,7 @@ pub fn bfs(graph: &Graph, start: &str) -> Option<Positions> {
             coords[i] = [target as f64, y];
         }
     }
-    Some(graph.into_positions(coords))
+    Some(graph.positions_from(coords))
 }
 
 /// Bipartite layout: the given set in one column, the rest in another.
@@ -243,12 +243,15 @@ pub fn bipartite(graph: &Graph, set: &[String], horizontal: bool) -> Positions {
     };
     place(&mut coords, &left, 0.0);
     place(&mut coords, &right, 1.0);
-    graph.into_positions(coords)
+    graph.positions_from(coords)
 }
 
 /// Jacobi eigenvalue algorithm for a small symmetric matrix. Returns
 /// (eigenvalues, eigenvectors) where `evecs[i][j]` is component i of
 /// eigenvector j.
+// A dense matrix kernel; row/column index arithmetic (a[i][p], a[p][i]) reads
+// far clearer than iterator adaptors, so keep the explicit index loops.
+#[allow(clippy::needless_range_loop)]
 fn jacobi_eigen(mut a: Vec<Vec<f64>>) -> (Vec<f64>, Vec<Vec<f64>>) {
     let n = a.len();
     let mut v = vec![vec![0.0; n]; n];

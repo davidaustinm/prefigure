@@ -1,0 +1,7 @@
+<diagram dimensions="(200,200)" margins="5">
+  <coordinates bbox="[-5,-5,5,5]">
+    <grid-axes xlabel="x" ylabel="y"/>
+    <label p="(1,2)" alignment="east">Hello</label>
+    <label p="(-2,-3)" alignment="north"><it>slanted</it> and <b>bold</b></label>
+  </coordinates>
+</diagram>

@@ -1,0 +1,20 @@
+# Post-build tool: strip a wasm module down to the Typst plugin ABI.
+#
+# The `ratex` math engine pulls `ratex-unicode-font -> system-fonts -> web-sys`,
+# which emits `__wbindgen_*` host imports. Those code paths are dead once fonts
+# are embedded (`embed-fonts`), but the linker keeps the imports, and Typst
+# refuses to load a plugin that imports anything outside module `typst_env`.
+# This replaces every such import with a local `unreachable` stub, leaving only
+# the two `typst_env` functions the wasm-minimal-protocol ABI allows. If a
+# stubbed import were ever actually called it would trap — safe, because embedded
+# math never reaches the system-font loader.
+[package]
+name = "stub-imports"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+walrus = "0.23"

@@ -34,3 +34,6 @@ CLAUDE.md
 
 #Ignore Rust build caches
 target/
+
+# Typst ignored files
+*.wasm

@@ -1,0 +1,13 @@
+{
+    "name": "@prefigure/typst",
+    "private": true,
+    "version": "0.0.0",
+    "description": "PreFigure for Typst: author and render PreFigure diagrams from a Typst document via a wasm plugin. The package itself is a Typst package (see typst.toml); this package.json only wires its test suite into the monorepo's `npm test`.",
+    "license": "GPL-3.0-or-later",
+    "scripts": {
+        "build": "bash wasm-interface/build.sh",
+        "build:with-math": "bash wasm-interface/build.sh --with-math",
+        "build-docs": "node scripts/build-docs.mjs",
+        "test": "bash tests/run.sh"
+    }
+}

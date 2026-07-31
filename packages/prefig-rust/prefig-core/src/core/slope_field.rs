@@ -20,10 +20,10 @@ fn get_function(diagram: &mut Diagram, element: &El) -> Option<Value> {
     }
 }
 
-fn get_spacings(
-    diagram: &mut Diagram,
-    element: &El,
-) -> Option<((f64, f64, f64), (f64, f64, f64))> {
+/// An (x, y) pair of grid-spacing triples, each `(min, step, max)`.
+type SpacingTriples = ((f64, f64, f64), (f64, f64, f64));
+
+fn get_spacings(diagram: &mut Diagram, element: &El) -> Option<SpacingTriples> {
     let bbox = diagram.bbox();
     let spacings = element.borrow().get("spacings");
     match spacings {

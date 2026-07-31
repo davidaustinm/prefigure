@@ -1,0 +1,11 @@
+<diagram dimensions="(300,260)" margins="5">
+  <coordinates bbox="(-1,-3,6,3)">
+    <grid-axes xlabel="t"/>
+    <graph at="x" function="sin(x)" stroke="blue"/>
+    <graph at="xprime" function="cos(x)" stroke="red"/>
+    <legend at="legend" anchor="(bbox[2], bbox[3])" alignment="sw" scale="0.9">
+      <item ref="x"><m>x(t)</m></item>
+      <item ref="xprime"><m>x'(t)</m></item>
+    </legend>
+  </coordinates>
+</diagram>

@@ -191,6 +191,17 @@ pub fn place_legend(diagram: &mut Diagram, data: &LegendData) {
     tform = format!("{tform} {}", ctm::scalestr(scale, scale));
     data.group.borrow_mut().set("transform", &tform);
 
+    // The same transform as a matrix, to re-anchor native (host-rendered) label
+    // runs below. Mirrors the string built above: translate · translate · scale.
+    let group_ctm = ctm::concat(
+        ctm::concat(
+            ctm::translation(p[0] + offset[0], p[1] - offset[1]),
+            ctm::translation(dx, -dy),
+        ),
+        ctm::scaling(scale, scale),
+    );
+    let native = diagram.labels.label_mode == crate::core::label_tools::LabelMode::Native;
+
     // the legend's bounding box
     let rect = xml::new_element("rect");
     xml::append(&data.group, &rect);
@@ -221,6 +232,25 @@ pub fn place_legend(diagram: &mut Diagram, data: &LegendData) {
         let tform = ctm::translatestr(label_x, y);
         label_group.borrow_mut().set("transform", &tform);
         xml::append(&data.group, &label_group);
+
+        // In native mode the label's text/math were handed back to the host as
+        // absolute placements anchored at the legend's own anchor, before this
+        // layout existed. Re-anchor them through the legend group so they land in
+        // the box like the SVG content just positioned above.
+        if native {
+            let item_ctm = ctm::concat(group_ctm, ctm::translation(label_x, y));
+            let placements = diagram.labels.placements.clone();
+            let mut ps = placements.borrow_mut();
+            for (index, local) in diagram.native_runs_for(label_el) {
+                if let Some(placement) = ps.get_mut(index) {
+                    placement.x =
+                        item_ctm[0][0] * local[0] + item_ctm[0][1] * local[1] + item_ctm[0][2];
+                    placement.y =
+                        item_ctm[1][0] * local[0] + item_ctm[1][1] * local[1] + item_ctm[1][2];
+                    placement.scale *= scale;
+                }
+            }
+        }
 
         let key_y = y + dims.1 / 2.0;
         let key_tag = key.borrow().tag.clone();

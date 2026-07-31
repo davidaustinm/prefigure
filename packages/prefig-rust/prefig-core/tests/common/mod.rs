@@ -52,10 +52,16 @@ pub fn stub_labels() -> LabelState {
         math: Box::new(StubMath),
         text: Box::new(StubText),
         braille: Box::new(StubBraille),
+        font_map: Default::default(),
+        label_mode: Default::default(),
+        placements: Default::default(),
     }
 }
 
 /// Recursively collect every `*.xml` file under `dir` into `out`.
+// Shared by several test binaries; not every one uses it (this module is compiled
+// separately into each), so allow it to be unused in some.
+#[allow(dead_code)]
 pub fn collect_xml(dir: &Path, out: &mut Vec<PathBuf>) {
     let Ok(entries) = std::fs::read_dir(dir) else {
         return;

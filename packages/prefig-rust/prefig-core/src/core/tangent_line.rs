@@ -50,7 +50,6 @@ pub fn tangent(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
     let tangent = move |x: f64| y0 + m * (x - a);
 
     if let Some(name) = element.borrow().get("name") {
-        let tangent = tangent;
         diagram.ctx.enter_namespace(
             &name,
             Value::Function(Rc::new(Function::Closure(Box::new(move |args, _ctx| {

@@ -1,0 +1,6 @@
+<diagram dimensions="(320,200)" margins="5">
+  <coordinates bbox="[-3.15,-1.5,3.15,1.5]">
+    <grid-axes xlabel="x" ylabel="y" h-pi-format="yes"/>
+    <graph function="sin(x)"/>
+  </coordinates>
+</diagram>

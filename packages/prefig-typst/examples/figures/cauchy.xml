@@ -1,0 +1,13 @@
+<diagram dimensions="(250,200)" margins="5">
+  <coordinates bbox="(0,0,5,4)">
+    <label anchor="(1,3)" alignment="east">
+      <m>\displaystyle f(a)=\frac{1}{2\pi i}\oint_C \frac{f(z)}{z-a}~dz</m>
+    </label>
+    <label anchor="(1,2)" alignment="east">
+      Temperature
+    </label>
+    <label anchor="(0.5,1)" alignment="east" rotate="90" scale="1.5">
+      Time <m>t</m> (sec)
+    </label>
+  </coordinates>
+</diagram>
