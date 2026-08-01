@@ -8,7 +8,7 @@
   <definition>f(t)=(cos(pi*t/4),sin(pi*t/4))</definition>
   <coordinates bbox="[-1.4,-1.4,1.4,1.4]">
     <grid at="grid" />
-    <axes at="axes" labels="no" />
+    <axes at="axes" decorations="no" />
     <circle at="unit-circle" center="(0,0)" radius="1" stroke="blue"/>
     <repeat parameter="k=0..7">
       <point at="point" p="f(k)" alignment="alignments[k]">
