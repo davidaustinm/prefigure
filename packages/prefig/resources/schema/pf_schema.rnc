@@ -178,8 +178,17 @@ TransformElements = (
     element scale {
         attribute by {text}
     } |
+    element scale3d {
+        attribute by {text}
+    } |
     element change-basis {
         attribute basis {text}
+    } |
+    element center {
+        empty
+    } |
+    element set-eye {
+        attribute eye {text}
     }
 )
 
@@ -451,8 +460,6 @@ Axes = element axes {
     attribute v-pi-format {"yes"|"no"}?,
     attribute h-frame {"bottom"|"top"}?,
     attribute v-frame {"left"|"right"}?,
-    attribute stroke {text}?,
-    attribute thickness {text}?,
     attribute hticks {text}?,
     attribute vticks {text}?,
     attribute tick-size {text}?,
@@ -461,6 +468,7 @@ Axes = element axes {
     attribute h-zero-label {"yes"|"no"}?,
     attribute v-zero-label {"yes"|"no"}?,
     attribute label-commas {"yes"|"no"}?,
+    StrokeAttributes,
     CommonAttributes,
     XLabel?,
     YLabel?
@@ -664,6 +672,8 @@ Network = element network {
     attribute tactile-node-thickness {text}?,
     attribute tactile-node-style {text}?,
     attribute tactile-node-size {text}?,
+    attribute edge-spread {text}?,
+    attribute tactile-edge-spread {text}?,
     attribute labels {"yes"|"no"}?,
     attribute label-dictionary {text}?,
     (

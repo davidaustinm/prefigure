@@ -329,8 +329,17 @@
       <element name="scale">
         <attribute name="by"/>
       </element>
+      <element name="scale3d">
+        <attribute name="by"/>
+      </element>
       <element name="change-basis">
         <attribute name="basis"/>
+      </element>
+      <element name="center">
+        <empty/>
+      </element>
+      <element name="set-eye">
+        <attribute name="eye"/>
       </element>
     </choice>
   </define>
@@ -1051,12 +1060,6 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="stroke"/>
-      </optional>
-      <optional>
-        <attribute name="thickness"/>
-      </optional>
-      <optional>
         <attribute name="hticks"/>
       </optional>
       <optional>
@@ -1105,6 +1108,7 @@
           </choice>
         </attribute>
       </optional>
+      <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
       <optional>
         <ref name="XLabel"/>
@@ -1709,6 +1713,12 @@
       </optional>
       <optional>
         <attribute name="tactile-node-size"/>
+      </optional>
+      <optional>
+        <attribute name="edge-spread"/>
+      </optional>
+      <optional>
+        <attribute name="tactile-edge-spread"/>
       </optional>
       <optional>
         <attribute name="labels">
