@@ -82,7 +82,7 @@ Read = element read {
     attribute delimiter {text}?,
     attribute quotechar {text}?,
     attribute string-columns {text}?,
-    attribute type {text}
+    attribute type {text}?
 }
 
 # template elements only carry default attributes, so no
@@ -111,6 +111,7 @@ Coordinates = element coordinates {
     attribute destination {text}?,
     attribute aspect-ratio {text}?,
     attribute preserve-y-range {"yes"|"no"}?,
+    attribute scales {text}?,
     (
         DefinitionElements |
         GraphicalElements |
@@ -318,7 +319,7 @@ StrokeAttributes =
     attribute linecap {text}?,
     attribute dash {text}?,
     attribute cliptobbox {"yes"|"no"}?,
-    attribute outline {"yes"|"no"}?,
+    attribute outline {text}?,
     TactileStrokeAttributes?
 
 TactileStrokeAttributes =
@@ -503,10 +504,12 @@ Grid-Axes = element grid-axes {
     attribute h-zero-label {"yes"|"no"}?,
     attribute v-zero-label {"yes"|"no"}?,
     attribute label-commas {"yes"|"no"}?,
+    attribute coordinates {"cartesian"|"polar"}?,
+    attribute clear-background {"yes"|"no"}?,
     StrokeAttributes,
     CommonAttributes,
     XLabel?,
-    YLabel?    
+    YLabel?
 }
 
 Tick-Mark = element tick-mark {
@@ -559,6 +562,7 @@ Graph = element graph {
     attribute domain-degrees {"yes"|"no"}?,
     attribute closed {"yes"|"no"}?,
     attribute fill {text}?,
+    attribute arrows {text}?,
     StrokeAttributes,
     CommonAttributes
 }
@@ -573,7 +577,8 @@ Image = element image {
     attribute filetype {"svg"|"png"|"gif"|"jpeg"|"jpg"}?,
     attribute rotate {text}?,
     attribute scale {text}?,
-    CommonAttributes
+    CommonAttributes,
+    GraphicalElements*
 }
 
 Histogram = element histogram {
@@ -622,7 +627,8 @@ Line = element line {
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,
     attribute reverse {"yes"|"no"}?,
-    attribute additional-arrows {"yes"|"no"}?,
+    attribute additional-arrows {text}?,
+    attribute label-location {text}?,
     StrokeAttributes,
     CommonAttributes,
     LabelAttributes,
@@ -773,9 +779,11 @@ Rectangle = element rectangle {
 Riemann-Sum = element riemann-sum {
     attribute at {text}?,
     attribute function {text},
-    attribute N {text},
+    attribute N {text}?,
     attribute domain {text}?,
     attribute rule {text}?,
+    attribute partition {text}?,
+    attribute samples {text}?,
     attribute subinterval-text {text}?,
     FillAttributes,
     CommonAttributes
@@ -789,6 +797,8 @@ Scatter = element scatter {
     attribute y {text}?,
     attribute filter {text}?,
     attribute point-text {text}?,
+    attribute style {text}?,
+    attribute size {text}?,
     FillAttributes,
     CommonAttributes
 }
@@ -878,6 +888,7 @@ Vector-Field = element vector-field {
     attribute N {text}?,
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,
+    attribute exponent {text}?,
     StrokeAttributes,
     CommonAttributes
 }

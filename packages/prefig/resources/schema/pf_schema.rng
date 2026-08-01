@@ -168,7 +168,9 @@
       <optional>
         <attribute name="string-columns"/>
       </optional>
-      <attribute name="type"/>
+      <optional>
+        <attribute name="type"/>
+      </optional>
     </element>
   </define>
   <!--
@@ -223,6 +225,9 @@
             <value>no</value>
           </choice>
         </attribute>
+      </optional>
+      <optional>
+        <attribute name="scales"/>
       </optional>
       <zeroOrMore>
         <choice>
@@ -703,12 +708,7 @@
       </attribute>
     </optional>
     <optional>
-      <attribute name="outline">
-        <choice>
-          <value>yes</value>
-          <value>no</value>
-        </choice>
-      </attribute>
+      <attribute name="outline"/>
     </optional>
     <optional>
       <ref name="TactileStrokeAttributes"/>
@@ -1290,6 +1290,22 @@
           </choice>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="coordinates">
+          <choice>
+            <value>cartesian</value>
+            <value>polar</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="clear-background">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
       <optional>
@@ -1416,6 +1432,9 @@
       <optional>
         <attribute name="fill"/>
       </optional>
+      <optional>
+        <attribute name="arrows"/>
+      </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
     </element>
@@ -1456,6 +1475,9 @@
         <attribute name="scale"/>
       </optional>
       <ref name="CommonAttributes"/>
+      <zeroOrMore>
+        <ref name="GraphicalElements"/>
+      </zeroOrMore>
     </element>
   </define>
   <define name="Histogram">
@@ -1574,12 +1596,10 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="additional-arrows">
-          <choice>
-            <value>yes</value>
-            <value>no</value>
-          </choice>
-        </attribute>
+        <attribute name="additional-arrows"/>
+      </optional>
+      <optional>
+        <attribute name="label-location"/>
       </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
@@ -1982,12 +2002,20 @@
         <attribute name="at"/>
       </optional>
       <attribute name="function"/>
-      <attribute name="N"/>
+      <optional>
+        <attribute name="N"/>
+      </optional>
       <optional>
         <attribute name="domain"/>
       </optional>
       <optional>
         <attribute name="rule"/>
+      </optional>
+      <optional>
+        <attribute name="partition"/>
+      </optional>
+      <optional>
+        <attribute name="samples"/>
       </optional>
       <optional>
         <attribute name="subinterval-text"/>
@@ -2018,6 +2046,12 @@
       </optional>
       <optional>
         <attribute name="point-text"/>
+      </optional>
+      <optional>
+        <attribute name="style"/>
+      </optional>
+      <optional>
+        <attribute name="size"/>
       </optional>
       <ref name="FillAttributes"/>
       <ref name="CommonAttributes"/>
@@ -2238,6 +2272,9 @@
       </optional>
       <optional>
         <attribute name="arrow-angles"/>
+      </optional>
+      <optional>
+        <attribute name="exponent"/>
       </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
