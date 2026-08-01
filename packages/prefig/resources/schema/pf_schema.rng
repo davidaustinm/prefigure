@@ -171,11 +171,29 @@
       <attribute name="type"/>
     </element>
   </define>
+  <!--
+    template elements only carry default attributes, so no
+    attribute is required inside a template
+  -->
   <define name="Templates">
     <element name="templates">
       <oneOrMore>
-        <ref name="GraphicalElements"/>
+        <ref name="TemplateElement"/>
       </oneOrMore>
+    </element>
+  </define>
+  <define name="TemplateElement">
+    <element>
+      <anyName/>
+      <zeroOrMore>
+        <choice>
+          <attribute>
+            <anyName/>
+          </attribute>
+          <text/>
+          <ref name="TemplateElement"/>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
   <!-- the next elements group other elements together -->

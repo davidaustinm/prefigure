@@ -85,8 +85,14 @@ Read = element read {
     attribute type {text}
 }
 
+# template elements only carry default attributes, so no
+# attribute is required inside a template
 Templates = element templates {
-    GraphicalElements+
+    TemplateElement+
+}
+
+TemplateElement = element * {
+    (attribute * {text} | text | TemplateElement)*
 }
 
 # the next elements group other elements together
