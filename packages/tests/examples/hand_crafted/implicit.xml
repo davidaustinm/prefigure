@@ -51,16 +51,13 @@
     </group>
   </coordinates>
   
-  <annotations>
-    <annotation ref="figure"
-		text="Level curves of the function y squared minus x cubed plus x">
-      <annotation ref="curves" text="The level curves">
-        <annotation ref="curve--1" text="The level curve minus 1" />
-        <annotation ref="curve-0" text="The level curve 0" />
-        <annotation ref="curve-root3" text="The level curve 2 over 3 root 3" />
-        <annotation ref="curve-1" text="The level curve 1" />
-        <annotation ref="curve-2" text="The level curve 2" />
-      </annotation>
+  <annotations text="Level curves of the function y squared minus x cubed plus x">
+    <annotation ref="curves" text="The level curves">
+      <annotation ref="curve--1" text="The level curve minus 1" />
+      <annotation ref="curve-0" text="The level curve 0" />
+      <annotation ref="curve-root3" text="The level curve 2 over 3 root 3" />
+      <annotation ref="curve-1" text="The level curve 1" />
+      <annotation ref="curve-2" text="The level curve 2" />
     </annotation>
   </annotations>
   
