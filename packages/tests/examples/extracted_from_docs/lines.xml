@@ -10,7 +10,7 @@
     <definition>p1=(1,1)</definition>
     <definition>p2=(4.5,0.5)</definition>
     <line endpoints="(p1,p2)" endpoint-offsets="((10,0), (-10,0))"/>
-    <label p="p1" clear-background="yes"><m>a</m></label>
-    <label p="p2" clear-background="yes"><m>b</m></label>
+    <label anchor="p1" clear-background="yes"><m>a</m></label>
+    <label anchor="p2" clear-background="yes"><m>b</m></label>
   </coordinates>
 </diagram>

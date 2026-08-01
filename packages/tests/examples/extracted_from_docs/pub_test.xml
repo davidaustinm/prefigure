@@ -6,7 +6,7 @@
     <repeat parameter="k=-3..3">
       <point p="(k,f(k))"/>
     </repeat>
-    <label p="(2,2)" clear-background="yes">
+    <label anchor="(2,2)" clear-background="yes">
       <m>\deriv{y}{x}</m>
     </label>
     <point p="(-2,2)" fill="red" size="4"/>
