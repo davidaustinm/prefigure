@@ -1575,6 +1575,9 @@
         <attribute name="endpoint-offsets"/>
       </optional>
       <optional>
+        <attribute name="tactile-endpoint-offsets"/>
+      </optional>
+      <optional>
         <attribute name="infinite">
           <choice>
             <value>yes</value>
@@ -2175,6 +2178,9 @@
       </optional>
       <attribute name="function"/>
       <attribute name="point"/>
+      <optional>
+        <attribute name="name"/>
+      </optional>
       <optional>
         <attribute name="domain"/>
       </optional>
