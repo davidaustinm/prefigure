@@ -6,7 +6,7 @@
     <slope-field at="slope-field" function="f"/>
     <repeat parameter="k=-4..4">
       <plot-de-solution at="solution" function="f" t0="0" y0="k"
-                        domain="[0,4]" stroke="orange" />
+                        stroke="orange" />
       <point at="initial-value" p="(0,k)" size="4" fill="orange" />
     </repeat>
   </coordinates>
