@@ -3,7 +3,7 @@
 
 use crate::core::ctm::{self, CTM};
 use crate::core::diagram::Diagram;
-use crate::core::label_tools::{FontData, MathLabel};
+use crate::core::label_tools::{FontData, LabelMode, MathLabel, TextPlacement};
 use crate::core::utilities::{self as util, float2str};
 use crate::evaluator::ExpressionContext;
 use crate::value::py_str;
@@ -17,6 +17,11 @@ pub const NEMETH_OFF: &str = "⠸⠱ ";
 pub const GRADE1_INDICATOR: &str = "⠰";
 
 const ALLOWED_FONTS: [&str; 3] = ["serif", "sans-serif", "monospace"];
+
+/// Nominal size (px) at which native host-rendered math is measured and drawn,
+/// matching PreFigure's default label `font-size`. Native math is placed at this
+/// size regardless of the label's own `font-size` (a known limitation).
+const MATH_LABEL_SIZE: f64 = 14.0;
 
 pub fn is_label_tag(tag: &str) -> bool {
     matches!(tag, "it" | "b" | "newline")
@@ -293,6 +298,14 @@ fn position_svg_label(element: &El, diagram: &mut Diagram, ctm: &CTM, group: &El
     if !ALLOWED_FONTS.contains(&font_family.as_str()) {
         font_family = "sans-serif".to_string();
     }
+    // Map the generic family to a concrete one when a font_map is supplied (the
+    // Typst plugin build; empty otherwise). Applied here so the family that gets
+    // measured (`measure_text` below) is the same family written into the
+    // `font-family` attribute in `mk_text_element` — Typst can only render a
+    // family it can measure, and vice versa (§4.1 of the plugin plan).
+    if let Some(concrete) = diagram.labels.font_map.get(&font_family) {
+        font_family = concrete.clone();
+    }
     let font_size_attr = element.borrow().get_or("font-size", "14");
     let font_size = diagram
         .ctx
@@ -388,7 +401,18 @@ fn position_svg_label(element: &El, diagram: &mut Diagram, ctm: &CTM, group: &El
                     }
                 }
                 RowItem::Math(m_tag) => {
-                    if let Some(measured) = mk_m_element(&m_tag, diagram, &label_group) {
+                    let m_id = m_tag.borrow().get_or("id", "none");
+                    if let Some((sentinel, dims)) = diagram.labels.math.native_math(&m_id) {
+                        // Native host-rendered math: a placeholder holds the
+                        // sentinel and its supplied dimensions for layout; the
+                        // native block below records a placement and drops it.
+                        let ph = xml::sub_element(&label_group, "g");
+                        ph.borrow_mut().set("data-pf-math", &sentinel);
+                        if let Some(color) = m_tag.borrow().get("color") {
+                            ph.borrow_mut().set("data-pf-color", &color);
+                        }
+                        out_row.push((ph, dims[0], dims[1], dims[2]));
+                    } else if let Some(measured) = mk_m_element(&m_tag, diagram, &label_group) {
                         out_row.push(measured);
                     }
                 }
@@ -465,27 +489,122 @@ fn position_svg_label(element: &El, diagram: &mut Diagram, ctm: &CTM, group: &El
         y_location += d.height_with_interline;
     }
 
-    // the transform that places the group
-    let mut tform = ctm::translatestr(p[0] + offset[0], p[1] - offset[1]);
+    // the transform that places the group:
+    //   translate(anchor) · scale(s) · rotate(a) · translate(displacement)
+    let anchor = [p[0] + offset[0], p[1] - offset[1]];
     let scale: f64 = element
         .borrow()
         .get_or("scale", "1")
         .parse()
         .unwrap_or(1.0);
+    let rotate_attr = element.borrow().get("rotate");
+    // The angle used for native placement (0 when absent/unparseable); the SVG
+    // transform below preserves the original emission exactly (including an
+    // explicit rotate(0)), so `Svg` output is byte-identical to before.
+    let angle: f64 = rotate_attr.as_ref().and_then(|r| r.parse::<f64>().ok()).unwrap_or(0.0);
+    let disp = [width * displacement[0], -height * displacement[1]];
+
+    let mut tform = ctm::translatestr(anchor[0], anchor[1]);
     if scale != 1.0 {
         tform = format!("{tform} {}", ctm::scalestr(scale, scale));
     }
-    let rotate = element.borrow().get("rotate");
-    if let Some(rotate) = rotate {
-        if let Ok(angle) = rotate.parse::<f64>() {
-            tform = format!("{tform} {}", ctm::rotatestr(angle));
+    if let Some(rotate) = rotate_attr {
+        if let Ok(a) = rotate.parse::<f64>() {
+            tform = format!("{tform} {}", ctm::rotatestr(a));
         }
     }
-    tform = format!(
-        "{tform} {}",
-        ctm::translatestr(width * displacement[0], -height * displacement[1])
-    );
+    tform = format!("{tform} {}", ctm::translatestr(disp[0], disp[1]));
     group.borrow_mut().set("transform", &tform);
+
+    // Native-label mode: hand each text run's absolute placement back to the
+    // host and drop its <text> from the SVG, so the host renders it natively.
+    // Math and geometry stay in the SVG. The absolute baseline point of a run at
+    // local (cx, cy) is anchor + scale·R·(disp + (cx, cy)), where R is the SAME
+    // rotation the group transform applies. That transform uses `rotatestr`,
+    // which emits `rotate(-theta)` (PreFigure lays out in y-up math coordinates),
+    // so the screen rotation is by -angle, not +angle. Using +angle here would
+    // mirror rotated labels relative to the baked geometry/math — see native.typ.
+    if diagram.labels.label_mode == LabelMode::Native {
+        let rad = (-angle).to_radians();
+        let (cos, sin) = (rad.cos(), rad.sin());
+        let placements = diagram.labels.placements.clone();
+        // A caller may have wrapped this label's `<g>` in an extra transform
+        // (e.g. a <line> label inside `translate·rotate`). The runs below are
+        // computed in that wrapper's local frame, so compose it into each run's
+        // absolute placement — SVG applies it at render, native runs are lifted
+        // out. `wrapper_angle` is the wrapper's screen rotation, subtracted from
+        // each run's angle (native.typ rotates by `rotate(-angle)`).
+        let wrapper = diagram.native_wrapper_for(element);
+        let wrapper_angle = wrapper
+            .map(|w| w[1][0].atan2(w[0][0]).to_degrees())
+            .unwrap_or(0.0);
+        for row in &measured_rows {
+            for (component, _w, above, _b) in row {
+                let el = component.borrow();
+                let is_text = el.tag == "text";
+                let sentinel = el.get("data-pf-math");
+                if !is_text && sentinel.is_none() {
+                    continue; // a real math SVG (mk_m_element) — leave it in place
+                }
+                let cx: f64 = el.get("x").and_then(|v| v.parse().ok()).unwrap_or(0.0);
+                let cy: f64 = el.get("y").and_then(|v| v.parse().ok()).unwrap_or(0.0);
+                // For text, cy is already the baseline; for a math placeholder cy
+                // is its top, so the baseline is cy + above.
+                let baseline_local = if is_text { cy } else { cy + above };
+                let vx = disp[0] + cx;
+                let vy = disp[1] + baseline_local;
+                let mut placement = if is_text {
+                    TextPlacement {
+                        text: el.text.clone().unwrap_or_default(),
+                        family: el.get_or("font-family", "sans-serif"),
+                        size: el.get("font-size").and_then(|v| v.parse().ok()).unwrap_or(14.0),
+                        italic: el.get("font-style").as_deref() == Some("italic"),
+                        bold: el.get("font-weight").as_deref() == Some("bold"),
+                        color: el.get("fill"),
+                        x: anchor[0] + scale * (cos * vx - sin * vy),
+                        y: anchor[1] + scale * (sin * vx + cos * vy),
+                        angle,
+                        scale,
+                        math: false,
+                    }
+                } else {
+                    TextPlacement {
+                        text: sentinel.unwrap(),
+                        family: String::new(),
+                        size: MATH_LABEL_SIZE,
+                        italic: false,
+                        bold: false,
+                        color: el.get("data-pf-color"),
+                        x: anchor[0] + scale * (cos * vx - sin * vy),
+                        y: anchor[1] + scale * (sin * vx + cos * vy),
+                        angle,
+                        scale,
+                        math: true,
+                    }
+                };
+                drop(el);
+                // Compose any wrapper transform: the (x, y) above are in the
+                // wrapper's local frame; map them to absolute and fold the
+                // wrapper's rotation into the run's angle.
+                if let Some(w) = wrapper {
+                    let (x, y) = (placement.x, placement.y);
+                    placement.x = w[0][0] * x + w[0][1] * y + w[0][2];
+                    placement.y = w[1][0] * x + w[1][1] * y + w[1][2];
+                    placement.angle -= wrapper_angle;
+                }
+                // Record the run's index and its baseline in the label group's
+                // own coordinates. A <legend> re-anchors these after layout
+                // (place_legend); for a standalone label they are already final.
+                let index = {
+                    let mut ps = placements.borrow_mut();
+                    ps.push(placement);
+                    ps.len() - 1
+                };
+                diagram.record_native_run(element, index, [cx, baseline_local]);
+                xml::remove(&label_group, component);
+            }
+        }
+    }
 
     // a white rectangle behind the label, if requested
     if element.borrow().get_or("clear-background", "no") == "yes" {

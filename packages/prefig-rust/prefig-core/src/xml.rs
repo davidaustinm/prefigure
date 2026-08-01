@@ -223,8 +223,7 @@ fn write_element(el: &El, out: &mut String, indent: Option<usize>) {
                 out.push_str(&escape_text(tail));
             }
         }
-        if indent.is_some() && !e.children.is_empty() {
-            let level = indent.unwrap();
+        if let Some(level) = indent.filter(|_| !e.children.is_empty()) {
             out.push('\n');
             out.push_str(&"  ".repeat(level));
         }

@@ -5,6 +5,9 @@
 //! these traits over the browser's PrefigBrowserApi instead.
 
 use crate::xml::{self, El};
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 /// (family, size, italic, bold, color)
 #[derive(Clone, Debug)]
@@ -26,6 +29,13 @@ pub trait MathLabels {
     fn register_math_label(&mut self, id: &str, text: &str);
     fn process_math_labels(&mut self) -> Result<(), String>;
     fn get_math_label(&self, id: &str) -> Option<MathLabel>;
+    /// Native-math hook (`LabelMode::Native` with host-rendered math): if this
+    /// backend supplies *dimensions only* for the `<m>` element `id` — leaving
+    /// the glyphs for the host to draw — return its (sentinel, [w, above,
+    /// below]). Default `None`: the backend draws math into the SVG itself.
+    fn native_math(&self, _id: &str) -> Option<(String, [f64; 3])> {
+        None
+    }
 }
 
 pub trait TextMeasurements {
@@ -42,6 +52,194 @@ pub struct LabelState {
     pub math: Box<dyn MathLabels>,
     pub text: Box<dyn TextMeasurements>,
     pub braille: Box<dyn BrailleTranslator>,
+    /// Maps PreFigure's generic font names (`serif`, `sans-serif`, `monospace`)
+    /// to concrete font families. Empty in every native/browser build, so the
+    /// generic name is used unchanged. The Typst plugin build (see
+    /// `packages/prefig-typst`) fills it in because Typst's SVG font resolver
+    /// does not support generic families, and because the family Typst *measures*
+    /// with must be the family it later *renders* with. Applied in
+    /// `label::position_svg_label`, so both `measure_text` and the emitted
+    /// `font-family` attribute see the concrete family.
+    pub font_map: HashMap<String, String>,
+    /// How text labels leave the build. `Svg` (the default, and the only mode
+    /// native/browser builds use) draws each run as an SVG `<text>` element.
+    /// `Native` instead omits the `<text>` and records where it *would* have
+    /// gone in `placements`, so the host (the Typst plugin) can stamp its own
+    /// native text there — live host fonts, at PreFigure-computed positions.
+    /// Math and geometry are unaffected either way.
+    pub label_mode: LabelMode,
+    /// In `Native` mode, the absolute placement of every omitted text run
+    /// (shared handle so the caller can read it after the build). Empty in
+    /// `Svg` mode.
+    pub placements: Rc<RefCell<Vec<TextPlacement>>>,
+}
+
+/// Where text labels are rendered: baked into the SVG, or handed back for the
+/// host to render natively. See [`LabelState::label_mode`].
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum LabelMode {
+    #[default]
+    Svg,
+    Native,
+}
+
+/// One text run the build placed but did not draw (`LabelMode::Native`). `x`/`y`
+/// are the run's baseline origin in absolute SVG user units — the anchor point
+/// SVG `<text>` uses — after the label group's translate/scale/rotate have been
+/// folded in. `angle` (degrees, SVG sense) and `scale` are the group's residual
+/// linear transform, to be applied to the glyphs; both are usually 0 and 1.
+#[derive(Clone, Debug)]
+pub struct TextPlacement {
+    pub text: String,
+    pub family: String,
+    pub size: f64,
+    pub italic: bool,
+    pub bold: bool,
+    pub color: Option<String>,
+    pub x: f64,
+    pub y: f64,
+    pub angle: f64,
+    pub scale: f64,
+    /// When true, this is a math label: `text` holds the host's math sentinel
+    /// (which the host maps back to the equation to render), not literal text.
+    pub math: bool,
+}
+
+/// The canonical key identifying a text-measurement request, shared by the
+/// injection table and every `measure_text` lookup so the two always agree.
+/// `size` is formatted to a fixed precision so `14` and `14.0` (which JSON
+/// round-tripping through Typst may interconvert) map to the same key.
+pub fn measure_key(text: &str, family: &str, size: f64, italic: bool, bold: bool) -> String {
+    format!(
+        "{text}\u{1f}{family}\u{1f}{size:.4}\u{1f}{}\u{1f}{}",
+        italic as u8, bold as u8
+    )
+}
+
+/// A text backend that measures nothing but *records* every request, returning a
+/// fixed placeholder so the build still completes. Running a full build with
+/// this backend and discarding the SVG yields exactly the set of runs the real
+/// build will measure — the same code path, so the two cannot drift (this is why
+/// the plugin enumerates by building rather than by a hand-written label walk).
+pub struct CollectingTextMeasurements {
+    pub sink: Rc<RefCell<Vec<(String, FontData)>>>,
+    pub placeholder: [f64; 3],
+}
+
+impl TextMeasurements for CollectingTextMeasurements {
+    fn measure_text(&self, text: &str, font: &FontData) -> Option<[f64; 3]> {
+        self.sink.borrow_mut().push((text.to_string(), font.clone()));
+        Some(self.placeholder)
+    }
+}
+
+/// The math counterpart of `CollectingTextMeasurements`: records every `<m>`
+/// element's body (the text that would be typeset) during a Pass A build, so the
+/// host can decide which it will render. Draws nothing.
+pub struct CollectingMathLabels {
+    pub sink: Rc<RefCell<Vec<String>>>,
+}
+
+impl MathLabels for CollectingMathLabels {
+    fn add_macros(&mut self, _macros: &str) {}
+    fn register_math_label(&mut self, _id: &str, text: &str) {
+        self.sink.borrow_mut().push(text.to_string());
+    }
+    fn process_math_labels(&mut self) -> Result<(), String> {
+        Ok(())
+    }
+    fn get_math_label(&self, _id: &str) -> Option<MathLabel> {
+        None
+    }
+}
+
+/// A text backend that answers every `measure_text` from a pre-supplied table
+/// (Typst measured these with its own layout engine, §4 of the plugin plan).
+pub struct SuppliedTextMeasurements {
+    pub table: HashMap<String, [f64; 3]>,
+}
+
+impl TextMeasurements for SuppliedTextMeasurements {
+    fn measure_text(&self, text: &str, font: &FontData) -> Option<[f64; 3]> {
+        let key = measure_key(text, &font.family, font.size, font.italic, font.bold);
+        let hit = self.table.get(&key).copied();
+        if hit.is_none() {
+            log::warn!("no supplied measurement for text run {text:?} (key {key:?})");
+        }
+        hit
+    }
+}
+
+/// A math backend that answers `get_math_label` from pre-rendered SVG fragments
+/// (Typst rendered and measured the math, §3 full milestone). Registration and
+/// processing are no-ops because the SVG is supplied ready-made.
+pub struct SuppliedMathLabels {
+    pub svg: HashMap<String, El>,
+}
+
+impl MathLabels for SuppliedMathLabels {
+    fn add_macros(&mut self, _macros: &str) {}
+    fn register_math_label(&mut self, _id: &str, _text: &str) {}
+    fn process_math_labels(&mut self) -> Result<(), String> {
+        Ok(())
+    }
+    fn get_math_label(&self, id: &str) -> Option<MathLabel> {
+        self.svg.get(id).map(|el| MathLabel::Svg(xml::deep_copy(el)))
+    }
+}
+
+/// A math backend for `LabelMode::Native` with host-rendered math: it supplies
+/// only each `<m>`'s *dimensions* (measured by the host from the real equation),
+/// leaving the glyphs for the host to draw natively. `dims` is keyed by the
+/// host's math *sentinel* — the text the host wrote as the `<m>` body — and
+/// `register_math_label` records the `<m>` id → sentinel mapping so placement
+/// can look the dimensions up. `get_math_label` returns `None`: no SVG is drawn;
+/// `label::position_svg_label` reads `native_math` and records a placement.
+pub struct SuppliedMathMetrics {
+    /// sentinel -> [advance-width, above-baseline, below-baseline]
+    pub dims: HashMap<String, [f64; 3]>,
+    id_to_sentinel: HashMap<String, String>,
+    /// Backend for `<m>` elements that are *not* host sentinels — e.g. the math
+    /// PreFigure generates itself (axis labels, tick numbers). Those have no
+    /// supplied dims, so they still render into the SVG here (typically RaTeX).
+    fallback: Box<dyn MathLabels>,
+}
+
+impl SuppliedMathMetrics {
+    pub fn new(
+        dims: HashMap<String, [f64; 3]>,
+        fallback: Box<dyn MathLabels>,
+    ) -> SuppliedMathMetrics {
+        SuppliedMathMetrics { dims, id_to_sentinel: HashMap::new(), fallback }
+    }
+}
+
+impl MathLabels for SuppliedMathMetrics {
+    fn add_macros(&mut self, macros: &str) {
+        self.fallback.add_macros(macros);
+    }
+    fn register_math_label(&mut self, id: &str, text: &str) {
+        self.id_to_sentinel.insert(id.to_string(), text.to_string());
+        // Also register with the fallback: if this turns out not to be a host
+        // sentinel, the fallback will need to render it.
+        self.fallback.register_math_label(id, text);
+    }
+    fn process_math_labels(&mut self) -> Result<(), String> {
+        self.fallback.process_math_labels()
+    }
+    fn get_math_label(&self, id: &str) -> Option<MathLabel> {
+        // Sentinels are drawn natively (via native_math); everything else falls
+        // back to an SVG-drawing backend.
+        if self.native_math(id).is_some() {
+            return None;
+        }
+        self.fallback.get_math_label(id)
+    }
+    fn native_math(&self, id: &str) -> Option<(String, [f64; 3])> {
+        let sentinel = self.id_to_sentinel.get(id)?;
+        let dims = self.dims.get(sentinel)?;
+        Some((sentinel.clone(), *dims))
+    }
 }
 
 /// Placeholders used when a service is unavailable; labels needing it are
@@ -88,6 +286,9 @@ impl LabelState {
             math: Box::new(NoMathLabels),
             text: Box::new(NoTextMeasurements),
             braille: Box::new(NoBrailleTranslator),
+            font_map: HashMap::new(),
+            label_mode: LabelMode::Svg,
+            placements: Rc::new(RefCell::new(Vec::new())),
         }
     }
 
@@ -119,7 +320,33 @@ impl LabelState {
         #[cfg(not(any(feature = "mathjax-js", feature = "ratex")))]
         let math: Box<dyn MathLabels> = Box::new(LocalMathLabels::new(format));
 
-        LabelState { math, text, braille }
+        LabelState {
+            math,
+            text,
+            braille,
+            font_map: HashMap::new(),
+            label_mode: LabelMode::Svg,
+            placements: Rc::new(RefCell::new(Vec::new())),
+        }
+    }
+
+    /// Pass A of the Typst plugin protocol: a state that records the set of text
+    /// runs (via `CollectingTextMeasurements`) and `<m>` bodies (via
+    /// `CollectingMathLabels`) a build would produce, drawing nothing. Build with
+    /// it, discard the SVG, then read the two sinks.
+    pub fn collecting(
+        text_sink: Rc<RefCell<Vec<(String, FontData)>>>,
+        math_sink: Rc<RefCell<Vec<String>>>,
+        font_map: HashMap<String, String>,
+    ) -> LabelState {
+        LabelState {
+            math: Box::new(CollectingMathLabels { sink: math_sink }),
+            text: Box::new(CollectingTextMeasurements { sink: text_sink, placeholder: [10.0, 8.0, 2.0] }),
+            braille: Box::new(NoBrailleTranslator),
+            font_map,
+            label_mode: LabelMode::Svg,
+            placements: Rc::new(RefCell::new(Vec::new())),
+        }
     }
 }
 

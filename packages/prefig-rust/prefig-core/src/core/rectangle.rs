@@ -15,7 +15,7 @@ pub fn rectangle(element: &El, diagram: &mut Diagram, parent: &El, outline_group
         let v = diagram.ctx.valid_eval(attr).ok()?.as_vec_f64().ok()?;
         (v.len() >= 2).then(|| [v[0], v[1]])
     };
-    let (Some(mut ll), Some(dims)) = (
+    let (Some(ll), Some(dims)) = (
         eval_pair(diagram, &ll_attr),
         eval_pair(diagram, &dims_attr),
     ) else {
@@ -28,7 +28,6 @@ pub fn rectangle(element: &El, diagram: &mut Diagram, parent: &El, outline_group
                 log::error!("Error parsing data in a <rectangle>");
                 return;
             };
-            ll = [center[0] - 0.5 * dims[0], center[1] - 0.5 * dims[1]];
             center
         }
         None => [ll[0] + 0.5 * dims[0], ll[1] + 0.5 * dims[1]],

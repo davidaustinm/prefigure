@@ -56,6 +56,9 @@ pub fn label_state(format: &str) -> LabelState {
         math,
         text: Box::new(HostTextMeasurements),
         braille: Box::new(HostBrailleTranslator),
+        font_map: Default::default(),
+        label_mode: Default::default(),
+        placements: Default::default(),
     }
 }
 

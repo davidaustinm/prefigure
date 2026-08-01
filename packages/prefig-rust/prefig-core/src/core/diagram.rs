@@ -29,6 +29,8 @@ pub struct Diagram {
 
     pub diagram_element: El,
     pub filename: String,
+    // Retained to mirror the Python Diagram; not yet read by any Rust code path.
+    #[allow(dead_code)]
     diagram_number: Option<i64>,
     format: String,
     environment: String,
@@ -53,6 +55,18 @@ pub struct Diagram {
     // (label source element, group, CTM at registration)
     pub label_group_dict: Vec<(El, El, CTM)>,
     label_dims: HashMap<usize, (f64, f64)>,
+    // In native label mode, per-label records of the host-rendered runs a label
+    // pushed to `labels.placements`, so a <legend> can re-anchor them after it
+    // lays its items out (the placement was recorded at the label's own anchor,
+    // before the legend layout existed). Keyed by el_key(label); each entry is
+    // (index into labels.placements, label-group-local baseline point).
+    native_label_runs: HashMap<usize, Vec<(usize, [f64; 2])>>,
+    // In native label mode, a transform some caller wrapped a label's `<g>` in
+    // (e.g. a <line> label placed inside `translate(q1) rotate(-angle)`). SVG
+    // applies it at render time, but native runs are lifted out with absolute
+    // coordinates, so `position_svg_label` composes this into each run's
+    // placement. Keyed by el_key(label). See `line::add_label`.
+    native_label_wrappers: HashMap<usize, crate::core::ctm::Mat2x3>,
     saved_data: HashMap<usize, ((Point, Point), ())>,
 
     pub defaults: indexmap::IndexMap<String, El>,
@@ -168,6 +182,8 @@ impl Diagram {
             textures: indexmap::IndexMap::new(),
             label_group_dict: Vec::new(),
             label_dims: HashMap::new(),
+            native_label_runs: HashMap::new(),
+            native_label_wrappers: HashMap::new(),
             saved_data: HashMap::new(),
             defaults: indexmap::IndexMap::new(),
             external: None,
@@ -278,6 +294,36 @@ impl Diagram {
 
     pub fn get_label_dims(&self, element: &El) -> Option<(f64, f64)> {
         self.label_dims.get(&el_key(element)).copied()
+    }
+
+    /// Native mode: remember that `element` pushed a host-rendered run at
+    /// `placement_index` in `labels.placements`, whose baseline sits at `local`
+    /// in the label group's own coordinates. A `<legend>` uses this to move the
+    /// run once it knows where the item finally lands. See `legend::place_legend`.
+    pub fn record_native_run(&mut self, element: &El, placement_index: usize, local: [f64; 2]) {
+        self.native_label_runs
+            .entry(el_key(element))
+            .or_default()
+            .push((placement_index, local));
+    }
+
+    /// The native runs `element` recorded via [`record_native_run`], if any.
+    pub fn native_runs_for(&self, element: &El) -> Vec<(usize, [f64; 2])> {
+        self.native_label_runs
+            .get(&el_key(element))
+            .cloned()
+            .unwrap_or_default()
+    }
+
+    /// Register a transform that wraps `element`'s label `<g>` in the SVG, so
+    /// native placements can compose it (see `native_wrapper_for`).
+    pub fn set_native_wrapper(&mut self, element: &El, m: crate::core::ctm::Mat2x3) {
+        self.native_label_wrappers.insert(el_key(element), m);
+    }
+
+    /// The wrapper transform registered for `element` via [`set_native_wrapper`].
+    pub fn native_wrapper_for(&self, element: &El) -> Option<crate::core::ctm::Mat2x3> {
+        self.native_label_wrappers.get(&el_key(element)).copied()
     }
 
     /// diagram.get_label_group(element)[0]: the <g> registered for a label.

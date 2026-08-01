@@ -1,0 +1,11 @@
+<!-- Genuinely math-free: `<grid>` rather than `<grid-axes>`, whose axis labels
+     and tick numbers are math. Only such a diagram can take the self-contained
+     `labels: "svg"` path, since any math forces native rendering. -->
+<diagram dimensions="(200,200)" margins="5">
+  <coordinates bbox="[-5,-5,5,5]">
+    <grid/>
+    <graph function="f(x)=0.4*x*x - 2"/>
+    <label p="(1,2)" alignment="east">Hello</label>
+    <label p="(-2,-3)" alignment="north"><it>slanted</it> and <b>bold</b></label>
+  </coordinates>
+</diagram>

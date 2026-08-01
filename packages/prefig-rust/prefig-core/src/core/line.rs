@@ -394,6 +394,18 @@ fn add_label(element: &El, diagram: &mut Diagram, parent: &El) {
             .set("anchor", &format!("({},0)", crate::value::py_str(distance)));
         let alignment = element.borrow().get_or("alignment", "north");
         el.borrow_mut().set("alignment", &alignment);
+        // Native-label mode: the label's `<g>` (and thus its lifted-out native
+        // runs) live in this wrapper's local frame. Record the wrapper as a
+        // matrix matching the SVG string above — `translate(q1)` then
+        // `rotatestr(-angle)`, which emits `rotate(angle)` == `rotation(angle)` —
+        // so `position_svg_label` composes it into each run's absolute placement.
+        diagram.set_native_wrapper(
+            &el,
+            ctm::concat(
+                ctm::translation(q1[0], q1[1]),
+                ctm::rotation(angle, true),
+            ),
+        );
         label::label(&el, diagram, &g, None);
     }
 }

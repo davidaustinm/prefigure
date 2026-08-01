@@ -1,0 +1,50 @@
+# The PreFigure core, compiled as a Typst WebAssembly plugin.
+#
+# This is a *different* wasm build from `packages/prefig-wasm`: that one targets
+# wasm-bindgen/JS and calls back into a host object for measurement and math.
+# Typst plugins speak the `wasm-minimal-protocol` ABI instead — bytes in, bytes
+# out, no host callbacks (see TYPST_PLUGIN_PLAN.md §2) — so this crate wraps the
+# same `prefig-core` with that ABI and the metrics-injection protocol (§4).
+#
+# Standalone (own `[workspace]`) so it is not pulled into the prefig-rust
+# workspace; it depends on prefig-core by path.
+[package]
+name = "prefig-typst-plugin"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "PreFigure core compiled as a Typst wasm-minimal-protocol plugin"
+
+[workspace]
+
+[lib]
+# cdylib for the Typst wasm plugin; rlib so the protocol logic can be
+# unit-tested natively (tests/protocol.rs).
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# Math is rendered by Typst (mitex) by default, so the shipped wasm needs no math
+# engine — the default build omits RaTeX, which drops ~3.7 MiB of embedded KaTeX
+# fonts (5.4 -> 1.7 MiB). `ratex-math` re-embeds the pure-Rust RaTeX engine for a
+# self-contained SVG with baked math; build.sh --with-math enables it.
+default = []
+ratex-math = ["prefig-core/ratex"]
+
+[dependencies]
+# Same pure-Rust feature set the JS wasm build uses, minus the host bits.
+prefig-core = { path = "../../prefig-rust/prefig-core", default-features = false, features = [
+    "xml-parse",
+    "xast",
+    "diffeqs",
+    "shapes",
+    "network",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Small, mostly-static wasm: optimise for size and abort on panic (a panic in a
+# Typst plugin would otherwise unwind into a trap with no message).
+[profile.release]
+opt-level = "s"
+lto = true
+panic = "abort"

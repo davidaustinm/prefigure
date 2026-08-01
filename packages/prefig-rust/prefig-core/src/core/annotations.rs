@@ -8,6 +8,9 @@ fn el_key(el: &El) -> usize {
     std::rc::Rc::as_ptr(el) as usize
 }
 
+// `parent`/`outline_group` are part of the shared element-handler signature; this
+// handler only threads them through its own recursion, but must still accept them.
+#[allow(clippy::only_used_in_recursion)]
 pub fn annotations(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Option<&El>) {
     // tactile diagrams have no annotations
     if diagram.output_format() == "tactile" && diagram.get_environment() != "pyodide" {

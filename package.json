@@ -5,7 +5,8 @@
     "description": "Monorepo for PreFigure: the Python package (packages/prefig), the web playground and language server, and (later) the Rust port.",
     "workspaces": [
         "packages/playground",
-        "packages/prefig-lsp"
+        "packages/prefig-lsp",
+        "packages/prefig-typst"
     ],
     "scripts": {
         "test": "npm run test:js && npm run test:py",

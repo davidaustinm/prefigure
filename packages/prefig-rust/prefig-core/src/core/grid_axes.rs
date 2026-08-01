@@ -164,7 +164,9 @@ pub fn grid(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
     let mut hspacings_set = false;
     let mut rx: Option<(f64, f64, f64)> = None;
     let mut ry: Option<(f64, f64, f64)> = None;
-    let mut x_positions: Vec<f64> = Vec::new();
+    // x_positions is assigned on every path below before it is read; y_positions
+    // is not (the polar branch leaves it empty), so it keeps an explicit default.
+    let x_positions: Vec<f64>;
     let mut y_positions: Vec<f64> = Vec::new();
 
     if let Some(spacings_attr) = spacings {

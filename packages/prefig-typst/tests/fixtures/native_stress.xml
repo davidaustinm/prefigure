@@ -1,0 +1,42 @@
+<diagram dimensions="(340,300)" margins="5">
+  <coordinates bbox="(0,0,10,9)">
+    <grid-axes decorations="no"/>
+
+    <!-- (3) rotated + scaled label mixing text and math -->
+    <label anchor="(1,7)" alignment="east" rotate="90" scale="1.5"
+           clear-background="yes">
+      Time <m>t</m> (sec)
+    </label>
+
+    <!-- (4) multi-line label: nested it/b + per-component color + math -->
+    <label anchor="(4,7)" alignment="east" justify="left"
+           clear-background="yes" interline="6">
+      This is a <b>bold</b> statement
+      <newline/>
+      but we can have <it>italics</it>
+      <newline/>
+      and <it>italicized <b>bold</b></it> too
+      <newline/>
+      <plain color="blue">colored</plain>
+      <it color="green">parts</it>
+      <b color="red">here</b>
+      and math <m color="magenta">e^x</m>
+    </label>
+
+    <!-- (5) clear-background under scale -->
+    <label anchor="(1,1.5)" alignment="se" scale="0.7"
+           clear-background="yes">
+      Use @scale to change the size.
+    </label>
+
+    <!-- (6) colours beyond the common names: a full-CSS-set name, the
+         functional rgb() PreFigure itself emits for a computed colour, hsl(),
+         and hex. Native labels must read all of these exactly as resvg does. -->
+    <label anchor="(4,1.5)" alignment="east" clear-background="yes">
+      <plain color="rebeccapurple">name</plain>
+      <plain color="rgb(30,144,255)">rgb</plain>
+      <plain color="hsl(120, 60%, 35%)">hsl</plain>
+      <plain color="#b8860b">hex</plain>
+    </label>
+  </coordinates>
+</diagram>

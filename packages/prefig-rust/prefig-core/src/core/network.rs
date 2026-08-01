@@ -482,43 +482,48 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
             .and_then(|n| n.borrow().get("loop-orientation"));
         let directions = edge_directions.get(node).cloned();
 
-        let (loop_angle, loop_gap) = if directions.is_none() || loop_orientation.is_some() {
-            let loop_angle = match &loop_orientation {
-                Some(attr) => -diagram
-                    .ctx
-                    .valid_eval(attr)
-                    .ok()
-                    .and_then(|v| v.as_num().ok())
-                    .unwrap_or(0.0)
-                    .to_radians(),
-                None => 0.0,
-            };
-            (loop_angle, std::f64::consts::PI / 1.75)
-        } else {
-            let node_position = future_ctm.transform(positions[node]);
-            let mut angles: Vec<f64> = directions
-                .unwrap()
-                .iter()
-                .map(|d| {
-                    let target = future_ctm.transform(*d);
-                    (target[1] - node_position[1]).atan2(target[0] - node_position[0])
-                })
-                .collect();
-            angles.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-            angles.push(angles[0] + 2.0 * std::f64::consts::PI);
-            let mut max_gap = 0;
-            let mut max_gap_size = f64::NEG_INFINITY;
-            for i in 0..angles.len() - 1 {
-                let gap = angles[i + 1] - angles[i];
-                if gap > max_gap_size {
-                    max_gap_size = gap;
-                    max_gap = i;
+        let (loop_angle, loop_gap) = match directions {
+            // With incoming/outgoing edges and no forced orientation, aim the loop
+            // into the widest angular gap between them.
+            Some(dirs) if loop_orientation.is_none() => {
+                let node_position = future_ctm.transform(positions[node]);
+                let mut angles: Vec<f64> = dirs
+                    .iter()
+                    .map(|d| {
+                        let target = future_ctm.transform(*d);
+                        (target[1] - node_position[1]).atan2(target[0] - node_position[0])
+                    })
+                    .collect();
+                angles.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+                angles.push(angles[0] + 2.0 * std::f64::consts::PI);
+                let mut max_gap = 0;
+                let mut max_gap_size = f64::NEG_INFINITY;
+                for i in 0..angles.len() - 1 {
+                    let gap = angles[i + 1] - angles[i];
+                    if gap > max_gap_size {
+                        max_gap_size = gap;
+                        max_gap = i;
+                    }
                 }
+                (
+                    (angles[max_gap + 1] + angles[max_gap]) / 2.0,
+                    (0.5 * max_gap_size).min(std::f64::consts::PI / 1.75),
+                )
             }
-            (
-                (angles[max_gap + 1] + angles[max_gap]) / 2.0,
-                (0.5 * max_gap_size).min(std::f64::consts::PI / 1.75),
-            )
+            // No edges, or an explicit orientation: use that orientation (or 0).
+            _ => {
+                let loop_angle = match &loop_orientation {
+                    Some(attr) => -diagram
+                        .ctx
+                        .valid_eval(attr)
+                        .ok()
+                        .and_then(|v| v.as_num().ok())
+                        .unwrap_or(0.0)
+                        .to_radians(),
+                    None => 0.0,
+                };
+                (loop_angle, std::f64::consts::PI / 1.75)
+            }
         };
         let _ = loop_gap; // matches Python, which computes but never uses it
 

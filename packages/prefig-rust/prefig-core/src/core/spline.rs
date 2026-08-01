@@ -30,6 +30,9 @@ impl BcType {
 
 /// Solve a dense linear system by Gaussian elimination with partial pivoting.
 /// Knot counts are small, so dense is fine.
+// Row-reduction indexing (a[row][k] -= factor * a[col][k]) is clearest written
+// with explicit index loops.
+#[allow(clippy::needless_range_loop)]
 fn solve_dense(mut a: Vec<Vec<f64>>, mut b: Vec<f64>) -> Vec<f64> {
     let n = b.len();
     for col in 0..n {
