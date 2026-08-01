@@ -51,6 +51,19 @@ class Diagram:
             self.source_to_copy[source] = cp
         self.source_to_svg = {}
 
+        excluded = set()
+        for ann in self.diagram_element.iter('annotations'):
+            excluded.update(ann.iter())
+        for el in self.diagram_element.iter():
+            if el in excluded:
+                continue
+            for attr, val in el.attrib.items():
+                if val in ('true', 'false'):
+                    log.warning(
+                        f'<{el.tag}> attribute {attr}="{val}": '
+                        f'PreFigure uses "yes"/"no" for boolean attributes'
+                    )
+
         self.add_default_annotations = True
         if (self.environment == 'pyodide' and
             len(self.diagram_element.xpath('.//annotations')) == 0
