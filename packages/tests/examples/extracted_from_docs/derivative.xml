@@ -5,7 +5,7 @@
     <grid-axes/>
     <graph function="f"/>
     <graph function="fp" stroke="green"/>
-    <label p="(1.8,f(1.8))" alignment="se"><m>f(x)</m></label>
-    <label p="(0.5,fp(0.5))" alignment="se"><m>f'(x)</m></label>
+    <label anchor="(1.8,f(1.8))" alignment="se"><m>f(x)</m></label>
+    <label anchor="(0.5,fp(0.5))" alignment="se"><m>f'(x)</m></label>
   </coordinates>
 </diagram>

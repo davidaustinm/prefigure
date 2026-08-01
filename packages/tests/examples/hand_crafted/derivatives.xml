@@ -29,20 +29,18 @@
     </group>
   </coordinates>
 
-  <annotations>
-    <annotation ref="figure" text="The graph of a function and its first two derivatives">
-      <annotation ref="axes" text="The coordinate axes" />
-      <annotation ref="grid" text="The coordinate grid" />
-      <annotation ref="graph-derivatives"
-		  text="The graph of f, its derivative f prime, and its second derivative f double prime">
-        <annotation ref="f" text="The graph of f" sonify="yes"/>
-        <annotation ref="fp" text="The graph of the derivative of f"
-                    sonify="yes" />
-        <annotation ref="fpp" text="The graph of the second derivative of f"
-                    sonify="yes"/>
-      </annotation>
+  <annotations text="The graph of a function and its first two derivatives">
+    <annotation ref="axes" text="The coordinate axes" />
+    <annotation ref="grid" text="The coordinate grid" />
+    <annotation ref="graph-derivatives"
+		text="The graph of f, its derivative f prime, and its second derivative f double prime">
+      <annotation ref="f" text="The graph of f" sonify="yes"/>
+      <annotation ref="fp" text="The graph of the derivative of f"
+                  sonify="yes" />
+      <annotation ref="fpp" text="The graph of the second derivative of f"
+                  sonify="yes"/>
     </annotation>
-  </annotations>
+</annotations>
 
 </diagram>
 

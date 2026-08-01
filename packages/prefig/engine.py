@@ -282,7 +282,7 @@ def validate_source(xml_file):
     log.setLevel(logging.INFO)
     # we first load the RelaxNG schema
     engine_dir = Path(__file__).parent
-    schema_rng = engine_dir / "resources" / "schema" / "pf_schema.rng"
+    schema_rng = engine_dir / "resources" / "schema" / "pf_adapter.rng"
     schema = ET.RelaxNG(file=schema_rng)
 
     log.info(f"Validating {xml_file} with PreFigure schema {schema_rng}")

@@ -1,6 +1,6 @@
 <diagram dimensions="(400,400)" margins="5">
   <coordinates bbox="(0,0,10,10)">
-    <grid-axes labels="no"/>
+    <grid-axes decorations="no"/>
     <!-- left side arrows -->
     <line endpoints="((1,9),(4,9))" arrows="2"/>
     <line endpoints="((1,8),(4,8))" arrows="2"

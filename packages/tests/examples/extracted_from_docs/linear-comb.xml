@@ -7,8 +7,8 @@
     <vector v="v"/>
     <vector v="w"/>
     <vector v="comb" stroke="red"/>
-    <label p="v" alignment="se"><m>{\mathbf v}</m></label>
-    <label p="w" alignment="ne"><m>{\mathbf w}</m></label>
-    <label p="comb" alignment="ne"><m>2{\mathbf v}+{\mathbf w}</m></label>
+    <label anchor="v" alignment="se"><m>{\mathbf v}</m></label>
+    <label anchor="w" alignment="ne"><m>{\mathbf w}</m></label>
+    <label anchor="comb" alignment="ne"><m>2{\mathbf v}+{\mathbf w}</m></label>
   </coordinates>
 </diagram>
