@@ -341,14 +341,12 @@
     + repr(missing.sorted()),
 )
 
-// --- Validation wiring: the vendored schema accepts a valid diagram and rejects
+// --- Validation wiring: the schema accepts a valid diagram and rejects
 // an invalid one. Uses xmlit's non-panicking `validate` (so this test never
-// aborts) on the SAME vendored schema prefigure() validates against — a guard
-// that `validate: true` is actually hooked up and behaving. The known-bad case
-// is `p` on <label> (defect D4); if the schema is repaired upstream this must be
-// swapped for a still-invalid construct.
+// aborts) on the SAME schema prefigure() validates against — a guard
+// that `validate: true` is actually hooked up and behaving.
 #import "@preview/xmlit:0.1.3": create-from-relaxng
-#let _val = create-from-relaxng(read("../src/pf_schema.rnc")).utils.validate
+#let _val = create-from-relaxng(read("../src/pf_adapter.rnc")).utils.validate
 #assert(
   _val(read(fixtures + "/no_labels.xml")).valid,
   message: "no_labels.xml should pass schema validation",

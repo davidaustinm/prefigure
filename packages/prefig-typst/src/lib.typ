@@ -32,14 +32,13 @@
 
 #let _plugin = plugin("prefig_typst_plugin.wasm")
 
-// RELAX NG validator for the PreFigure schema (vendored copy, see pf_schema.rnc).
+// RELAX NG validator for the PreFigure schema.
 // Built lazily and memoised: the grammar is compiled once per document, and only
 // when a `validate: true` call actually needs it (a validate:false-only document
-// never loads it). NOTE: the schema currently rejects many engine-valid diagrams
-// and stack-overflows the validator on nested-group diagrams — see
-// SCHEMA_VALIDATION_REPORT.md at the repo root; `validate: false` skips it.
+// never loads it). Uses pf_adapter.rnc, which accepts diagrams in either no
+// namespace or the https://prefigure.org namespace.
 #let _make-validator() = {
-  create-from-relaxng(read("pf_schema.rnc")).utils.validate
+  create-from-relaxng(read("pf_adapter.rnc")).utils.validate
 }
 
 // A validation result's errors (each `(message, snippet?)`) as a plain string,
