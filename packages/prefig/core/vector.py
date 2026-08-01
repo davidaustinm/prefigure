@@ -40,11 +40,10 @@ def vector(element, diagram, parent, outline_group):
         head_loc = (1-t)*tail + t * w
 
     if diagram.output_format() == 'tactile':
-        element.set('fill', 'black')
         element.set('stroke', 'black')
     else:
         util.set_attr(element, 'stroke', 'black')
-        util.set_attr(element, 'fill', 'none')
+    element.set('fill', 'none')
     util.set_attr(element, 'thickness', '3')
 
     vector = ET.Element('path')
