@@ -48,6 +48,8 @@ def point(element, diagram, parent, outline_group):
         parent = group
         diagram.add_id(group, element.get('id'))
         diagram.register_svg_element(element, parent)
+        add_label(element, diagram, parent)
+
     else:
         diagram.add_id(shape, element.get('id'))
         diagram.register_svg_element(element, shape)
@@ -128,9 +130,6 @@ def point(element, diagram, parent, outline_group):
         finish_outline(element, diagram, parent)
     else:
         parent.append(shape)
-
-    if has_label:
-        add_label(element, diagram, parent)
 
 def inside(p, center, size, style, ctm, buffer=0):
     p = ctm.transform(p)
