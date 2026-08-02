@@ -23,8 +23,9 @@ def clip(element, diagram, parent, outline_group):
 
     diagram.add_reusable(clip)
 
-    outline_group = ET.SubElement(outline_group, 'g')
-    outline_group.set('clip-path', r'url(#{})'.format(clip.get('id')))
+    if outline_group is not None:
+        outline_group = ET.SubElement(outline_group, 'g')
+        outline_group.set('clip-path', r'url(#{})'.format(clip.get('id')))
 
     group = ET.SubElement(parent, 'g')
     group.set('clip-path', r'url(#{})'.format(clip.get('id')))
