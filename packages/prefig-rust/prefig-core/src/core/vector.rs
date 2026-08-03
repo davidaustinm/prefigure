@@ -53,12 +53,12 @@ pub fn vector(element: &El, diagram: &mut Diagram, parent: &El, outline_group: O
     });
 
     if diagram.output_format() == "tactile" {
-        element.borrow_mut().set("fill", "black");
         element.borrow_mut().set("stroke", "black");
     } else {
         util::set_attr(element, "stroke", "black", &mut diagram.ctx);
-        util::set_attr(element, "fill", "none", &mut diagram.ctx);
     }
+    // Always force fill to none, overriding any author-supplied fill attribute.
+    element.borrow_mut().set("fill", "none");
     util::set_attr(element, "thickness", "3", &mut diagram.ctx);
 
     let vector = xml::new_element("path");
