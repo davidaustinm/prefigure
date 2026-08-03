@@ -12,7 +12,10 @@
             "version": "latest"
         },
         // libcairo2-dev is required to build the optional pycairo extra used for text rendering.
-        // librsvg2-bin provides rsvg-convert, which prefig uses to convert SVGs into PDFs/PNGs.
+        // librsvg2-bin provides rsvg-convert, which prefig uses to convert SVGs into PDFs/PNGs,
+        // and which the Rust parity tests use to draw a few figures and compare them as pictures
+        // (some boolean-shape figures differ in their SVG text but draw the same picture). Those
+        // tests only run in this container, so the same rsvg-convert draws both files the same way.
         "ghcr.io/devcontainers-extra/features/apt-packages:1": {
             "packages": "libcairo2-dev,librsvg2-bin,vim"
         },

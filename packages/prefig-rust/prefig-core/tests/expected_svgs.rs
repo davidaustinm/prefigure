@@ -7,9 +7,12 @@
 //! `poetry run python tests/helpers/generate_snapshots.py`.
 //!
 //! `rust_output_matches_python` builds each snapshotted source with the Rust
-//! pipeline and compares against the Python-produced SVG with numeric
-//! tolerance. The comparator itself is exercised by the self-check tests.
+//! pipeline and compares against the Python-produced SVG. Most figures are
+//! compared as text (element for element, number for number). A few are
+//! compared as pictures instead — see the three groups below. The text
+//! comparator is exercised by the self-check tests.
 
+mod raster_compare;
 mod svg_compare;
 
 use std::fs;
@@ -101,20 +104,60 @@ fn comparator_selfcheck_numeric_tolerance() {
     assert!(!svg_compare::compare(svg, drifted, 1e-4).is_empty());
 }
 
-/// Snapshots the Rust port cannot (or should not) match, each still required
-/// to *build* — only the comparison is skipped:
-/// - network-*: automatic <network> layouts are deterministic but use
-///   different coordinates than networkx's PRNG (rust/PORTING.md).
-/// - shape_*: boolean <shape> ops via the geo crate are geometrically equal
-///   but not vertex-identical to shapely (rust/PORTING.md).
-/// - judson-system: a 100-time-unit Lotka-Volterra integration; last-ulp fp
-///   differences steer RK45 step selection, drifting the late trajectory
-///   slightly beyond tolerance. Early points match exactly.
-/// - outline, shape_clip: the reference snapshots capture Python BUGS — the
-///   outlined <point>'s <use> pair is dropped, and everything after the first
-///   <shape> inside <clip shape=...> is missing. The Rust port renders these
-///   correctly, so it legitimately produces MORE than the snapshot.
-const KNOWN_NON_PARITY: &[&str] = &[
+/// How each figure's Rust output is checked against Python's. Every figure
+/// falls into exactly one of three groups:
+///
+/// - BYTE_IDENTICAL — the default for every figure not named in the two lists
+///   below. The Rust and Python SVG files must hold the same elements and the
+///   same numbers, down to a tiny rounding tolerance. This is the normal case
+///   and the strongest check.
+///
+/// - RASTER_IDENTICAL — the figures in the list of that name. Their SVG files
+///   are allowed to differ, but the pictures they draw must look the same.
+///
+/// - skipped — the figures in the SKIPPED list. Each must still build, but its
+///   output is legitimately different and is not compared at all.
+enum Check {
+    ByteIdentical,
+    RasterIdentical,
+    Skipped,
+}
+
+/// Figures whose SVG text differs from Python's, but which draw the same
+/// picture, so they are compared as pictures (tests/raster_compare.rs) rather
+/// than as text.
+///
+/// Every figure here builds a `<shape>` out of other shapes with a boolean
+/// operation (union, difference, intersection, exclusive-or, or a convex hull;
+/// shape_clip clips against a union). The Rust port does this with the `geo`
+/// library and Python does it with `shapely`. Both trace the same outline, but
+/// they list its corner points starting from a different one and place them up
+/// to about a seventh of a unit apart, so the numbers written into the SVG are
+/// not the same even though the outline drawn from them is. At the figure's
+/// real size that gap is well under one pixel, so the two pictures match. This
+/// check only holds up because it always runs in the dev container, where the
+/// same drawing library renders both files the same way.
+const RASTER_IDENTICAL: &[&str] = &[
+    "extracted_from_docs/shape_convex",
+    "extracted_from_docs/shape_difference",
+    "extracted_from_docs/shape_intersection",
+    "extracted_from_docs/shape_union",
+    "extracted_from_docs/shape_xor",
+    "extracted_from_docs/shape_clip",
+];
+
+/// Figures the Rust port cannot (or should not) match at all. Each must still
+/// build; its output is not compared.
+/// - network-*: the automatic <network> layout is worked out differently than
+///   networkx's, so the nodes land at different places on the page.
+/// - judson-system: a long run of a differential-equation solver; the tiniest
+///   rounding differences steer the solver's step sizes and slowly pull the
+///   late part of the curve off Python's. The early part matches exactly.
+/// - outline: Python's saved output has a bug here — the outlined <point>'s
+///   pair of <use> marks is dropped (four SVG children where there should be
+///   six). The Rust port draws it correctly, so it rightly produces more than
+///   the saved file.
+const SKIPPED: &[&str] = &[
     "extracted_from_docs/network-annotations",
     "extracted_from_docs/network-combination",
     "extracted_from_docs/network-intro",
@@ -122,18 +165,22 @@ const KNOWN_NON_PARITY: &[&str] = &[
     "extracted_from_docs/network-spanning-2",
     "extracted_from_docs/network-tree",
     "extracted_from_docs/network-verbose",
-    "extracted_from_docs/shape_convex",
-    "extracted_from_docs/shape_difference",
-    "extracted_from_docs/shape_intersection",
-    "extracted_from_docs/shape_union",
-    "extracted_from_docs/shape_xor",
     "extracted_from_docs/judson-system",
     "extracted_from_docs/outline",
-    "extracted_from_docs/shape_clip",
 ];
 
-/// Everything not in KNOWN_NON_PARITY must match Python's output; anything that
-/// regresses fails the build.
+fn check_for(name: &str) -> Check {
+    if RASTER_IDENTICAL.contains(&name) {
+        Check::RasterIdentical
+    } else if SKIPPED.contains(&name) {
+        Check::Skipped
+    } else {
+        Check::ByteIdentical
+    }
+}
+
+/// Every figure not in the SKIPPED list must match Python's output (as text or
+/// as a picture); anything that regresses fails the build.
 const MUST_PASS_ALL: bool = true;
 
 /// The real parity test: build every snapshotted source with the Rust pipeline
@@ -169,21 +216,29 @@ fn rust_output_matches_python() {
             LabelState::local("svg"),
         );
 
-        if KNOWN_NON_PARITY.contains(&name.as_str()) {
-            // must build, but the output is legitimately different
-            if let Err(e) = built {
-                results.push((name, vec![format!("build failed: {e}")]));
-            } else {
-                skipped.push(name);
+        match check_for(&name) {
+            Check::Skipped => {
+                // must build, but the output is legitimately different
+                match built {
+                    Ok(_) => skipped.push(name),
+                    Err(e) => results.push((name, vec![format!("build failed: {e}")])),
+                }
             }
-            continue;
+            Check::ByteIdentical => {
+                let diffs = match built {
+                    Ok((svg, _annotations)) => svg_compare::compare(&svg, &expected, 1e-2),
+                    Err(e) => vec![format!("build failed: {e}")],
+                };
+                results.push((name, diffs));
+            }
+            Check::RasterIdentical => {
+                let diffs = match built {
+                    Ok((svg, _annotations)) => raster_compare::compare(&svg, &expected),
+                    Err(e) => vec![format!("build failed: {e}")],
+                };
+                results.push((name, diffs));
+            }
         }
-
-        let diffs = match built {
-            Ok((svg, _annotations)) => svg_compare::compare(&svg, &expected, 1e-2),
-            Err(e) => vec![format!("build failed: {e}")],
-        };
-        results.push((name, diffs));
     }
 
     let passing = results.iter().filter(|(_, d)| d.is_empty()).count();
@@ -191,7 +246,7 @@ fn rust_output_matches_python() {
         results.iter().filter(|(_, d)| !d.is_empty()).collect();
 
     println!(
-        "parity: {}/{} snapshots match Python ({} known-non-parity built ok)",
+        "parity: {}/{} snapshots match Python ({} skipped, built ok)",
         passing,
         results.len(),
         skipped.len()

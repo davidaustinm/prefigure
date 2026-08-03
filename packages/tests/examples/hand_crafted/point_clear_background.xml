@@ -1,0 +1,7 @@
+<diagram dimensions="(260,260)">
+  <coordinates bbox="[-4,-4,4,4]"><grid-axes xlabel="x" ylabel="y" />
+    <graph function="f(x)=0.4*x^2 - 2" />
+    <point p="(1,f(1))" alignment="center" size="20" clear-background="yes">
+    <m>(1, -1.6)</m></point>
+  </coordinates>
+</diagram>

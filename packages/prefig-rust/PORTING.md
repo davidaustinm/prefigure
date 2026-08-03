@@ -17,21 +17,25 @@ Every `packages/prefig/core/*.py` handler is ported **except the `<circuit>`
 elements added in #67** (`core/circuit.py`, `core/circuit_geometry/`), which are
 not yet ported — see the table. The test corpus is the shared, language-neutral
 one under `packages/tests/` (`packages/tests/examples`, `packages/tests/snapshots`,
-`packages/tests/expressions`) — the same assets the Python suite uses. All 167 snapshotted examples build with the Rust pipeline and 152 match
-the Python SVG output within tolerance (`tests/expected_svgs.rs`,
-`MUST_PASS_ALL = true`); the other 15 are in its `KNOWN_NON_PARITY` list with
-per-case reasons. Snapshots are generated in the `pretext` environment so
+`packages/tests/expressions`) — the same assets the Python suite uses. All 167 snapshotted examples build with the Rust pipeline and 158 match
+the Python SVG output (`tests/expected_svgs.rs`, `MUST_PASS_ALL = true`): most
+are compared as text (element for element, number for number, within a small
+rounding tolerance), and the six boolean-`<shape>` figures are compared as
+drawn pictures instead (the `RASTER_IDENTICAL` list — see below). The other 9
+are in its `SKIPPED` list with per-case reasons. Snapshots are generated in the
+`pretext` environment so
 `<read>`/`<image>` resolve their data files
 (`poetry run python packages/tests/helpers/generate_snapshots.py`).
 
-Two subsystems are implemented but cannot be coordinate-parity-tested against
-the reference, by nature: boolean `<shape>` ops (geometrically correct via the
-`geo` crate, but not vertex-identical to shapely) and automatic `<network>`
-layouts (valid deterministic layouts, but not identical to networkx's PRNG-based
-coordinates). A long ODE integration (judson-system) drifts past tolerance late
-in the trajectory from fp accumulation. Two snapshots capture reference-Python
-bugs the Rust port does not reproduce (an outlined `<point>` dropped from the
-output; `<clip shape=...>` truncating everything after the first shape).
+Boolean `<shape>` ops are geometrically correct via the `geo` crate but not
+vertex-identical to shapely, so their figures cannot be compared as SVG text;
+they are instead drawn and compared as pictures, which match (see
+`RASTER_IDENTICAL` in `tests/expected_svgs.rs`). Automatic `<network>` layouts
+are valid deterministic layouts but not identical to networkx's PRNG-based
+coordinates, so they are not compared at all. A long ODE integration
+(judson-system) drifts past tolerance late in the trajectory from fp
+accumulation. One snapshot captures a reference-Python bug the Rust port does
+not reproduce (an outlined `<point>` dropped from the output).
 Tactile output is a faithful port; it needs a braille translator (the
 `braille-liblouis` feature natively, or the browser host in WASM), neither
 available in CI, so it has no snapshot — but Python's own no-liblouis tactile
