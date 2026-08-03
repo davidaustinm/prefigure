@@ -1,3 +1,7 @@
+# pf_schema.rnc — canonical PreFigure schema (namespace-free).
+# When copying into another repository, record the commit hash here so future
+# resyncs can be scoped with: git diff <hash>..HEAD -- packages/prefig/resources/schema/pf_schema.rnc
+# Last updated: commit 27c382c (2026-08-01)
 grammar {
 start = Diagram
 
