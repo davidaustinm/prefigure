@@ -61,6 +61,9 @@ pub fn point(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
         diagram.add_id(&group, id.as_deref());
         diagram.register_svg_element(element, &group);
         parent = group;
+        // Add the label before the point's shape so a `clear-background` label
+        // box sits behind the shape rather than covering it (see issue #70).
+        add_label(element, diagram, &parent);
     } else {
         let id = element.borrow().get("id");
         diagram.add_id(&shape, id.as_deref());
@@ -183,10 +186,6 @@ pub fn point(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
         finish_outline(element, diagram, &parent);
     } else {
         xml::append(&parent, &shape);
-    }
-
-    if has_label {
-        add_label(element, diagram, &parent);
     }
 }
 

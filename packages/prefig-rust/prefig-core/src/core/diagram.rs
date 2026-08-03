@@ -158,6 +158,31 @@ impl Diagram {
             source_to_copy.insert(el_key(source), copy.clone());
         }
 
+        // Warn when a boolean attribute uses "true"/"false" instead of
+        // PreFigure's "yes"/"no" convention. Elements inside <annotations> are
+        // exempt (their values are free-form speech/text). Mirrors
+        // prefig/core/diagram.py.
+        let mut excluded: std::collections::HashSet<usize> = std::collections::HashSet::new();
+        for ann in xml::find_descendants(&diagram_element, "annotations") {
+            for el in xml::iter_subtree(&ann) {
+                excluded.insert(el_key(&el));
+            }
+        }
+        for el in xml::iter_subtree(&diagram_element) {
+            if excluded.contains(&el_key(&el)) {
+                continue;
+            }
+            let el = el.borrow();
+            for (attr, val) in &el.attrs {
+                if val == "true" || val == "false" {
+                    log::warn!(
+                        "<{}> attribute {attr}=\"{val}\": PreFigure uses \"yes\"/\"no\" for boolean attributes",
+                        el.tag
+                    );
+                }
+            }
+        }
+
         let mut diagram = Diagram {
             ctx: ExpressionContext::new(),
             labels,
