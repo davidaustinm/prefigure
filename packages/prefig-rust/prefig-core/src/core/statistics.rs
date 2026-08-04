@@ -55,9 +55,7 @@ pub fn scatter(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
         };
         points = value;
     }
-    diagram
-        .ctx
-        .enter_namespace("__scatter_points", points);
+    diagram.ctx.enter_namespace("__scatter_points", points);
 
     // build the <point> template and turn ourselves into a <repeat>
     let point_element = xml::deep_copy(element);
@@ -68,7 +66,9 @@ pub fn scatter(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
     }
     let handle = element.borrow().get("at");
     if let Some(handle) = &handle {
-        point_element.borrow_mut().set("at", &format!("{handle}-point"));
+        point_element
+            .borrow_mut()
+            .set("at", &format!("{handle}-point"));
     }
     let point_text = element.borrow().get("point-text");
     if let Some(point_text) = point_text {

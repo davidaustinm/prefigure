@@ -1,8 +1,8 @@
 //! Math-label rendering with the pure-Rust **RaTeX** engine (`ratex` feature).
 //!
-//! Unlike the node/MathJax backend (`LocalMathLabels`) and the embedded-JS
-//! backend (`mathjax_js`), this needs no external process, no host callback,
-//! and *no JavaScript engine at all*: `ratex-parser` + `ratex-layout` +
+//! Unlike the node/MathJax backend (`LocalMathLabels`), this needs no external
+//! process, no host callback, and *no JavaScript engine at all*:
+//! `ratex-parser` + `ratex-layout` +
 //! `ratex-svg` turn a LaTeX string straight into self-contained SVG `<path>`
 //! glyphs (KaTeX fonts embedded at build time). It compiles and runs
 //! identically on native and `wasm32-unknown-unknown`, so a WASM build can
@@ -14,20 +14,19 @@
 //! ## When is this backend safe to remove?
 //!
 //! `ratex` exists because MathJax cannot be run in a wasm-capable JavaScript
-//! engine today: QuickJS (used by the native `mathjax-js` backend) does not
-//! compile to `wasm32-unknown-unknown` (it is C and that target has no libc),
-//! and Boa — the only pure-Rust engine that targets wasm — cannot run MathJax
-//! (its TeX *and* MathML→SVG paths hit an internal "not a callable function"
-//! bug; see `mathjax_js.rs`). RaTeX side-steps the whole problem by rendering
-//! LaTeX→SVG in Rust.
+//! engine today: QuickJS is C and does not compile to `wasm32-unknown-unknown`
+//! (that target has no libc), and Boa — the only pure-Rust engine that targets
+//! wasm — cannot run MathJax (its TeX *and* MathML→SVG paths hit an internal
+//! "not a callable function" bug). RaTeX side-steps the whole problem by
+//! rendering LaTeX→SVG in Rust.
 //!
-//! This backend can be dropped (folding wasm back onto `mathjax-js` for output
-//! identical to the native/node path) once **either** holds:
+//! This backend can be dropped (folding wasm back onto a MathJax path for
+//! output identical to the native/node path) once **either** holds:
 //!   1. Boa can run the MathJax bundle end-to-end (superscripts, fractions,
 //!      MathML→SVG) — retest with
 //!      `packages/prefig-rust/prefig-core/assets/mathjax_headless.js`
 //!      in a Boa `Context`; if `x^2` yields a `<svg>` with glyph paths, the
-//!      `mathjax-js` wasm path is viable and RaTeX is redundant; or
+//!      wasm MathJax path is viable and RaTeX is redundant; or
 //!   2. QuickJS (or another complete engine) gains a `wasm32-unknown-unknown`
 //!      build that needs nothing from the host.
 //!
@@ -60,7 +59,10 @@ impl RatexMathLabels {
 /// `vertical-align` style so `mk_m_element` can size and baseline-align it).
 fn render(tex: &str) -> Result<String, String> {
     let nodes = ratex_parser::parse(tex).map_err(|e| format!("{e:?}"))?;
-    let layout = ratex_layout::engine::layout(&nodes, &ratex_layout::layout_options::LayoutOptions::default());
+    let layout = ratex_layout::engine::layout(
+        &nodes,
+        &ratex_layout::layout_options::LayoutOptions::default(),
+    );
     let list = ratex_layout::to_display::to_display_list(&layout);
 
     // Metrics are in em; convert to the ex units PreFigure places labels in.

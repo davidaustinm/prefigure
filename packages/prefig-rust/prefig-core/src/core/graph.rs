@@ -1,11 +1,11 @@
 //! Port of prefig/core/graph.py: the graph of a one-variable function.
 
+use crate::core::arrow;
 use crate::core::calculus;
 use crate::core::ctm::AxisScale;
 use crate::core::diagram::Diagram;
 use crate::core::math_utilities::{linspace, logspace};
 use crate::core::utilities::{self as util, pt2str};
-use crate::core::arrow;
 use crate::evaluator::{interp_call, EvalError};
 use crate::value::Value;
 use crate::xml::{self, El};
@@ -69,11 +69,7 @@ pub fn graph(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
         }
     }
 
-    let arrows: i64 = element
-        .borrow()
-        .get_or("arrows", "0")
-        .parse()
-        .unwrap_or(0);
+    let arrows: i64 = element.borrow().get_or("arrows", "0").parse().unwrap_or(0);
     let reverse = element.borrow().get_or("reverse", "no") == "yes";
     let (mut forward, mut backward) = ("marker-end", "marker-start");
     if reverse {
@@ -118,26 +114,18 @@ pub fn graph(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
     if !polar {
         // shorten the domain to make room for arrowheads
         if arrows > 1 || (arrows == 1 && reverse) {
-            if let Some(new_start) =
-                shortened_endpoint(diagram, &f, domain, arrow_length, true)
-            {
+            if let Some(new_start) = shortened_endpoint(diagram, &f, domain, arrow_length, true) {
                 domain[0] = new_start;
             }
         }
         if arrows > 1 || (arrows == 1 && !reverse) {
-            if let Some(new_end) =
-                shortened_endpoint(diagram, &f, domain, arrow_length, false)
-            {
+            if let Some(new_end) = shortened_endpoint(diagram, &f, domain, arrow_length, false) {
                 domain[1] = new_end;
             }
         }
     }
 
-    let n: usize = element
-        .borrow()
-        .get_or("N", "100")
-        .parse()
-        .unwrap_or(100);
+    let n: usize = element.borrow().get_or("N", "100").parse().unwrap_or(100);
     let cmds = if polar {
         polar_path(element, diagram, &f, domain, n)
     } else {
@@ -200,12 +188,7 @@ fn shortened_endpoint(
     Some(diagram.inverse_transform(begin)[0])
 }
 
-pub fn cartesian_path(
-    diagram: &mut Diagram,
-    f: &Value,
-    domain: [f64; 2],
-    n: usize,
-) -> Vec<String> {
+pub fn cartesian_path(diagram: &mut Diagram, f: &Value, domain: [f64; 2], n: usize) -> Vec<String> {
     // Walk across the horizontal axis connecting points with lines, easing up
     // to singularities and vertical asymptotes by subdivision. Points within a
     // buffer of 3x the height centered on the view are plotted.

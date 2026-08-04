@@ -71,10 +71,8 @@ pub fn image(
     };
     let ll_attr = element.borrow().get_or("lower-left", "(0,0)");
     let dims_attr = element.borrow().get_or("dimensions", "(1,1)");
-    let (Some(mut ll), Some(dims)) = (
-        eval_pair(diagram, &ll_attr),
-        eval_pair(diagram, &dims_attr),
-    ) else {
+    let (Some(mut ll), Some(dims)) = (eval_pair(diagram, &ll_attr), eval_pair(diagram, &dims_attr))
+    else {
         log::error!("Error parsing placement data in an <image>");
         return Ok(());
     };

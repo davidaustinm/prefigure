@@ -75,11 +75,7 @@ pub fn path(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
     element.borrow_mut().set("cliptobbox", &clip);
     util::cliptobbox(&path, element, diagram);
 
-    let arrows: i64 = element
-        .borrow()
-        .get_or("arrows", "0")
-        .parse()
-        .unwrap_or(0);
+    let arrows: i64 = element.borrow().get_or("arrows", "0").parse().unwrap_or(0);
     let (mut forward, mut backward) = ("marker-end", "marker-start");
     if element.borrow().get_or("reverse", "no") == "yes" {
         std::mem::swap(&mut forward, &mut backward);
@@ -313,8 +309,7 @@ fn process_tag(
             .valid_eval(&range_attr)
             .ok()
             .and_then(|v| v.as_vec_f64().ok());
-        let (Some(center), Some(radius), Some(mut angular_range)) = (center, radius, range)
-        else {
+        let (Some(center), Some(radius), Some(mut angular_range)) = (center, radius, range) else {
             log::error!("Error in <arc> defining data: @center, @radius, or @range");
             return false;
         };
@@ -364,7 +359,10 @@ fn process_tag(
         return true;
     }
 
-    if matches!(tag.as_str(), "graph" | "parametric-curve" | "polygon" | "spline") {
+    if matches!(
+        tag.as_str(),
+        "graph" | "parametric-curve" | "polygon" | "spline"
+    ) {
         let dummy_parent = xml::new_element("group");
         let _ = tags::parse_element(child, diagram, &dummy_parent, None);
         let first_child = dummy_parent.borrow().children.first().cloned();
@@ -573,10 +571,7 @@ fn decorate(
             log::error!("Error in retrieving the step and an offset in a ragged decoration");
             return false;
         };
-        let seed: u32 = data
-            .get("seed")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(1);
+        let seed: u32 = data.get("seed").and_then(|s| s.parse().ok()).unwrap_or(1);
         let mut rng = NumpyRandom::new(seed);
         let mut x_pos = 0.0;
         cmds.push("L".to_string());

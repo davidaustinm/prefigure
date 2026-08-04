@@ -5,10 +5,10 @@
 //! tolerances (rtol=1e-3, atol=1e-6), and initial-step selection, so solutions
 //! agree with the Python build to visual accuracy.
 
+use crate::core::arrow;
 use crate::core::diagram::Diagram;
 use crate::core::math_utilities::linspace;
 use crate::core::utilities::{self as util, pt2str};
-use crate::core::arrow;
 use crate::evaluator::interp_call;
 use crate::value::Value;
 use crate::xml::{self, El};
@@ -114,8 +114,18 @@ fn select_initial_step(
     t_bound: f64,
 ) -> Result<f64, String> {
     let scale: Vec<f64> = y0.iter().map(|y| ATOL + y.abs() * RTOL).collect();
-    let d0 = rms_norm(&y0.iter().zip(&scale).map(|(y, s)| y / s).collect::<Vec<_>>());
-    let d1 = rms_norm(&f0.iter().zip(&scale).map(|(f, s)| f / s).collect::<Vec<_>>());
+    let d0 = rms_norm(
+        &y0.iter()
+            .zip(&scale)
+            .map(|(y, s)| y / s)
+            .collect::<Vec<_>>(),
+    );
+    let d1 = rms_norm(
+        &f0.iter()
+            .zip(&scale)
+            .map(|(f, s)| f / s)
+            .collect::<Vec<_>>(),
+    );
     let h0 = if d0 < 1e-5 || d1 < 1e-5 {
         1e-6
     } else {
@@ -339,10 +349,8 @@ pub fn de_solve(element: &El, diagram: &mut Diagram, _parent: &El, _outline_grou
         // Python: np.linspace(t0, next_t, N) gives N points; helper gives m+1
         let t_eval = linspace(cur_t0, next_t, n.saturating_sub(1));
         let f_ref = &f;
-        let mut ode =
-            |t: f64, y: &[f64]| eval_ode(f_ref, t, y, ctx).map_err(|e| e.to_string());
-        let segment = match solve_ivp_rk45(&mut ode, cur_t0, next_t, &cur_y0, &t_eval, max_step)
-        {
+        let mut ode = |t: f64, y: &[f64]| eval_ode(f_ref, t, y, ctx).map_err(|e| e.to_string());
+        let segment = match solve_ivp_rk45(&mut ode, cur_t0, next_t, &cur_y0, &t_eval, max_step) {
             Ok(s) => s,
             Err(e) => {
                 log::error!("Error in ODE solver: {e}");
@@ -416,10 +424,7 @@ fn measure_de_jump(
     let f1 = eval_ode(f, t, y, ctx).unwrap_or_default();
     ctx.delta_on = false;
     let f0 = eval_ode(f, t, y, ctx).unwrap_or_default();
-    f1.iter()
-        .zip(&f0)
-        .map(|(a, b)| a - b)
-        .collect()
+    f1.iter().zip(&f0).map(|(a, b)| a - b).collect()
 }
 
 pub fn plot_de_solution(
@@ -440,9 +445,7 @@ pub fn plot_de_solution(
         match diagram.ctx.valid_eval(&solution_attr) {
             Ok(s) => s,
             Err(_) => {
-                log::error!(
-                    "Error in <plot-de-solution> finding solution={solution_attr}"
-                );
+                log::error!("Error in <plot-de-solution> finding solution={solution_attr}");
                 return;
             }
         }
@@ -450,10 +453,7 @@ pub fn plot_de_solution(
     let Value::Array(rows) = &solution else {
         return;
     };
-    let rows: Vec<Vec<f64>> = rows
-        .iter()
-        .filter_map(|r| r.as_vec_f64().ok())
-        .collect();
+    let rows: Vec<Vec<f64>> = rows.iter().filter_map(|r| r.as_vec_f64().ok()).collect();
 
     // which quantities go on the axes: default (t, y)
     let axes_attr = element.borrow().get_or("axes", "(t,y)");

@@ -74,10 +74,7 @@ pub fn riemann_sum(element: &El, diagram: &mut Diagram, parent: &El, outline_gro
     let samples: Vec<f64> = match rule.as_str() {
         "left" => partition[..n].to_vec(),
         "right" => partition[1..].to_vec(),
-        "midpoint" => partition
-            .windows(2)
-            .map(|w| (w[0] + w[1]) / 2.0)
-            .collect(),
+        "midpoint" => partition.windows(2).map(|w| (w[0] + w[1]) / 2.0).collect(),
         _ => samples.unwrap_or_default(),
     };
 
@@ -144,10 +141,7 @@ pub fn riemann_sum(element: &El, diagram: &mut Diagram, parent: &El, outline_gro
         {
             let mut a = area.borrow_mut();
             a.set("id", &format!("{element_id}_{interval_num}"));
-            a.set(
-                "domain",
-                &format!("({},{})", py_str(left), py_str(right)),
-            );
+            a.set("domain", &format!("({},{})", py_str(left), py_str(right)));
             a.set("stroke", &stroke);
             a.set("fill", &fill);
             a.set("thickness", &thickness);
@@ -176,14 +170,10 @@ pub fn riemann_sum(element: &El, diagram: &mut Diagram, parent: &El, outline_gro
                             ys.into_iter().fold(f64::INFINITY, f64::min)
                         }
                     }
-                    _ => interp_call(
-                        &f,
-                        &[Value::Num(samples[interval_num])],
-                        &mut diagram.ctx,
-                    )
-                    .ok()
-                    .and_then(|v| v.as_num().ok())
-                    .unwrap_or(0.0),
+                    _ => interp_call(&f, &[Value::Num(samples[interval_num])], &mut diagram.ctx)
+                        .ok()
+                        .and_then(|v| v.as_num().ok())
+                        .unwrap_or(0.0),
                 };
                 diagram
                     .ctx
@@ -191,9 +181,9 @@ pub fn riemann_sum(element: &El, diagram: &mut Diagram, parent: &El, outline_gro
                 let function_name = format!("__constant_{interval_num}");
                 diagram.ctx.enter_namespace(
                     &function_name,
-                    Value::Function(Rc::new(Function::Closure(Box::new(
-                        move |_args, _ctx| Ok(Value::Num(y_value)),
-                    )))),
+                    Value::Function(Rc::new(Function::Closure(Box::new(move |_args, _ctx| {
+                        Ok(Value::Num(y_value))
+                    })))),
                 );
                 area.borrow_mut().set("function", &function_name);
                 area.borrow_mut().set("N", "1");
@@ -220,19 +210,15 @@ pub fn riemann_sum(element: &El, diagram: &mut Diagram, parent: &El, outline_gro
                 let function_name = format!("__parabola_{interval_num}");
                 diagram.ctx.enter_namespace(
                     &function_name,
-                    Value::Function(Rc::new(Function::Closure(Box::new(
-                        move |args, _ctx| {
-                            let x = args
-                                .first()
-                                .ok_or_else(|| {
-                                    crate::evaluator::EvalError::new("missing argument")
-                                })?
-                                .as_num()?;
-                            Ok(Value::Num(
-                                a_coef * (x - mid).powi(2) + b_coef * (x - mid) + c,
-                            ))
-                        },
-                    )))),
+                    Value::Function(Rc::new(Function::Closure(Box::new(move |args, _ctx| {
+                        let x = args
+                            .first()
+                            .ok_or_else(|| crate::evaluator::EvalError::new("missing argument"))?
+                            .as_num()?;
+                        Ok(Value::Num(
+                            a_coef * (x - mid).powi(2) + b_coef * (x - mid) + c,
+                        ))
+                    })))),
                 );
                 area.borrow_mut().set("function", &function_name);
                 area.borrow_mut().set("N", "100");

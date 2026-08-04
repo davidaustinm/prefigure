@@ -375,9 +375,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                         if label_element.borrow().get("alignment").is_none() {
                             label_element.borrow_mut().set("alignment", &alignment);
                         }
-                        label_element
-                            .borrow_mut()
-                            .set("anchor", &fmt_point(anchor));
+                        label_element.borrow_mut().set("anchor", &fmt_point(anchor));
                     }
                 }
             }
@@ -425,8 +423,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                 continue;
             }
 
-            path.borrow_mut()
-                .set("start", &pt2long_str(user_p0, ","));
+            path.borrow_mut().set("start", &pt2long_str(user_p0, ","));
             let curveto = xml::sub_element(&path, "quadratic-bezier");
             curveto.borrow_mut().set(
                 "controls",
@@ -463,10 +460,9 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                     } else {
                         current = [mid, c1m, p2c];
                         let curveto = xml::sub_element(&path, "quadratic-bezier");
-                        curveto.borrow_mut().set(
-                            "controls",
-                            &format!("{},{}", fmt_point(c0), fmt_point(mid)),
-                        );
+                        curveto
+                            .borrow_mut()
+                            .set("controls", &format!("{},{}", fmt_point(c0), fmt_point(mid)));
                     }
                 }
             }
@@ -569,10 +565,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
             .collect();
             let (p1, p2, p3, p4, p5) = (pts[0], pts[1], pts[2], pts[3], pts[4]);
 
-            let loop_curves = [
-                [node_position, p1, p2, p3],
-                [p3, p4, p5, node_position],
-            ];
+            let loop_curves = [[node_position, p1, p2, p3], [p3, p4, p5, node_position]];
 
             let path = xml::sub_element(&edge_group, "path");
             let mut handle = format!("loop-{node}");
@@ -580,8 +573,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                 handle += &format!("-{j}");
             }
             path.borrow_mut().set("at", &handle);
-            path.borrow_mut()
-                .set("start", &fmt_point(node_position));
+            path.borrow_mut().set("start", &fmt_point(node_position));
             if directed {
                 if mid_arrows {
                     path.borrow_mut().set("mid-arrow", "yes");
@@ -613,12 +605,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
             let curveto = xml::sub_element(&path, "cubic-bezier");
             curveto.borrow_mut().set(
                 "controls",
-                &format!(
-                    "({},{},{})",
-                    fmt_point(p1),
-                    fmt_point(p2),
-                    fmt_point(p3)
-                ),
+                &format!("({},{},{})", fmt_point(p1), fmt_point(p2), fmt_point(p3)),
             );
 
             if !directed || mid_arrows {
@@ -660,12 +647,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                         let curveto = xml::sub_element(&path, "cubic-bezier");
                         curveto.borrow_mut().set(
                             "controls",
-                            &format!(
-                                "{},{},{}",
-                                fmt_point(p01),
-                                fmt_point(r1),
-                                fmt_point(mid)
-                            ),
+                            &format!("{},{},{}", fmt_point(p01), fmt_point(r1), fmt_point(mid)),
                         );
                     }
                 }
@@ -701,8 +683,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                         )
                     };
                     let direction = [anchor_ep[0] - anchor[0], anchor_ep[1] - anchor[1]];
-                    let label_direction =
-                        rotate_vec(direction, std::f64::consts::FRAC_PI_2);
+                    let label_direction = rotate_vec(direction, std::f64::consts::FRAC_PI_2);
                     let alignment = label::get_alignment_from_direction(label_direction);
 
                     let label_element = xml::deep_copy(loop_edge);
@@ -710,9 +691,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                     xml::append(&edge_group, &label_element);
                     if label_element.borrow().get("alignment").is_none() {
                         label_element.borrow_mut().set("alignment", &alignment);
-                        label_element
-                            .borrow_mut()
-                            .set("anchor", &fmt_point(anchor));
+                        label_element.borrow_mut().set("anchor", &fmt_point(anchor));
                     }
                 }
             }
@@ -814,11 +793,7 @@ fn compute_layout(
     let graph = Graph::new(&node_names, &edges);
 
     let layout_name = element.borrow().get_or("layout", "spring");
-    let seed: u64 = element
-        .borrow()
-        .get_or("seed", "1")
-        .parse()
-        .unwrap_or(1);
+    let seed: u64 = element.borrow().get_or("seed", "1").parse().unwrap_or(1);
 
     let mut positions: IndexMap<String, Point> = match layout_name.as_str() {
         "spring" => layout::spring(&graph, seed),
@@ -866,8 +841,16 @@ fn compute_layout(
     };
 
     // normalize: center, rotate, re-center, then scale the bbox (network.py)
-    let scale: f64 = element.borrow().get_or("scale", "0.8").parse().unwrap_or(0.8);
-    let rotate: f64 = element.borrow().get_or("rotate", "0").parse().unwrap_or(0.0);
+    let scale: f64 = element
+        .borrow()
+        .get_or("scale", "0.8")
+        .parse()
+        .unwrap_or(0.8);
+    let rotate: f64 = element
+        .borrow()
+        .get_or("rotate", "0")
+        .parse()
+        .unwrap_or(0.0);
 
     let bounds = |p: &IndexMap<String, Point>| -> ([f64; 2], [f64; 2]) {
         let xs: Vec<f64> = p.values().map(|q| q[0]).collect();

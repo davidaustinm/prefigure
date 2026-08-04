@@ -579,12 +579,7 @@ impl AxesBuilder {
         attr_value: &str,
         scale: AxisScale,
     ) -> Option<Vec<f64>> {
-        let v = diagram
-            .ctx
-            .valid_eval(attr_value)
-            .ok()?
-            .as_vec_f64()
-            .ok()?;
+        let v = diagram.ctx.valid_eval(attr_value).ok()?.as_vec_f64().ok()?;
         if scale == AxisScale::Log {
             Some(find_log_positions(&v))
         } else {
@@ -751,11 +746,7 @@ impl AxesBuilder {
 
             xlabel.borrow_mut().set(
                 "p",
-                &format!(
-                    "({},{})",
-                    py_str(x * h_scale),
-                    py_str(self.y_axis_location)
-                ),
+                &format!("({},{})", py_str(x * h_scale), py_str(self.y_axis_location)),
             );
             if self.tactile {
                 if self.top_labels {
@@ -870,11 +861,7 @@ impl AxesBuilder {
             }
             ylabel.borrow_mut().set(
                 "p",
-                &format!(
-                    "({},{})",
-                    py_str(self.x_axis_location),
-                    py_str(y * v_scale)
-                ),
+                &format!("({},{})", py_str(self.x_axis_location), py_str(y * v_scale)),
             );
 
             if self.tactile {

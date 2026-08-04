@@ -174,7 +174,11 @@ pub fn spectral(graph: &Graph) -> Positions {
     let (evals, evecs) = jacobi_eigen(l);
     // sort eigenvalue indices ascending; skip the smallest (the constant vector)
     let mut order: Vec<usize> = (0..n).collect();
-    order.sort_by(|&a, &b| evals[a].partial_cmp(&evals[b]).unwrap_or(std::cmp::Ordering::Equal));
+    order.sort_by(|&a, &b| {
+        evals[a]
+            .partial_cmp(&evals[b])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     let ax = order[1.min(n - 1)];
     let ay = order[2.min(n - 1)];
     let coords: Vec<[f64; 2]> = (0..n).map(|i| [evecs[i][ax], evecs[i][ay]]).collect();

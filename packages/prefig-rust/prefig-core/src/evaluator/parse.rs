@@ -51,8 +51,9 @@ fn apply_suffixes(atom: Expr, suffixes: Vec<Suffix>) -> Result<Expr, &'static st
 }
 
 fn fold_binops(first: Expr, rest: Vec<(BinOp, Expr)>) -> Expr {
-    rest.into_iter()
-        .fold(first, |l, (op, r)| Expr::BinOp(op, Box::new(l), Box::new(r)))
+    rest.into_iter().fold(first, |l, (op, r)| {
+        Expr::BinOp(op, Box::new(l), Box::new(r))
+    })
 }
 
 /// Collapse a comma-separated sequence: `(items, saw_trailing_comma)` into

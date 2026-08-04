@@ -6,7 +6,10 @@ use crate::xml::El;
 pub fn definition(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Option<&El>) {
     let substitution = element.borrow().get_or("substitution", "yes") == "yes";
     let text = element.borrow().text.clone().unwrap_or_default();
-    if let Err(e) = diagram.ctx.define_with_substitution(text.trim(), substitution) {
+    if let Err(e) = diagram
+        .ctx
+        .define_with_substitution(text.trim(), substitution)
+    {
         log::error!("Error in definition: {e}");
     }
 

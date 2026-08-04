@@ -126,9 +126,10 @@ impl ExpressionContext {
             return Ok(Value::Str(s));
         }
         if let Some(colors) = stripped.strip_prefix("rgb") {
-            let components = self.eval_str(colors)?.as_vec_f64().map_err(|_| {
-                EvalError::new(format!("Unsafe evaluation in rgb: {s}"))
-            })?;
+            let components = self
+                .eval_str(colors)?
+                .as_vec_f64()
+                .map_err(|_| EvalError::new(format!("Unsafe evaluation in rgb: {s}")))?;
             if components.len() != 3 {
                 return Err(EvalError::new(format!("Unsafe evaluation in rgb: {s}")));
             }
@@ -238,9 +239,9 @@ impl ExpressionContext {
                 }
                 args.iter().try_for_each(|a| self.validate_names(a, params))
             }
-            Expr::List(items) | Expr::Tuple(items) => {
-                items.iter().try_for_each(|i| self.validate_names(i, params))
-            }
+            Expr::List(items) | Expr::Tuple(items) => items
+                .iter()
+                .try_for_each(|i| self.validate_names(i, params)),
             Expr::Dict(pairs) => pairs.iter().try_for_each(|(k, v)| {
                 self.validate_names(k, params)?;
                 self.validate_names(v, params)

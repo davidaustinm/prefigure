@@ -262,10 +262,7 @@ pub fn parse_str(source: &str) -> Result<El, String> {
     let mut root: Option<El> = None;
     let mut last_closed: Option<El> = None;
 
-    let attach = |el: El,
-                  stack: &mut Vec<El>,
-                  root: &mut Option<El>|
-     -> Result<(), String> {
+    let attach = |el: El, stack: &mut Vec<El>, root: &mut Option<El>| -> Result<(), String> {
         match stack.last() {
             Some(parent) => append(parent, &el),
             None => {

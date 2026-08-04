@@ -110,7 +110,11 @@ pub fn slope_field(element: &El, diagram: &mut Diagram, parent: &El, outline_gro
                 }
                 if change[0].abs() < 1e-8 {
                     dx = 0.0;
-                    dy = if change[1] < 0.0 { -ry.1 / 4.0 } else { ry.1 / 4.0 };
+                    dy = if change[1] < 0.0 {
+                        -ry.1 / 4.0
+                    } else {
+                        ry.1 / 4.0
+                    };
                 } else {
                     let slope = change[1] / change[0];
                     let mut ddx = rx.1 / 4.0;
@@ -127,13 +131,9 @@ pub fn slope_field(element: &El, diagram: &mut Diagram, parent: &El, outline_gro
                     dy = ddy;
                 }
             } else {
-                let slope = interp_call(
-                    &f,
-                    &[Value::Num(x), Value::Num(y)],
-                    &mut diagram.ctx,
-                )
-                .ok()
-                .and_then(|v| v.as_num().ok());
+                let slope = interp_call(&f, &[Value::Num(x), Value::Num(y)], &mut diagram.ctx)
+                    .ok()
+                    .and_then(|v| v.as_num().ok());
                 match slope {
                     None => {
                         // Python: ZeroDivisionError -> a vertical dash
@@ -265,12 +265,10 @@ pub fn vector_field(element: &El, diagram: &mut Diagram, parent: &El, outline_gr
         while x <= rx.2 {
             let mut y = ry.0;
             while y <= ry.2 {
-                let Ok(f_value) = interp_call(
-                    &f,
-                    &[Value::Num(x), Value::Num(y)],
-                    &mut diagram.ctx,
-                )
-                .and_then(|v| v.as_vec_f64()) else {
+                let Ok(f_value) =
+                    interp_call(&f, &[Value::Num(x), Value::Num(y)], &mut diagram.ctx)
+                        .and_then(|v| v.as_vec_f64())
+                else {
                     y += ry.1;
                     continue;
                 };

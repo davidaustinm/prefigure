@@ -1,11 +1,11 @@
 //! Port of prefig/core/grid_axes.py: grids and the grid-axes convenience.
 
+use crate::core::axes;
 use crate::core::ctm::AxisScale;
 use crate::core::diagram::Diagram;
 use crate::core::line::{infinite_line, mk_line};
 use crate::core::math_utilities::{length, linspace};
 use crate::core::utilities::{self as util, float2str, pt2str};
-use crate::core::axes;
 use crate::xml::{self, El};
 
 fn grid_delta(key: i64) -> f64 {
@@ -265,10 +265,7 @@ pub fn grid(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
             [bbox_list[2], bbox_list[3]],
             [bbox_list[3], bbox_list[0]],
         ];
-        let mut r_max = endpoints
-            .iter()
-            .map(|&p| length(p))
-            .fold(0.0f64, f64::max);
+        let mut r_max = endpoints.iter().map(|&p| length(p)).fold(0.0f64, f64::max);
         let rx = rx.expect("polar grid has hspacing");
         if hspacings_set {
             r_max = rx.2;

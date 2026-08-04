@@ -75,8 +75,14 @@ pub fn coordinates(element: &El, diagram: &mut Diagram, root: &El, outline_group
         let mut c = clip_box.borrow_mut();
         c.set("x", &float2str(lower_left_clip[0]));
         c.set("y", &float2str(upper_right_clip[1]));
-        c.set("width", &float2str(upper_right_clip[0] - lower_left_clip[0]));
-        c.set("height", &float2str(lower_left_clip[1] - upper_right_clip[1]));
+        c.set(
+            "width",
+            &float2str(upper_right_clip[0] - lower_left_clip[0]),
+        );
+        c.set(
+            "height",
+            &float2str(lower_left_clip[1] - upper_right_clip[1]),
+        );
     }
     diagram.push_clippath(clippath);
 

@@ -15,10 +15,8 @@ pub fn rectangle(element: &El, diagram: &mut Diagram, parent: &El, outline_group
         let v = diagram.ctx.valid_eval(attr).ok()?.as_vec_f64().ok()?;
         (v.len() >= 2).then(|| [v[0], v[1]])
     };
-    let (Some(ll), Some(dims)) = (
-        eval_pair(diagram, &ll_attr),
-        eval_pair(diagram, &dims_attr),
-    ) else {
+    let (Some(ll), Some(dims)) = (eval_pair(diagram, &ll_attr), eval_pair(diagram, &dims_attr))
+    else {
         log::error!("Error parsing data in a <rectangle>");
         return;
     };
@@ -53,10 +51,7 @@ pub fn rectangle(element: &El, diagram: &mut Diagram, parent: &El, outline_group
         .iter()
         .map(|&p| ctm.transform(p))
         .collect();
-    let mut corners: Vec<[f64; 2]> = user_corners
-        .iter()
-        .map(|&c| diagram.transform(c))
-        .collect();
+    let mut corners: Vec<[f64; 2]> = user_corners.iter().map(|&c| diagram.transform(c)).collect();
 
     let radius_attr = element.borrow().get_or("corner-radius", "0");
     let radius = diagram

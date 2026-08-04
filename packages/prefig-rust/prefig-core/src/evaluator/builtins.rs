@@ -15,7 +15,10 @@ fn err(m: impl Into<String>) -> EvalError {
 
 fn arity(name: &str, args: &[Value], n: usize) -> Result<(), EvalError> {
     if args.len() != n {
-        return Err(err(format!("{name}() takes {n} arguments, got {}", args.len())));
+        return Err(err(format!(
+            "{name}() takes {n} arguments, got {}",
+            args.len()
+        )));
     }
     Ok(())
 }
@@ -38,17 +41,72 @@ fn two_num(name: &str, args: &[Value], f: impl Fn(f64, f64) -> f64) -> Result<Va
 
 const NAMES: &[&str] = &[
     // from math
-    "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh",
-    "asinh", "acosh", "atanh", "exp", "log", "log2", "log10", "sqrt", "floor",
-    "ceil", "degrees", "radians", "factorial", "comb", "fabs", "hypot", "copysign",
-    "trunc", "isclose", "gcd", "pow",
+    "sin",
+    "cos",
+    "tan",
+    "asin",
+    "acos",
+    "atan",
+    "atan2",
+    "sinh",
+    "cosh",
+    "tanh",
+    "asinh",
+    "acosh",
+    "atanh",
+    "exp",
+    "log",
+    "log2",
+    "log10",
+    "sqrt",
+    "floor",
+    "ceil",
+    "degrees",
+    "radians",
+    "factorial",
+    "comb",
+    "fabs",
+    "hypot",
+    "copysign",
+    "trunc",
+    "isclose",
+    "gcd",
+    "pow",
     // python builtins whitelisted in user_namespace
-    "max", "min", "round", "abs",
+    "max",
+    "min",
+    "round",
+    "abs",
     // math_utilities
-    "ln", "sec", "csc", "cot", "dot", "distance", "length", "normalize",
-    "midpoint", "angle", "roll", "choose", "append", "chi_oo", "chi_oc", "chi_co",
-    "chi_cc", "rotate", "deriv", "grad", "zip_lists", "evaluate_bezier", "eulers_method",
-    "filter", "proj_2d", "line_intersection", "intersect", "solve", "delta",
+    "ln",
+    "sec",
+    "csc",
+    "cot",
+    "dot",
+    "distance",
+    "length",
+    "normalize",
+    "midpoint",
+    "angle",
+    "roll",
+    "choose",
+    "append",
+    "chi_oo",
+    "chi_oc",
+    "chi_co",
+    "chi_cc",
+    "rotate",
+    "deriv",
+    "grad",
+    "zip_lists",
+    "evaluate_bezier",
+    "eulers_method",
+    "filter",
+    "proj_2d",
+    "line_intersection",
+    "intersect",
+    "solve",
+    "delta",
 ];
 
 pub fn is_builtin(name: &str) -> bool {
@@ -237,7 +295,9 @@ pub fn call(name: &str, args: &[Value], ctx: &mut ExpressionContext) -> Result<V
             let v = args[0].as_vec_f64()?;
             let theta = num(name, args, 1)?;
             let (c, s) = (theta.cos(), theta.sin());
-            Ok(nums_to_value([c * v[0] - s * v[1], s * v[0] + c * v[1]].into_iter()))
+            Ok(nums_to_value(
+                [c * v[0] - s * v[1], s * v[0] + c * v[1]].into_iter(),
+            ))
         }
         "roll" => {
             arity(name, args, 1)?;
@@ -275,9 +335,21 @@ pub fn call(name: &str, args: &[Value], ctx: &mut ExpressionContext) -> Result<V
         }
         "chi_oo" | "chi_oc" | "chi_co" | "chi_cc" => {
             arity(name, args, 3)?;
-            let (a, b, t) = (num(name, args, 0)?, num(name, args, 1)?, num(name, args, 2)?);
-            let lower = if name.as_bytes()[4] == b'o' { t > a } else { t >= a };
-            let upper = if name.as_bytes()[5] == b'o' { t < b } else { t <= b };
+            let (a, b, t) = (
+                num(name, args, 0)?,
+                num(name, args, 1)?,
+                num(name, args, 2)?,
+            );
+            let lower = if name.as_bytes()[4] == b'o' {
+                t > a
+            } else {
+                t >= a
+            };
+            let upper = if name.as_bytes()[5] == b'o' {
+                t < b
+            } else {
+                t <= b
+            };
             Ok(Value::Num(if lower && upper { 1.0 } else { 0.0 }))
         }
         "evaluate_bezier" => {
@@ -539,9 +611,7 @@ fn intersect_fn(
             break;
         }
     }
-    if x_left != f64::NEG_INFINITY
-        && (f(x_left, ctx)? - f(x_left + dx, ctx)?).abs() > height
-    {
+    if x_left != f64::NEG_INFINITY && (f(x_left, ctx)? - f(x_left + dx, ctx)?).abs() > height {
         x_left = f64::NEG_INFINITY;
     }
 
@@ -631,11 +701,8 @@ pub fn value_derivative(
         let mut next = Vec::with_capacity(estimates.len() - 1);
         for i in 0..estimates.len() - 1 {
             let delta = crate::value::binop(BinOp::Sub, &estimates[i + 1], &estimates[i])?;
-            let correction = crate::value::binop(
-                BinOp::Div,
-                &delta,
-                &Value::Num(2f64.powi(j) - 1.0),
-            )?;
+            let correction =
+                crate::value::binop(BinOp::Div, &delta, &Value::Num(2f64.powi(j) - 1.0))?;
             next.push(crate::value::binop(
                 BinOp::Add,
                 &estimates[i + 1],
@@ -702,8 +769,7 @@ fn evaluate_bezier(controls: &Value, t: f64) -> Result<Value, EvalError> {
     let mut sum = vec![0.0; dim];
     for (j, control) in controls.iter().enumerate() {
         let point = control.as_vec_f64()?;
-        let weight =
-            coefficients[j] * (1.0 - t).powi((n - j - 1) as i32) * t.powi(j as i32);
+        let weight = coefficients[j] * (1.0 - t).powi((n - j - 1) as i32) * t.powi(j as i32);
         for (acc, c) in sum.iter_mut().zip(&point) {
             *acc += weight * c;
         }

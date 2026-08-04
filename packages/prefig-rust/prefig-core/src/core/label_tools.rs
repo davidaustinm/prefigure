@@ -128,7 +128,9 @@ pub struct CollectingTextMeasurements {
 
 impl TextMeasurements for CollectingTextMeasurements {
     fn measure_text(&self, text: &str, font: &FontData) -> Option<[f64; 3]> {
-        self.sink.borrow_mut().push((text.to_string(), font.clone()));
+        self.sink
+            .borrow_mut()
+            .push((text.to_string(), font.clone()));
         Some(self.placeholder)
     }
 }
@@ -184,7 +186,9 @@ impl MathLabels for SuppliedMathLabels {
         Ok(())
     }
     fn get_math_label(&self, id: &str) -> Option<MathLabel> {
-        self.svg.get(id).map(|el| MathLabel::Svg(xml::deep_copy(el)))
+        self.svg
+            .get(id)
+            .map(|el| MathLabel::Svg(xml::deep_copy(el)))
     }
 }
 
@@ -210,7 +214,11 @@ impl SuppliedMathMetrics {
         dims: HashMap<String, [f64; 3]>,
         fallback: Box<dyn MathLabels>,
     ) -> SuppliedMathMetrics {
-        SuppliedMathMetrics { dims, id_to_sentinel: HashMap::new(), fallback }
+        SuppliedMathMetrics {
+            dims,
+            id_to_sentinel: HashMap::new(),
+            fallback,
+        }
     }
 }
 
@@ -307,17 +315,13 @@ impl LabelState {
         let braille: Box<dyn BrailleTranslator> = Box::new(NoBrailleTranslator);
 
         // Math backend, in priority order:
-        //   `ratex`      -> pure-Rust RaTeX (no node, no JS engine; KaTeX-styled)
-        //   `mathjax-js` -> embedded JS engine running MathJax (no node)
-        //   otherwise    -> shell out to node/MathJax, like Python's LocalMathLabels
-        // `ratex` wins because it needs the least (no JS engine). Once a
-        // wasm-capable JS engine can run MathJax directly (see mathjax_js.rs),
-        // `mathjax-js` could take over for MathJax-identical output everywhere.
+        //   `ratex`   -> pure-Rust RaTeX (no node, no JS engine; KaTeX-styled)
+        //   otherwise -> shell out to node/MathJax, like Python's LocalMathLabels
+        // `ratex` wins because it needs the least: no external node process.
         #[cfg(feature = "ratex")]
-        let math: Box<dyn MathLabels> = Box::new(crate::core::ratex_math::RatexMathLabels::new(format));
-        #[cfg(all(feature = "mathjax-js", not(feature = "ratex")))]
-        let math: Box<dyn MathLabels> = Box::new(crate::core::mathjax_js::JsMathLabels::new(format));
-        #[cfg(not(any(feature = "mathjax-js", feature = "ratex")))]
+        let math: Box<dyn MathLabels> =
+            Box::new(crate::core::ratex_math::RatexMathLabels::new(format));
+        #[cfg(not(feature = "ratex"))]
         let math: Box<dyn MathLabels> = Box::new(LocalMathLabels::new(format));
 
         LabelState {
@@ -341,7 +345,10 @@ impl LabelState {
     ) -> LabelState {
         LabelState {
             math: Box::new(CollectingMathLabels { sink: math_sink }),
-            text: Box::new(CollectingTextMeasurements { sink: text_sink, placeholder: [10.0, 8.0, 2.0] }),
+            text: Box::new(CollectingTextMeasurements {
+                sink: text_sink,
+                placeholder: [10.0, 8.0, 2.0],
+            }),
             braille: Box::new(NoBrailleTranslator),
             font_map,
             label_mode: LabelMode::Svg,
@@ -479,11 +486,7 @@ mod cairo {
             weight: c_int,
         );
         fn cairo_set_font_size(cr: *mut c_void, size: c_double);
-        fn cairo_text_extents(
-            cr: *mut c_void,
-            utf8: *const c_char,
-            extents: *mut CairoTextExtents,
-        );
+        fn cairo_text_extents(cr: *mut c_void, utf8: *const c_char, extents: *mut CairoTextExtents);
         fn cairo_destroy(cr: *mut c_void);
         fn cairo_surface_destroy(surface: *mut c_void);
     }
@@ -579,8 +582,8 @@ impl MathLabels for LocalMathLabels {
         if self.registered.is_empty() {
             return Ok(());
         }
-        let mj_dir =
-            find_mj_dir().ok_or("MathJax bundle not found: set PREFIG_MJ_SRE or run `prefig init`")?;
+        let mj_dir = find_mj_dir()
+            .ok_or("MathJax bundle not found: set PREFIG_MJ_SRE or run `prefig init`")?;
 
         // assemble the HTML input file
         let html = xml::new_element("html");

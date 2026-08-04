@@ -164,7 +164,10 @@ fn svg11_output_matches_python() {
     }
 
     let broken: Vec<&str> = failures.iter().map(|(n, _)| n.as_str()).collect();
-    assert!(broken.is_empty(), "svg11 output no longer matches Python: {broken:?}");
+    assert!(
+        broken.is_empty(),
+        "svg11 output no longer matches Python: {broken:?}"
+    );
     assert!(
         checked >= 8,
         "expected to actually check several svg11 examples, only checked {checked}"

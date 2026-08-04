@@ -70,7 +70,11 @@ pub fn translatestr(x: f64, y: f64) -> String {
 }
 
 pub fn scalestr(x: f64, y: f64) -> String {
-    format!("scale({},{})", crate::value::py_str(x), crate::value::py_str(y))
+    format!(
+        "scale({},{})",
+        crate::value::py_str(x),
+        crate::value::py_str(y)
+    )
 }
 
 pub fn rotatestr(theta: f64) -> String {
@@ -235,9 +239,6 @@ impl CTM {
         for (i, row) in self.ctm_3d.iter().enumerate() {
             out[i] = (0..4).map(|k| row[k] * p[k]).sum();
         }
-        [
-            out[0] - self.eye[0] * out[2],
-            out[1] - self.eye[1] * out[2],
-        ]
+        [out[0] - self.eye[0] * out[2], out[1] - self.eye[1] * out[2]]
     }
 }

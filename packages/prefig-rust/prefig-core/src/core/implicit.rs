@@ -132,7 +132,12 @@ impl QuadTree {
     }
 }
 
-pub fn implicit_curve(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Option<&El>) {
+pub fn implicit_curve(
+    element: &El,
+    diagram: &mut Diagram,
+    parent: &El,
+    outline_group: Option<&El>,
+) {
     if diagram.output_format() == "tactile" {
         element.borrow_mut().set("stroke", "black");
     } else {

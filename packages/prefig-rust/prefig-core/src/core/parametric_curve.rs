@@ -1,9 +1,9 @@
 //! Port of prefig/core/parametric_curve.py.
 
+use crate::core::arrow;
 use crate::core::diagram::Diagram;
 use crate::core::math_utilities::length;
 use crate::core::utilities::{self as util, pt2str};
-use crate::core::arrow;
 use crate::evaluator::interp_call;
 use crate::value::Value;
 use crate::xml::{self, El};
@@ -40,16 +40,8 @@ pub fn parametric_curve(
         return;
     };
 
-    let arrows: i64 = element
-        .borrow()
-        .get_or("arrows", "0")
-        .parse()
-        .unwrap_or(0);
-    let n: usize = element
-        .borrow()
-        .get_or("N", "100")
-        .parse()
-        .unwrap_or(100);
+    let arrows: i64 = element.borrow().get_or("arrows", "0").parse().unwrap_or(0);
+    let n: usize = element.borrow().get_or("N", "100").parse().unwrap_or(100);
 
     let mut t = domain[0];
     let dt = (domain[1] - domain[0]) / n as f64;

@@ -101,5 +101,8 @@ fn annotations_match_python() {
     }
 
     let broken: Vec<&str> = failures.iter().map(|(n, _)| n.as_str()).collect();
-    assert!(broken.is_empty(), "annotation XML no longer matches Python: {broken:?}");
+    assert!(
+        broken.is_empty(),
+        "annotation XML no longer matches Python: {broken:?}"
+    );
 }

@@ -5,8 +5,8 @@
 //! evaluation. Name resolution at call time mirrors Python's lambdas over
 //! globals(): a function body sees definitions made after the function was.
 
-use super::builtins;
 use super::ast::Expr;
+use super::builtins;
 use super::{EvalError, ExpressionContext};
 use crate::value::{self, Function, Value};
 
@@ -21,9 +21,7 @@ pub fn eval_expr(
         Expr::Bool(b) => Ok(Value::Bool(*b)),
         Expr::None => Err(EvalError::new("None is not a usable value")),
         Expr::Name(id) => lookup(id, ctx, locals),
-        Expr::List(items) | Expr::Tuple(items) => {
-            Ok(Value::Array(eval_items(items, ctx, locals)?))
-        }
+        Expr::List(items) | Expr::Tuple(items) => Ok(Value::Array(eval_items(items, ctx, locals)?)),
         Expr::Dict(pairs) => {
             let mut map = indexmap::IndexMap::new();
             for (k, v) in pairs {
@@ -55,12 +53,12 @@ pub fn eval_expr(
             } else if builtins::is_builtin(name) {
                 builtins::call(name, &args, ctx)
             } else {
-                Err(EvalError::new(format!("Unknown function in evaluation: {name}")))
+                Err(EvalError::new(format!(
+                    "Unknown function in evaluation: {name}"
+                )))
             }
         }
-        Expr::Starred(_) => Err(EvalError::new(
-            "cannot use a starred expression here",
-        )),
+        Expr::Starred(_) => Err(EvalError::new("cannot use a starred expression here")),
     }
 }
 
@@ -117,11 +115,8 @@ pub fn call_value(
                         args.len()
                     )));
                 }
-                let locals: Vec<(String, Value)> = params
-                    .iter()
-                    .cloned()
-                    .zip(args.iter().cloned())
-                    .collect();
+                let locals: Vec<(String, Value)> =
+                    params.iter().cloned().zip(args.iter().cloned()).collect();
                 eval_expr(body, ctx, &locals)
             }
             Function::Native(name) => builtins::call(name, args, ctx),

@@ -147,10 +147,7 @@ fn process_transform(diagram: &mut Diagram, transform: &str, group: &El, tactile
                 let c = items[1].as_vec_f64().unwrap_or(vec![0.0, 0.0]);
                 (angle, diagram.transform([c[0], c[1]]))
             }
-            Some(v) => (
-                v.as_num().unwrap_or(0.0),
-                diagram.transform([0.0, 0.0]),
-            ),
+            Some(v) => (v.as_num().unwrap_or(0.0), diagram.transform([0.0, 0.0])),
             None => return,
         };
         if tactile {
@@ -221,10 +218,7 @@ fn process_transform(diagram: &mut Diagram, transform: &str, group: &El, tactile
         let Value::Array(rows) = &items[0] else {
             return;
         };
-        let m: Vec<Vec<f64>> = rows
-            .iter()
-            .filter_map(|r| r.as_vec_f64().ok())
-            .collect();
+        let m: Vec<Vec<f64>> = rows.iter().filter_map(|r| r.as_vec_f64().ok()).collect();
         if m.len() != 2 {
             return;
         }
@@ -260,8 +254,7 @@ fn eval_vec_or_rows(diagram: &mut Diagram, expr: &str) -> Option<VecOrRows> {
     let value = diagram.ctx.valid_eval(expr).ok()?;
     match &value {
         Value::Array(items) if items.first().map(|i| i.rank() > 0).unwrap_or(false) => {
-            let rows: Option<Vec<Vec<f64>>> =
-                items.iter().map(|i| i.as_vec_f64().ok()).collect();
+            let rows: Option<Vec<Vec<f64>>> = items.iter().map(|i| i.as_vec_f64().ok()).collect();
             Some(VecOrRows::Rows(rows?))
         }
         _ => Some(VecOrRows::Flat(value.as_vec_f64().ok()?)),

@@ -137,18 +137,14 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
             }
         }
         Some(attr) => {
-            let pair = diagram
-                .ctx
-                .valid_eval(&attr)
-                .ok()
-                .and_then(|v| match v {
-                    Value::Array(items) if items.len() == 2 => {
-                        let p1 = items[0].as_vec_f64().ok()?;
-                        let p2 = items[1].as_vec_f64().ok()?;
-                        Some(([p1[0], p1[1]], [p2[0], p2[1]]))
-                    }
-                    _ => None,
-                });
+            let pair = diagram.ctx.valid_eval(&attr).ok().and_then(|v| match v {
+                Value::Array(items) if items.len() == 2 => {
+                    let p1 = items[0].as_vec_f64().ok()?;
+                    let p2 = items[1].as_vec_f64().ok()?;
+                    Some(([p1[0], p1[1]], [p2[0], p2[1]]))
+                }
+                _ => None,
+            });
             match pair {
                 Some(pair) => pair,
                 None => {
@@ -185,7 +181,14 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
     };
 
     let id = element.borrow().get("id");
-    let line = mk_line(p1, p2, diagram, id.as_deref(), endpoint_offsets.as_ref(), true);
+    let line = mk_line(
+        p1,
+        p2,
+        diagram,
+        id.as_deref(),
+        endpoint_offsets.as_ref(),
+        true,
+    );
     diagram.register_svg_element(element, &line);
 
     // hold on to the SVG endpoints in case the line is labeled
@@ -208,11 +211,7 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
     }
     util::add_attr(&line, util::get_1d_attr(element, &mut diagram.ctx));
 
-    let arrows: i64 = element
-        .borrow()
-        .get_or("arrows", "0")
-        .parse()
-        .unwrap_or(0);
+    let arrows: i64 = element.borrow().get_or("arrows", "0").parse().unwrap_or(0);
     let (mut forward, mut backward) = ("marker-end", "marker-start");
     if element.borrow().get_or("reverse", "no") == "yes" {
         std::mem::swap(&mut forward, &mut backward);
@@ -401,10 +400,7 @@ fn add_label(element: &El, diagram: &mut Diagram, parent: &El) {
         // so `position_svg_label` composes it into each run's absolute placement.
         diagram.set_native_wrapper(
             &el,
-            ctm::concat(
-                ctm::translation(q1[0], q1[1]),
-                ctm::rotation(angle, true),
-            ),
+            ctm::concat(ctm::translation(q1[0], q1[1]), ctm::rotation(angle, true)),
         );
         label::label(&el, diagram, &g, None);
     }

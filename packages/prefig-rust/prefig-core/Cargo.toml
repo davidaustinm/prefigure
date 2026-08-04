@@ -17,11 +17,6 @@ shapes = ["dep:geo"]
 text-cairo = []
 # braille via the system liblouis (native tactile builds only)
 braille-liblouis = []
-# Render math labels with QuickJS running MathJax in-process, so no external
-# `node`/MathJax process is required. Native only: QuickJS does not build for
-# wasm32, and wasm math instead goes through the host (browser MathJax) or the
-# pure-Rust `ratex` engine below.
-mathjax-js = ["xml-parse", "dep:rquickjs"]
 # Render math labels with the pure-Rust RaTeX engine (LaTeX -> self-contained
 # SVG paths, KaTeX fonts embedded). Needs no JavaScript engine at all and works
 # identically on native and wasm with nothing from the host. Output is
@@ -42,11 +37,6 @@ geo = { version = "0.30", optional = true }
 ratex-parser = { version = "0.1", optional = true }
 ratex-layout = { version = "0.1", optional = true }
 ratex-svg = { version = "0.1", features = ["embed-fonts"], optional = true }
-
-# QuickJS engine for the `mathjax-js` feature. Native only: it runs MathJax at
-# full fidelity but does not build for wasm32 (wasm math uses the host or ratex).
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-rquickjs = { version = "0.9", optional = true }
 
 [dev-dependencies]
 # enable cairo text measurement for the parity tests

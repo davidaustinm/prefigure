@@ -131,8 +131,7 @@ pub fn annotate(element: &El, diagram: &mut Diagram, parent: Option<&El>) {
             Some(c) => c,
             None => xml::sub_element(&parent, "components"),
         };
-        let component =
-            xml::sub_element(&components, if active { "active" } else { "passive" });
+        let component = xml::sub_element(&components, if active { "active" } else { "passive" });
         component.borrow_mut().text = annotation.borrow().get("id");
     }
 
@@ -186,8 +185,15 @@ fn pronounciation(tag: &str) -> &str {
 fn is_labeled_element(tag: &str) -> bool {
     matches!(
         tag,
-        "label" | "point" | "xlabel" | "ylabel" | "angle-marker" | "tick-mark" | "item"
-            | "node" | "edge"
+        "label"
+            | "point"
+            | "xlabel"
+            | "ylabel"
+            | "angle-marker"
+            | "tick-mark"
+            | "item"
+            | "node"
+            | "edge"
     )
 }
 
@@ -235,10 +241,11 @@ pub fn diagram_to_speech(diagram: &El, source_to_svg: &HashMap<usize, El>) {
 
         let intro = if tag == "diagram" {
             element.borrow_mut().set("ref", "figure");
-            "This prefigure source file begins with a diagram having these attributes: "
-                .to_string()
+            "This prefigure source file begins with a diagram having these attributes: ".to_string()
         } else if tag == "definition" {
-            element.borrow_mut().set("ref", &format!("element-{element_num}"));
+            element
+                .borrow_mut()
+                .set("ref", &format!("element-{element_num}"));
             let text = element.borrow().text.clone().unwrap_or_default();
             format!("A definition element defining {}", text.trim())
         } else if is_labeled_element(&tag) {

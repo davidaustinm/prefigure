@@ -153,10 +153,7 @@ pub fn polygon(
     }
 
     if let Some(arrow_points) = arrow_points {
-        let transformed: Vec<Point> = arrow_points
-            .iter()
-            .map(|&p| diagram.transform(p))
-            .collect();
+        let transformed: Vec<Point> = arrow_points.iter().map(|&p| diagram.transform(p)).collect();
         let mut parts = vec![format!(" M {}", pt2str(transformed[0], " "))];
         for p in &transformed[1..] {
             parts.push(format!("L {}", pt2str(*p, " ")));
@@ -176,11 +173,7 @@ pub fn polygon(
     element.borrow_mut().set("cliptobbox", &clip);
     util::cliptobbox(&path, element, diagram);
 
-    let arrows: i64 = element
-        .borrow()
-        .get_or("arrows", "0")
-        .parse()
-        .unwrap_or(0);
+    let arrows: i64 = element.borrow().get_or("arrows", "0").parse().unwrap_or(0);
     let (mut forward, mut backward) = ("marker-end", "marker-start");
     if element.borrow().get_or("reverse", "no") == "yes" {
         std::mem::swap(&mut forward, &mut backward);

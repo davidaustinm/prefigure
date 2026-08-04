@@ -31,9 +31,8 @@ pub enum Function {
     Closure(ClosureFn),
 }
 
-pub type ClosureFn = Box<
-    dyn Fn(&[Value], &mut crate::evaluator::ExpressionContext) -> Result<Value, EvalError>,
->;
+pub type ClosureFn =
+    Box<dyn Fn(&[Value], &mut crate::evaluator::ExpressionContext) -> Result<Value, EvalError>>;
 
 impl std::fmt::Debug for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -148,7 +147,12 @@ pub fn py_str(x: f64) -> String {
         } else {
             digits
         };
-        format!("{}e{}{:02}", mantissa, if exp < 0 { '-' } else { '+' }, exp.abs())
+        format!(
+            "{}e{}{:02}",
+            mantissa,
+            if exp < 0 { '-' } else { '+' },
+            exp.abs()
+        )
     };
     format!("{sign}{body}")
 }
