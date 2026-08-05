@@ -24,7 +24,10 @@ fn ratex_renders_selfcontained_svg_paths() {
 
     // RaTeX emits glyph outlines as <path> and embeds fonts, so the output is
     // self-contained: no <text> elements referencing external fonts.
-    assert!(svg.contains("<path"), "expected glyph <path>s in the output");
+    assert!(
+        svg.contains("<path"),
+        "expected glyph <path>s in the output"
+    );
     assert!(
         !svg.contains("<text"),
         "expected no <text> (fonts should be embedded as paths)"

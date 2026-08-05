@@ -27,7 +27,15 @@ pub fn build_source(
     environment: &str,
     labels: LabelState,
 ) -> Result<(String, Option<String>), String> {
-    build_source_with(format, input_string, filename, environment, labels, None, false)
+    build_source_with(
+        format,
+        input_string,
+        filename,
+        environment,
+        labels,
+        None,
+        false,
+    )
 }
 
 /// Full build entry point: publication defaults and caption suppression, as the
@@ -92,10 +100,20 @@ pub fn build(
         .unwrap_or_else(|| "prefig".to_string());
 
     let labels = LabelState::local(format);
-    let (svg, annotations) =
-        build_source_with(format, &source, &stem, "pf_cli", labels, publication, suppress_caption)?;
+    let (svg, annotations) = build_source_with(
+        format,
+        &source,
+        &stem,
+        "pf_cli",
+        labels,
+        publication,
+        suppress_caption,
+    )?;
 
-    let output_dir = source_path.parent().unwrap_or(Path::new(".")).join("output");
+    let output_dir = source_path
+        .parent()
+        .unwrap_or(Path::new("."))
+        .join("output");
     std::fs::create_dir_all(&output_dir).map_err(|e| e.to_string())?;
     let svg_path = output_dir.join(format!("{stem}.svg"));
     std::fs::write(&svg_path, svg).map_err(|e| e.to_string())?;
@@ -153,7 +171,9 @@ fn load_publication(path: &std::path::Path) -> Option<El> {
     if tree.borrow().tag == "prefigure" {
         return Some(tree);
     }
-    crate::xml::find_descendants(&tree, "prefigure").into_iter().next()
+    crate::xml::find_descendants(&tree, "prefigure")
+        .into_iter()
+        .next()
 }
 
 /// Convert a built SVG to PDF via rsvg-convert. Mirrors engine.pdf.
@@ -166,12 +186,25 @@ pub fn pdf(
     ignore_publication: bool,
     dpi: u32,
 ) -> Result<(), String> {
-    let svg_path = resolve_svg_path(format, filename, build_first, publication, ignore_publication)?;
+    let svg_path = resolve_svg_path(
+        format,
+        filename,
+        build_first,
+        publication,
+        ignore_publication,
+    )?;
     let output_file = svg_path.with_extension("pdf");
     let dpi = dpi.to_string();
     log::info!("Converting {} to PDF", svg_path.display());
     run_rsvg(&[
-        "-a", "-d", &dpi, "-p", &dpi, "-f", "pdf", "-o",
+        "-a",
+        "-d",
+        &dpi,
+        "-p",
+        &dpi,
+        "-f",
+        "pdf",
+        "-o",
         &output_file.to_string_lossy(),
         &svg_path.to_string_lossy(),
     ])
@@ -186,11 +219,24 @@ pub fn png(
     publication: Option<&str>,
     ignore_publication: bool,
 ) -> Result<(), String> {
-    let svg_path = resolve_svg_path(format, filename, build_first, publication, ignore_publication)?;
+    let svg_path = resolve_svg_path(
+        format,
+        filename,
+        build_first,
+        publication,
+        ignore_publication,
+    )?;
     let output_file = svg_path.with_extension("png");
     log::info!("Converting {} to PNG", svg_path.display());
     run_rsvg(&[
-        "-a", "-d", "300", "-p", "300", "-f", "png", "-o",
+        "-a",
+        "-d",
+        "300",
+        "-p",
+        "300",
+        "-f",
+        "png",
+        "-o",
         &output_file.to_string_lossy(),
         &svg_path.to_string_lossy(),
     ])
@@ -223,7 +269,10 @@ fn resolve_svg_path(
 
     let mut svg = PathBuf::from(filename);
     svg.set_extension("svg");
-    let name = svg.file_name().map(|n| n.to_os_string()).unwrap_or_default();
+    let name = svg
+        .file_name()
+        .map(|n| n.to_os_string())
+        .unwrap_or_default();
 
     // current directory, then an output/ subdirectory
     if svg.exists() {
@@ -246,7 +295,13 @@ fn find_file(dir: &std::path::Path, name: &std::ffi::OsStr) -> Option<std::path:
     let mut subdirs = Vec::new();
     for entry in entries.flatten() {
         let path = entry.path();
-        if path.is_dir() {
+        // Only descend into real directories. `file_type()` reports the entry
+        // itself, not a symlink's target, so a symlink pointing at an ancestor
+        // is treated as a non-directory here and never recursed into — which
+        // avoids an infinite loop and matches Python's os.walk default
+        // (followlinks=False).
+        let is_real_dir = entry.file_type().map(|t| t.is_dir()).unwrap_or(false);
+        if is_real_dir {
             subdirs.push(path);
         } else if path.file_name() == Some(name) {
             return Some(path);
@@ -263,11 +318,9 @@ fn find_file(dir: &std::path::Path, name: &std::ffi::OsStr) -> Option<std::path:
 #[cfg(all(feature = "xml-parse", not(target_arch = "wasm32")))]
 fn run_rsvg(args: &[&str]) -> Result<(), String> {
     if which("rsvg-convert").is_none() {
-        return Err(
-            "rsvg-convert is required for PDF/PNG conversion. \
+        return Err("rsvg-convert is required for PDF/PNG conversion. \
              See the installation instructions at https://prefigure.org"
-                .to_string(),
-        );
+            .to_string());
     }
     let status = std::process::Command::new("rsvg-convert")
         .args(args)
@@ -425,9 +478,15 @@ pub fn examples() -> Result<(), String> {
 pub fn validate_source(xml_file: &str) -> Result<(), String> {
     let schema = resources()?.join("schema").join("pf_schema.rng");
     if !schema.exists() {
-        return Err(format!("PreFigure schema not found at {}", schema.display()));
+        return Err(format!(
+            "PreFigure schema not found at {}",
+            schema.display()
+        ));
     }
-    log::info!("Validating {xml_file} with PreFigure schema {}", schema.display());
+    log::info!(
+        "Validating {xml_file} with PreFigure schema {}",
+        schema.display()
+    );
 
     let schema = schema.to_string_lossy().into_owned();
     let status = if which("xmllint").is_some() {
@@ -435,7 +494,9 @@ pub fn validate_source(xml_file: &str) -> Result<(), String> {
             .args(["--noout", "--relaxng", &schema, xml_file])
             .status()
     } else if which("jing").is_some() {
-        std::process::Command::new("jing").args([&schema, xml_file]).status()
+        std::process::Command::new("jing")
+            .args([&schema, xml_file])
+            .status()
     } else {
         return Err(
             "Validation needs an external RelaxNG validator (xmllint or jing); \

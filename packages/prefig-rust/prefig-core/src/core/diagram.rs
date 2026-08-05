@@ -67,7 +67,7 @@ pub struct Diagram {
     // coordinates, so `position_svg_label` composes this into each run's
     // placement. Keyed by el_key(label). See `line::add_label`.
     native_label_wrappers: HashMap<usize, crate::core::ctm::Mat2x3>,
-    saved_data: HashMap<usize, ((Point, Point), ())>,
+    saved_data: HashMap<usize, (Point, Point)>,
 
     pub defaults: indexmap::IndexMap<String, El>,
     external: Option<String>,
@@ -120,8 +120,7 @@ impl Diagram {
         labels: LabelState,
     ) -> Diagram {
         let root = xml::new_element("svg");
-        root.borrow_mut()
-            .set("xmlns", "http://www.w3.org/2000/svg");
+        root.borrow_mut().set("xmlns", "http://www.w3.org/2000/svg");
 
         let mut add_id_prefix = false;
         let mut id_prefix = String::new();
@@ -232,10 +231,7 @@ impl Diagram {
         };
 
         {
-            let id = diagram_element
-                .borrow()
-                .get("id")
-                .unwrap_or(figure_id);
+            let id = diagram_element.borrow().get("id").unwrap_or(figure_id);
             diagram.add_id(&root, Some(&id));
         }
 
@@ -383,7 +379,11 @@ impl Diagram {
         let result_id = match id {
             None => {
                 let tag = element.borrow().tag.clone();
-                let count = self.ids.entry(tag.clone()).and_modify(|c| *c += 1).or_insert(0);
+                let count = self
+                    .ids
+                    .entry(tag.clone())
+                    .and_modify(|c| *c += 1)
+                    .or_insert(0);
                 format!("__{tag}-{count}{suffix}")
             }
             Some(id) => {
@@ -529,11 +529,11 @@ impl Diagram {
     // ---------- saved data ----------
 
     pub fn save_line_endpoints(&mut self, element: &El, q1: Point, q2: Point) {
-        self.saved_data.insert(el_key(element), ((q1, q2), ()));
+        self.saved_data.insert(el_key(element), (q1, q2));
     }
 
     pub fn retrieve_line_endpoints(&self, element: &El) -> Option<(Point, Point)> {
-        self.saved_data.get(&el_key(element)).map(|(pts, _)| *pts)
+        self.saved_data.get(&el_key(element)).copied()
     }
 
     /// register_svg_element: remember which SVG element a source element
@@ -605,10 +605,9 @@ impl Diagram {
             let dims = self.diagram_element.borrow().get("dimensions");
             match dims {
                 Some(dims) => {
-                    let v = self
-                        .ctx
-                        .valid_eval(&dims)
-                        .map_err(|e| format!("Unable to parse the dimensions of this diagram: {e}"))?;
+                    let v = self.ctx.valid_eval(&dims).map_err(|e| {
+                        format!("Unable to parse the dimensions of this diagram: {e}")
+                    })?;
                     let v = v.as_vec_f64().map_err(|e| e.to_string())?;
                     (v[0], v[1])
                 }
@@ -884,17 +883,19 @@ impl Diagram {
     ) {
         let outline_width = outline_width.unwrap_or(if self.format == "tactile" { 18 } else { 4 });
 
-        let (stroke, width, fill) = {
+        let (width, fill) = {
             let mut p = path.borrow_mut();
-            let stroke = p.pop_attr("stroke").unwrap_or_else(|| "none".to_string());
+            // Strip styling off the path; the outline <use> below supplies its
+            // own. `stroke` is popped only to remove it from the path — its
+            // value is unused — mirroring Python's add_outline.
+            p.pop_attr("stroke");
             let width = p
                 .pop_attr("stroke-width")
                 .unwrap_or_else(|| "1".to_string());
             let fill = p.pop_attr("fill").unwrap_or_else(|| "none".to_string());
             p.pop_attr("stroke-dasharray");
-            (stroke, width, fill)
+            (width, fill)
         };
-        let _ = stroke;
 
         let existing_id = element.borrow().get("id");
         self.add_id(element, existing_id.as_deref());
@@ -939,10 +940,7 @@ impl Diagram {
                 &thickness.unwrap_or_else(|| "None".to_string()),
             );
             u.set("stroke", &stroke.unwrap_or_else(|| "None".to_string()));
-            u.set(
-                "stroke-dasharray",
-                &element.borrow().get_or("dash", "none"),
-            );
+            u.set("stroke-dasharray", &element.borrow().get_or("dash", "none"));
         }
         if element.borrow().get_or("id", "none") == parent.borrow().get_or("id", "none") {
             use_el.borrow_mut().pop_attr("id");
@@ -955,9 +953,7 @@ impl Diagram {
         } else {
             format!("{element_id}{suffix}-outline")
         };
-        use_el
-            .borrow_mut()
-            .set("href", &format!("#{reuse_handle}"));
+        use_el.borrow_mut().set("href", &format!("#{reuse_handle}"));
         if let Some(reusable) = self.get_reusable(&reuse_handle) {
             for marker in ["marker-start", "marker-end", "marker-mid"] {
                 let value = reusable.borrow().get_or(marker, "none");
@@ -1090,16 +1086,23 @@ impl Diagram {
                 id
             }
             "diagonal" | "backdiagonal" => {
-                let id =
-                    self.prepend_id_prefix(&format!("__{texture}_texture_{clean_color}"));
+                let id = self.prepend_id_prefix(&format!("__{texture}_texture_{clean_color}"));
                 pattern.borrow_mut().set("id", &id);
                 let s = if tactile { 13 } else { 9 };
                 pattern.borrow_mut().set("width", &s.to_string());
                 pattern.borrow_mut().set("height", &s.to_string());
                 let rows: [[i64; 4]; 3] = if texture == "diagonal" {
-                    [[-1, 1, 1, -1], [-1, s + 1, s + 1, -1], [s - 1, s + 1, s + 1, s - 1]]
+                    [
+                        [-1, 1, 1, -1],
+                        [-1, s + 1, s + 1, -1],
+                        [s - 1, s + 1, s + 1, s - 1],
+                    ]
                 } else {
-                    [[s - 1, -1, s + 1, 1], [-1, -1, s + 1, s + 1], [-1, s - 1, 1, s + 1]]
+                    [
+                        [s - 1, -1, s + 1, 1],
+                        [-1, -1, s + 1, s + 1],
+                        [-1, s - 1, 1, s + 1],
+                    ]
                 };
                 for data in rows {
                     mk_line(

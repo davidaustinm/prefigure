@@ -2,10 +2,10 @@
 
 use crate::core::diagram::Diagram;
 use crate::core::{
-    annotations, area, axes, circle, clip, coordinates, ctm_handlers, definition, diffeqs,
-    grid_axes, group, graph, image, implicit, label, legend, line, network, parametric_curve,
-    path, point, polygon, read, rectangle, repeat, riemann_sum, shape, slope_field, statistics,
-    tangent_line, vector,
+    annotations, area, axes, circle, clip, coordinates, ctm_handlers, definition, diffeqs, graph,
+    grid_axes, group, image, implicit, label, legend, line, network, parametric_curve, path, point,
+    polygon, read, rectangle, repeat, riemann_sum, shape, slope_field, statistics, tangent_line,
+    vector,
 };
 use crate::xml::El;
 
@@ -72,7 +72,9 @@ pub fn parse_element(
         "label" => label::label(element, diagram, root, outline_group),
         "legend" => legend::legend(element, diagram, root, outline_group),
         "network" => network::network(element, diagram, root, outline_group),
-        "parametric-curve" => parametric_curve::parametric_curve(element, diagram, root, outline_group),
+        "parametric-curve" => {
+            parametric_curve::parametric_curve(element, diagram, root, outline_group)
+        }
         "path" => path::path(element, diagram, root, outline_group),
         "polygon" => polygon::polygon_handler(element, diagram, root, outline_group),
         "line" => line::line(element, diagram, root, outline_group),
@@ -95,9 +97,7 @@ pub fn parse_element(
         "transform" => ctm_handlers::transform_group(element, diagram, root, outline_group),
         "triangle" => polygon::triangle(element, diagram, root, outline_group),
         "translate" => ctm_handlers::transform_translate(element, diagram, root, outline_group),
-        "translate3d" => {
-            ctm_handlers::transform_translate3d(element, diagram, root, outline_group)
-        }
+        "translate3d" => ctm_handlers::transform_translate3d(element, diagram, root, outline_group),
         "vector" => vector::vector(element, diagram, root, outline_group),
         "vector-field" => slope_field::vector_field(element, diagram, root, outline_group),
         _ => {

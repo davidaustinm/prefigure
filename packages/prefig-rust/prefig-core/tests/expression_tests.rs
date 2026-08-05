@@ -64,7 +64,9 @@ fn value_matches(actual: &Value, expect: &serde_json::Value, tol: Option<f64>) -
             let exp = v.as_object().expect("dict expectation");
             map.len() == exp.len()
                 && exp.iter().all(|(k, e)| {
-                    map.get(k).map(|a| value_matches(a, e, tol)).unwrap_or(false)
+                    map.get(k)
+                        .map(|a| value_matches(a, e, tol))
+                        .unwrap_or(false)
                 })
         }
         ("function", Value::Function(_)) => true,
@@ -92,9 +94,7 @@ fn expressions_match_python_reference() {
                     Ok(actual) => {
                         let expect = step.expect.as_ref().expect("eval step has expect");
                         if !value_matches(&actual, expect, step.tol) {
-                            failures.push(format!(
-                                "{label}: got {actual:?}, expected {expect}"
-                            ));
+                            failures.push(format!("{label}: got {actual:?}, expected {expect}"));
                         }
                     }
                     Err(e) => failures.push(format!("{label}: eval failed: {e}")),
@@ -110,10 +110,6 @@ fn expressions_match_python_reference() {
     }
 
     if !failures.is_empty() {
-        panic!(
-            "{} failures:\n{}",
-            failures.len(),
-            failures.join("\n")
-        );
+        panic!("{} failures:\n{}", failures.len(), failures.join("\n"));
     }
 }

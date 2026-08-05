@@ -4,8 +4,8 @@
 //! but not vertex-identical to Python's shapely.
 
 use crate::core::diagram::Diagram;
-use crate::core::utilities::{self as util};
 use crate::core::tags;
+use crate::core::utilities::{self as util};
 use crate::xml::{self, El};
 
 const ALLOWED_SHAPES: [&str; 12] = [
@@ -155,8 +155,7 @@ fn apply_operation(operation: &str, paths: &[String]) -> Option<String> {
     use geo::{BooleanOps, ConvexHull, MultiPolygon};
 
     let convex = operation == "convex-hull" || operation == "convex hull";
-    let geometries: Vec<MultiPolygon<f64>> =
-        paths.iter().map(|p| build_multipolygon(p)).collect();
+    let geometries: Vec<MultiPolygon<f64>> = paths.iter().map(|p| build_multipolygon(p)).collect();
 
     let result: MultiPolygon<f64> = match operation {
         "intersection" => {
@@ -198,10 +197,7 @@ fn apply_operation(operation: &str, paths: &[String]) -> Option<String> {
         }
         "convex-hull" | "convex hull" => {
             let first = geometries.first().cloned()?;
-            let unioned = geometries
-                .iter()
-                .skip(1)
-                .fold(first, |acc, g| acc.union(g));
+            let unioned = geometries.iter().skip(1).fold(first, |acc, g| acc.union(g));
             MultiPolygon::new(vec![unioned.convex_hull()])
         }
         other => {
@@ -291,13 +287,12 @@ fn build_multipolygon(path: &str) -> geo::MultiPolygon<f64> {
                     }
                 }
             }
-            "Z"
-                if !points.is_empty() => {
-                    polygons.push(Polygon::new(
-                        LineString::new(std::mem::take(&mut points)),
-                        vec![],
-                    ));
-                }
+            "Z" if !points.is_empty() => {
+                polygons.push(Polygon::new(
+                    LineString::new(std::mem::take(&mut points)),
+                    vec![],
+                ));
+            }
             _ => {}
         }
     }

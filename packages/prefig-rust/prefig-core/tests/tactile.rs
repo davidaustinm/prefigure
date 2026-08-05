@@ -52,7 +52,11 @@ fn tactile_output_is_distinct_and_emboss_paged() {
 
     for path in &figures {
         let source = std::fs::read_to_string(path).expect("read figure");
-        let name = path.strip_prefix(&dir).unwrap_or(path).display().to_string();
+        let name = path
+            .strip_prefix(&dir)
+            .unwrap_or(path)
+            .display()
+            .to_string();
 
         // <read>/<image> resolve data files relative to the source directory
         let _ = std::env::set_current_dir(path.parent().unwrap());

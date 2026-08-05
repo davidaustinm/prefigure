@@ -1,9 +1,9 @@
 //! Port of prefig/core/circle.py: circles, ellipses, arcs (angle markers TODO).
 
+use crate::core::arrow;
 use crate::core::ctm::CTM;
 use crate::core::diagram::{Diagram, Point};
 use crate::core::utilities::{self as util, pt2str};
-use crate::core::arrow;
 use crate::xml::{self, El};
 
 pub fn circle(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Option<&El>) {
@@ -221,11 +221,7 @@ pub fn arc(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opti
     util::add_attr(&arc, attrs);
     util::cliptobbox(&arc, element, diagram);
 
-    let arrows: i64 = element
-        .borrow()
-        .get_or("arrows", "0")
-        .parse()
-        .unwrap_or(0);
+    let arrows: i64 = element.borrow().get_or("arrows", "0").parse().unwrap_or(0);
     let (mut forward, mut backward) = ("marker-end", "marker-start");
     if element.borrow().get_or("reverse", "no") == "yes" {
         std::mem::swap(&mut forward, &mut backward);
@@ -280,11 +276,9 @@ pub fn angle(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
                 let v = diagram.ctx.valid_eval(&a).ok()?.as_vec_f64().ok()?;
                 (v.len() >= 2).then(|| [v[0], v[1]])
             };
-            let (Some(p), Some(p1), Some(p2)) = (
-                get(diagram, "p"),
-                get(diagram, "p1"),
-                get(diagram, "p2"),
-            ) else {
+            let (Some(p), Some(p1), Some(p2)) =
+                (get(diagram, "p"), get(diagram, "p1"), get(diagram, "p2"))
+            else {
                 log::error!("Error in <angle-marker> parsing attributes p, p1, or p2");
                 return;
             };

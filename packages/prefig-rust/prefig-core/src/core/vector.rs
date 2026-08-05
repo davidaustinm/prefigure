@@ -100,10 +100,7 @@ pub fn vector(element: &El, diagram: &mut Diagram, parent: &El, outline_group: O
         .unwrap_or(3.0);
     if location == "marker-end" {
         length -= thickness * arrow_head_length;
-        p1 = [
-            length * angle.cos() + p0[0],
-            length * angle.sin() + p0[1],
-        ];
+        p1 = [length * angle.cos() + p0[0], length * angle.sin() + p0[1]];
     }
 
     let mut cmds = vec![format!("M {}", pt2str(p0, " "))];
@@ -198,12 +195,8 @@ fn add_label(element: &El, diagram: &mut Diagram, parent: &El) {
             el.borrow_mut().set("abs-offset", &np2str(offset));
         }
         Some(alignment) => {
-            let displacement =
-                label::alignment_displacement(&alignment).unwrap_or([-0.5, 0.5]);
-            let mut def_offset = [
-                4.0 * (displacement[0] + 0.5),
-                4.0 * (displacement[1] - 0.5),
-            ];
+            let displacement = label::alignment_displacement(&alignment).unwrap_or([-0.5, 0.5]);
+            let mut def_offset = [4.0 * (displacement[0] + 0.5), 4.0 * (displacement[1] - 0.5)];
             if let Some(user_offset) = &user_offset {
                 if let Some(v) = diagram
                     .ctx

@@ -49,10 +49,9 @@ pub fn repeat(element: &El, diagram: &mut Diagram, parent: &El, outline_group: O
                 .and_then(|v| v.as_num().ok())
                 .map(|n| n as i64)
         };
-        let (Some(start), Some(stop)) = (
-            eval_int(diagram, bounds[0]),
-            eval_int(diagram, bounds[1]),
-        ) else {
+        let (Some(start), Some(stop)) =
+            (eval_int(diagram, bounds[0]), eval_int(diagram, bounds[1]))
+        else {
             log::error!("Unable to parse parameter {parameter} in <repeat>");
             return;
         };

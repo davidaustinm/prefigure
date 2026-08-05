@@ -66,7 +66,9 @@ fn examples_build_but_output_not_checked() {
                 build_from_string(format, &source, "pf_cli", stub_labels())
             }));
             match result {
-                Err(payload) => panicked.push(format!("{name} [{format}]: {}", panic_message(&*payload))),
+                Err(payload) => {
+                    panicked.push(format!("{name} [{format}]: {}", panic_message(&*payload)))
+                }
                 Ok(Ok(_)) => built += 1,
                 Ok(Err(_)) => graceful_errors += 1,
             }

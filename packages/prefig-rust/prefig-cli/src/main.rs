@@ -5,7 +5,11 @@ use prefig_core::evaluator::ExpressionContext;
 use std::process::ExitCode;
 
 #[derive(Parser)]
-#[command(name = "prefig", version, about = "PreFigure: an authoring system for mathematical diagrams")]
+#[command(
+    name = "prefig",
+    version,
+    about = "PreFigure: an authoring system for mathematical diagrams"
+)]
 struct Cli {
     /// -v for information and -vv for debugging
     #[arg(short, long, action = clap::ArgAction::Count, global = true)]

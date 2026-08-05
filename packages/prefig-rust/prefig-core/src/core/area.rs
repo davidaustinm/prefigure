@@ -48,11 +48,7 @@ pub fn area_between_curves(
         (f, g)
     };
 
-    let n: usize = element
-        .borrow()
-        .get_or("N", "100")
-        .parse()
-        .unwrap_or(100);
+    let n: usize = element.borrow().get_or("N", "100").parse().unwrap_or(100);
 
     let bbox = diagram.bbox();
     let domain_attr = element.borrow().get("domain");

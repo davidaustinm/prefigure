@@ -249,10 +249,7 @@ fn position_svg_label(element: &El, diagram: &mut Diagram, ctm: &CTM, group: &El
 
     let offset_attr = util::get_attr(element, "abs-offset", "none", &mut diagram.ctx);
     let mut offset = if offset_attr == "none" {
-        [
-            8.0 * (displacement[0] + 0.5),
-            8.0 * (displacement[1] - 0.5),
-        ]
+        [8.0 * (displacement[0] + 0.5), 8.0 * (displacement[1] - 0.5)]
     } else {
         match diagram
             .ctx
@@ -394,9 +391,7 @@ fn position_svg_label(element: &El, diagram: &mut Diagram, ctm: &CTM, group: &El
                     if text.is_empty() {
                         continue;
                     }
-                    if let Some(measured) =
-                        mk_text_element(text, &font, &label_group, diagram)
-                    {
+                    if let Some(measured) = mk_text_element(text, &font, &label_group, diagram) {
                         out_row.push(measured);
                     }
                 }
@@ -492,16 +487,15 @@ fn position_svg_label(element: &El, diagram: &mut Diagram, ctm: &CTM, group: &El
     // the transform that places the group:
     //   translate(anchor) · scale(s) · rotate(a) · translate(displacement)
     let anchor = [p[0] + offset[0], p[1] - offset[1]];
-    let scale: f64 = element
-        .borrow()
-        .get_or("scale", "1")
-        .parse()
-        .unwrap_or(1.0);
+    let scale: f64 = element.borrow().get_or("scale", "1").parse().unwrap_or(1.0);
     let rotate_attr = element.borrow().get("rotate");
     // The angle used for native placement (0 when absent/unparseable); the SVG
     // transform below preserves the original emission exactly (including an
     // explicit rotate(0)), so `Svg` output is byte-identical to before.
-    let angle: f64 = rotate_attr.as_ref().and_then(|r| r.parse::<f64>().ok()).unwrap_or(0.0);
+    let angle: f64 = rotate_attr
+        .as_ref()
+        .and_then(|r| r.parse::<f64>().ok())
+        .unwrap_or(0.0);
     let disp = [width * displacement[0], -height * displacement[1]];
 
     let mut tform = ctm::translatestr(anchor[0], anchor[1]);
@@ -557,7 +551,10 @@ fn position_svg_label(element: &El, diagram: &mut Diagram, ctm: &CTM, group: &El
                     TextPlacement {
                         text: el.text.clone().unwrap_or_default(),
                         family: el.get_or("font-family", "sans-serif"),
-                        size: el.get("font-size").and_then(|v| v.parse().ok()).unwrap_or(14.0),
+                        size: el
+                            .get("font-size")
+                            .and_then(|v| v.parse().ok())
+                            .unwrap_or(14.0),
                         italic: el.get("font-style").as_deref() == Some("italic"),
                         bold: el.get("font-weight").as_deref() == Some("bold"),
                         color: el.get("fill"),
@@ -678,10 +675,7 @@ fn position_braille_label(
 
     let offset_attr = util::get_attr(element, "abs-offset", "none", &mut diagram.ctx);
     let mut offset = if offset_attr == "none" {
-        [
-            8.0 * (displacement[0] + 0.5),
-            8.0 * (displacement[1] + 0.5),
-        ]
+        [8.0 * (displacement[0] + 0.5), 8.0 * (displacement[1] + 0.5)]
     } else {
         match diagram
             .ctx
@@ -835,7 +829,10 @@ fn position_braille_label(
     let rect = xml::sub_element(background_group, "rect");
     {
         let mut r = rect.borrow_mut();
-        r.set("id", &format!("{}-background", element.borrow().get_or("id", "none")));
+        r.set(
+            "id",
+            &format!("{}-background", element.borrow().get_or("id", "none")),
+        );
         r.set("x", &float2str(p[0] - bg_margin));
         r.set("y", &float2str(p[1] - height - bg_margin));
         r.set("width", &float2str(width + 2.0 * bg_margin));

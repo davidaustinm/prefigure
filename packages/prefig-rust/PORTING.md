@@ -52,7 +52,7 @@ path actually crashes on outlined labels where the Rust port renders correctly.
 | `core/parse.py` | `core/parse.rs` | ✅ | |
 | `engine.py` | `engine.rs` | ✅ | `build_from_string`, `build_source`, `build` (file). |
 | `core/tags.py` | `core/tags.rs` | ✅ | |
-| `core/label.py`, `label_tools.py` | `core/label.rs`, `core/label_tools.rs`, `core/ratex_math.rs` | ✅ | svg + braille label placement. Math backends, priority order: `ratex` (pure-Rust RaTeX LaTeX→SVG, in-module, KaTeX-styled — the host-free wasm path) → `mathjax-js` (embedded JS engine, experimental) → node/MathJax (`LocalMathLabels`) → WASM host `processMath`. Text via cairo (`text-cairo`) or the WASM host; braille via liblouis (`braille-liblouis`) or the WASM host. |
+| `core/label.py`, `label_tools.py` | `core/label.rs`, `core/label_tools.rs`, `core/ratex_math.rs` | ✅ | svg + braille label placement. Math backends, priority order: `ratex` (pure-Rust RaTeX LaTeX→SVG, in-module, KaTeX-styled — the host-free wasm path) → node/MathJax (`LocalMathLabels`) → WASM host `processMath`. Text via cairo (`text-cairo`) or the WASM host; braille via liblouis (`braille-liblouis`) or the WASM host. |
 | `core/annotations.py` | `core/annotations.rs` | ✅ | includes `diagram_to_speech` (pyodide default annotations), verified byte-for-byte against Python. |
 | `core/coordinates.py` | `core/coordinates.rs` | ✅ | |
 | `core/grid_axes.py`, `axes.py` | `core/grid_axes.rs`, `core/axes.rs` | ✅ | |

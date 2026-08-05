@@ -1,8 +1,8 @@
 //! Port of prefig/core/point.py.
 
 use crate::core::diagram::Diagram;
-use crate::core::utilities::{self as util, float2str, pt2long_str, pt2str};
 use crate::core::label;
+use crate::core::utilities::{self as util, float2str, pt2long_str, pt2str};
 use crate::value::py_str;
 use crate::xml::{self, El};
 

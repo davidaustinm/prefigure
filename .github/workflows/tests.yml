@@ -57,3 +57,27 @@ jobs:
             poetry run prefig init
             poetry run pytest -vv
             cargo test --manifest-path packages/prefig-rust/Cargo.toml
+
+  # Formatting and lint checks for the Rust port. Kept separate from the test
+  # job above (which needs the whole dev container) because fmt and clippy need
+  # only the Rust toolchain: clippy is check-only, so it does not link, and the
+  # crate's cairo FFI (#[link(name = "cairo")]) needs no system library here.
+  lint:
+    name: Lint Rust (fmt + clippy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Rust toolchain
+        run: |
+          rustup set profile minimal
+          rustup toolchain install stable --component rustfmt --component clippy
+          rustup default stable
+
+      - name: cargo fmt
+        working-directory: ./packages/prefig-rust
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy
+        working-directory: ./packages/prefig-rust
+        run: cargo clippy -- -D warnings

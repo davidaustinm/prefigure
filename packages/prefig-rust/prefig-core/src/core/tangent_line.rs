@@ -16,19 +16,13 @@ pub fn tangent(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
     let f = match diagram.ctx.valid_eval(&function_attr) {
         Ok(f @ Value::Function(_)) => f,
         _ => {
-            log::error!(
-                "Error retrieving tangent-line attribute @function={function_attr}"
-            );
+            log::error!("Error retrieving tangent-line attribute @function={function_attr}");
             return;
         }
     };
 
     let point_attr = element.borrow().get("point").unwrap_or_default();
-    let Ok(a) = diagram
-        .ctx
-        .valid_eval(&point_attr)
-        .and_then(|v| v.as_num())
-    else {
+    let Ok(a) = diagram.ctx.valid_eval(&point_attr).and_then(|v| v.as_num()) else {
         log::error!("Error parsing tangent-line attribute @point={point_attr}");
         return;
     };
@@ -85,8 +79,7 @@ pub fn tangent(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
     let line_el = if scales == [AxisScale::Linear, AxisScale::Linear] {
         let p1 = [x1, tangent(x1)];
         let p2 = [x2, tangent(x2)];
-        let (p1, p2) = if element.borrow().get_or("infinite", "") == "yes"
-            || domain_attr.is_none()
+        let (p1, p2) = if element.borrow().get_or("infinite", "") == "yes" || domain_attr.is_none()
         {
             match infinite_line(p1, p2, diagram, None) {
                 Some(pair) => pair,
