@@ -128,14 +128,11 @@ export const playgroundModel: PlaygroundModel = {
     </point>
   </coordinates>
 
-  <annotations>
-    <annotation ref="figure"
-                text="The graph of a function and its tangent line at the point a equals 1">
-      <annotation ref="graph-group" text="The graph and its tangent line">
-        <annotation ref="graph" text="The graph of the function f" sonify="yes"/>
-        <annotation ref="point" text="The point a comma f of a"/>
-        <annotation ref="tangent" text="The tangent line to the graph of f at the point"/>
-      </annotation>
+  <annotations text="The graph of a function and its tangent line at the point a equals 1">
+    <annotation ref="graph-group" text="The graph and its tangent line">
+      <annotation ref="graph" text="The graph of the function f" sonify="yes"/>
+      <annotation ref="point" text="The point a comma f of a"/>
+      <annotation ref="tangent" text="The tangent line to the graph of f at the point"/>
     </annotation>
   </annotations>
 </diagram>`,
