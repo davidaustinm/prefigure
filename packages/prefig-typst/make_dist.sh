@@ -186,10 +186,11 @@ for f in examples/*.typ; do
 done
 
 echo "==> Rendering README screenshots"
-"$TYPST_BIN" compile --root "$REPO_ROOT" -f png --ppi 130 examples/showcase.typ     examples/images/showcase.png
-"$TYPST_BIN" compile --root "$REPO_ROOT" -f png --ppi 130 examples/quickstart.typ   examples/images/quickstart.png
-"$TYPST_BIN" compile --root "$REPO_ROOT" -f png --ppi 130 examples/label-modes.typ  examples/images/label-modes.png
-"$TYPST_BIN" compile --root "$REPO_ROOT" -f png --ppi 130 examples/math-by-typst.typ examples/images/math-by-typst.png
+# The README's images are generated from the README's own ```typ blocks by
+# scripts/build-docs.mjs (each block-before-an-<img> is that image's source),
+# so the screenshots always match the documented code. Regenerate them here
+# rather than compiling a hand-maintained list of example files.
+TYPST="$TYPST_BIN" node scripts/build-docs.mjs
 
 echo "==> Assembling $PKG/"
 rm -rf dist
@@ -201,9 +202,15 @@ cp typst.toml LICENSE "$PKG/"
 # markdown links `](path)` and `<a href="path">` become blob links (tree links
 # for directory paths ending in `/`), and `<img src="path">` becomes a
 # raw.githubusercontent.com link. Absolute/anchor/mailto targets are untouched.
+# Finally, any `#import "../src/lib.typ"` inside a documentation code block (the
+# in-tree path the README uses so its examples resolve against this checkout) is
+# rewritten to the published package spec `@preview/prefigure:<version>`, so the
+# snippets a reader copies from Typst Universe work as-is — the same import-path
+# rewrite the example-validation step below applies to examples/*.typ.
 awk '/^## Development$/ { skip = 1; next } skip && /^## / { skip = 0 } !skip' \
     README.md \
-    | BLOB_BASE="$BLOB_BASE" TREE_BASE="$TREE_BASE" RAW_BASE="$RAW_BASE" perl -pe '
+    | BLOB_BASE="$BLOB_BASE" TREE_BASE="$TREE_BASE" RAW_BASE="$RAW_BASE" VERSION="$VERSION" perl -pe '
+        s{"\.\./src/lib\.typ"}{"\@preview/prefigure:$ENV{VERSION}"}g;
         s{\]\(([^)]+)\)}{
             my $p = $1;
             $p =~ m{^(?:https?:|#|mailto:)} ? "](" . $p . ")"

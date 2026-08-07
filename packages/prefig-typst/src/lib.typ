@@ -35,10 +35,14 @@
 // RELAX NG validator for the PreFigure schema.
 // Built lazily and memoised: the grammar is compiled once per document, and only
 // when a `validate: true` call actually needs it (a validate:false-only document
-// never loads it). Uses pf_adapter.rnc, which accepts diagrams in either no
-// namespace or the https://prefigure.org namespace.
+// never loads it). Validates against pf_schema.rnc directly: every diagram a
+// Typst document feeds in — read() of a `.xml` file, or a `tags.*` tree — is
+// namespace-free, which is exactly what pf_schema.rnc accepts. (The pf_adapter.rnc
+// wrapper additionally accepts the https://prefigure.org namespace for PreTeXt
+// xi:inclusion, but it does so via `external "…" inherit = pf`, which the xmlit
+// 0.1.3 validator plugin can't compile; that namespace case never arises here.)
 #let _make-validator() = {
-  create-from-relaxng(read("pf_adapter.rnc")).utils.validate
+  create-from-relaxng(read("pf_schema.rnc")).utils.validate
 }
 
 // A validation result's errors (each `(message, snippet?)`) as a plain string,
