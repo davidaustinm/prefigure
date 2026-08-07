@@ -328,7 +328,7 @@ class Diagram:
 
     def annotate_source(self):
         if (self.environment == 'pyodide' and
-            len(self.diagram_element.xpath('.//annotations')) == 0
+            not self.author_annotations_present
             ):
             diagram_annotations = annotations.diagram_to_speech(
                 self.diagram_element_copy,
