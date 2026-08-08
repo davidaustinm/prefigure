@@ -346,7 +346,7 @@
 // aborts) on the SAME schema prefigure() validates against — a guard
 // that `validate: true` is actually hooked up and behaving.
 #import "@preview/xmlit:0.1.3": create-from-relaxng
-#let _val = create-from-relaxng(read("../src/pf_adapter.rnc")).utils.validate
+#let _val = create-from-relaxng(read("../src/pf_schema.rnc")).utils.validate
 #assert(
   _val(read(fixtures + "/no_labels.xml")).valid,
   message: "no_labels.xml should pass schema validation",
