@@ -14,7 +14,11 @@ log = logging.getLogger('prefigure')
 def point(element, diagram, parent, outline_group):
     # determine the location and size of the point from the XML element
     try:
-        p = un.valid_eval(element.get('p'))
+        p_data = diagram.get_source_data(element, 'p')
+        if p_data is not None:
+            p = p_data
+        else:
+            p = un.valid_eval(element.get('p'))
         if element.get('coordinates', 'cartesian') == 'polar':
             radial = p[0]
             angle = p[1]

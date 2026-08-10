@@ -654,3 +654,83 @@ def network(element, diagram, parent, outline_group):
         coordinates.coordinates(element, diagram, parent, outline_group)
     else:
         group.group(element,diagram, parent, outline_group)
+
+def poset(element, diagram, parent, outline_group):
+    try:
+        structure = element.get('structure')
+        poset_struct = un.valid_eval(structure)
+
+    except:
+        log.error(f"Error parsing structure attribute of poset: {structure}")
+        return
+
+    class Node():
+        def __init__(self, name, parents):
+            self.name = name
+            self.parents = parents
+            self.level = 0
+            self.coordinates = None
+
+        def increment(self):
+            self.level += 1
+
+        def __str__(self):
+            return str(self.name)
+
+    nodes = {}
+    for key, value in poset_struct.items():
+        nodes[key] = Node(key, value)
+
+    levels = []
+    unplaced = nodes.values()
+
+    while len(unplaced) > 0:
+        next_unplaced = []
+        for n in unplaced:
+            for parent_node in n.parents:
+                parent_node = nodes[parent_node]
+                if parent_node in next_unplaced:
+                    continue
+                parent_node.increment()
+                next_unplaced.append(parent_node)
+        next_level = set(unplaced).difference(set(next_unplaced))
+        if len(next_level) == 0:
+            log.error('Poset structure contains a cycle')
+            return
+        levels.append(next_level)
+        unplaced = next_unplaced
+
+    max_width = 0
+    for num, level in enumerate(levels):
+        names = [n.name for n in level]
+        names.sort()
+        x = -(len(level)-1) / 2
+        max_width = max(max_width, -x)
+        for name in names:
+            nodes[name].coordinates = (x, num)
+            x += 1
+
+    coords_el = ET.Element('coordinates')
+    bbox = f"({-max_width}, 0, {max_width}, {len(levels)-1})"
+    coords_el.set('bbox', bbox)
+    group = ET.SubElement(coords_el, 'group')
+    edge_group = ET.SubElement(group, 'group')
+    node_group = ET.SubElement(group, 'group')
+    for key, value in poset_struct.items():
+        lower_endpoint = nodes[key].coordinates
+        for upper in value:
+            line_el = ET.SubElement(edge_group, 'line')
+            line_el.set('stroke', element.get('edge-stroke', 'black'))
+            line_el.set('thickness', element.get('edge-thickness', '2'))
+            endpoints = (lower_endpoint, nodes[upper].coordinates)
+            diagram.register_source_data(line_el, 'endpoints', endpoints)
+
+    for name, node in nodes.items():
+        point_el = ET.SubElement(node_group, 'point')
+        point_el.set('size', element.get('node-size', '3'))
+        point_el.set('style', element.get('node-style', 'circle'))
+        point_el.set('fill', element.get('node-fill', 'white'))
+        point_el.set('stroke', element.get('node-stroke', 'black'))
+        diagram.register_source_data(point_el, 'p', node.coordinates)
+
+    coordinates.coordinates(coords_el, diagram, parent, outline_group)

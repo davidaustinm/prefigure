@@ -15,7 +15,14 @@ log = logging.getLogger('prefigure')
 
 # Process a line XML element into an SVG line element
 def line(element, diagram, parent, outline_group):
-    endpts = element.get('endpoints', None)
+    endpts_from_diagram = diagram.get_source_data(element, 'endpoints')
+    if endpts_from_diagram is not None:
+        endpts = endpts_from_diagram
+        p1, p2 = endpts
+        eval_endpts = False
+    else:
+        endpts = element.get('endpoints', None)
+        eval_endpts = True
     if endpts is None:
         try:
             p1 = un.valid_eval(element.get('p1'))
@@ -29,7 +36,8 @@ def line(element, diagram, parent, outline_group):
             return
     else:
         try:
-            p1, p2 = un.valid_eval(endpts)
+            if eval_endpts:
+                p1, p2 = un.valid_eval(endpts)
         except:
             log.error(f"Error in <line> parsing endpoints={element.get('endpoints')}")
             return

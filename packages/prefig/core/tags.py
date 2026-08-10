@@ -95,6 +95,7 @@ try:
     tag_dict['de-solve'] = diffeqs.de_solve
     tag_dict['define-shapes'] = shape.define
     tag_dict['network'] = network.network
+    tag_dict['poset'] = network.poset
     tag_dict['plot-de-solution'] = diffeqs.plot_de_solution
     tag_dict['shape'] = shape.shape
 except:
