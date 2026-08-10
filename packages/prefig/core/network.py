@@ -670,6 +670,7 @@ def poset(element, diagram, parent, outline_group):
             self.parents = parents
             self.level = 0
             self.coordinates = None
+            self.label = None
 
         def increment(self):
             self.level += 1
@@ -726,11 +727,25 @@ def poset(element, diagram, parent, outline_group):
             diagram.register_source_data(line_el, 'endpoints', endpoints)
 
     for name, node in nodes.items():
-        point_el = ET.SubElement(node_group, 'point')
-        point_el.set('size', element.get('node-size', '3'))
-        point_el.set('style', element.get('node-style', 'circle'))
-        point_el.set('fill', element.get('node-fill', 'white'))
-        point_el.set('stroke', element.get('node-stroke', 'black'))
-        diagram.register_source_data(point_el, 'p', node.coordinates)
+        if element.get('centered-labels', 'no') == 'yes':
+            if node.label is not None:
+                label_el = copy.deepcopy(node.label)
+                label_el.tag = 'label'
+                node_group.append(label_el)
+            else:
+                label_el = ET.SubElement(node_group, 'label')
+                location = node.coordinates
+                label_el.set('anchor', f"({location[0]}, {location[1]})")
+                label_el.set('alignment', 'center')
+                label_el.set('clear-background', 'yes')
+                math_el = ET.SubElement(label_el, 'm')
+                math_el.text = str(node.name)
+        else:
+            point_el = ET.SubElement(node_group, 'point')
+            point_el.set('size', element.get('node-size', '3'))
+            point_el.set('style', element.get('node-style', 'circle'))
+            point_el.set('fill', element.get('node-fill', 'white'))
+            point_el.set('stroke', element.get('node-stroke', 'black'))
+            diagram.register_source_data(point_el, 'p', node.coordinates)
 
     coordinates.coordinates(coords_el, diagram, parent, outline_group)
