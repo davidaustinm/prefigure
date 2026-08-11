@@ -746,6 +746,24 @@ def poset(element, diagram, parent, outline_group):
             continue
         node.authored_data = child
 
+    if diagram.output_format() == 'tactile':
+        default_attrs = {
+            'node-size': '9',
+            'node-style': 'circle',
+            'node-stroke': 'black',
+            'node-fill': 'none',
+            'edge-thickness': '2',
+            'edge-stroke': 'black'
+        }
+    else:
+        default_attrs = {
+            'node-size': '2',
+            'node-style': 'circle',
+            'node-stroke': 'black',
+            'node-fill': 'white',
+            'edge-thickness': '2',
+            'edge-stroke': 'black'
+        }
     first_node = list(nodes.keys())[0]
     first_node_location = nodes[first_node].coordinates
     bbox = [first_node_location[0],
@@ -772,8 +790,14 @@ def poset(element, diagram, parent, outline_group):
             line_el = ET.SubElement(edge_group, 'line')
             line_el.set('id', f'edge-{lower_str}-{str(nodes[upper].name)}')
             diagram.add_id(line_el, line_el.get('id'))
-            line_el.set('stroke', element.get('edge-stroke', 'black'))
-            line_el.set('thickness', element.get('edge-thickness', '2'))
+            line_el.set('stroke',
+                        element.get('edge-stroke',
+                                    default_attrs['edge-stroke'])
+                        )
+            line_el.set('thickness',
+                        element.get('edge-thickness',
+                                    default_attrs['edge-thickness'])
+                        )
             endpoints = (lower_endpoint, nodes[upper].coordinates)
             diagram.register_source_data(line_el, 'endpoints', endpoints)
 
@@ -813,13 +837,25 @@ def poset(element, diagram, parent, outline_group):
                     data.set('p',
                              f"({node.coordinates[0]},{node.coordinates[1]})")
                 if data.get('size', None) is None:
-                    data.set('size', element.get('node-size', '3'))
+                    data.set('size',
+                             element.get('node-size',
+                                         default_attrs['node-size'])
+                             )
                 if data.get('style', None) is None:
-                    data.set('style', element.get('node-style', 'circle'))
+                    data.set('style',
+                             element.get('node-style',
+                                         default_attrs['node-style'])
+                             )
                 if data.get('fill', None) is None:
-                    data.set('fill', element.get('node-fill', 'white'))
+                    data.set('fill',
+                             element.get('node-fill',
+                                         default_attrs['node-fill'])
+                             )
                 if data.get('stroke', None) is None:
-                    data.set('stroke', element.get('node-stroke', 'black'))
+                    data.set('stroke',
+                             element.get('node-stroke',
+                                         default_attrs['node-stroke'])
+                             )
                 if labeled:
                     if data.get('alignment', None) is None:
                         if node.alignment is not None:
