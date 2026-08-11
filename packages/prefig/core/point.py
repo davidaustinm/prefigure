@@ -130,7 +130,7 @@ def point(element, diagram, parent, outline_group):
         finish_outline(element, diagram, parent)
     elif (element.get('outline', 'no') == 'yes'
             or diagram.output_format() == 'tactile'):
-        diagram.add_outline(element, shape, outline_group)
+        diagram.add_outline(element, shape, parent)
         finish_outline(element, diagram, parent)
     else:
         parent.append(shape)
