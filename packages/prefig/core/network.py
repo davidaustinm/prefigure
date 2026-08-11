@@ -657,11 +657,11 @@ def network(element, diagram, parent, outline_group):
 
 def poset(element, diagram, parent, outline_group):
     try:
-        structure = element.get('orderings')
+        structure = element.get('comparisons')
         poset_struct = un.valid_eval(structure)
 
     except:
-        log.error(f"Error parsing structure attribute of poset: {structure}")
+        log.error(f"Error parsing comparisons attribute of poset: {structure}")
         return
 
     class Node():
