@@ -14,7 +14,11 @@ log = logging.getLogger('prefigure')
 def point(element, diagram, parent, outline_group):
     # determine the location and size of the point from the XML element
     try:
-        p = un.valid_eval(element.get('p'))
+        p_data = diagram.get_source_data(element, 'p')
+        if p_data is not None:
+            p = p_data
+        else:
+            p = un.valid_eval(element.get('p'))
         if element.get('coordinates', 'cartesian') == 'polar':
             radial = p[0]
             angle = p[1]
@@ -48,8 +52,6 @@ def point(element, diagram, parent, outline_group):
         parent = group
         diagram.add_id(group, element.get('id'))
         diagram.register_svg_element(element, parent)
-        add_label(element, diagram, parent)
-
     else:
         diagram.add_id(shape, element.get('id'))
         diagram.register_svg_element(element, shape)
@@ -121,15 +123,21 @@ def point(element, diagram, parent, outline_group):
     util.add_attr(shape, util.get_2d_attr(element))
     util.cliptobbox(shape, element, diagram)
 
+    if has_label and not element.get('alignment', 'ne').startswith('c'):
+        add_label(element, diagram, parent)
+
     if outline_group is not None:
         diagram.add_outline(element, shape, outline_group)
         finish_outline(element, diagram, parent)
     elif (element.get('outline', 'no') == 'yes'
             or diagram.output_format() == 'tactile'):
-        diagram.add_outline(element, shape, outline_group)
+        diagram.add_outline(element, shape, parent)
         finish_outline(element, diagram, parent)
     else:
         parent.append(shape)
+
+    if has_label and element.get('alignment', 'ne').startswith('c'):
+        add_label(element, diagram, parent)
 
 def inside(p, center, size, style, ctm, buffer=0):
     p = ctm.transform(p)

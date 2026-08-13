@@ -654,3 +654,237 @@ def network(element, diagram, parent, outline_group):
         coordinates.coordinates(element, diagram, parent, outline_group)
     else:
         group.group(element,diagram, parent, outline_group)
+
+def poset(element, diagram, parent, outline_group):
+    try:
+        structure = element.get('covers')
+        poset_struct = un.valid_eval(structure)
+
+    except:
+        log.error(f"Error parsing covers attribute of poset: {structure}")
+        return
+
+    class Node():
+        def __init__(self, name, parents):
+            self.name = name
+            self.label = str(name)
+            self.parents = parents
+            self.level = 0
+            self.coordinates = None
+            self.alignment = 'center'
+            self.authored_data = None
+
+        def increment(self):
+            self.level += 1
+
+        def __str__(self):
+            return str(self.name)
+
+    nodes = {}
+    for key, covers in poset_struct.items():
+        nodes[key] = Node(key, covers)
+        for cover in covers:
+            if nodes.get(cover, None) is None:
+                nodes[cover] = Node(cover, [])
+
+    levels = []
+    unplaced = nodes.values()
+
+    while len(unplaced) > 0:
+        next_unplaced = []
+        for n in unplaced:
+            for parent_node in n.parents:
+                parent_node = nodes[parent_node]
+                if parent_node in next_unplaced:
+                    continue
+                parent_node.increment()
+                next_unplaced.append(parent_node)
+        next_level = set(unplaced).difference(set(next_unplaced))
+        if len(next_level) == 0:
+            log.error('Poset structure contains a cycle')
+            return
+        levels.append(next_level)
+        unplaced = next_unplaced
+
+    for num, level in enumerate(levels):
+        names = [n.name for n in level]
+        names.sort()
+        x = -(len(level)-1) / 2
+        for name in names:
+            nodes[name].coordinates = (x, num)
+            x += 1
+
+    el_labels = element.get('labels', None)
+    if el_labels is not None:
+        element.set('labeled', 'yes')
+        labels = un.valid_eval(el_labels)
+        for node, label_value in labels.items():
+            nodes[node].label = label_value
+
+    el_locations = element.get('locations', None)
+    if el_locations is not None:
+        locations = un.valid_eval(el_locations)
+        for node, location in locations.items():
+            nodes[node].coordinates = location
+
+    el_alignments = element.get('alignments', None)
+    if el_alignments is not None:
+        alignments = un.valid_eval(el_alignments)
+        for node, alignment in alignments.items():
+            nodes[node].alignment = alignment
+
+    labeled = element.get('labeled', 'no') == 'yes'
+
+    for child in element:
+        if child.tag != 'node':
+            log.error('Only <node> elements are allowed here')
+            continue
+        handle = child.get('at', None)
+        if handle is None:
+            log.error('A <node> element needs an attribute "at"')
+            continue
+        handle = un.valid_eval(handle)
+        node = nodes.get(handle, None)
+        if node is None:
+            log.error('There is not a <node> element with at="handle"')
+            continue
+        node.authored_data = child
+        if child.get('p', None) is not None:
+            node.coordinates = un.valid_eval(child.get('p'))
+
+    if diagram.output_format() == 'tactile':
+        default_attrs = {
+            'node-size': '9',
+            'node-style': 'circle',
+            'node-stroke': 'black',
+            'node-fill': 'none',
+            'edge-thickness': '2',
+            'edge-stroke': 'black'
+        }
+    else:
+        default_attrs = {
+            'node-size': '2',
+            'node-style': 'circle',
+            'node-stroke': 'black',
+            'node-fill': 'white',
+            'edge-thickness': '2',
+            'edge-stroke': 'black'
+        }
+    first_node = list(nodes.keys())[0]
+    first_node_location = nodes[first_node].coordinates
+    bbox = [first_node_location[0],
+            first_node_location[1],
+            first_node_location[0],
+            first_node_location[1]]
+    for key, node in nodes.items():
+        location = node.coordinates
+        bbox = [min(bbox[0], location[0]),
+                min(bbox[1], location[1]),
+                max(bbox[2], location[0]),
+                max(bbox[3], location[1])]
+
+    coords_el = ET.Element('coordinates')
+    bbox_str = f"({bbox[0]}, {bbox[1]}, {bbox[2]}, {bbox[3]})"
+    coords_el.set('bbox', bbox_str)
+    group = ET.SubElement(coords_el, 'group')
+    edge_group = ET.SubElement(group, 'group')
+    node_group = ET.SubElement(group, 'group')
+    for key, value in poset_struct.items():
+        lower_endpoint = nodes[key].coordinates
+        lower_str = str(nodes[key].name)
+        for upper in value:
+            line_el = ET.SubElement(edge_group, 'line')
+            line_el.set('id', f'edge-{lower_str}-{str(nodes[upper].name)}')
+            diagram.add_id(line_el, line_el.get('id'))
+            line_el.set('stroke',
+                        element.get('edge-stroke',
+                                    default_attrs['edge-stroke'])
+                        )
+            line_el.set('thickness',
+                        element.get('edge-thickness',
+                                    default_attrs['edge-thickness'])
+                        )
+            endpoints = (lower_endpoint, nodes[upper].coordinates)
+            diagram.register_source_data(line_el, 'endpoints', endpoints)
+
+    for name, node in nodes.items():
+        if element.get('centered-labels', 'no') == 'yes':
+            if node.authored_data is not None:
+                data = node.authored_data
+                label_el = copy.deepcopy(data)
+                label_el.tag = 'label'
+                label_el.set('anchor',
+                             f"({node.coordinates[0]},{node.coordinates[1]})")
+                node_group.append(label_el)
+                if data.get('alignment', None) is None:
+                    if node.alignment is not None:
+                        label_el.set('alignment', node.alignment)
+                else:
+                    label_el.set('alignment', data.get('alignment'))
+                data.set('clear-background', 'yes')
+            else:
+                label_el = ET.SubElement(node_group, 'label')
+                label_el.set('id', str(node.name))
+                diagram.add_id(label_el, label_el.get('id'))
+                location = node.coordinates
+                label_el.set('anchor', f"({location[0]}, {location[1]})")
+                label_el.set('alignment', 'center')
+                label_el.set('clear-background', 'yes')
+                math_el = ET.SubElement(label_el, 'm')
+                math_el.text = node.label
+        else:
+            if node.authored_data is not None:
+                data = node.authored_data
+                node_group.append(data)
+                data.tag = 'point'
+                if data.get('p', None) is None:
+                    data.set('p',
+                             f"({node.coordinates[0]},{node.coordinates[1]})")
+                if data.get('size', None) is None:
+                    data.set('size',
+                             element.get('node-size',
+                                         default_attrs['node-size'])
+                             )
+                if data.get('style', None) is None:
+                    data.set('style',
+                             element.get('node-style',
+                                         default_attrs['node-style'])
+                             )
+                if data.get('fill', None) is None:
+                    data.set('fill',
+                             element.get('node-fill',
+                                         default_attrs['node-fill'])
+                             )
+                if data.get('stroke', None) is None:
+                    data.set('stroke',
+                             element.get('node-stroke',
+                                         default_attrs['node-stroke'])
+                             )
+                if labeled:
+                    if data.get('alignment', None) is None:
+                        if node.alignment is not None:
+                            data.set('alignment', node.alignment)
+                    if not label.has_label(data):
+                        math_el = ET.SubElement(data, 'm')
+                        math_el.text = node.label
+            else:
+                point_el = ET.SubElement(node_group, 'point')
+                diagram.add_id(point_el, str(node.name))
+                point_el.set('p',
+                             f"({node.coordinates[0]},{node.coordinates[1]})")
+                point_el.set('size', element.get('node-size', '3'))
+                point_el.set('style', element.get('node-style', 'circle'))
+                point_el.set('fill', element.get('node-fill', 'white'))
+                point_el.set('stroke', element.get('node-stroke', 'black'))
+                if labeled:
+                    point_el.set('alignment', node.alignment)
+                    if isinstance(node.label, ET._Element):
+                        point_el.text = node.label.text
+                        for child in node.label:
+                            point_el.append(copy.deepcopy(child))
+                    else:
+                        math_el = ET.SubElement(point_el, 'm')
+                        math_el.text = node.label
+                diagram.register_source_data(point_el, 'p', node.coordinates)
+
+    coordinates.coordinates(coords_el, diagram, parent, outline_group)
