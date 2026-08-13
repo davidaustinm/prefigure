@@ -657,11 +657,11 @@ def network(element, diagram, parent, outline_group):
 
 def poset(element, diagram, parent, outline_group):
     try:
-        structure = element.get('comparisons')
+        structure = element.get('covers')
         poset_struct = un.valid_eval(structure)
 
     except:
-        log.error(f"Error parsing comparisons attribute of poset: {structure}")
+        log.error(f"Error parsing covers attribute of poset: {structure}")
         return
 
     class Node():
@@ -671,7 +671,7 @@ def poset(element, diagram, parent, outline_group):
             self.parents = parents
             self.level = 0
             self.coordinates = None
-            self.alignment = 'ne'
+            self.alignment = 'center'
             self.authored_data = None
 
         def increment(self):
@@ -681,8 +681,11 @@ def poset(element, diagram, parent, outline_group):
             return str(self.name)
 
     nodes = {}
-    for key, value in poset_struct.items():
-        nodes[key] = Node(key, value)
+    for key, covers in poset_struct.items():
+        nodes[key] = Node(key, covers)
+        for cover in covers:
+            if nodes.get(cover, None) is None:
+                nodes[cover] = Node(cover, [])
 
     levels = []
     unplaced = nodes.values()
@@ -713,6 +716,7 @@ def poset(element, diagram, parent, outline_group):
 
     el_labels = element.get('labels', None)
     if el_labels is not None:
+        element.set('labeled', 'yes')
         labels = un.valid_eval(el_labels)
         for node, label_value in labels.items():
             nodes[node].label = label_value
@@ -729,7 +733,7 @@ def poset(element, diagram, parent, outline_group):
         for node, alignment in alignments.items():
             nodes[node].alignment = alignment
 
-    labeled = element.get('labeled', 'yes') == 'yes'
+    labeled = element.get('labeled', 'no') == 'yes'
 
     for child in element:
         if child.tag != 'node':
@@ -745,6 +749,8 @@ def poset(element, diagram, parent, outline_group):
             log.error('There is not a <node> element with at="handle"')
             continue
         node.authored_data = child
+        if child.get('p', None) is not None:
+            node.coordinates = un.valid_eval(child.get('p'))
 
     if diagram.output_format() == 'tactile':
         default_attrs = {
@@ -815,16 +821,14 @@ def poset(element, diagram, parent, outline_group):
                         label_el.set('alignment', node.alignment)
                 else:
                     label_el.set('alignment', data.get('alignment'))
-
+                data.set('clear-background', 'yes')
             else:
                 label_el = ET.SubElement(node_group, 'label')
-                label_el.set('id', node.get('id'))
+                label_el.set('id', str(node.name))
+                diagram.add_id(label_el, label_el.get('id'))
                 location = node.coordinates
                 label_el.set('anchor', f"({location[0]}, {location[1]})")
-                if node.alignment is not None:
-                    label_el.set('alignment', node.alignment)
-                else:
-                    label_el.set('alignment', 'center')
+                label_el.set('alignment', 'center')
                 label_el.set('clear-background', 'yes')
                 math_el = ET.SubElement(label_el, 'm')
                 math_el.text = node.label
