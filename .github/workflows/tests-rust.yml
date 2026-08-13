@@ -1,4 +1,4 @@
-name: tests
+name: rust tests
 
 on:
   push:
@@ -33,29 +33,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Run tests in dev container
+      - name: Run Rust tests in dev container
         uses: devcontainers/ci@v0.3
         with:
           configFile: .devcontainer/devcontainer.json
           imageName: ghcr.io/${{ github.repository }}/devcontainer
           cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
           push: never
-          # poetry is installed with `pip install --user`, so make sure
-          # ~/.local/bin is on PATH for this non-interactive shell. MathJax is
-          # fetched by `prefig init` (postCreateCommand does not run it).
-          #
-          # The Rust port (packages/prefig-rust) is tested too: its
-          # `rust_output_matches_python` test compares Rust SVG output against the
-          # SAME shared snapshots (packages/tests/snapshots) that the Python suite
+          # The Rust port (packages/prefig-rust) is tested against the SAME
+          # shared snapshots (packages/tests/snapshots) that the Python suite
           # checks, so a Python-side change that regenerates a snapshot must be
-          # mirrored in Rust. Only pytest ran here before, so that contract went
-          # unenforced and the Rust port silently drifted; `cargo test` closes it.
+          # mirrored in Rust. `prefig init` is still needed here: the Rust
+          # `rust_output_matches_python` test renders math labels by shelling out
+          # to node/MathJax (LocalMathLabels), and `prefig init` installs the
+          # MathJax bundle. poetry is installed with `pip install --user`, so make
+          # sure ~/.local/bin is on PATH for this non-interactive shell.
           # `set -e` so a failure in any step (not just the last) fails the job.
           runCmd: |
             set -e
             export PATH="$HOME/.local/bin:$PATH"
             poetry run prefig init
-            poetry run pytest -vv
             cargo test --manifest-path packages/prefig-rust/Cargo.toml
 
   # Formatting and lint checks for the Rust port. Kept separate from the test

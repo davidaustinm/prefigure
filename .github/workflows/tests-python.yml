@@ -1,0 +1,51 @@
+name: python tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: ["*"]
+  workflow_dispatch:
+
+# Read-only access to GHCR so the cached dev container image can be pulled.
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  test:
+    # Runs inside the repo's dev container (.devcontainer/), which already
+    # provides every toolchain the suite needs: Python 3.12 + poetry, Node,
+    # the Rust toolchain with the wasm32 target and wasm-pack, and the cairo /
+    # rsvg system libraries. Building the image runs postCreateCommand.sh, which
+    # installs poetry, the wasm build tools, and the npm workspace deps.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Log in to GHCR so the cached dev container image can be pulled. This
+      # workflow only consumes the cache (push: never); build-and-deploy.yml
+      # publishes it on main-branch pushes.
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Run Python tests in dev container
+        uses: devcontainers/ci@v0.3
+        with:
+          configFile: .devcontainer/devcontainer.json
+          imageName: ghcr.io/${{ github.repository }}/devcontainer
+          cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
+          push: never
+          # poetry is installed with `pip install --user`, so make sure
+          # ~/.local/bin is on PATH for this non-interactive shell. MathJax is
+          # fetched by `prefig init` (postCreateCommand does not run it).
+          # `set -e` so a failure in any step (not just the last) fails the job.
+          runCmd: |
+            set -e
+            export PATH="$HOME/.local/bin:$PATH"
+            poetry run prefig init
+            poetry run pytest -vv
