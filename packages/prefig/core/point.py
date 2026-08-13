@@ -52,8 +52,6 @@ def point(element, diagram, parent, outline_group):
         parent = group
         diagram.add_id(group, element.get('id'))
         diagram.register_svg_element(element, parent)
-        add_label(element, diagram, parent)
-
     else:
         diagram.add_id(shape, element.get('id'))
         diagram.register_svg_element(element, shape)
@@ -125,6 +123,9 @@ def point(element, diagram, parent, outline_group):
     util.add_attr(shape, util.get_2d_attr(element))
     util.cliptobbox(shape, element, diagram)
 
+    if has_label and not element.get('alignment', 'ne').startswith('c'):
+        add_label(element, diagram, parent)
+
     if outline_group is not None:
         diagram.add_outline(element, shape, outline_group)
         finish_outline(element, diagram, parent)
@@ -134,6 +135,9 @@ def point(element, diagram, parent, outline_group):
         finish_outline(element, diagram, parent)
     else:
         parent.append(shape)
+
+    if has_label and element.get('alignment', 'ne').startswith('c'):
+        add_label(element, diagram, parent)
 
 def inside(p, center, size, style, ctm, buffer=0):
     p = ctm.transform(p)
