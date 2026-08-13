@@ -80,6 +80,7 @@ pub fn parse_element(
         "line" => line::line(element, diagram, root, outline_group),
         "plot-de-solution" => diffeqs::plot_de_solution(element, diagram, root, outline_group),
         "point" => point::point(element, diagram, root, outline_group),
+        "poset" => network::poset(element, diagram, root, outline_group),
         "read" => read::read(element, diagram, root, outline_group),
         "rectangle" => rectangle::rectangle(element, diagram, root, outline_group),
         "riemann-sum" => riemann_sum::riemann_sum(element, diagram, root, outline_group),

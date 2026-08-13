@@ -8,11 +8,17 @@ use crate::xml::{self, El};
 
 pub fn point(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Option<&El>) {
     let p_attr = element.borrow().get("p");
-    let p = match p_attr
-        .as_deref()
-        .and_then(|attr| diagram.ctx.valid_eval(attr).ok())
-        .and_then(|v| v.as_vec_f64().ok())
-    {
+    // A caller (e.g. <poset>) may have precomputed the point's location and
+    // stashed it as source data; that wins over the @p attribute.
+    let p_source = diagram.get_source_data(element, "p");
+    let p_vec = match p_source {
+        Some(v) => v.as_vec_f64().ok(),
+        None => p_attr
+            .as_deref()
+            .and_then(|attr| diagram.ctx.valid_eval(attr).ok())
+            .and_then(|v| v.as_vec_f64().ok()),
+    };
+    let p = match p_vec {
         Some(v) if v.len() >= 2 => {
             let mut p = [v[0], v[1]];
             if element.borrow().get_or("coordinates", "cartesian") == "polar" {
@@ -61,9 +67,10 @@ pub fn point(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
         diagram.add_id(&group, id.as_deref());
         diagram.register_svg_element(element, &group);
         parent = group;
-        // Add the label before the point's shape so a `clear-background` label
-        // box sits behind the shape rather than covering it (see issue #70).
-        add_label(element, diagram, &parent);
+        // The label itself is added later — before the shape for the usual
+        // alignments (so a `clear-background` box sits behind the point, see
+        // issue #70), but after the shape for centered ("c…") alignments so the
+        // label sits on top of the point.
     } else {
         let id = element.borrow().get("id");
         diagram.add_id(&shape, id.as_deref());
@@ -175,6 +182,11 @@ pub fn point(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
     util::add_attr(&shape, attrs);
     util::cliptobbox(&shape, element, diagram);
 
+    let centered = element.borrow().get_or("alignment", "ne").starts_with('c');
+    if has_label && !centered {
+        add_label(element, diagram, &parent);
+    }
+
     if let Some(outline_group) = outline_group {
         diagram.add_outline(element, &shape, outline_group, None);
         finish_outline(element, diagram, &parent);
@@ -186,6 +198,10 @@ pub fn point(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
         finish_outline(element, diagram, &parent);
     } else {
         xml::append(&parent, &shape);
+    }
+
+    if has_label && centered {
+        add_label(element, diagram, &parent);
     }
 }
 
