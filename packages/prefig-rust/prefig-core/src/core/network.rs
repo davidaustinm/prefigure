@@ -772,6 +772,400 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
     let _ = interp_call;
 }
 
+/// A 2-D point as a source-data Value (`[x, y]`), matching the tuples
+/// register_source_data carries in network.py.
+fn point_value(p: Point) -> Value {
+    Value::Array(vec![Value::Num(p[0]), Value::Num(p[1])])
+}
+
+/// Sort node names for level placement. Python sorts the original node keys, so
+/// numeric keys compare numerically and everything else lexicographically; we
+/// reproduce that when every name in the level parses as a number.
+fn sort_poset_names(names: &mut [String]) {
+    if names.iter().all(|n| n.parse::<f64>().is_ok()) {
+        names.sort_by(|a, b| {
+            let (a, b) = (a.parse::<f64>().unwrap(), b.parse::<f64>().unwrap());
+            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
+        });
+    } else {
+        names.sort();
+    }
+}
+
+/// A node in a <poset>: its cover relations, computed position, and any
+/// author-supplied <node> element.
+struct PosetNode {
+    label: String,
+    parents: Vec<String>,
+    coordinates: Option<Point>,
+    alignment: String,
+    authored_data: Option<El>,
+}
+
+/// Format-dependent defaults for a poset's nodes and edges (network.py).
+struct PosetDefaults {
+    node_size: &'static str,
+    node_style: &'static str,
+    node_stroke: &'static str,
+    node_fill: &'static str,
+    edge_thickness: &'static str,
+    edge_stroke: &'static str,
+}
+
+/// Port of prefig/core/network.py's poset(): lay out a partially ordered set as
+/// a Hasse diagram — level the nodes by cover depth, draw an edge for each cover
+/// relation, then hand a synthesized <coordinates> element off for rendering.
+#[allow(clippy::too_many_lines)]
+pub fn poset(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Option<&El>) {
+    let structure = element.borrow().get("covers");
+    let poset_struct = match structure
+        .as_deref()
+        .and_then(|s| diagram.ctx.valid_eval(s).ok())
+    {
+        Some(Value::Dict(map)) => map,
+        _ => {
+            log::error!(
+                "Error parsing covers attribute of poset: {}",
+                structure.unwrap_or_default()
+            );
+            return;
+        }
+    };
+
+    let name_list = |v: &Value| -> Vec<String> {
+        match v {
+            Value::Array(items) => items.iter().map(Value::to_py_str).collect(),
+            other => vec![other.to_py_str()],
+        }
+    };
+    // cover relations in document order (also the edge-drawing order)
+    let poset_covers: Vec<(String, Vec<String>)> = poset_struct
+        .iter()
+        .map(|(k, v)| (k.clone(), name_list(v)))
+        .collect();
+
+    // Build the node table. Assigning a key that already exists (created as
+    // someone's cover) replaces its value but keeps its insertion position,
+    // matching Python dict semantics.
+    let mut nodes: IndexMap<String, PosetNode> = IndexMap::new();
+    for (key, covers) in &poset_covers {
+        nodes.insert(
+            key.clone(),
+            PosetNode {
+                label: key.clone(),
+                parents: covers.clone(),
+                coordinates: None,
+                alignment: "center".to_string(),
+                authored_data: None,
+            },
+        );
+        for cover in covers {
+            if !nodes.contains_key(cover) {
+                nodes.insert(
+                    cover.clone(),
+                    PosetNode {
+                        label: cover.clone(),
+                        parents: Vec::new(),
+                        coordinates: None,
+                        alignment: "center".to_string(),
+                        authored_data: None,
+                    },
+                );
+            }
+        }
+    }
+
+    // Level the nodes: each pass peels off the minimal elements (those that are
+    // not a cover of any still-unplaced node) as the next level.
+    let mut levels: Vec<Vec<String>> = Vec::new();
+    let mut unplaced: Vec<String> = nodes.keys().cloned().collect();
+    while !unplaced.is_empty() {
+        let mut next_unplaced: Vec<String> = Vec::new();
+        for n in &unplaced {
+            let parents = nodes
+                .get(n)
+                .map(|nd| nd.parents.clone())
+                .unwrap_or_default();
+            for parent_name in parents {
+                if !next_unplaced.contains(&parent_name) {
+                    next_unplaced.push(parent_name);
+                }
+            }
+        }
+        let next_level: Vec<String> = unplaced
+            .iter()
+            .filter(|u| !next_unplaced.contains(u))
+            .cloned()
+            .collect();
+        if next_level.is_empty() {
+            log::error!("Poset structure contains a cycle");
+            return;
+        }
+        levels.push(next_level);
+        unplaced = next_unplaced;
+    }
+
+    // Place each level: y is the level index, x is centered around 0.
+    for (num, level) in levels.iter().enumerate() {
+        let mut names = level.clone();
+        sort_poset_names(&mut names);
+        let mut x = -((level.len() as f64 - 1.0) / 2.0);
+        for name in &names {
+            if let Some(node) = nodes.get_mut(name) {
+                node.coordinates = Some([x, num as f64]);
+            }
+            x += 1.0;
+        }
+    }
+
+    // Author overrides: labels, explicit locations, alignments.
+    let labels_attr = element.borrow().get("labels");
+    if let Some(attr) = labels_attr {
+        element.borrow_mut().set("labeled", "yes");
+        if let Ok(Value::Dict(map)) = diagram.ctx.valid_eval(&attr) {
+            for (node_name, label_value) in map {
+                if let Some(node) = nodes.get_mut(&node_name) {
+                    node.label = label_value.to_py_str();
+                }
+            }
+        }
+    }
+    let locations_attr = element.borrow().get("locations");
+    if let Some(attr) = locations_attr {
+        if let Ok(Value::Dict(map)) = diagram.ctx.valid_eval(&attr) {
+            for (node_name, location) in map {
+                if let (Some(node), Ok(v)) = (nodes.get_mut(&node_name), location.as_vec_f64()) {
+                    if v.len() >= 2 {
+                        node.coordinates = Some([v[0], v[1]]);
+                    }
+                }
+            }
+        }
+    }
+    let alignments_attr = element.borrow().get("alignments");
+    if let Some(attr) = alignments_attr {
+        if let Ok(Value::Dict(map)) = diagram.ctx.valid_eval(&attr) {
+            for (node_name, alignment) in map {
+                if let Some(node) = nodes.get_mut(&node_name) {
+                    node.alignment = alignment.to_py_str();
+                }
+            }
+        }
+    }
+    let labeled = element.borrow().get_or("labeled", "no") == "yes";
+
+    // Author-supplied <node> children carry their own graphical content.
+    for child in element.borrow().children.clone() {
+        if child.borrow().tag != "node" {
+            log::error!("Only <node> elements are allowed here");
+            continue;
+        }
+        let Some(handle_attr) = child.borrow().get("at") else {
+            log::error!("A <node> element needs an attribute \"at\"");
+            continue;
+        };
+        let Some(handle) = diagram
+            .ctx
+            .valid_eval(&handle_attr)
+            .ok()
+            .map(|v| v.to_py_str())
+        else {
+            continue;
+        };
+        if !nodes.contains_key(&handle) {
+            log::error!("There is not a <node> element with at=\"{handle}\"");
+            continue;
+        }
+        let p_attr = child.borrow().get("p");
+        let coords = p_attr.as_deref().and_then(|p| {
+            diagram
+                .ctx
+                .valid_eval(p)
+                .ok()
+                .and_then(|v| v.as_vec_f64().ok())
+                .filter(|v| v.len() >= 2)
+                .map(|v| [v[0], v[1]])
+        });
+        let node = nodes.get_mut(&handle).unwrap();
+        node.authored_data = Some(child.clone());
+        if let Some(c) = coords {
+            node.coordinates = Some(c);
+        }
+    }
+
+    let defaults = if diagram.output_format() == "tactile" {
+        PosetDefaults {
+            node_size: "9",
+            node_style: "circle",
+            node_stroke: "black",
+            node_fill: "none",
+            edge_thickness: "2",
+            edge_stroke: "black",
+        }
+    } else {
+        PosetDefaults {
+            node_size: "2",
+            node_style: "circle",
+            node_stroke: "black",
+            node_fill: "white",
+            edge_thickness: "2",
+            edge_stroke: "black",
+        }
+    };
+
+    // Bounding box over every node's location.
+    let Some(first_key) = nodes.keys().next().cloned() else {
+        return;
+    };
+    let first_loc = nodes
+        .get(&first_key)
+        .and_then(|n| n.coordinates)
+        .unwrap_or([0.0, 0.0]);
+    let mut bbox = [first_loc[0], first_loc[1], first_loc[0], first_loc[1]];
+    for node in nodes.values() {
+        if let Some(loc) = node.coordinates {
+            bbox = [
+                bbox[0].min(loc[0]),
+                bbox[1].min(loc[1]),
+                bbox[2].max(loc[0]),
+                bbox[3].max(loc[1]),
+            ];
+        }
+    }
+
+    // Everything is drawn inside a synthesized <coordinates> system.
+    let coords_el = xml::new_element("coordinates");
+    coords_el.borrow_mut().set(
+        "bbox",
+        &format!(
+            "({}, {}, {}, {})",
+            py_str(bbox[0]),
+            py_str(bbox[1]),
+            py_str(bbox[2]),
+            py_str(bbox[3])
+        ),
+    );
+    let group = xml::sub_element(&coords_el, "group");
+    let edge_group = xml::sub_element(&group, "group");
+    let node_group = xml::sub_element(&group, "group");
+
+    // Edges: one <line> per cover relation, with its endpoints stashed as
+    // source data so <line> uses the exact node positions.
+    let edge_stroke = element.borrow().get_or("edge-stroke", defaults.edge_stroke);
+    let edge_thickness = element
+        .borrow()
+        .get_or("edge-thickness", defaults.edge_thickness);
+    for (key, covers) in &poset_covers {
+        let Some(lower) = nodes.get(key).and_then(|n| n.coordinates) else {
+            continue;
+        };
+        for upper in covers {
+            let Some(upper_coord) = nodes.get(upper).and_then(|n| n.coordinates) else {
+                continue;
+            };
+            let line_el = xml::sub_element(&edge_group, "line");
+            let id = format!("edge-{key}-{upper}");
+            diagram.add_id(&line_el, Some(&id));
+            line_el.borrow_mut().set("stroke", &edge_stroke);
+            line_el.borrow_mut().set("thickness", &edge_thickness);
+            let endpoints = Value::Array(vec![point_value(lower), point_value(upper_coord)]);
+            diagram.register_source_data(&line_el, "endpoints", endpoints);
+        }
+    }
+
+    // Nodes: either centered labels, author-supplied content, or plain points.
+    let centered_labels = element.borrow().get_or("centered-labels", "no") == "yes";
+    let node_names: Vec<String> = nodes.keys().cloned().collect();
+    for name in &node_names {
+        let (coord, alignment, label_text, authored) = {
+            let node = nodes.get(name).unwrap();
+            (
+                node.coordinates.unwrap_or([0.0, 0.0]),
+                node.alignment.clone(),
+                node.label.clone(),
+                node.authored_data.clone(),
+            )
+        };
+        let anchor_tight = format!("({},{})", py_str(coord[0]), py_str(coord[1]));
+
+        if centered_labels {
+            if let Some(data) = authored {
+                let label_el = xml::deep_copy(&data);
+                label_el.borrow_mut().tag = "label".to_string();
+                label_el.borrow_mut().set("anchor", &anchor_tight);
+                xml::append(&node_group, &label_el);
+                match data.borrow().get("alignment") {
+                    None => label_el.borrow_mut().set("alignment", &alignment),
+                    Some(a) => label_el.borrow_mut().set("alignment", &a),
+                }
+                data.borrow_mut().set("clear-background", "yes");
+            } else {
+                let label_el = xml::sub_element(&node_group, "label");
+                diagram.add_id(&label_el, Some(name));
+                label_el.borrow_mut().set(
+                    "anchor",
+                    &format!("({}, {})", py_str(coord[0]), py_str(coord[1])),
+                );
+                label_el.borrow_mut().set("alignment", "center");
+                label_el.borrow_mut().set("clear-background", "yes");
+                let math_el = xml::sub_element(&label_el, "m");
+                math_el.borrow_mut().text = Some(label_text);
+            }
+        } else if let Some(data) = authored {
+            xml::append(&node_group, &data);
+            data.borrow_mut().tag = "point".to_string();
+            if data.borrow().get("p").is_none() {
+                data.borrow_mut().set("p", &anchor_tight);
+            }
+            if data.borrow().get("size").is_none() {
+                let v = element.borrow().get_or("node-size", defaults.node_size);
+                data.borrow_mut().set("size", &v);
+            }
+            if data.borrow().get("style").is_none() {
+                let v = element.borrow().get_or("node-style", defaults.node_style);
+                data.borrow_mut().set("style", &v);
+            }
+            if data.borrow().get("fill").is_none() {
+                let v = element.borrow().get_or("node-fill", defaults.node_fill);
+                data.borrow_mut().set("fill", &v);
+            }
+            if data.borrow().get("stroke").is_none() {
+                let v = element.borrow().get_or("node-stroke", defaults.node_stroke);
+                data.borrow_mut().set("stroke", &v);
+            }
+            if labeled {
+                if data.borrow().get("alignment").is_none() {
+                    data.borrow_mut().set("alignment", &alignment);
+                }
+                if !label::has_label(&data) {
+                    let math_el = xml::sub_element(&data, "m");
+                    math_el.borrow_mut().text = Some(label_text);
+                }
+            }
+        } else {
+            let point_el = xml::sub_element(&node_group, "point");
+            diagram.add_id(&point_el, Some(name));
+            point_el.borrow_mut().set("p", &anchor_tight);
+            let size = element.borrow().get_or("node-size", "3");
+            point_el.borrow_mut().set("size", &size);
+            let style = element.borrow().get_or("node-style", "circle");
+            point_el.borrow_mut().set("style", &style);
+            let fill = element.borrow().get_or("node-fill", "white");
+            point_el.borrow_mut().set("fill", &fill);
+            let stroke = element.borrow().get_or("node-stroke", "black");
+            point_el.borrow_mut().set("stroke", &stroke);
+            if labeled {
+                point_el.borrow_mut().set("alignment", &alignment);
+                let math_el = xml::sub_element(&point_el, "m");
+                math_el.borrow_mut().text = Some(label_text);
+            }
+            diagram.register_source_data(&point_el, "p", point_value(coord));
+        }
+    }
+
+    crate::core::coordinates::coordinates(&coords_el, diagram, parent, outline_group);
+}
+
 /// Run the requested layout algorithm and normalize the positions, returning
 /// the positions and the bbox string for the <coordinates> system. Mirrors the
 /// networkx-layout branch of network.py (§14.2: not coordinate-identical).

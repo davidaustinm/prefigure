@@ -121,35 +121,46 @@ pub fn infinite_line(
 
 /// The <line> handler.
 pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Option<&El>) {
-    let endpoints = element.borrow().get("endpoints");
-    let (p1, p2) = match endpoints {
-        None => {
-            let p1_attr = element.borrow().get("p1");
-            let p2_attr = element.borrow().get("p2");
-            let p1 = eval_point(diagram, p1_attr.as_deref());
-            let p2 = eval_point(diagram, p2_attr.as_deref());
-            match (p1, p2) {
-                (Some(p1), Some(p2)) => (p1, p2),
-                _ => {
-                    log::error!("Error in <line> parsing p1/p2");
-                    return;
-                }
+    // A caller (e.g. <poset>) may have precomputed the endpoints and stashed
+    // them as source data; those win over any @endpoints/@p1/@p2 attribute.
+    let endpoints_data = diagram.get_source_data(element, "endpoints");
+    let (p1, p2) = if let Some(value) = endpoints_data {
+        match endpoints_pair(&value) {
+            Some(pair) => pair,
+            None => {
+                log::error!("Error in <line> reading endpoints from source data");
+                return;
             }
         }
-        Some(attr) => {
-            let pair = diagram.ctx.valid_eval(&attr).ok().and_then(|v| match v {
-                Value::Array(items) if items.len() == 2 => {
-                    let p1 = items[0].as_vec_f64().ok()?;
-                    let p2 = items[1].as_vec_f64().ok()?;
-                    Some(([p1[0], p1[1]], [p2[0], p2[1]]))
+    } else {
+        let endpoints = element.borrow().get("endpoints");
+        match endpoints {
+            None => {
+                let p1_attr = element.borrow().get("p1");
+                let p2_attr = element.borrow().get("p2");
+                let p1 = eval_point(diagram, p1_attr.as_deref());
+                let p2 = eval_point(diagram, p2_attr.as_deref());
+                match (p1, p2) {
+                    (Some(p1), Some(p2)) => (p1, p2),
+                    _ => {
+                        log::error!("Error in <line> parsing p1/p2");
+                        return;
+                    }
                 }
-                _ => None,
-            });
-            match pair {
-                Some(pair) => pair,
-                None => {
-                    log::error!("Error in <line> parsing endpoints={attr}");
-                    return;
+            }
+            Some(attr) => {
+                let pair = diagram
+                    .ctx
+                    .valid_eval(&attr)
+                    .ok()
+                    .as_ref()
+                    .and_then(endpoints_pair);
+                match pair {
+                    Some(pair) => pair,
+                    None => {
+                        log::error!("Error in <line> parsing endpoints={attr}");
+                        return;
+                    }
                 }
             }
         }
@@ -324,6 +335,18 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
         finish_outline(element, diagram, &parent);
     } else {
         xml::append(&parent, &line);
+    }
+}
+
+/// Interpret a Value as a pair of 2-D endpoints: `[[x1, y1], [x2, y2]]`.
+fn endpoints_pair(value: &Value) -> Option<(Point, Point)> {
+    match value {
+        Value::Array(items) if items.len() == 2 => {
+            let p1 = items[0].as_vec_f64().ok()?;
+            let p2 = items[1].as_vec_f64().ok()?;
+            (p1.len() >= 2 && p2.len() >= 2).then(|| ([p1[0], p1[1]], [p2[0], p2[1]]))
+        }
+        _ => None,
     }
 }
 
