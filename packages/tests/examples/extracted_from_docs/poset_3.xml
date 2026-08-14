@@ -1,0 +1,13 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(300, 300)" margins="(10,30,10,10)">
+  <definition>
+    poset={0:[1,2,3], 1:[4,5], 2:[4,6], 3:[5,6], 4:[7], 5:[7], 6:[7]}
+  </definition>
+
+  <coordinates bbox="(-1,0,1,3)">
+    <grid-axes spacings="((-1,1/2,1),(0,1,3))"
+               hlabels="(-1,1,1)" vlabels="(0,1,3)"/>
+  </coordinates>
+  
+  <poset covers="poset" labeled="no"/>
+</diagram>

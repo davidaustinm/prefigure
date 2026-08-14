@@ -1,0 +1,17 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(300, 300)" margins="25">
+  <definition>
+    poset={0:[1,2,3], 1:[4,5], 2:[4,6], 3:[5,6], 4:[7], 5:[7], 6:[7]}
+  </definition>
+
+  <definition>
+    locations={4:(-0.7, 2.5), 5:(0.5,2), 7:(-0.5,3)}
+  </definition>
+
+  <definition>
+    alignments={0:'se',1:'nw',2:'se',3:'ne',4:'nw',5:'e',6:'ne',7:'ne'}
+  </definition>
+  
+  <poset covers="poset" labeled="yes" node-style="box" node-size="6"
+         locations="locations" alignments="alignments"/>
+</diagram>

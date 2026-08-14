@@ -1,0 +1,16 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(300, 300)" margins="15">
+  <definition>
+    poset={0:[1,2,3], 1:[4,5], 2:[4,6], 3:[5,6], 4:[7], 5:[7], 6:[7]}
+  </definition>
+  <poset covers="poset" labeled="yes" node-size="12"/>
+  
+  <annotations text="A simple poset">
+    <annotation ref="0"
+                text="The node labeled 0 ">
+      <annotation ref="edge-0-1"/>
+      <annotation ref="edge-0-2"/>
+      <annotation ref="edge-0-3"/>
+    </annotation>
+  </annotations>
+</diagram>

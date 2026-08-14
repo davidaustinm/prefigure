@@ -1,0 +1,35 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(300, 300)" margins="(25,10,25,10)">
+  <definition>
+    poset={
+    'empty':['a', 'b', 'c'],
+    'a':['ab', 'ac'],
+    'b':['ab', 'bc'],
+    'c':['ac', 'bc'],
+    'ab':['abc'],
+    'ac':['abc'],
+    'bc':['abc']
+    }
+  </definition>
+  <definition>
+    labels={
+    'empty':r'\emptyset',
+    'a':r'\{a\}',
+    'b':r'\{b\}',
+    'c':r'\{c\}',
+    'ab':r'\{a,b\}',
+    'ac':r'\{a,c\}',
+    'bc':r'\{b,c\}',
+    'abc':r'\{a,b,c\}'
+    }
+  </definition>
+  <poset covers="poset" labels="labels" centered-labels="yes"/>
+  <annotations text="A poset formed by subset inclusion">
+    <annotation ref="empty"
+                text="The empty set is contained in all singletons">
+      <annotation ref="edge-empty-a"/>
+      <annotation ref="edge-empty-b"/>
+      <annotation ref="edge-empty-c"/>
+    </annotation>
+  </annotations>
+</diagram>

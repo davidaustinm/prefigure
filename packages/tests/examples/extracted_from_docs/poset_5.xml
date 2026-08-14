@@ -1,0 +1,14 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(300, 300)" margins="25">
+  <definition>
+    poset={0:[1,2], 1:[4,5], 3:[4,5], 4:[5], 5:[6], 6:[7], 8:[]}
+  </definition>
+
+  <poset covers="poset" labeled="yes" node-style="box" node-size="12"
+         locations="{3:(1,0), 1:(-0.8,1), 2:(0.8,2), 8:(1,4)}">
+    <node at="4" p="(-0.15,1.8)" alignment="s"
+          style="circle" size="20" fill="cornflowerblue">
+      Blue
+    </node>
+  </poset>
+</diagram>
