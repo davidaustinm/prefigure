@@ -804,6 +804,8 @@ def poset(element, diagram, parent, outline_group):
                         element.get('edge-thickness',
                                     default_attrs['edge-thickness'])
                         )
+            if element.get('edge-dash', None) is not None:
+                line_el.set('dash', element.get('edge-dash'))
             endpoints = (lower_endpoint, nodes[upper].coordinates)
             diagram.register_source_data(line_el, 'endpoints', endpoints)
 
