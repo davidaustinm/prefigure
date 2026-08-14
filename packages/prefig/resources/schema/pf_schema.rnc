@@ -383,6 +383,7 @@ GraphicalElements =
         Plot-DE-Solution |
         Point |
         Polygon |
+        Poset |
         Rectangle |
         Riemann-Sum |
         Scatter |
@@ -777,6 +778,42 @@ Polygon = element polygon {
     attribute arrow-width {text}?,
     attribute arrow-angles {text}?,
     FillAttributes,
+    CommonAttributes
+}
+
+Poset = element poset {
+    attribute covers {text},
+    attribute at {text}?,
+    attribute labels {text}?,
+    attribute locations {text}?,
+    attribute alignments {text}?,
+    attribute labeled {"yes"|"no"}?,
+    attribute centered-labels {"yes"|"no"}?,
+    attribute node-size {text}?,
+    attribute node-style {text}?,
+    attribute node-stroke {text}?,
+    attribute node-fill {text}?,
+    attribute tactile-node-size {text}?,
+    attribute tactile-node-style {text}?,
+    attribute tactile-node-stroke {text}?,
+    attribute tactile-node-fill {text}?,
+    attribute edge-stroke {text}?,
+    attribute edge-thickness {text}?,
+    attribute edge-dash {text}?,
+    attribute tactile-edge-stroke {text}?,
+    attribute tactile-edge-thickness {text}?,
+    attribute tactile-edge-dash {text}?,
+    element node {
+        attribute at {text},
+        attribute p {text}?,
+        attribute style {text}?,
+        attribute size {text}?,
+        attribute tactile-style {text}?,
+        attribute tactile-size {text}?,
+        FillAttributes,
+        LabelAttributes,
+        LabelText?
+    }*,
     CommonAttributes
 }
 
