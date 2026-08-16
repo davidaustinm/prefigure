@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  pf_schema.rnc — canonical PreFigure schema (namespace-free).
+  When copying into another repository, record the commit hash here so future
+  resyncs can be scoped with: git diff <hash>..HEAD - - packages/prefig/resources/schema/pf_schema.rnc
+  Last updated: commit 27c382c (2026-08-01)
+-->
 <grammar xmlns="http://relaxng.org/ns/structure/1.0">
   <start>
     <ref name="Diagram"/>
@@ -824,6 +830,7 @@
       <ref name="Plot-DE-Solution"/>
       <ref name="Point"/>
       <ref name="Polygon"/>
+      <ref name="Poset"/>
       <ref name="Rectangle"/>
       <ref name="Riemann-Sum"/>
       <ref name="Scatter"/>
@@ -1982,6 +1989,107 @@
         <attribute name="arrow-angles"/>
       </optional>
       <ref name="FillAttributes"/>
+      <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="Poset">
+    <element name="poset">
+      <attribute name="covers"/>
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="labels"/>
+      </optional>
+      <optional>
+        <attribute name="locations"/>
+      </optional>
+      <optional>
+        <attribute name="alignments"/>
+      </optional>
+      <optional>
+        <attribute name="labeled">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="centered-labels">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="node-size"/>
+      </optional>
+      <optional>
+        <attribute name="node-style"/>
+      </optional>
+      <optional>
+        <attribute name="node-stroke"/>
+      </optional>
+      <optional>
+        <attribute name="node-fill"/>
+      </optional>
+      <optional>
+        <attribute name="tactile-node-size"/>
+      </optional>
+      <optional>
+        <attribute name="tactile-node-style"/>
+      </optional>
+      <optional>
+        <attribute name="tactile-node-stroke"/>
+      </optional>
+      <optional>
+        <attribute name="tactile-node-fill"/>
+      </optional>
+      <optional>
+        <attribute name="edge-stroke"/>
+      </optional>
+      <optional>
+        <attribute name="edge-thickness"/>
+      </optional>
+      <optional>
+        <attribute name="edge-dash"/>
+      </optional>
+      <optional>
+        <attribute name="tactile-edge-stroke"/>
+      </optional>
+      <optional>
+        <attribute name="tactile-edge-thickness"/>
+      </optional>
+      <optional>
+        <attribute name="tactile-edge-dash"/>
+      </optional>
+      <zeroOrMore>
+        <element name="node">
+          <attribute name="at"/>
+          <optional>
+            <attribute name="p"/>
+          </optional>
+          <optional>
+            <attribute name="style"/>
+          </optional>
+          <optional>
+            <attribute name="size"/>
+          </optional>
+          <optional>
+            <attribute name="tactile-style"/>
+          </optional>
+          <optional>
+            <attribute name="tactile-size"/>
+          </optional>
+          <ref name="FillAttributes"/>
+          <ref name="LabelAttributes"/>
+          <optional>
+            <ref name="LabelText"/>
+          </optional>
+        </element>
+      </zeroOrMore>
       <ref name="CommonAttributes"/>
     </element>
   </define>
