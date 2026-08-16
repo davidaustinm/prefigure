@@ -500,7 +500,7 @@ pub fn make_path(
     let mut t = start;
     let dt = (stop - start) / n as f64;
     let mut cmds = Vec::new();
-    for _ in 0..n {
+    for _ in 0..=n {
         let point = ctm.transform([t.cos(), t.sin()]);
         let point = diagram.transform(point);
         cmds.push(if cmds.is_empty() { "M" } else { "L" }.to_string());
