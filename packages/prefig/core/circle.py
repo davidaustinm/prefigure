@@ -242,7 +242,7 @@ def make_path(diagram,
     t = angular_range[0]
     dt = (angular_range[1]-angular_range[0])/N
     cmds = []
-    for _ in range(N):
+    for _ in range(N+1):
         point = ctm.transform((math.cos(t), math.sin(t)))
         point = diagram.transform(point)
         point
