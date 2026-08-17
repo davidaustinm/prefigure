@@ -70,13 +70,75 @@ def line(element, diagram, parent, outline_group):
     q2 = np.array((x2, y2))
     diagram.save_data(element, {'q1': q1, 'q2': q2})
 
-    # now add the graphical attributes
-    util.set_attr(element, 'stroke', 'black')
+    decorations = element.get('decorations') is not None
     util.set_attr(element, 'thickness', '2')
     thickness = un.valid_eval(element.get('thickness'))
+    if decorations:
+        decoration_path = ET.Element('path')
+        decoration_path_id = line.get('id')+'-decorations'
+        decoration_path.set('id', decoration_path_id)
+        d = ""
+        diff = q2 - q1
+        length = math_util.length(diff)
+        angle = math.atan2(diff[1], diff[0])
+        ctm = CTM.CTM()
+        ctm.translate(*q1)
+        ctm.rotate(angle, units="radians")
+        for c in element.get('decorations'):
+            if c == '[':
+                w = 2*thickness
+                h = 3*thickness
+                p1 = ctm.transform((w,h))
+                p2 = ctm.transform((0,h))
+                p3 = ctm.transform((0,-h))
+                p4 = ctm.transform((w,-h))
+                d += 'M ' + f"{p1[0]} {p1[1]} "
+                d += 'L ' + f"{p2[0]} {p2[1]} "
+                d += 'L ' + f"{p3[0]} {p3[1]} "
+                d += 'L ' + f"{p4[0]} {p4[1]} "
+            elif c == ']':
+                w = 2*thickness
+                h = 3*thickness
+                p1 = ctm.transform((length-w,h))
+                p2 = ctm.transform((length,h))
+                p3 = ctm.transform((length,-h))
+                p4 = ctm.transform((length-w,-h))
+                d += 'M ' + f"{p1[0]} {p1[1]} "
+                d += 'L ' + f"{p2[0]} {p2[1]} "
+                d += 'L ' + f"{p3[0]} {p3[1]} "
+                d += 'L ' + f"{p4[0]} {p4[1]} "
+            elif c == ')':
+                w = thickness
+                h = 3*thickness
+                b = 4.25*thickness
+                p1 = ctm.transform((length-w,-h))
+                p2 = (b, b)
+                p3 = ctm.transform((length-w, h))
+                d += 'M ' + f"{p1[0]} {p1[1]} "
+                d += 'A ' + f"{p2[0]} {p2[1]} 0 0,1 "
+                d += f"{p3[0]} {p3[1]} "
+            elif c == '(':
+                w = thickness
+                h = 3*thickness
+                b = 4.25*thickness
+                p1 = ctm.transform((w,h))
+                p2 = (b, b)
+                p3 = ctm.transform((w,-h))
+                d += 'M ' + f"{p1[0]} {p1[1]} "
+                d += 'A ' + f"{p2[0]} {p2[1]} 0 0,1 "
+                d += f"{p3[0]} {p3[1]} "
+            else:
+                log.error(f"{c} is not a valid decoration on a line")
+                continue
+        decoration_path.set('d', d)
+
+    # now add the graphical attributes
+    util.set_attr(element, 'stroke', 'black')
     if diagram.output_format() == 'tactile':
         element.set('stroke', 'black')
     util.add_attr(line, util.get_1d_attr(element))
+    if decorations:
+        util.add_attr(decoration_path, util.get_1d_attr(element))
 
     arrows = int(element.get('arrows', '0'))
     forward = 'marker-end'
@@ -141,28 +203,44 @@ def line(element, diagram, parent, outline_group):
         
     util.cliptobbox(line, element, diagram)
     has_label = label.has_label(element)
-    if has_label:
+    if has_label or decorations:
         parent = ET.SubElement(parent, 'g')
         parent.set('id', line.get('id'))
         line.attrib.pop('id')
-        add_label(element, diagram, parent)
+        if has_label:
+            add_label(element, diagram, parent)
 
     if outline_group is not None:
         diagram.add_outline(element, line, outline_group)
+        if decorations:
+            diagram.add_outline(element, decoration_path, outline_group,
+                                id=decoration_path_id)
         finish_outline(element, diagram, parent)
+        if decorations:
+            finish_outline(element, diagram, parent,
+                           id=decoration_path_id)
     elif (element.get('outline', 'no') == 'yes'
             or diagram.output_format() == 'tactile'):
         diagram.add_outline(element, line, parent)
+        if decorations:
+            diagram.add_outline(element, decoration_path, parent,
+                                id = decoration_path_id)
         finish_outline(element, diagram, parent)
+        if decorations:
+            finish_outline(element, diagram, parent,
+                           id=decoration_path_id)
     else:
         parent.append(line)
+        if decorations:
+            parent.append(decoration_path)
 
-def finish_outline(element, diagram, parent):
+def finish_outline(element, diagram, parent, id=None):
     diagram.finish_outline(element,
                            element.get('stroke'),
                            element.get('thickness'),
                            element.get('fill', 'none'),
-                           parent)
+                           parent,
+                           id=id)
 
 # We'll be adding lines in other places so we'll use this more widely
 def mk_line(p0, p1, diagram, id = None, endpoint_offsets = None, user_coords = True):
