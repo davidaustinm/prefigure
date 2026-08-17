@@ -235,11 +235,13 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
         ctm_local.rotate(angle.to_degrees(), true);
 
         let mut d = String::new();
+        let tactile = diagram.output_format() == "tactile";
         for c in dec_str.chars() {
-            let h = 3.0 * thickness;
             match c {
                 '[' => {
-                    let w = 2.0 * thickness;
+                    let (sw, sh) = if tactile { (6.0, 9.0) } else { (2.0, 3.0) };
+                    let w = sw * thickness;
+                    let h = sh * thickness;
                     let p1 = ctm_local.transform([w, h]);
                     let p2 = ctm_local.transform([0.0, h]);
                     let p3 = ctm_local.transform([0.0, -h]);
@@ -251,7 +253,9 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
                         float2str(p4[0]), float2str(p4[1]));
                 }
                 ']' => {
-                    let w = 2.0 * thickness;
+                    let (sw, sh) = if tactile { (6.0, 9.0) } else { (2.0, 3.0) };
+                    let w = sw * thickness;
+                    let h = sh * thickness;
                     let p1 = ctm_local.transform([length - w, h]);
                     let p2 = ctm_local.transform([length, h]);
                     let p3 = ctm_local.transform([length, -h]);
@@ -263,8 +267,10 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
                         float2str(p4[0]), float2str(p4[1]));
                 }
                 ')' => {
-                    let w = thickness;
-                    let b = 4.25 * thickness;
+                    let (sw, sh) = if tactile { (3.0, 9.0) } else { (1.0, 3.0) };
+                    let w = sw * thickness;
+                    let h = sh * thickness;
+                    let b = 4.25 * sw * thickness;
                     let p1 = ctm_local.transform([length - w, -h]);
                     let p3 = ctm_local.transform([length - w, h]);
                     d += &format!("M {} {} A {} {} 0 0,1 {} {} ",
@@ -273,8 +279,10 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
                         float2str(p3[0]), float2str(p3[1]));
                 }
                 '(' => {
-                    let w = thickness;
-                    let b = 4.25 * thickness;
+                    let (sw, sh) = if tactile { (3.0, 9.0) } else { (1.0, 3.0) };
+                    let w = sw * thickness;
+                    let h = sh * thickness;
+                    let b = 4.25 * sw * thickness;
                     let p1 = ctm_local.transform([w, h]);
                     let p3 = ctm_local.transform([w, -h]);
                     d += &format!("M {} {} A {} {} 0 0,1 {} {} ",
