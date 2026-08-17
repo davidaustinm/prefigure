@@ -188,13 +188,13 @@ pub fn point(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
     }
 
     if let Some(outline_group) = outline_group {
-        diagram.add_outline(element, &shape, outline_group, None);
+        diagram.add_outline(element, &shape, outline_group, None, None);
         finish_outline(element, diagram, &parent);
     } else if element.borrow().get_or("outline", "no") == "yes"
         || diagram.output_format() == "tactile"
     {
         // Python passes outline_group (None) here; mirror by using the parent
-        diagram.add_outline(element, &shape, &parent, None);
+        diagram.add_outline(element, &shape, &parent, None, None);
         finish_outline(element, diagram, &parent);
     } else {
         xml::append(&parent, &shape);
@@ -209,7 +209,7 @@ fn finish_outline(element: &El, diagram: &mut Diagram, parent: &El) {
     let stroke = element.borrow().get("stroke");
     let thickness = element.borrow().get("thickness");
     let fill = element.borrow().get_or("fill", "none");
-    diagram.finish_outline(element, stroke, thickness, &fill, parent);
+    diagram.finish_outline(element, stroke, thickness, &fill, parent, None);
 }
 
 /// point.inside: is p within the drawn point marker at center?

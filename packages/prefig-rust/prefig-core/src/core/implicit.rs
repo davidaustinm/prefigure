@@ -224,12 +224,12 @@ pub fn implicit_curve(
     util::add_attr(&path, util::get_1d_attr(element, &mut diagram.ctx));
 
     if let Some(outline_group) = outline_group {
-        diagram.add_outline(element, &path, outline_group, None);
+        diagram.add_outline(element, &path, outline_group, None, None);
         finish_outline(element, diagram, parent);
     } else if element.borrow().get_or("outline", "no") == "yes"
         || diagram.output_format() == "tactile"
     {
-        diagram.add_outline(element, &path, parent, None);
+        diagram.add_outline(element, &path, parent, None, None);
         finish_outline(element, diagram, parent);
     } else {
         xml::append(parent, &path);
@@ -240,5 +240,5 @@ fn finish_outline(element: &El, diagram: &mut Diagram, parent: &El) {
     let stroke = element.borrow().get("stroke");
     let thickness = element.borrow().get("thickness");
     let fill = element.borrow().get_or("fill", "none");
-    diagram.finish_outline(element, stroke, thickness, &fill, parent);
+    diagram.finish_outline(element, stroke, thickness, &fill, parent, None);
 }

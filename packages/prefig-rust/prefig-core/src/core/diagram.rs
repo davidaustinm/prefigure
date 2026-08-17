@@ -880,6 +880,7 @@ impl Diagram {
         path: &El,
         parent: &El,
         outline_width: Option<i64>,
+        id: Option<&str>,
     ) {
         let outline_width = outline_width.unwrap_or(if self.format == "tactile" { 18 } else { 4 });
 
@@ -897,9 +898,13 @@ impl Diagram {
             (width, fill)
         };
 
-        let existing_id = element.borrow().get("id");
-        self.add_id(element, existing_id.as_deref());
-        let outline_id = format!("{}-outline", element.borrow().get_or("id", "none"));
+        let outline_id = if let Some(id) = id {
+            format!("{}-outline", id)
+        } else {
+            let existing_id = element.borrow().get("id");
+            self.add_id(element, existing_id.as_deref());
+            format!("{}-outline", element.borrow().get_or("id", "none"))
+        };
         path.borrow_mut().set("id", &outline_id);
         self.add_reusable(path);
 
@@ -929,11 +934,13 @@ impl Diagram {
         thickness: Option<String>,
         fill: &str,
         parent: &El,
+        id: Option<String>,
     ) {
+        let element_id = id.unwrap_or_else(|| element.borrow().get_or("id", "none"));
         let use_el = xml::sub_element(parent, "use");
         {
             let mut u = use_el.borrow_mut();
-            u.set("id", &element.borrow().get_or("id", "none"));
+            u.set("id", &element_id);
             u.set("fill", fill);
             u.set(
                 "stroke-width",
@@ -942,11 +949,9 @@ impl Diagram {
             u.set("stroke", &stroke.unwrap_or_else(|| "None".to_string()));
             u.set("stroke-dasharray", &element.borrow().get_or("dash", "none"));
         }
-        if element.borrow().get_or("id", "none") == parent.borrow().get_or("id", "none") {
+        if element_id == parent.borrow().get_or("id", "none") {
             use_el.borrow_mut().pop_attr("id");
         }
-
-        let element_id = element.borrow().get_or("id", "none");
         let suffix = self.id_suffix.last().cloned().unwrap_or_default();
         let reuse_handle = if element_id.ends_with(&suffix) {
             format!("{element_id}-outline")
