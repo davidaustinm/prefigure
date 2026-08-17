@@ -441,8 +441,16 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
 
     if let Some(outline_group) = outline_group {
         diagram.add_outline(element, &line, outline_group, None, None);
-        if let (Some(ref dec_path), Some(ref dec_id)) = (&decoration_path_el, &decoration_path_id_str) {
-            diagram.add_outline(element, dec_path, outline_group, None, Some(dec_id.as_str()));
+        if let (Some(ref dec_path), Some(ref dec_id)) =
+            (&decoration_path_el, &decoration_path_id_str)
+        {
+            diagram.add_outline(
+                element,
+                dec_path,
+                outline_group,
+                None,
+                Some(dec_id.as_str()),
+            );
         }
         finish_outline(element, diagram, &parent, None);
         if let Some(ref dec_id) = decoration_path_id_str {
@@ -452,7 +460,9 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
         || diagram.output_format() == "tactile"
     {
         diagram.add_outline(element, &line, &parent, None, None);
-        if let (Some(ref dec_path), Some(ref dec_id)) = (&decoration_path_el, &decoration_path_id_str) {
+        if let (Some(ref dec_path), Some(ref dec_id)) =
+            (&decoration_path_el, &decoration_path_id_str)
+        {
             diagram.add_outline(element, dec_path, &parent, None, Some(dec_id.as_str()));
         }
         finish_outline(element, diagram, &parent, None);
