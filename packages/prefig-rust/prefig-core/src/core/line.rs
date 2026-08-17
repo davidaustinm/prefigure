@@ -246,11 +246,17 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
                     let p2 = ctm_local.transform([0.0, h]);
                     let p3 = ctm_local.transform([0.0, -h]);
                     let p4 = ctm_local.transform([w, -h]);
-                    d += &format!("M {} {} L {} {} L {} {} L {} {} ",
-                        float2str(p1[0]), float2str(p1[1]),
-                        float2str(p2[0]), float2str(p2[1]),
-                        float2str(p3[0]), float2str(p3[1]),
-                        float2str(p4[0]), float2str(p4[1]));
+                    d += &format!(
+                        "M {} {} L {} {} L {} {} L {} {} ",
+                        float2str(p1[0]),
+                        float2str(p1[1]),
+                        float2str(p2[0]),
+                        float2str(p2[1]),
+                        float2str(p3[0]),
+                        float2str(p3[1]),
+                        float2str(p4[0]),
+                        float2str(p4[1])
+                    );
                 }
                 ']' => {
                     let (sw, sh) = if tactile { (6.0, 9.0) } else { (2.0, 3.0) };
@@ -260,11 +266,17 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
                     let p2 = ctm_local.transform([length, h]);
                     let p3 = ctm_local.transform([length, -h]);
                     let p4 = ctm_local.transform([length - w, -h]);
-                    d += &format!("M {} {} L {} {} L {} {} L {} {} ",
-                        float2str(p1[0]), float2str(p1[1]),
-                        float2str(p2[0]), float2str(p2[1]),
-                        float2str(p3[0]), float2str(p3[1]),
-                        float2str(p4[0]), float2str(p4[1]));
+                    d += &format!(
+                        "M {} {} L {} {} L {} {} L {} {} ",
+                        float2str(p1[0]),
+                        float2str(p1[1]),
+                        float2str(p2[0]),
+                        float2str(p2[1]),
+                        float2str(p3[0]),
+                        float2str(p3[1]),
+                        float2str(p4[0]),
+                        float2str(p4[1])
+                    );
                 }
                 ')' => {
                     let (sw, sh) = if tactile { (3.0, 9.0) } else { (1.0, 3.0) };
@@ -273,10 +285,15 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
                     let b = 4.25 * sw * thickness;
                     let p1 = ctm_local.transform([length - w, -h]);
                     let p3 = ctm_local.transform([length - w, h]);
-                    d += &format!("M {} {} A {} {} 0 0,1 {} {} ",
-                        float2str(p1[0]), float2str(p1[1]),
-                        float2str(b), float2str(b),
-                        float2str(p3[0]), float2str(p3[1]));
+                    d += &format!(
+                        "M {} {} A {} {} 0 0,1 {} {} ",
+                        float2str(p1[0]),
+                        float2str(p1[1]),
+                        float2str(b),
+                        float2str(b),
+                        float2str(p3[0]),
+                        float2str(p3[1])
+                    );
                 }
                 '(' => {
                     let (sw, sh) = if tactile { (3.0, 9.0) } else { (1.0, 3.0) };
@@ -285,10 +302,15 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
                     let b = 4.25 * sw * thickness;
                     let p1 = ctm_local.transform([w, h]);
                     let p3 = ctm_local.transform([w, -h]);
-                    d += &format!("M {} {} A {} {} 0 0,1 {} {} ",
-                        float2str(p1[0]), float2str(p1[1]),
-                        float2str(b), float2str(b),
-                        float2str(p3[0]), float2str(p3[1]));
+                    d += &format!(
+                        "M {} {} A {} {} 0 0,1 {} {} ",
+                        float2str(p1[0]),
+                        float2str(p1[1]),
+                        float2str(b),
+                        float2str(b),
+                        float2str(p3[0]),
+                        float2str(p3[1])
+                    );
                 }
                 _ => {
                     log::error!("{c} is not a valid decoration on a line");
