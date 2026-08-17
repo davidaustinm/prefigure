@@ -688,7 +688,8 @@ class Diagram:
 
     # when a graphical component is outlined, we first add the component's path
     # to <defs> so that it can be reused, then we stroke it with a thick white
-    def add_outline(self, element, path, parent, outline_width = None):
+    def add_outline(self, element, path, parent, outline_width = None,
+                    id = None):
         if outline_width is None:
             if self.output_format() == 'tactile':
                 outline_width = 18
@@ -700,8 +701,11 @@ class Diagram:
         fill = path.attrib.pop('fill', 'none')
         path.attrib.pop('stroke-dasharray', 'none')
 
-        self.add_id(element, element.get('id'))
-        outline_id = element.get('id') + '-outline'
+        if id is None:
+            self.add_id(element, element.get('id'))
+            outline_id = element.get('id') + '-outline'
+        else:
+            outline_id = id + '-outline'
         path.set('id', outline_id)
         self.add_reusable(path)
 
@@ -726,14 +730,15 @@ class Diagram:
 
     # after the outline of a graphical component is added, we then add the 
     # component itself on top of the outline
-    def finish_outline(self, element, stroke, thickness, fill, parent):
+    def finish_outline(self, element, stroke, thickness, fill, parent, id=None):
+        if id is None:
+            id = element.get('id', 'none')
         use = ET.SubElement(parent, 'use', attrib={
-            'id': element.get('id', 'none'),
+            'id': id,
             'fill': str(fill),
             'stroke-width': str(thickness),
             'stroke': str(stroke),
             'stroke-dasharray': element.get('dash', 'none')
-#            'href': r'#' + element.get('id', 'none') + '-outline'
         }
         )
         self.register_svg_element(element, use)
@@ -746,7 +751,7 @@ class Diagram:
         # We have to clean up the arrow heads.  The references to the
         # arrow heads are in the reusable so we'll retrieve them and
         # and include them with the use element.
-        element_id = element.get('id')
+        element_id = id
         if element_id.endswith(self.id_suffix[-1]):
             reuse_handle = element_id + '-outline'
         else:

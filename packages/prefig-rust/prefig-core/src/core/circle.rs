@@ -447,12 +447,12 @@ pub fn angle(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Op
     arc.borrow_mut().set("d", &d);
 
     if let Some(outline_group) = outline_group {
-        diagram.add_outline(element, &arc, outline_group, Some(4));
+        diagram.add_outline(element, &arc, outline_group, Some(4), None);
         finish_outline(element, diagram, &parent, false);
     } else if element.borrow().get_or("outline", "no") == "yes"
         || diagram.output_format() == "tactile"
     {
-        diagram.add_outline(element, &arc, &parent, Some(4));
+        diagram.add_outline(element, &arc, &parent, Some(4), None);
         finish_outline(element, diagram, &parent, false);
     } else {
         xml::append(&parent, &arc);
@@ -539,12 +539,12 @@ fn finish_element(
     fill_from_attr: bool,
 ) {
     if let Some(outline_group) = outline_group {
-        diagram.add_outline(element, path, outline_group, None);
+        diagram.add_outline(element, path, outline_group, None, None);
         finish_outline(element, diagram, parent, fill_from_attr);
     } else if element.borrow().get_or("outline", "no") == "yes"
         || diagram.output_format() == "tactile"
     {
-        diagram.add_outline(element, path, parent, None);
+        diagram.add_outline(element, path, parent, None, None);
         finish_outline(element, diagram, parent, fill_from_attr);
     } else {
         xml::append(parent, path);
@@ -559,5 +559,5 @@ fn finish_outline(element: &El, diagram: &mut Diagram, parent: &El, fill_from_at
     } else {
         element.borrow().get_or("fill", "none")
     };
-    diagram.finish_outline(element, stroke, thickness, &fill, parent);
+    diagram.finish_outline(element, stroke, thickness, &fill, parent, None);
 }

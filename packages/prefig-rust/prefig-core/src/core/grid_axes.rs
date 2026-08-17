@@ -450,12 +450,12 @@ fn grid_with_basis(
     coords.borrow_mut().set("d", &cmds.join(" "));
 
     if let Some(outline_group) = outline_group {
-        diagram.add_outline(element, &coords, outline_group, None);
+        diagram.add_outline(element, &coords, outline_group, None, None);
         finish_outline(element, diagram, parent);
     } else if element.borrow().get_or("outline", "no") == "yes"
         || diagram.output_format() == "tactile"
     {
-        diagram.add_outline(element, &coords, parent, None);
+        diagram.add_outline(element, &coords, parent, None, None);
         finish_outline(element, diagram, parent);
     } else {
         xml::append(parent, &coords);
@@ -465,5 +465,5 @@ fn grid_with_basis(
 fn finish_outline(element: &El, diagram: &mut Diagram, parent: &El) {
     let stroke = element.borrow().get("stroke");
     let thickness = element.borrow().get("thickness");
-    diagram.finish_outline(element, stroke, thickness, "none", parent);
+    diagram.finish_outline(element, stroke, thickness, "none", parent, None);
 }

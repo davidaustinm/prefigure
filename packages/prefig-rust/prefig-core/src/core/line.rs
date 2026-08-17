@@ -1,5 +1,6 @@
 //! Port of prefig/core/line.py.
 
+use crate::core::ctm::CTM;
 use crate::core::diagram::{Diagram, Point};
 use crate::core::utilities::{self as util, float2str, pt2str};
 use crate::core::{arrow, ctm, label};
@@ -208,7 +209,6 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
     let q2 = [get_f("x2"), get_f("y2")];
     diagram.save_line_endpoints(element, q1, q2);
 
-    util::set_attr(element, "stroke", "black", &mut diagram.ctx);
     util::set_attr(element, "thickness", "2", &mut diagram.ctx);
     let thickness_attr = element.borrow().get_or("thickness", "2");
     let thickness = diagram
@@ -217,10 +217,122 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
         .ok()
         .and_then(|v| v.as_num().ok())
         .unwrap_or(2.0);
+
+    let decorations_attr = element.borrow().get("decorations");
+    let has_decorations = decorations_attr.is_some();
+    let (decoration_path_el, decoration_path_id_str) = if let Some(ref dec_str) = decorations_attr {
+        let dec_path = xml::new_element("path");
+        let line_id = line.borrow().get_or("id", "none");
+        let dec_id = format!("{}-decorations", line_id);
+        dec_path.borrow_mut().set("id", &dec_id);
+
+        let diff = [q2[0] - q1[0], q2[1] - q1[1]];
+        let length = (diff[0] * diff[0] + diff[1] * diff[1]).sqrt();
+        let angle = diff[1].atan2(diff[0]);
+
+        let mut ctm_local = CTM::new();
+        ctm_local.translate(q1[0], q1[1]);
+        ctm_local.rotate(angle.to_degrees(), true);
+
+        let mut d = String::new();
+        let tactile = diagram.output_format() == "tactile";
+        for c in dec_str.chars() {
+            match c {
+                '[' => {
+                    let (sw, sh) = if tactile { (6.0, 9.0) } else { (2.0, 3.0) };
+                    let w = sw * thickness;
+                    let h = sh * thickness;
+                    let p1 = ctm_local.transform([w, h]);
+                    let p2 = ctm_local.transform([0.0, h]);
+                    let p3 = ctm_local.transform([0.0, -h]);
+                    let p4 = ctm_local.transform([w, -h]);
+                    d += &format!(
+                        "M {} {} L {} {} L {} {} L {} {} ",
+                        float2str(p1[0]),
+                        float2str(p1[1]),
+                        float2str(p2[0]),
+                        float2str(p2[1]),
+                        float2str(p3[0]),
+                        float2str(p3[1]),
+                        float2str(p4[0]),
+                        float2str(p4[1])
+                    );
+                }
+                ']' => {
+                    let (sw, sh) = if tactile { (6.0, 9.0) } else { (2.0, 3.0) };
+                    let w = sw * thickness;
+                    let h = sh * thickness;
+                    let p1 = ctm_local.transform([length - w, h]);
+                    let p2 = ctm_local.transform([length, h]);
+                    let p3 = ctm_local.transform([length, -h]);
+                    let p4 = ctm_local.transform([length - w, -h]);
+                    d += &format!(
+                        "M {} {} L {} {} L {} {} L {} {} ",
+                        float2str(p1[0]),
+                        float2str(p1[1]),
+                        float2str(p2[0]),
+                        float2str(p2[1]),
+                        float2str(p3[0]),
+                        float2str(p3[1]),
+                        float2str(p4[0]),
+                        float2str(p4[1])
+                    );
+                }
+                ')' => {
+                    let (sw, sh) = if tactile { (3.0, 9.0) } else { (1.0, 3.0) };
+                    let w = sw * thickness;
+                    let h = sh * thickness;
+                    let b = 4.25 * sw * thickness;
+                    let p1 = ctm_local.transform([length - w, -h]);
+                    let p3 = ctm_local.transform([length - w, h]);
+                    d += &format!(
+                        "M {} {} A {} {} 0 0,1 {} {} ",
+                        float2str(p1[0]),
+                        float2str(p1[1]),
+                        float2str(b),
+                        float2str(b),
+                        float2str(p3[0]),
+                        float2str(p3[1])
+                    );
+                }
+                '(' => {
+                    let (sw, sh) = if tactile { (3.0, 9.0) } else { (1.0, 3.0) };
+                    let w = sw * thickness;
+                    let h = sh * thickness;
+                    let b = 4.25 * sw * thickness;
+                    let p1 = ctm_local.transform([w, h]);
+                    let p3 = ctm_local.transform([w, -h]);
+                    d += &format!(
+                        "M {} {} A {} {} 0 0,1 {} {} ",
+                        float2str(p1[0]),
+                        float2str(p1[1]),
+                        float2str(b),
+                        float2str(b),
+                        float2str(p3[0]),
+                        float2str(p3[1])
+                    );
+                }
+                _ => {
+                    log::error!("{c} is not a valid decoration on a line");
+                }
+            }
+        }
+        dec_path.borrow_mut().set("d", d.trim_end());
+        (Some(dec_path), Some(dec_id))
+    } else {
+        (None, None)
+    };
+
+    util::set_attr(element, "stroke", "black", &mut diagram.ctx);
     if diagram.output_format() == "tactile" {
         element.borrow_mut().set("stroke", "black");
     }
     util::add_attr(&line, util::get_1d_attr(element, &mut diagram.ctx));
+    if has_decorations {
+        if let Some(ref dec_path) = decoration_path_el {
+            util::add_attr(dec_path, util::get_1d_attr(element, &mut diagram.ctx));
+        }
+    }
 
     let arrows: i64 = element.borrow().get_or("arrows", "0").parse().unwrap_or(0);
     let (mut forward, mut backward) = ("marker-end", "marker-start");
@@ -315,26 +427,53 @@ pub fn line(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
     util::cliptobbox(&line, element, diagram);
     let has_label = label::has_label(element);
     let mut parent = parent.clone();
-    if has_label {
+    if has_label || has_decorations {
         let group = xml::sub_element(&parent, "g");
         group
             .borrow_mut()
             .set("id", &line.borrow().get_or("id", "none"));
         line.borrow_mut().pop_attr("id");
         parent = group;
-        add_label(element, diagram, &parent);
+        if has_label {
+            add_label(element, diagram, &parent);
+        }
     }
 
     if let Some(outline_group) = outline_group {
-        diagram.add_outline(element, &line, outline_group, None);
-        finish_outline(element, diagram, &parent);
+        diagram.add_outline(element, &line, outline_group, None, None);
+        if let (Some(ref dec_path), Some(ref dec_id)) =
+            (&decoration_path_el, &decoration_path_id_str)
+        {
+            diagram.add_outline(
+                element,
+                dec_path,
+                outline_group,
+                None,
+                Some(dec_id.as_str()),
+            );
+        }
+        finish_outline(element, diagram, &parent, None);
+        if let Some(ref dec_id) = decoration_path_id_str {
+            finish_outline(element, diagram, &parent, Some(dec_id.clone()));
+        }
     } else if element.borrow().get_or("outline", "no") == "yes"
         || diagram.output_format() == "tactile"
     {
-        diagram.add_outline(element, &line, &parent, None);
-        finish_outline(element, diagram, &parent);
+        diagram.add_outline(element, &line, &parent, None, None);
+        if let (Some(ref dec_path), Some(ref dec_id)) =
+            (&decoration_path_el, &decoration_path_id_str)
+        {
+            diagram.add_outline(element, dec_path, &parent, None, Some(dec_id.as_str()));
+        }
+        finish_outline(element, diagram, &parent, None);
+        if let Some(ref dec_id) = decoration_path_id_str {
+            finish_outline(element, diagram, &parent, Some(dec_id.clone()));
+        }
     } else {
         xml::append(&parent, &line);
+        if let Some(ref dec_path) = decoration_path_el {
+            xml::append(&parent, dec_path);
+        }
     }
 }
 
@@ -356,11 +495,11 @@ fn eval_point(diagram: &mut Diagram, attr: Option<&str>) -> Option<Point> {
     (v.len() >= 2).then(|| [v[0], v[1]])
 }
 
-fn finish_outline(element: &El, diagram: &mut Diagram, parent: &El) {
+fn finish_outline(element: &El, diagram: &mut Diagram, parent: &El, id: Option<String>) {
     let stroke = element.borrow().get("stroke");
     let thickness = element.borrow().get("thickness");
     let fill = element.borrow().get_or("fill", "none");
-    diagram.finish_outline(element, stroke, thickness, &fill, parent);
+    diagram.finish_outline(element, stroke, thickness, &fill, parent, id);
 }
 
 fn add_label(element: &El, diagram: &mut Diagram, parent: &El) {

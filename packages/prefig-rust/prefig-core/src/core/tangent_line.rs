@@ -127,12 +127,12 @@ pub fn tangent(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
     util::cliptobbox(&line_el, element, diagram);
 
     if let Some(outline_group) = outline_group {
-        diagram.add_outline(element, &line_el, outline_group, None);
+        diagram.add_outline(element, &line_el, outline_group, None, None);
         finish_outline(element, diagram, parent);
     } else if element.borrow().get_or("outline", "no") == "yes"
         || diagram.output_format() == "tactile"
     {
-        diagram.add_outline(element, &line_el, parent, None);
+        diagram.add_outline(element, &line_el, parent, None, None);
         finish_outline(element, diagram, parent);
     } else {
         xml::append(parent, &line_el);
@@ -143,5 +143,5 @@ fn finish_outline(element: &El, diagram: &mut Diagram, parent: &El) {
     let stroke = element.borrow().get("stroke");
     let thickness = element.borrow().get("thickness");
     let fill = element.borrow().get_or("fill", "none");
-    diagram.finish_outline(element, stroke, thickness, &fill, parent);
+    diagram.finish_outline(element, stroke, thickness, &fill, parent, None);
 }
