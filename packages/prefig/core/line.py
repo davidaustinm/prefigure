@@ -86,8 +86,14 @@ def line(element, diagram, parent, outline_group):
         ctm.rotate(angle, units="radians")
         for c in element.get('decorations'):
             if c == '[':
-                w = 2*thickness
-                h = 3*thickness
+                if diagram.output_format() == 'tactile':
+                    sw = 6
+                    sh = 9
+                else:
+                    sw = 2
+                    sh = 3
+                w = sw*thickness
+                h = sh*thickness
                 p1 = ctm.transform((w,h))
                 p2 = ctm.transform((0,h))
                 p3 = ctm.transform((0,-h))
@@ -97,8 +103,14 @@ def line(element, diagram, parent, outline_group):
                 d += 'L ' + f"{p3[0]} {p3[1]} "
                 d += 'L ' + f"{p4[0]} {p4[1]} "
             elif c == ']':
-                w = 2*thickness
-                h = 3*thickness
+                if diagram.output_format() == 'tactile':
+                    sw = 6
+                    sh = 9
+                else:
+                    sw = 2
+                    sh = 3
+                w = sw*thickness
+                h = sh*thickness
                 p1 = ctm.transform((length-w,h))
                 p2 = ctm.transform((length,h))
                 p3 = ctm.transform((length,-h))
@@ -108,9 +120,15 @@ def line(element, diagram, parent, outline_group):
                 d += 'L ' + f"{p3[0]} {p3[1]} "
                 d += 'L ' + f"{p4[0]} {p4[1]} "
             elif c == ')':
-                w = thickness
-                h = 3*thickness
-                b = 4.25*thickness
+                if diagram.output_format() == 'tactile':
+                    sw = 3
+                    sh = 9
+                else:
+                    sw = 1
+                    sh = 3
+                w = sw*thickness
+                h = sh*thickness
+                b = 4.25*sw*thickness
                 p1 = ctm.transform((length-w,-h))
                 p2 = (b, b)
                 p3 = ctm.transform((length-w, h))
@@ -118,9 +136,15 @@ def line(element, diagram, parent, outline_group):
                 d += 'A ' + f"{p2[0]} {p2[1]} 0 0,1 "
                 d += f"{p3[0]} {p3[1]} "
             elif c == '(':
-                w = thickness
-                h = 3*thickness
-                b = 4.25*thickness
+                if diagram.output_format() == 'tactile':
+                    sw = 3
+                    sh = 9
+                else:
+                    sw = 1
+                    sh = 3
+                w = sw*thickness
+                h = sh*thickness
+                b = 4.25*sw*thickness
                 p1 = ctm.transform((w,h))
                 p2 = (b, b)
                 p3 = ctm.transform((w,-h))
