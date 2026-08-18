@@ -530,11 +530,15 @@ class Diagram:
         if self.author_annotations_present and self.environment == "pretext":
             # we will write out a second version of the diagram
             # without the height and width attributes for diagcess use
+            width = self.root.get('width')
+            height = self.root.get('height')
             self.root.attrib.pop("height")
             self.root.attrib.pop("width")
+            self.root.set('style', f'aspect-ratio: {width} / {height};')
             try:
                 with ET.xmlfile(out + '-diagcess.svg', encoding='utf-8') as xf:
                     xf.write(self.root, pretty_print=True)
+                self.root.attrib.pop('style')
             except:
                 log.error(f"Unable to write SVG at {out+'-diagcess.svg'}")
                 return
