@@ -70,11 +70,13 @@ PreFigure may be installed locally as a Python package in the usual way using `p
     apt install librsvg2-bin
     ```
 
-    while Mac users can use
+    Mac users can use
 
     ```
     brew install librsvg
     ```
+
+    On Windows, download [rsvg-convert](https://github.com/miyako/console-rsvg-convert) and add the location to your path.
 
 7. Once installed, the command `prefig init` will install MathJax and the Braille29 font needed to tactile diagrams.  If you do not perform this step, MathJax will be automatically installed when you first build a diagram with mathematical labels.
 
