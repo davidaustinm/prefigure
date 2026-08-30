@@ -390,11 +390,17 @@ if (!(argv.svg || argv.svgenhanced)) {
   //  serialization: the XML serialization would add the XHTML
   //  namespace to the bare "html" root of the mock page, and every
   //  namespace-less element match in the packaging stylesheet
-  //  (xsl/support/package-math.xsl) would then miss.  The attribute
-  //  escaping it would add is not needed: no output attribute can
-  //  hold a raw "<" now that the "data-latex" attributes are
-  //  filtered away.
+  //  (xsl/support/package-math.xsl) would then miss.
   //
-  console.log(adaptor.outerHTML(adaptor.root(html.document)));
+  //  Strip all data-semantic-* attributes before output: the Speech
+  //  Rule Engine writes raw LaTeX source and operator characters into
+  //  these values (e.g. data-semantic-operator="relseq,<"), which can
+  //  contain XML-special characters that break downstream XML parsing.
+  //  PreFigure does not use any of these attributes, so removing them
+  //  is safe.
+  //
+  let output = adaptor.outerHTML(adaptor.root(html.document));
+  output = output.replace(/ data-semantic-[a-z-]+="[^"]*"/g, '');
+  console.log(output);
 })()
   .catch((err) => console.error(err));
