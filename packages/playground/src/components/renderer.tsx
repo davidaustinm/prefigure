@@ -164,64 +164,64 @@ export function Renderer() {
                     </ToggleButton>
                 </ButtonGroup>
                 <div className="toolbar-actions">
-                <Button
-                    size="sm"
-                    onClick={() => {
-                      if (!annotations.startsWith("<diagram")) {
-                        throw new Error(
-                          "Cannot download unknown annotations: " +
-                            annotations,
-                        );
-                      }
-                      if (!compiledSource.startsWith("<svg")) {
-                        throw new Error(
-                          "Cannot download non-SVG content: " +
-                            compiledSource,
-                        );
-                      }
-                      const blob = new Blob([assembleCodeSnippet(compiledSource, annotations), scriptSnippet()], {
-                            type: "application/xml",
-                      });
-                      saveAs(blob, "figure.xml");
-                    }}
-                >
-                    <Download /> Download Code Snippet
-                </Button>
-                <Button
-                    size="sm"
-                    onClick={() => {
-                      if (!annotations.startsWith("<diagram")) {
-                        throw new Error(
-                          "Cannot download unknown annotations: " +
-                            annotations,
-                        );
-                      }
-                      const blob = new Blob([annotations], {
-                            type: "application/xml",
-                      });
-                      saveAs(blob, "figure.xml");
-                    }}
-                >
-                    <Download /> Download Annotations
-                </Button>
-                <Button
-                    size="sm"
-                    onClick={() => {
-                        if (!compiledSource.startsWith("<svg")) {
-                            throw new Error(
-                                "Cannot download non-SVG content: " +
+                    <Button
+                        size="sm"
+                        onClick={() => {
+                            if (!annotations.startsWith("<diagram")) {
+                                throw new Error(
+                                    "Cannot download unknown annotations: " +
+                                    annotations,
+                                );
+                            }
+                            if (!compiledSource.startsWith("<svg")) {
+                                throw new Error(
+                                    "Cannot download non-SVG content: " +
                                     compiledSource,
-                            );
-                        }
+                                );
+                            }
+                            const blob = new Blob([assembleCodeSnippet(compiledSource, annotations), scriptSnippet()], {
+                                type: "application/xml",
+                            });
+                            saveAs(blob, "figure.xml");
+                        }}
+                    >
+                        <Download /> Download Code Snippet
+                    </Button>
+                    <Button
+                        size="sm"
+                        onClick={() => {
+                            if (!annotations.startsWith("<diagram")) {
+                                throw new Error(
+                                    "Cannot download unknown annotations: " +
+                                    annotations,
+                                );
+                            }
+                            const blob = new Blob([annotations], {
+                                type: "application/xml",
+                            });
+                            saveAs(blob, "figure.xml");
+                        }}
+                    >
+                        <Download /> Download Annotations
+                    </Button>
+                    <Button
+                        size="sm"
+                        onClick={() => {
+                            if (!compiledSource.startsWith("<svg")) {
+                                throw new Error(
+                                    "Cannot download non-SVG content: " +
+                                    compiledSource,
+                                );
+                            }
 
-                        const blob = new Blob([compiledSource], {
-                            type: "image/svg+xml",
-                        });
-                        saveAs(blob, "figure.svg");
-                    }}
-                >
-                    <Download /> Download Graphic
-                </Button>
+                            const blob = new Blob([compiledSource], {
+                                type: "image/svg+xml",
+                            });
+                            saveAs(blob, "figure.svg");
+                        }}
+                    >
+                        <Download /> Download Graphic
+                    </Button>
                 </div>
             </Nav>
         </div>
