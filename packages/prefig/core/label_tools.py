@@ -8,7 +8,8 @@ from pathlib import Path
 from pathlib import Path
 
 log = logging.getLogger("prefigure")
-ns = {'svg': 'http://www.w3.org/2000/svg'}
+ns = {'svg': 'http://www.w3.org/2000/svg',
+      'xhtml': 'http://www.w3.org/1999/xhtml'}
 
 class AbstractMathLabels(abc.ABC):
     @abc.abstractmethod
@@ -112,25 +113,25 @@ class LocalMathLabels(AbstractMathLabels):
         # first we'll retrieve braille math labels
         if self.format == "tactile":
             try:
-                path = "//html/body/div[@id = '{}']".format(id)
-                div = self.label_tree.xpath(path)[0]
+                path = "//xhtml:html/xhtml:body/xhtml:div[@id = '{}']".format(id)
+                div = self.label_tree.xpath(path, namespaces=ns)[0]
             except:
                 log.error("Error retrieving a mathematical label")
                 log.error("  Perhaps it was not created due to an earlier error")
                 return None
 
             try:
-                container = div.xpath('mjx-data/mjx-braille')[0]
+                container = div.xpath('xhtml:mjx-data/xhtml:mjx-braille', namespaces=ns)[0]
                 return container.text
             except IndexError:
                 log.error(f"Error in processing label, possibly a LaTeX error: {div.text}")                
                 return None
 
         # now we get sighted math labels
-        path = "//html/body/div[@id = '{}']".format(id)
-        div = self.label_tree.xpath(path)[0]
+        path = "//xhtml:html/xhtml:body/xhtml:div[@id = '{}']".format(id)
+        div = self.label_tree.xpath(path, namespaces=ns)[0]
         try:
-            insert = div.xpath('mjx-data/mjx-container/svg:svg',
+            insert = div.xpath('xhtml:mjx-data/xhtml:mjx-container/svg:svg',
                                namespaces=ns)[0]
             return insert
         except IndexError:

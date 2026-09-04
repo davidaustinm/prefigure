@@ -386,21 +386,14 @@ if (!(argv.svg || argv.svgenhanced)) {
   //
   await html.renderPromise();
   //
-  //  Output the resulting document.  This is deliberately the HTML
-  //  serialization: the XML serialization would add the XHTML
-  //  namespace to the bare "html" root of the mock page, and every
-  //  namespace-less element match in the packaging stylesheet
-  //  (xsl/support/package-math.xsl) would then miss.
+  //  Output the resulting document as XML.  Speech enrichment writes
+  //  the author's LaTeX into "data-semantic-attributes", which nothing
+  //  filters, so a macro such as \newcommand{\lt}{<} would put a raw
+  //  "<" into an attribute value; the XML serialization escapes it,
+  //  where the HTML serialization does not.  The XHTML namespace this
+  //  puts on the mock page's "html" root is expected by the reader
+  //  (label_tools.py), which matches on it.
   //
-  //  Strip all data-semantic-* attributes before output: the Speech
-  //  Rule Engine writes raw LaTeX source and operator characters into
-  //  these values (e.g. data-semantic-operator="relseq,<"), which can
-  //  contain XML-special characters that break downstream XML parsing.
-  //  PreFigure does not use any of these attributes, so removing them
-  //  is safe.
-  //
-  let output = adaptor.outerHTML(adaptor.root(html.document));
-  output = output.replace(/ data-semantic-[a-z-]+="[^"]*"/g, '');
-  console.log(output);
+  console.log(adaptor.serializeXML(adaptor.root(html.document)));
 })()
   .catch((err) => console.error(err));
