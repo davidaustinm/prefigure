@@ -3,8 +3,10 @@ import { useStoreActions, useStoreState } from "../state";
 import {
     Button,
     ButtonGroup,
+    Dropdown,
     Nav,
     Spinner,
+    SplitButton,
     ToggleButton,
 } from "react-bootstrap";
 import { Download } from "react-bootstrap-icons";
@@ -164,48 +166,9 @@ export function Renderer() {
                     </ToggleButton>
                 </ButtonGroup>
                 <div className="toolbar-actions">
-                    <Button
+                    <SplitButton
                         size="sm"
-                        onClick={() => {
-                            if (!annotations.startsWith("<diagram")) {
-                                throw new Error(
-                                    "Cannot download unknown annotations: " +
-                                    annotations,
-                                );
-                            }
-                            if (!compiledSource.startsWith("<svg")) {
-                                throw new Error(
-                                    "Cannot download non-SVG content: " +
-                                    compiledSource,
-                                );
-                            }
-                            const blob = new Blob([assembleCodeSnippet(compiledSource, annotations), scriptSnippet()], {
-                                type: "application/xml",
-                            });
-                            saveAs(blob, "figure.xml");
-                        }}
-                    >
-                        <Download /> Download Code Snippet
-                    </Button>
-                    <Button
-                        size="sm"
-                        onClick={() => {
-                            if (!annotations.startsWith("<diagram")) {
-                                throw new Error(
-                                    "Cannot download unknown annotations: " +
-                                    annotations,
-                                );
-                            }
-                            const blob = new Blob([annotations], {
-                                type: "application/xml",
-                            });
-                            saveAs(blob, "figure.xml");
-                        }}
-                    >
-                        <Download /> Download Annotations
-                    </Button>
-                    <Button
-                        size="sm"
+                        title={<><Download /> Download Graphic</>}
                         onClick={() => {
                             if (!compiledSource.startsWith("<svg")) {
                                 throw new Error(
@@ -213,15 +176,51 @@ export function Renderer() {
                                     compiledSource,
                                 );
                             }
-
                             const blob = new Blob([compiledSource], {
                                 type: "image/svg+xml",
                             });
                             saveAs(blob, "figure.svg");
                         }}
                     >
-                        <Download /> Download Graphic
-                    </Button>
+                        <Dropdown.Item
+                            onClick={() => {
+                                if (!annotations.startsWith("<diagram")) {
+                                    throw new Error(
+                                        "Cannot download unknown annotations: " +
+                                        annotations,
+                                    );
+                                }
+                                const blob = new Blob([annotations], {
+                                    type: "application/xml",
+                                });
+                                saveAs(blob, "figure.xml");
+                            }}
+                        >
+                            <Download /> Download Annotations
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                            onClick={() => {
+                                if (!annotations.startsWith("<diagram")) {
+                                    throw new Error(
+                                        "Cannot download unknown annotations: " +
+                                        annotations,
+                                    );
+                                }
+                                if (!compiledSource.startsWith("<svg")) {
+                                    throw new Error(
+                                        "Cannot download non-SVG content: " +
+                                        compiledSource,
+                                    );
+                                }
+                                const blob = new Blob([assembleCodeSnippet(compiledSource, annotations), scriptSnippet()], {
+                                    type: "application/xml",
+                                });
+                                saveAs(blob, "figure.xml");
+                            }}
+                        >
+                            <Download /> Download Code Snippet
+                        </Dropdown.Item>
+                    </SplitButton>
                 </div>
             </Nav>
         </div>
