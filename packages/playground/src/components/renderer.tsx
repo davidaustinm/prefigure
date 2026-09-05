@@ -3,13 +3,48 @@ import { useStoreActions, useStoreState } from "../state";
 import {
     Button,
     ButtonGroup,
+    Dropdown,
     Nav,
     Spinner,
+    SplitButton,
     ToggleButton,
 } from "react-bootstrap";
 import { Download } from "react-bootstrap-icons";
 import { saveAs } from "file-saver";
 import * as diagcess from "diagcess";
+
+
+/**
+ * Assembles a code snippet that contains the SVG and the annotations in a single HTML element.
+ *
+ * @param {string} annotations The annotations in DiagCess format.
+ * @param {string} svg The SVG code to be displayed.
+ * @returns {string} The assembled code snippet as a string.
+ */
+function assembleCodeSnippet(svg: string, annotations: string): string {
+  let result = '<div class="ChemAccess-element">\n';
+  result += `  <div class="svg">\n    ${svg}\n  </div>\n`;
+  result += `  <div class="cml">\n    ${annotations}\n  </div>\n`;
+  result += '</div>\n';
+  return result;
+}
+
+/**
+ * @returns {string} The script snippet that initializes the DiagCess library,
+ * sets up the necessary event listeners, and sets the default language.
+ */
+function scriptSnippet(): string {
+  let result = '<div class="diagcess-script-container">\n';
+  result += '  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diagcess@latest/dist/diagcess.js"></script>\n';
+  result += '  <script type="text/javascript">\n';
+  result += '  document.addEventListener("DOMContentLoaded", function () {\n';
+  result += '    diagcess.Base.init();\n';
+  result += '    diagcess.Config.VOICE_LANG = "en";\n';
+  result += '  })\n';
+  result += '  </script>\n';
+  result += '</div>';
+  return result;
+}
 
 /**
  * Renders and displays the currently active PreFigure source code.
@@ -130,24 +165,63 @@ export function Renderer() {
                         Tactile
                     </ToggleButton>
                 </ButtonGroup>
-                <Button
-                    size="sm"
-                    onClick={() => {
-                        if (!compiledSource.startsWith("<svg")) {
-                            throw new Error(
-                                "Cannot download non-SVG content: " +
+                <div className="toolbar-actions">
+                    <SplitButton
+                        size="sm"
+                        title={<><Download /> Download Graphic</>}
+                        onClick={() => {
+                            if (!compiledSource.startsWith("<svg")) {
+                                throw new Error(
+                                    "Cannot download non-SVG content: " +
                                     compiledSource,
-                            );
-                        }
-
-                        const blob = new Blob([compiledSource], {
-                            type: "image/svg+xml",
-                        });
-                        saveAs(blob, "figure.svg");
-                    }}
-                >
-                    <Download /> Download Graphic
-                </Button>
+                                );
+                            }
+                            const blob = new Blob([compiledSource], {
+                                type: "image/svg+xml",
+                            });
+                            saveAs(blob, "figure.svg");
+                        }}
+                    >
+                        <Dropdown.Item
+                            onClick={() => {
+                                if (!annotations.startsWith("<diagram")) {
+                                    throw new Error(
+                                        "Cannot download unknown annotations: " +
+                                        annotations,
+                                    );
+                                }
+                                const blob = new Blob([annotations], {
+                                    type: "application/xml",
+                                });
+                                saveAs(blob, "figure.xml");
+                            }}
+                        >
+                            <Download /> Download Annotations
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                            onClick={() => {
+                                if (!annotations.startsWith("<diagram")) {
+                                    throw new Error(
+                                        "Cannot download unknown annotations: " +
+                                        annotations,
+                                    );
+                                }
+                                if (!compiledSource.startsWith("<svg")) {
+                                    throw new Error(
+                                        "Cannot download non-SVG content: " +
+                                        compiledSource,
+                                    );
+                                }
+                                const blob = new Blob([assembleCodeSnippet(compiledSource, annotations), scriptSnippet()], {
+                                    type: "application/xml",
+                                });
+                                saveAs(blob, "figure.xml");
+                            }}
+                        >
+                            <Download /> Download Code Snippet
+                        </Dropdown.Item>
+                    </SplitButton>
+                </div>
             </Nav>
         </div>
     );
