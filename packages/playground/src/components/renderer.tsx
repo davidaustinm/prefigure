@@ -33,13 +33,14 @@ function assembleCodeSnippet(svg: string, annotations: string): string {
  * @returns {string} The script snippet that initializes the DiagCess library,
  * sets up the necessary event listeners, and sets the default language.
  */
-function scriptSnippet(): string {
+function scriptSnippet(annotations: string): string {
+  let language = annotations.match(/<annotations\s+language="([^"]+)"/)?.[1] || 'en';
   let result = '<div class="diagcess-script-container">\n';
   result += '  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diagcess@latest/dist/diagcess.js"></script>\n';
   result += '  <script type="text/javascript">\n';
   result += '  document.addEventListener("DOMContentLoaded", function () {\n';
   result += '    diagcess.Base.init();\n';
-  result += '    diagcess.Config.VOICE_LANG = "en";\n';
+  result += `    diagcess.Config.VOICE_LANG = "${language}";\n`;
   result += '  })\n';
   result += '  </script>\n';
   result += '</div>';
@@ -212,7 +213,7 @@ export function Renderer() {
                                         compiledSource,
                                     );
                                 }
-                                const blob = new Blob([assembleCodeSnippet(compiledSource, annotations), scriptSnippet()], {
+                                const blob = new Blob([assembleCodeSnippet(compiledSource, annotations), scriptSnippet(annotations)], {
                                     type: "application/xml",
                                 });
                                 saveAs(blob, "figure.xml");
