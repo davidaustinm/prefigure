@@ -3,6 +3,7 @@ import logging
 import copy
 
 log = logging.getLogger('prefigure')
+language = 'en'
 
 def annotations(element, diagram, parent, outline_group):
     # tactile diagrams have no annotations
@@ -10,6 +11,9 @@ def annotations(element, diagram, parent, outline_group):
             and diagram.environment != 'pyodide'):
         return
 
+    if element.get('language', None) is not None:
+        global language
+        language = element.get('language')
     # 4/11/26:  use the top-level annotations element as the top-level
     #           annotation while preserving backward compatability
     if element.get('text', None) is not None:
@@ -22,6 +26,7 @@ def annotations(element, diagram, parent, outline_group):
     # traverse the annotation tree and create the XML annotation output
     # We first add default annotations, such as grid-axes
     diagram.initialize_annotations()
+    diagram.annotations_root.set('language', language)
 
     default_annotations = diagram.get_default_annotations()
     default_annotations_added = False
