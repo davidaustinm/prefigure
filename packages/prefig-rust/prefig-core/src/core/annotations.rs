@@ -29,7 +29,10 @@ pub fn annotations(element: &El, diagram: &mut Diagram, parent: &El, outline_gro
 
     diagram.initialize_annotations();
 
-    let language = element.borrow().get("language").unwrap_or_else(|| "en".to_string());
+    let language = element
+        .borrow()
+        .get("language")
+        .unwrap_or_else(|| "en".to_string());
     if let Some(root) = diagram.get_annotations_root() {
         root.borrow_mut().set("language", &language);
     }
