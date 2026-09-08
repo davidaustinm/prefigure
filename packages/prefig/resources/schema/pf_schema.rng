@@ -41,6 +41,9 @@
   </define>
   <define name="Annotations">
     <element name="annotations">
+      <optional>
+        <attribute name="language"/>
+      </optional>
       <choice>
         <group>
           <attribute name="text"/>

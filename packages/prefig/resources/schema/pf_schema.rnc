@@ -20,8 +20,9 @@ Diagram = element diagram {
 Caption = element caption {text}
 
 Annotations = element annotations {
-    (attribute text {text}, Annotation*) |
-    Annotation
+    attribute language {text}?,
+    ((attribute text {text}, Annotation*) |
+    Annotation)
 }
 
 AnnotationAttributes = 
