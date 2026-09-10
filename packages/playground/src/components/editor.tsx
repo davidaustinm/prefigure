@@ -1,10 +1,34 @@
 import Editor, { Monaco } from "@monaco-editor/react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+    ChangeEvent,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { useStoreState, useStoreActions } from "../state";
 import { convert } from "@naman22khater/data-converter";
-import { Alert, Button, ButtonGroup, Form, InputGroup, Modal, Nav, ToggleButton } from "react-bootstrap";
-import { Clipboard, ClipboardCheck, Download, Share, Trash } from "react-bootstrap-icons";
+import {
+    Alert,
+    Button,
+    ButtonGroup,
+    Dropdown,
+    Form,
+    InputGroup,
+    Modal,
+    Nav,
+    SplitButton,
+    ToggleButton
+} from "react-bootstrap";
+import {
+    Clipboard,
+    ClipboardCheck,
+    Download,
+    Share,
+    Trash,
+    Upload
+} from "react-bootstrap-icons";
 import { saveAs } from "file-saver";
 import { Diagnostic, PrefigureLspClient } from "../lsp-client/client";
 import {
@@ -12,6 +36,7 @@ import {
     summarizeError,
 } from "../lsp-client/compile-error";
 import { encodeSourceForQueryParam } from "../utils/source-query-param";
+import HiddenFileInput from "./file-input";
 
 type EditingMode = "xml" | "yaml";
 
@@ -87,8 +112,9 @@ export function SourceEditor() {
     const [shareUrl, setShareUrl] = useState("");
     const [copied, setCopied] = useState(false);
 
-    // The editor may be working in XML or YAML. However, the source is always stored in XML, so `contentXmlOrYaml`
-    // effectively shadows `sourceXml`, but could be a YAML string which gets translated to XML on the fly.
+    // The editor may be working in XML or YAML. However, the source is always
+    // stored in XML, so `contentXmlOrYaml` effectively shadows `sourceXml`, but
+    // could be a YAML string which gets translated to XML on the fly.
     const [contentXmlOrYaml, setContent] = useState<string>(sourceXml);
     const [editingMode, setEditingMode] = useState<EditingMode>("xml");
 
@@ -251,6 +277,46 @@ export function SourceEditor() {
         }
     }, [contentXmlOrYaml, editingMode]);
 
+    // Downloading
+    function handleDownload(): void {
+        const extension = editingMode === "xml" ? "xml" : "yaml";
+        const blob = new Blob([contentXmlOrYaml], {
+            type: "text/plain;charset=utf-8",
+        });
+        saveAs(blob, `diagram.${extension}`);
+    }
+
+    // Uploading
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    function handleUpload(): void {
+        fileInputRef.current?.click();
+    }
+
+    async function handleFileChange(
+        event: ChangeEvent<HTMLInputElement>
+    ): Promise<void> {
+        const files = Array.from(event.target.files ?? []);
+
+        if (files.length === 0) {
+            return;
+        }
+
+        const file = files[0];
+        const contents = await file.text();
+
+        if (contents !== undefined) {
+            setSourceXml(
+                editingMode === "xml"
+                    ? contents
+                    : yamlToXml(contents),
+            );
+            setContent(contents);
+        }
+        // Allow selecting the same file again.
+        event.target.value = "";
+    }
+
     return (
         <>
         <div className="panel-frame">
@@ -376,18 +442,21 @@ export function SourceEditor() {
                     </ToggleButton>
                 </ButtonGroup>
                 <div className="toolbar-actions">
-                    <Button
+                    <HiddenFileInput
+                        ref={fileInputRef}
+                        accept={editingMode === "xml" ? ".xml" :  ".yaml,.yml"}
+                        onChange={handleFileChange}
+                    />
+                    <SplitButton
                         size="sm"
-                        onClick={() => {
-                            const blob = new Blob([sourceXml], {
-                                type: "text/plain",
-                            });
-                            saveAs(blob, "figure.xml");
-                        }}
-                        title="Download the XML source code"
+                        title={<><Download /> Download Source</>}
+                        onClick={handleDownload}
                     >
-                        <Download /> Download Source
-                    </Button>
+                        <Dropdown.Item onClick={handleUpload}>
+                            <Upload>
+                            </Upload> Upload Source
+                        </Dropdown.Item>
+                    </SplitButton>
                     <Button
                         size="sm"
                         onClick={() => {
