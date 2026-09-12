@@ -320,6 +320,7 @@ def network(element, diagram, parent, outline_group):
         edge = tuple(endpoints)
         y = (all_edges[edge] - 1)/2 * spread
         for num, edge in enumerate(edges):
+            original_y = y  # we'll hold on to y since it may be modified
             ctm = CTM.CTM()
             user_p0 = positions[handle_0]
             user_p1 = positions[handle_1]
@@ -330,6 +331,15 @@ def network(element, diagram, parent, outline_group):
             length = math_util.length(u)
             ctm.translate(*p0)
             ctm.rotate(angle, units="rad")
+
+            if (
+                    edge is not None and
+                    edge.get('launch-angle', None) is not None
+            ):
+                angle = -un.valid_eval(edge.get('launch-angle'))
+                angle_rad = math.radians(angle)
+                y = math.tan(angle_rad) * length/2
+
             center = ctm.transform((length/2, y))
             c1 = ctm.transform((length/4, y))
             c2 = ctm.transform((3*length/4, y))
@@ -406,7 +416,7 @@ def network(element, diagram, parent, outline_group):
                         path.set('endpoints', ','.join(['('+util.pt2long_str(p, spacer=",")+')' for p in [user_p0, user_p1]]))
                         path.set('arrows', '0')
                         path.set('additional-arrows', '(0.5)')
-                        y -= spread
+                        y = original_y - spread
                         continue
                     segment = [center, user_p1]
                     for _ in range(10):
@@ -422,7 +432,7 @@ def network(element, diagram, parent, outline_group):
                         else:
                             segment = [c, q1]
                     path.set('endpoints', ','.join(['('+util.pt2long_str(p, spacer=",")+')' for p in [user_p0, segment[0]]]))
-                    y -= spread
+                    y = original_y - spread
                     continue
 
             path.set('start', util.pt2long_str(user_p0, spacer=","))
@@ -452,7 +462,7 @@ def network(element, diagram, parent, outline_group):
                         current_curve = [center, c1, p2]
                         curveto = ET.SubElement(path, 'quadratic-bezier')
                         curveto.set('controls', ','.join(['('+util.pt2long_str(p, spacer=",")+')' for p in [c0, center]]))
-            y -= spread
+            y = original_y - spread
 
     # now we will add the loops
     for node, loop_record in loops.items():

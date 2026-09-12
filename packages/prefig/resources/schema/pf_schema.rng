@@ -1784,6 +1784,9 @@
             <optional>
               <attribute name="label-location"/>
             </optional>
+            <optional>
+              <attribute name="launch-angle"/>
+            </optional>
             <ref name="StrokeAttributes"/>
             <ref name="LabelAttributes"/>
             <optional>

@@ -701,6 +701,7 @@ Network = element network {
             attribute weight {text}?,
             attribute loop-scale {text}?,
             attribute label-location {text}?,
+            attribute launch-angle {text}?,
             StrokeAttributes,
             LabelAttributes,
             LabelText?
