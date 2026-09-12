@@ -91,8 +91,18 @@ class LocalMathLabels(AbstractMathLabels):
         mj_dir = path.absolute() / 'mj_sre'
         mj_dir_str = str(mj_dir)
 
-        if not (mj_dir / 'mj-sre-page.js').exists():
-            log.info("MathJax installation not found so we will install it")
+        installed_script = mj_dir / 'mj-sre-page.js'
+        resource_script = path.parent / 'resources' / 'js' / 'mj-sre-page.js'
+        script_outdated = (
+            installed_script.exists() and
+            resource_script.exists() and
+            resource_script.read_bytes() != installed_script.read_bytes()
+        )
+        if not installed_script.exists() or script_outdated:
+            if script_outdated:
+                log.info("MathJax script is outdated so we will reinstall it")
+            else:
+                log.info("MathJax installation not found so we will install it")
             from .. import scripts
             success = scripts.install_mj.main()
             if not success:
