@@ -16,11 +16,21 @@ from . import label
 from . import CTM
 from . import group
 from . import point
+from . import repeat
 
 log = logging.getLogger('prefigure')
 
 # Add a graphical element describing a network
 def network(element, diagram, parent, outline_group):
+    # we first expand any repeat elements contained within
+    for repeat_el in element.findall('repeat'):
+        group_el = ET.SubElement(element, 'g')
+        repeat.repeat(repeat_el,
+                      diagram,
+                      group_el,
+                      outline_group)
+        repeat_parent = repeat_el.getparent()
+        repeat_parent.remove(repeat_el)
 
     # Is the network directed?
     directed = element.get('directed', 'no') == 'yes'
@@ -58,7 +68,7 @@ def network(element, diagram, parent, outline_group):
     # Let's find all the subelement nodes and store them in a dictionary
     nodes = {}
     positions = {}
-    for node in element.findall('node'):
+    for node in element.findall('.//node'):
         handle = node.get('at', None)
         # diagram.add_id(node, handle)
         # handle = node.get('id')
@@ -119,7 +129,7 @@ def network(element, diagram, parent, outline_group):
             all_edges[tuple(vertices)] = all_edges.get(tuple(vertices), 0) + 1
 
     # finally, there may be <edge> subelements of <network> with decorations
-    for edge in element.findall('edge'):
+    for edge in element.findall('.//edge'):
         try:
             endpoints = un.valid_eval(edge.get('vertices'))
         except:
@@ -427,7 +437,7 @@ def network(element, diagram, parent, outline_group):
                             end_style = node_style
                         else:
                             end_style = node.get('style', node_style)
-                        if point.inside(c, user_p1, float(node_size), end_style, future_ctm, buffer=arrow_buffer):
+                        if point.inside(c, user_p1, float(node_size), end_style, future_ctm, buffer=0):
                             segment = [q0, c]
                         else:
                             segment = [c, q1]
@@ -900,3 +910,58 @@ def poset(element, diagram, parent, outline_group):
                 diagram.register_source_data(point_el, 'p', node.coordinates)
 
     coordinates.coordinates(coords_el, diagram, parent, outline_group)
+
+def network_node(element, diagram, parent, outline_group):
+    node = ET.SubElement(parent, 'node')
+    if element.get('at', None) is not None:
+        at = un.valid_eval(element.get('at'))
+        node.set('at', str(at))
+    if element.get('p', None) is not None:
+        location = un.valid_eval(element.get('p'))
+        node.set('p', f"({location[0]}, {location[1]})")
+    if element.get('edges', None) is not None:
+        edges = un.valid_eval(element.get('edges'))
+        node.set('edge', f"({','.join([str(e) for e in edges])})")
+
+    for attr, value in element.attrib.iteritems():
+        if attr == 'p' or attr == 'edges':
+            continue
+        try:
+            value = un.valid_eval(value)
+            node.set(attr, str(value))
+        except:
+            node.set(attr, value)
+
+    copy_with_evaluated_text(element, node)
+
+def network_edge(element, diagram, parent, outline_group):
+    edge = ET.SubElement(parent, 'edge')
+    if element.get('vertices', None) is not None:
+        vertices = un.valid_eval(element.get('vertices'))
+        edge.set('vertices', f"({vertices[0]}, {vertices[1]})")
+    for attr, value in element.attrib.iteritems():
+        if attr == 'vertices':
+            continue
+        try:
+            value = un.valid_eval(value)
+            edge.set(attr, str(value))
+        except:
+            edge.set(attr, value)
+
+    copy_with_evaluated_text(element, edge)
+
+def copy_with_evaluated_text(source, dest):
+    if source.text:
+        dest.text = label.evaluate_text(source.text)
+    for child in source:
+        new_child = copy.deepcopy(child)
+        evaluate_text(new_child)
+        dest.append(new_child)
+
+def evaluate_text(element):
+    if element.text:
+        element.text = label.evaluate_text(element.text)
+    if element.tail:
+        element.tail = label.evaluate_text(element.tail)
+    for child in element:
+        evaluate_text(child)
