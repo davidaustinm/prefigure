@@ -1626,6 +1626,67 @@
       </optional>
     </element>
   </define>
+  <define name="NetworkNode">
+    <element name="node">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="p"/>
+      </optional>
+      <optional>
+        <attribute name="edges"/>
+      </optional>
+      <optional>
+        <attribute name="loop-orientation"/>
+      </optional>
+      <optional>
+        <attribute name="style"/>
+      </optional>
+      <ref name="FillAttributes"/>
+      <ref name="LabelAttributes"/>
+      <optional>
+        <ref name="LabelText"/>
+      </optional>
+    </element>
+  </define>
+  <define name="NetworkEdge">
+    <element name="edge">
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <attribute name="vertices"/>
+      <optional>
+        <attribute name="weight"/>
+      </optional>
+      <optional>
+        <attribute name="loop-scale"/>
+      </optional>
+      <optional>
+        <attribute name="label-location"/>
+      </optional>
+      <optional>
+        <attribute name="launch-angle"/>
+      </optional>
+      <ref name="StrokeAttributes"/>
+      <ref name="LabelAttributes"/>
+      <optional>
+        <ref name="LabelText"/>
+      </optional>
+    </element>
+  </define>
+  <define name="NetworkRepeat">
+    <element name="repeat">
+      <attribute name="parameter"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="NetworkNode"/>
+          <ref name="NetworkEdge"/>
+          <ref name="NetworkRepeat"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
   <define name="Network">
     <element name="network">
       <optional>
@@ -1744,54 +1805,13 @@
       <optional>
         <attribute name="label-dictionary"/>
       </optional>
-      <interleave>
-        <zeroOrMore>
-          <element name="node">
-            <optional>
-              <attribute name="at"/>
-            </optional>
-            <optional>
-              <attribute name="p"/>
-            </optional>
-            <optional>
-              <attribute name="edges"/>
-            </optional>
-            <optional>
-              <attribute name="loop-orientation"/>
-            </optional>
-            <optional>
-              <attribute name="style"/>
-            </optional>
-            <ref name="FillAttributes"/>
-            <ref name="LabelAttributes"/>
-            <optional>
-              <ref name="LabelText"/>
-            </optional>
-          </element>
-        </zeroOrMore>
-        <zeroOrMore>
-          <element name="edge">
-            <optional>
-              <attribute name="at"/>
-            </optional>
-            <attribute name="vertices"/>
-            <optional>
-              <attribute name="weight"/>
-            </optional>
-            <optional>
-              <attribute name="loop-scale"/>
-            </optional>
-            <optional>
-              <attribute name="label-location"/>
-            </optional>
-            <ref name="StrokeAttributes"/>
-            <ref name="LabelAttributes"/>
-            <optional>
-              <ref name="LabelText"/>
-            </optional>
-          </element>
-        </zeroOrMore>
-      </interleave>
+      <zeroOrMore>
+        <choice>
+          <ref name="NetworkNode"/>
+          <ref name="NetworkEdge"/>
+          <ref name="NetworkRepeat"/>
+        </choice>
+      </zeroOrMore>
       <ref name="CommonAttributes"/>
     </element>
   </define>

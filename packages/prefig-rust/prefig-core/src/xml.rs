@@ -113,6 +113,15 @@ pub fn find_all(el: &El, tag: &str) -> Vec<El> {
         .collect()
 }
 
+/// element.findall('.//tag'): all descendants with the given tag.
+pub fn find_all_recursive(el: &El, tag: &str) -> Vec<El> {
+    iter_subtree(el)
+        .into_iter()
+        .skip(1)
+        .filter(|c| c.borrow().tag == tag)
+        .collect()
+}
+
 /// element.find(tag): first direct child with the given tag.
 pub fn find(el: &El, tag: &str) -> Option<El> {
     el.borrow()

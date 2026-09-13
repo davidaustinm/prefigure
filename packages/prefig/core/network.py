@@ -16,11 +16,21 @@ from . import label
 from . import CTM
 from . import group
 from . import point
+from . import repeat
 
 log = logging.getLogger('prefigure')
 
 # Add a graphical element describing a network
 def network(element, diagram, parent, outline_group):
+    # we first expand any repeat elements contained within
+    for repeat_el in element.findall('repeat'):
+        group_el = ET.SubElement(element, 'g')
+        repeat.repeat(repeat_el,
+                      diagram,
+                      group_el,
+                      outline_group)
+        repeat_parent = repeat_el.getparent()
+        repeat_parent.remove(repeat_el)
 
     # Is the network directed?
     directed = element.get('directed', 'no') == 'yes'
@@ -58,7 +68,7 @@ def network(element, diagram, parent, outline_group):
     # Let's find all the subelement nodes and store them in a dictionary
     nodes = {}
     positions = {}
-    for node in element.findall('node'):
+    for node in element.findall('.//node'):
         handle = node.get('at', None)
         # diagram.add_id(node, handle)
         # handle = node.get('id')
@@ -119,7 +129,7 @@ def network(element, diagram, parent, outline_group):
             all_edges[tuple(vertices)] = all_edges.get(tuple(vertices), 0) + 1
 
     # finally, there may be <edge> subelements of <network> with decorations
-    for edge in element.findall('edge'):
+    for edge in element.findall('.//edge'):
         try:
             endpoints = un.valid_eval(edge.get('vertices'))
         except:
@@ -320,6 +330,7 @@ def network(element, diagram, parent, outline_group):
         edge = tuple(endpoints)
         y = (all_edges[edge] - 1)/2 * spread
         for num, edge in enumerate(edges):
+            original_y = y  # we'll hold on to y since it may be modified
             ctm = CTM.CTM()
             user_p0 = positions[handle_0]
             user_p1 = positions[handle_1]
@@ -330,6 +341,15 @@ def network(element, diagram, parent, outline_group):
             length = math_util.length(u)
             ctm.translate(*p0)
             ctm.rotate(angle, units="rad")
+
+            if (
+                    edge is not None and
+                    edge.get('launch-angle', None) is not None
+            ):
+                angle = -un.valid_eval(edge.get('launch-angle'))
+                angle_rad = math.radians(angle)
+                y = math.tan(angle_rad) * length/2
+
             center = ctm.transform((length/2, y))
             c1 = ctm.transform((length/4, y))
             c2 = ctm.transform((3*length/4, y))
@@ -406,7 +426,7 @@ def network(element, diagram, parent, outline_group):
                         path.set('endpoints', ','.join(['('+util.pt2long_str(p, spacer=",")+')' for p in [user_p0, user_p1]]))
                         path.set('arrows', '0')
                         path.set('additional-arrows', '(0.5)')
-                        y -= spread
+                        y = original_y - spread
                         continue
                     segment = [center, user_p1]
                     for _ in range(10):
@@ -417,12 +437,12 @@ def network(element, diagram, parent, outline_group):
                             end_style = node_style
                         else:
                             end_style = node.get('style', node_style)
-                        if point.inside(c, user_p1, float(node_size), end_style, future_ctm, buffer=arrow_buffer):
+                        if point.inside(c, user_p1, float(node_size), end_style, future_ctm, buffer=0):
                             segment = [q0, c]
                         else:
                             segment = [c, q1]
                     path.set('endpoints', ','.join(['('+util.pt2long_str(p, spacer=",")+')' for p in [user_p0, segment[0]]]))
-                    y -= spread
+                    y = original_y - spread
                     continue
 
             path.set('start', util.pt2long_str(user_p0, spacer=","))
@@ -452,7 +472,7 @@ def network(element, diagram, parent, outline_group):
                         current_curve = [center, c1, p2]
                         curveto = ET.SubElement(path, 'quadratic-bezier')
                         curveto.set('controls', ','.join(['('+util.pt2long_str(p, spacer=",")+')' for p in [c0, center]]))
-            y -= spread
+            y = original_y - spread
 
     # now we will add the loops
     for node, loop_record in loops.items():
@@ -890,3 +910,58 @@ def poset(element, diagram, parent, outline_group):
                 diagram.register_source_data(point_el, 'p', node.coordinates)
 
     coordinates.coordinates(coords_el, diagram, parent, outline_group)
+
+def network_node(element, diagram, parent, outline_group):
+    node = ET.SubElement(parent, 'node')
+    if element.get('at', None) is not None:
+        at = un.valid_eval(element.get('at'))
+        node.set('at', str(at))
+    if element.get('p', None) is not None:
+        location = un.valid_eval(element.get('p'))
+        node.set('p', f"({location[0]}, {location[1]})")
+    if element.get('edges', None) is not None:
+        edges = un.valid_eval(element.get('edges'))
+        node.set('edge', f"({','.join([str(e) for e in edges])})")
+
+    for attr, value in element.attrib.iteritems():
+        if attr == 'p' or attr == 'edges':
+            continue
+        try:
+            value = un.valid_eval(value)
+            node.set(attr, str(value))
+        except:
+            node.set(attr, value)
+
+    copy_with_evaluated_text(element, node)
+
+def network_edge(element, diagram, parent, outline_group):
+    edge = ET.SubElement(parent, 'edge')
+    if element.get('vertices', None) is not None:
+        vertices = un.valid_eval(element.get('vertices'))
+        edge.set('vertices', f"({vertices[0]}, {vertices[1]})")
+    for attr, value in element.attrib.iteritems():
+        if attr == 'vertices':
+            continue
+        try:
+            value = un.valid_eval(value)
+            edge.set(attr, str(value))
+        except:
+            edge.set(attr, value)
+
+    copy_with_evaluated_text(element, edge)
+
+def copy_with_evaluated_text(source, dest):
+    if source.text:
+        dest.text = label.evaluate_text(source.text)
+    for child in source:
+        new_child = copy.deepcopy(child)
+        evaluate_text(new_child)
+        dest.append(new_child)
+
+def evaluate_text(element):
+    if element.text:
+        element.text = label.evaluate_text(element.text)
+    if element.tail:
+        element.tail = label.evaluate_text(element.tail)
+    for child in element:
+        evaluate_text(child)

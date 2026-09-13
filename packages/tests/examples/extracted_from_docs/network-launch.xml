@@ -1,0 +1,19 @@
+<diagram dimensions="(300,150)" margins="5">
+  <coordinates bbox="(-0.5,-0.5,4.5,2)">
+    <definition>angles=(0,20,30,40)</definition>
+    <network directed="yes" labels="yes">
+      <repeat parameter="k=1..5">
+        <node at="k" p="(k-1,0)" fill="white"/>
+      </repeat>
+      <repeat parameter="k=0..3">
+        <repeat parameter="l=0..4-k-1">
+          <edge vertices="(k+1,k+l+2)"
+                launch-angle="angles[l]"
+                stroke="blue">
+            <m>${l}</m>
+          </edge>
+        </repeat>
+      </repeat>
+    </network>
+  </coordinates>
+</diagram>

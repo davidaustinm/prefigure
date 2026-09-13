@@ -650,6 +650,34 @@ Line = element line {
     LabelText?
 }
 
+NetworkNode = element node {
+    attribute at {text}?,
+    attribute p {text}?,
+    attribute edges {text}?,
+    attribute loop-orientation {text}?,
+    attribute style {text}?,
+    FillAttributes,
+    LabelAttributes,
+    LabelText?
+}
+
+NetworkEdge = element edge {
+    attribute at {text}?,
+    attribute vertices {text},
+    attribute weight {text}?,
+    attribute loop-scale {text}?,
+    attribute label-location {text}?,
+    attribute launch-angle {text}?,
+    StrokeAttributes,
+    LabelAttributes,
+    LabelText?
+}
+
+NetworkRepeat = element repeat {
+    attribute parameter {text},
+    (NetworkNode | NetworkEdge | NetworkRepeat)*
+}
+
 Network = element network {
     attribute at {text}?,
     attribute graph {text}?,
@@ -683,29 +711,7 @@ Network = element network {
     attribute tactile-edge-spread {text}?,
     attribute labels {"yes"|"no"}?,
     attribute label-dictionary {text}?,
-    (
-        element node {
-            attribute at {text}?,
-            attribute p {text}?,
-            attribute edges {text}?,
-            attribute loop-orientation {text}?,
-            attribute style {text}?,
-            FillAttributes,
-            LabelAttributes,
-            LabelText?
-
-        }* &
-        element edge {
-            attribute at {text}?,
-            attribute vertices {text},
-            attribute weight {text}?,
-            attribute loop-scale {text}?,
-            attribute label-location {text}?,
-            StrokeAttributes,
-            LabelAttributes,
-            LabelText?
-        }*
-    ),
+    (NetworkNode | NetworkEdge | NetworkRepeat)*,
     CommonAttributes
 }
 
