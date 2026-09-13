@@ -418,14 +418,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                 for _ in 0..10 {
                     let (q0, q1) = (segment[0], segment[1]);
                     let c = [0.5 * (q0[0] + q1[0]), 0.5 * (q0[1] + q1[1])];
-                    if point::inside(
-                        c,
-                        user_p1,
-                        node_size_f,
-                        &end_style,
-                        &future_ctm,
-                        0.0,
-                    ) {
+                    if point::inside(c, user_p1, node_size_f, &end_style, &future_ctm, 0.0) {
                         segment = [q0, c];
                     } else {
                         segment = [c, q1];
@@ -1325,11 +1318,7 @@ pub fn network_node(element: &El, diagram: &mut Diagram, parent: &El, _outline_g
     }
 
     if let Some(p_attr) = element.borrow().get("p") {
-        if let Ok(loc) = diagram
-            .ctx
-            .valid_eval(&p_attr)
-            .and_then(|v| v.as_vec_f64())
-        {
+        if let Ok(loc) = diagram.ctx.valid_eval(&p_attr).and_then(|v| v.as_vec_f64()) {
             node.borrow_mut()
                 .set("p", &format!("({}, {})", py_str(loc[0]), py_str(loc[1])));
         }
