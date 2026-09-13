@@ -6,7 +6,7 @@ use crate::core::ctm::CTM;
 use crate::core::diagram::Diagram;
 use crate::core::math_utilities::length;
 use crate::core::utilities::{self as util, pt2long_str};
-use crate::core::{group, label, point};
+use crate::core::{group, label, point, repeat};
 use crate::evaluator::interp_call;
 use crate::value::{py_str, Value};
 use crate::xml::{self, El};
@@ -42,6 +42,13 @@ fn rotate_vec(v: Point, theta: f64) -> Point {
 
 #[allow(clippy::too_many_lines)]
 pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Option<&El>) {
+    // expand any repeat elements before processing nodes and edges
+    for repeat_el in xml::find_all(element, "repeat") {
+        let group_el = xml::sub_element(element, "g");
+        repeat::repeat(&repeat_el, diagram, &group_el, outline_group);
+        xml::remove(element, &repeat_el);
+    }
+
     let directed = element.borrow().get_or("directed", "no") == "yes";
     let global_loop_scale = element.borrow().get("loop-scale").and_then(|a| {
         diagram
@@ -85,7 +92,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
     let mut nodes: IndexMap<String, Option<El>> = IndexMap::new();
     let mut positions: IndexMap<String, Point> = IndexMap::new();
 
-    for node in xml::find_all(element, "node") {
+    for node in xml::find_all_recursive(element, "node") {
         let Some(handle) = node.borrow().get("at") else {
             continue;
         };
@@ -150,7 +157,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
     }
 
     // <edge> subelements carry decorations
-    for edge in xml::find_all(element, "edge") {
+    for edge in xml::find_all_recursive(element, "edge") {
         let vertices_attr = edge.borrow().get("vertices").unwrap_or_default();
         let endpoints = diagram.ctx.valid_eval(&vertices_attr).ok().and_then(|v| {
             let Value::Array(items) = v else { return None };
@@ -293,6 +300,15 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
             let edge_len = length(u);
             ctm.translate(p0[0], p0[1]);
             ctm.rotate(angle, false);
+            let original_y = y;
+            if let Some(edge) = edge {
+                if let Some(la_attr) = edge.borrow().get("launch-angle") {
+                    if let Ok(la_val) = diagram.ctx.valid_eval(&la_attr).and_then(|v| v.as_num()) {
+                        let angle_rad = (-la_val).to_radians();
+                        y = angle_rad.tan() * edge_len / 2.0;
+                    }
+                }
+            }
             let center = future_ctm.inverse_transform(ctm.transform([edge_len / 2.0, y]));
             let c1 = future_ctm.inverse_transform(ctm.transform([edge_len / 4.0, y]));
             let c2 = future_ctm.inverse_transform(ctm.transform([3.0 * edge_len / 4.0, y]));
@@ -390,7 +406,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                     );
                     path.borrow_mut().set("arrows", "0");
                     path.borrow_mut().set("additional-arrows", "(0.5)");
-                    y -= spread;
+                    y = original_y - spread;
                     continue;
                 }
                 let mut segment = [center, user_p1];
@@ -408,7 +424,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                         node_size_f,
                         &end_style,
                         &future_ctm,
-                        arrow_buffer,
+                        0.0,
                     ) {
                         segment = [q0, c];
                     } else {
@@ -419,7 +435,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                     "endpoints",
                     &format!("{},{}", fmt_point(user_p0), fmt_point(segment[0])),
                 );
-                y -= spread;
+                y = original_y - spread;
                 continue;
             }
 
@@ -466,7 +482,7 @@ pub fn network(element: &El, diagram: &mut Diagram, parent: &El, outline_group: 
                     }
                 }
             }
-            y -= spread;
+            y = original_y - spread;
         }
     }
 
