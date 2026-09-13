@@ -1307,6 +1307,130 @@ fn compute_layout(
     Some((positions, bbox_str))
 }
 
+/// Expansion handler for `<node>` inside a `<network>` with `<repeat>`.
+/// Mirrors Python's `network_node`: evaluates each attribute with the current
+/// variable bindings and appends a new `<node>` with concrete values to
+/// `parent` (which is `group_el`, still a descendant of the network element).
+/// The main `network()` pass then finds these via `find_all_recursive`.
+pub fn network_node(element: &El, diagram: &mut Diagram, parent: &El, _outline_group: Option<&El>) {
+    let node = xml::sub_element(parent, "node");
+
+    if let Some(at_attr) = element.borrow().get("at") {
+        let at = diagram
+            .ctx
+            .valid_eval(&at_attr)
+            .map(|v| v.to_py_str())
+            .unwrap_or(at_attr);
+        node.borrow_mut().set("at", &at);
+    }
+
+    if let Some(p_attr) = element.borrow().get("p") {
+        if let Ok(loc) = diagram
+            .ctx
+            .valid_eval(&p_attr)
+            .and_then(|v| v.as_vec_f64())
+        {
+            node.borrow_mut()
+                .set("p", &format!("({}, {})", py_str(loc[0]), py_str(loc[1])));
+        }
+    }
+
+    if let Some(edges_attr) = element.borrow().get("edges") {
+        if let Ok(v) = diagram.ctx.valid_eval(&edges_attr) {
+            let s = match v {
+                Value::Array(items) => items
+                    .iter()
+                    .map(|e| e.to_py_str())
+                    .collect::<Vec<_>>()
+                    .join(","),
+                other => other.to_py_str(),
+            };
+            node.borrow_mut().set("edge", &format!("({})", s));
+        }
+    }
+
+    let attrs: Vec<(String, String)> = element
+        .borrow()
+        .attrs
+        .iter()
+        .filter(|(k, _)| k.as_str() != "p" && k.as_str() != "edges")
+        .map(|(k, v)| (k.clone(), v.clone()))
+        .collect();
+    for (attr, value) in attrs {
+        let evaluated = diagram
+            .ctx
+            .valid_eval(&value)
+            .map(|v| v.to_py_str())
+            .unwrap_or(value);
+        node.borrow_mut().set(&attr, &evaluated);
+    }
+
+    copy_with_evaluated_text(element, &node, diagram);
+}
+
+/// Expansion handler for `<edge>` inside a `<network>` with `<repeat>`.
+/// Mirrors Python's `network_edge`.
+pub fn network_edge(element: &El, diagram: &mut Diagram, parent: &El, _outline_group: Option<&El>) {
+    let edge = xml::sub_element(parent, "edge");
+
+    if let Some(verts_attr) = element.borrow().get("vertices") {
+        if let Ok(v) = diagram.ctx.valid_eval(&verts_attr) {
+            let pair = match v {
+                Value::Array(ref items) if items.len() >= 2 => {
+                    format!("({}, {})", items[0].to_py_str(), items[1].to_py_str())
+                }
+                other => other.to_py_str(),
+            };
+            edge.borrow_mut().set("vertices", &pair);
+        }
+    }
+
+    let attrs: Vec<(String, String)> = element
+        .borrow()
+        .attrs
+        .iter()
+        .filter(|(k, _)| k.as_str() != "vertices")
+        .map(|(k, v)| (k.clone(), v.clone()))
+        .collect();
+    for (attr, value) in attrs {
+        let evaluated = diagram
+            .ctx
+            .valid_eval(&value)
+            .map(|v| v.to_py_str())
+            .unwrap_or(value);
+        edge.borrow_mut().set(&attr, &evaluated);
+    }
+
+    copy_with_evaluated_text(element, &edge, diagram);
+}
+
+fn copy_with_evaluated_text(source: &El, dest: &El, diagram: &mut Diagram) {
+    if let Some(text) = source.borrow().text.clone() {
+        dest.borrow_mut().text = Some(label::evaluate_text(&text, &mut diagram.ctx));
+    }
+    let children: Vec<El> = source.borrow().children.clone();
+    for child in &children {
+        let child_copy = xml::deep_copy(child);
+        evaluate_element_text(&child_copy, diagram);
+        xml::append(dest, &child_copy);
+    }
+}
+
+fn evaluate_element_text(el: &El, diagram: &mut Diagram) {
+    let text = el.borrow().text.clone();
+    if let Some(t) = text {
+        el.borrow_mut().text = Some(label::evaluate_text(&t, &mut diagram.ctx));
+    }
+    let tail = el.borrow().tail.clone();
+    if let Some(t) = tail {
+        el.borrow_mut().tail = Some(label::evaluate_text(&t, &mut diagram.ctx));
+    }
+    let children: Vec<El> = el.borrow().children.clone();
+    for child in &children {
+        evaluate_element_text(child, diagram);
+    }
+}
+
 /// Build the CTM that maps the given bbox into the current coordinate box,
 /// matching coordinates.py so edges/loops (drawn before <coordinates> takes
 /// effect) land correctly.

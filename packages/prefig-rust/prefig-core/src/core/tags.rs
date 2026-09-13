@@ -61,6 +61,7 @@ pub fn parse_element(
         "define-shapes" => shape::define(element, diagram, root, outline_group),
         "definition" => definition::definition(element, diagram, root, outline_group),
         "derivative" => definition::derivative(element, diagram, root, outline_group),
+        "edge" => network::network_edge(element, diagram, root, outline_group),
         "ellipse" => circle::ellipse(element, diagram, root, outline_group),
         "graph" => graph::graph(element, diagram, root, outline_group),
         "image" => image::image(element, diagram, root, outline_group)?,
@@ -72,6 +73,7 @@ pub fn parse_element(
         "label" => label::label(element, diagram, root, outline_group),
         "legend" => legend::legend(element, diagram, root, outline_group),
         "network" => network::network(element, diagram, root, outline_group),
+        "node" => network::network_node(element, diagram, root, outline_group),
         "parametric-curve" => {
             parametric_curve::parametric_curve(element, diagram, root, outline_group)
         }
