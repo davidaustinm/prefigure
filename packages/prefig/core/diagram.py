@@ -518,7 +518,7 @@ class Diagram:
             return
 
         # if we're inside pretext, we'll also add an SVG1.1 version
-        if self.environment == "pretext":
+        if self.environment == "pretext" and self.output_format() != "tactile":
             root11 = self.svg11_conversion(self.root)
             try:
                 with ET.xmlfile(out + '-11.svg', encoding='utf-8') as xf:
