@@ -116,8 +116,14 @@ pub fn legend(element: &El, diagram: &mut Diagram, parent: &El, _outline_group: 
             } else {
                 let key_el = xml::new_element("point");
                 for attr in [
-                    "stroke", "stroke-opacity", "opacity", "thickness", "dash",
-                    "fill", "fill-pattern", "fill-opacity",
+                    "stroke",
+                    "stroke-opacity",
+                    "opacity",
+                    "thickness",
+                    "dash",
+                    "fill",
+                    "fill-pattern",
+                    "fill-opacity",
                 ] {
                     if let Some(val) = key_src.borrow().get(attr) {
                         key_el.borrow_mut().set(attr, &val);
@@ -126,7 +132,9 @@ pub fn legend(element: &El, diagram: &mut Diagram, parent: &El, _outline_group: 
                 if key_src.borrow().get("fill").is_none() {
                     key_el.borrow_mut().set("fill", "none");
                 }
-                key_el.borrow_mut().set("style", &key_src.borrow().get_or("style", "box"));
+                key_el
+                    .borrow_mut()
+                    .set("style", &key_src.borrow().get_or("style", "box"));
                 key_el.borrow_mut().set("size", "8");
                 key_width = key_width.max(point_width);
                 key_el
