@@ -118,6 +118,7 @@ impl Diagram {
         suppress_caption: bool,
         environment: &str,
         labels: LabelState,
+        prefix: Option<&str>,
     ) -> Diagram {
         let root = xml::new_element("svg");
         root.borrow_mut().set("xmlns", "http://www.w3.org/2000/svg");
@@ -135,6 +136,8 @@ impl Diagram {
                 static COUNTER: AtomicU64 = AtomicU64::new(0);
                 let n = COUNTER.fetch_add(1, Ordering::Relaxed);
                 id_prefix = format!("prefig-{n:x}-");
+            } else if let Some(p) = prefix {
+                id_prefix = repeat::epub_clean(&format!("{p}-"));
             } else {
                 let stem = std::path::Path::new(filename)
                     .file_stem()

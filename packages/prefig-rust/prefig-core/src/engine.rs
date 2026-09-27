@@ -67,6 +67,7 @@ pub fn build_source_with(
         None, // diagram number
         environment,
         labels,
+        None, // prefix
     )
 }
 
