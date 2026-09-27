@@ -16,6 +16,7 @@ pub fn mk_diagram(
     diagram_number: Option<i64>,
     environment: &str,
     labels: LabelState,
+    prefix: Option<&str>,
 ) -> Result<(String, Option<String>), String> {
     let mut diagram = Diagram::new(
         element.clone(),
@@ -26,6 +27,7 @@ pub fn mk_diagram(
         suppress_caption,
         environment,
         labels,
+        prefix,
     );
 
     log::debug!("Initializing PreFigure diagram");

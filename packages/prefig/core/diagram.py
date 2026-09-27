@@ -29,7 +29,8 @@ class Diagram:
                  output,
                  publication,
                  suppress_caption,
-                 environment):
+                 environment,
+                 prefix):
         self.diagram_element = diagram_element
         self.filename = filename
         self.diagram_number = diagram_number
@@ -37,6 +38,7 @@ class Diagram:
         self.output = output
         self.suppress_caption = suppress_caption
         self.environment = environment
+        self.prefix = prefix
         self.caption = ""
 
         # the original source may be modified while parsing
@@ -98,7 +100,10 @@ class Diagram:
                 hash_string = base64.urlsafe_b64encode(hash[-6:]).decode()
                 self.id_prefix = f"prefig-{hash_string}-"
             else:
-                self.id_prefix = Path(self.filename).stem + '-'
+                if self.prefix is not None:
+                    self.id_prefix = self.prefix +'-'
+                else:
+                    self.id_prefix = Path(self.filename).stem + '-'
                 self.id_prefix = repeat.epub_clean(self.id_prefix)
             figure_id = self.id_prefix + figure_id
 

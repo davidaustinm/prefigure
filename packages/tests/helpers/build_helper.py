@@ -116,6 +116,7 @@ def build_diagram(xml_path, environment="pf_cli", format="svg"):
         False,           # suppress caption
         None,            # diagram number
         environment,
+        None,            # prefix
         return_string=True,
     )
 
@@ -144,6 +145,7 @@ def build_diagram_files(xml_path, environment="pretext"):
         False,
         None,
         environment,
+        None,            # prefix
         return_string=False,
     )
     return Path.cwd() / "output"
