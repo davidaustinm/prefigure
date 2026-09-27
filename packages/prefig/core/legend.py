@@ -126,10 +126,10 @@ class Legend:
             return
 
         # We're doing this at the very end so the diagram.ctm is the default
-        outer_padding = 5
+        outer_padding = 8
         center_padding = 10
         try:
-            interline = un.valid_eval(self.element.get('vertical-skip', '7'))
+            interline = un.valid_eval(self.element.get('vertical-skip', '10'))
         except:
             log.warning(f"Error in <legend> evaluating vertical-skip={element.get('vertical-skip')}")
             vertical_skip = 7
