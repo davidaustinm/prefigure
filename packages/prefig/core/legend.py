@@ -49,7 +49,7 @@ class Legend:
         # let's go through each of the child and set up the labels
         self.li_dict = {}
         key_width = 0
-        point_width = 10
+        point_width = 20
 
         # length of line as a key
         self.line_width = 24
@@ -89,25 +89,23 @@ class Legend:
             if key.tag == 'point':
                 key = copy.deepcopy(key)
                 key.set('p', anchor_str)
-                key.set('size', '4')
+                key.set('size', '8')
                 key.set('id', f"{point_id_stub}-{num}")
                 key_width = max(key_width, point_width)
             else:
-                fill =  key.get('fill')
-                if fill is None or fill == 'none':
+                fill =  key.get('fill', 'none')
+                if fill == 'none' and key.get('fill-pattern', None) is None:
                     key_el = ET.Element('line')
-                    key_el.set('stroke', key.get('stroke', 'none'))
-                    dash = key.get('dash', None)
-                    if dash is not None:
-                        key_el.set('stroke-dasharray', dash)
+                    attrib = util.get_1d_attr(key)
+                    util.add_attr(key_el, attrib)
                     key_width = max(key_width, self.line_width)
                     key = key_el
                 else:
                     key_el = ET.Element('point')
-                    key_el.set('stroke', key.get('stroke', 'none'))
-                    key_el.set('fill', fill)
+                    attrib = util.get_2d_attr(key)
+                    util.add_attr(key_el, attrib)
                     key_el.set('style', key.get('style', 'box'))
-                    key_el.set('size', '5')
+                    key_el.set('size', '8')
                     key_width = max(key_width, point_width)
                     key = key_el
 
