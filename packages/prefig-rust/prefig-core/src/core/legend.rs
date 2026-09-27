@@ -47,7 +47,7 @@ pub fn legend(element: &El, diagram: &mut Diagram, parent: &El, _outline_group: 
 
     let mut items: Vec<(El, El, El)> = Vec::new();
     let mut key_width = 0.0f64;
-    let point_width = 10.0;
+    let point_width = 20.0;
     let line_width = if tactile { 72.0 } else { 24.0 };
 
     let dummy_group = xml::new_element("g");
@@ -96,33 +96,46 @@ pub fn legend(element: &El, diagram: &mut Diagram, parent: &El, _outline_group: 
             {
                 let mut k = key.borrow_mut();
                 k.set("p", &anchor_str);
-                k.set("size", "4");
+                k.set("size", "8");
                 k.set("id", &format!("{point_id_stub}-{num}"));
             }
             key_width = key_width.max(point_width);
             key
         } else {
-            let fill = key_src.borrow().get("fill");
-            if fill.is_none() || fill.as_deref() == Some("none") {
+            let fill = key_src.borrow().get_or("fill", "none");
+            let has_fill_pattern = key_src.borrow().get("fill-pattern").is_some();
+            if fill == "none" && !has_fill_pattern {
                 let key_el = xml::new_element("line");
-                {
-                    let mut k = key_el.borrow_mut();
-                    k.set("stroke", &key_src.borrow().get_or("stroke", "none"));
-                    if let Some(dash) = key_src.borrow().get("dash") {
-                        k.set("stroke-dasharray", &dash);
+                for attr in ["stroke", "stroke-opacity", "opacity", "thickness", "dash"] {
+                    if let Some(val) = key_src.borrow().get(attr) {
+                        key_el.borrow_mut().set(attr, &val);
                     }
                 }
                 key_width = key_width.max(line_width);
                 key_el
             } else {
                 let key_el = xml::new_element("point");
-                {
-                    let mut k = key_el.borrow_mut();
-                    k.set("stroke", &key_src.borrow().get_or("stroke", "none"));
-                    k.set("fill", &fill.unwrap_or_default());
-                    k.set("style", &key_src.borrow().get_or("style", "box"));
-                    k.set("size", "5");
+                for attr in [
+                    "stroke",
+                    "stroke-opacity",
+                    "opacity",
+                    "thickness",
+                    "dash",
+                    "fill",
+                    "fill-pattern",
+                    "fill-opacity",
+                ] {
+                    if let Some(val) = key_src.borrow().get(attr) {
+                        key_el.borrow_mut().set(attr, &val);
+                    }
                 }
+                if key_src.borrow().get("fill").is_none() {
+                    key_el.borrow_mut().set("fill", "none");
+                }
+                key_el
+                    .borrow_mut()
+                    .set("style", &key_src.borrow().get_or("style", "box"));
+                key_el.borrow_mut().set("size", "8");
                 key_width = key_width.max(point_width);
                 key_el
             }
@@ -148,15 +161,15 @@ pub fn place_legend(diagram: &mut Diagram, data: &LegendData) {
         return;
     }
 
-    let outer_padding = 5.0;
+    let outer_padding = 8.0;
     let center_padding = 10.0;
-    let interline_attr = data.element.borrow().get_or("vertical-skip", "7");
+    let interline_attr = data.element.borrow().get_or("vertical-skip", "10");
     let interline = diagram
         .ctx
         .valid_eval(&interline_attr)
         .ok()
         .and_then(|v| v.as_num().ok())
-        .unwrap_or(7.0);
+        .unwrap_or(10.0);
     let mut height = outer_padding;
     let mut label_width = 0.0f64;
 

@@ -66,6 +66,8 @@ def get_1d_attr(element):
     d['fill'] = element.get('fill', 'none')
     return d
 
+one_d_attr = ['stroke', 'stroke-opacity', 'opacity', 'thickness', 'dash']
+
 def set_tactile_fill(element):
     fill = element.get('fill', 'none')
     if fill.startswith('url'):
@@ -96,6 +98,8 @@ def get_2d_attr(element):
     if element.get('fill-opacity') is not None:
         d['fill-opacity'] = un.valid_eval(element.get('fill-opacity'))
     return d
+
+two_d_attr = one_d_attr[:] + ['fill', 'fill-pattern', 'fill-opacity']
 
 def cliptobbox(g_element, element, diagram):
     if element.get('cliptobbox', 'no') == 'no':

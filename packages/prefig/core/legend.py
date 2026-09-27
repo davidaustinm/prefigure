@@ -49,7 +49,7 @@ class Legend:
         # let's go through each of the child and set up the labels
         self.li_dict = {}
         key_width = 0
-        point_width = 10
+        point_width = 20
 
         # length of line as a key
         self.line_width = 24
@@ -89,25 +89,27 @@ class Legend:
             if key.tag == 'point':
                 key = copy.deepcopy(key)
                 key.set('p', anchor_str)
-                key.set('size', '4')
+                key.set('size', '8')
                 key.set('id', f"{point_id_stub}-{num}")
                 key_width = max(key_width, point_width)
             else:
-                fill =  key.get('fill')
-                if fill is None or fill == 'none':
+                fill =  key.get('fill', 'none')
+                if fill == 'none' and key.get('fill-pattern', None) is None:
                     key_el = ET.Element('line')
-                    key_el.set('stroke', key.get('stroke', 'none'))
-                    dash = key.get('dash', None)
-                    if dash is not None:
-                        key_el.set('stroke-dasharray', dash)
+                    for attr in util.one_d_attr:
+                        if key.get(attr, None) is not None:
+                            key_el.set(attr, key.get(attr))
                     key_width = max(key_width, self.line_width)
                     key = key_el
                 else:
                     key_el = ET.Element('point')
-                    key_el.set('stroke', key.get('stroke', 'none'))
-                    key_el.set('fill', fill)
+                    for attr in util.two_d_attr:
+                        if key.get(attr, None) is not None:
+                            key_el.set(attr, key.get(attr))
+                    if key.get('fill', None) is None:
+                        key_el.set('fill', 'none')
                     key_el.set('style', key.get('style', 'box'))
-                    key_el.set('size', '5')
+                    key_el.set('size', '8')
                     key_width = max(key_width, point_width)
                     key = key_el
 
@@ -124,10 +126,10 @@ class Legend:
             return
 
         # We're doing this at the very end so the diagram.ctm is the default
-        outer_padding = 5
+        outer_padding = 8
         center_padding = 10
         try:
-            interline = un.valid_eval(self.element.get('vertical-skip', '7'))
+            interline = un.valid_eval(self.element.get('vertical-skip', '10'))
         except:
             log.warning(f"Error in <legend> evaluating vertical-skip={element.get('vertical-skip')}")
             vertical_skip = 7
