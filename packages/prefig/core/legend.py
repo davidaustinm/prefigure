@@ -96,14 +96,18 @@ class Legend:
                 fill =  key.get('fill', 'none')
                 if fill == 'none' and key.get('fill-pattern', None) is None:
                     key_el = ET.Element('line')
-                    attrib = util.get_1d_attr(key)
-                    util.add_attr(key_el, attrib)
+                    for attr in util.one_d_attr:
+                        if key.get(attr, None) is not None:
+                            key_el.set(attr, key.get(attr))
                     key_width = max(key_width, self.line_width)
                     key = key_el
                 else:
                     key_el = ET.Element('point')
-                    attrib = util.get_2d_attr(key)
-                    util.add_attr(key_el, attrib)
+                    for attr in util.two_d_attr:
+                        if key.get(attr, None) is not None:
+                            key_el.set(attr, key.get(attr))
+                    if key.get('fill', None) is None:
+                        key_el.set('fill', 'none')
                     key_el.set('style', key.get('style', 'box'))
                     key_el.set('size', '8')
                     key_width = max(key_width, point_width)
