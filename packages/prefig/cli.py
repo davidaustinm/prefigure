@@ -187,6 +187,12 @@ def examples():
     help="Ignore any publication file"
 )
 @click.option(
+    '-x',
+    '--id_prefix',
+    default=None,
+    help="Use an author-supplied prefix for all id's"
+)
+@click.option(
     '-s',
     "--suppress-caption",
     is_flag=True,
@@ -197,13 +203,14 @@ def examples():
     "filename",
     type=click.Path()
 )
-def build(format, publication, ignore_publication, suppress_caption, filename):
+def build(format, publication, ignore_publication, suppress_caption, id_prefix, filename):
     return engine.build(format,
                         filename,
                         publication=publication,
                         ignore_publication=ignore_publication,
                         suppress_caption=suppress_caption,
-                        environment="pf_cli")
+                        environment="pf_cli",
+                        prefix=id_prefix)
 
 @main.command(
     help="Convert the PreFigure SVG into a PDF"

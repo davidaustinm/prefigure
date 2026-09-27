@@ -34,6 +34,7 @@ def mk_diagram(element,
                suppress_caption,
                diagram_number,
                environment,
+               prefix,
                return_string=False):
 
     for name in list(vars(user_namespace).keys()):
@@ -43,7 +44,7 @@ def mk_diagram(element,
     output = None # add at a later date
     diag = diagram.Diagram(element, filename, diagram_number, 
                            format, output, publication, suppress_caption,
-                           environment)
+                           environment, prefix)
     log.debug("Initializing PreFigure diagram")
     try:
         diag.begin_figure()
@@ -81,7 +82,7 @@ def mk_diagram(element,
         log.error("Debugging information is available with 'prefig -vv build filename'")
         return
 
-def parse(filename, format, pub_file, suppress_caption, environment):
+def parse(filename, format, pub_file, suppress_caption, environment, prefix):
     # Load the publication file, if there is one
     ns = {'pf': 'https://prefigure.org'}
     if pub_file is not None:
@@ -135,7 +136,7 @@ def parse(filename, format, pub_file, suppress_caption, environment):
 
             mk_diagram(element, format, publication,
                        filename, suppress_caption, diagram_number,
-                       environment)
+                       environment, prefix)
 
 def check_duplicate_handles(element, handles):
     for child in element:

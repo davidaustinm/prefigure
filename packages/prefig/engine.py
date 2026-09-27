@@ -36,7 +36,8 @@ def build(
         publication=None,
         ignore_publication=False,
         suppress_caption=False,
-        environment="pretext"
+        environment="pretext",
+        prefix=None
 ):
     pub_requested = not ignore_publication and publication is not None
     path = Path(filename)
@@ -75,7 +76,8 @@ def build(
                      format,
                      publication,
                      suppress_caption,
-                     environment)
+                     environment,
+                     prefix)
     return filename
 
 
@@ -120,9 +122,10 @@ def build_from_string(format, input_string, environment="pyodide"):
         format,
         None,     # publication file
         "prefig", # filename needed for label generation
-        False,    # supress caption
+        False,    # suppress caption
         None,     # diagram number
         environment,
+        None,     # id_prefix
         return_string = True
     )
     return output_string
