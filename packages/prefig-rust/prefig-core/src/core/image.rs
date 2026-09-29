@@ -79,14 +79,6 @@ pub fn qr_code(
         }
         None => [ll[0] + 0.5 * dims[0], ll[1] + 0.5 * dims[1]],
     };
-    let rotation_attr = element.borrow().get_or("rotate", "0");
-    let rotation = diagram
-        .ctx
-        .valid_eval(&rotation_attr)
-        .ok()
-        .and_then(|v| v.as_num().ok())
-        .unwrap_or(0.0);
-
     if diagram.output_format() == "tactile" {
         element.borrow_mut().tag = "group".to_string();
         let children = element.borrow().children.clone();
@@ -110,31 +102,16 @@ pub fn qr_code(
     let sx = width / total as f64;
     let sy = height / total as f64;
 
-    let mut transform_pieces = vec![
-        format!(
-            "translate({},{})",
-            float2str(ll_svg[0]),
-            float2str(ur_svg[1])
-        ),
-        format!("scale({},{})", float2str(sx), float2str(sy)),
-    ];
-    if rotation != 0.0 {
-        let cx = (ll_svg[0] + ur_svg[0]) / 2.0;
-        let cy = (ll_svg[1] + ur_svg[1]) / 2.0;
-        transform_pieces.insert(
-            0,
-            format!(
-                "rotate({},{},{})",
-                float2str(-rotation),
-                float2str(cx),
-                float2str(cy)
-            ),
-        );
-    }
+    let transform = format!(
+        "translate({},{}) scale({},{})",
+        float2str(ll_svg[0]),
+        float2str(ur_svg[1]),
+        float2str(sx),
+        float2str(sy)
+    );
 
     let g_el = xml::sub_element(parent, "g");
-    g_el.borrow_mut()
-        .set("transform", &transform_pieces.join(" "));
+    g_el.borrow_mut().set("transform", &transform);
     let id = element.borrow().get("id");
     diagram.add_id(&g_el, id.as_deref());
 

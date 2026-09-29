@@ -146,7 +146,6 @@ def qr_code(element, diagram, parent, outline_group):
             ll = center - 0.5 * dims
         else:
             center = ll + 0.5 * dims
-        rotation = un.valid_eval(element.get('rotate', '0'))
     except:
         log.error("Error parsing placement data in a <qr-code>")
         return
@@ -180,8 +179,6 @@ def qr_code(element, diagram, parent, outline_group):
         f"translate({util.float2str(ll_svg[0])},{util.float2str(ur_svg[1])})",
         f"scale({util.float2str(sx)},{util.float2str(sy)})",
     ]
-    if rotation != 0:
-        transform_pieces.insert(0, f"rotate({-rotation},{util.float2str((ll_svg[0]+ur_svg[0])/2)},{util.float2str((ll_svg[1]+ur_svg[1])/2)})")
 
     g_el = ET.SubElement(parent, 'g')
     g_el.set('transform', ' '.join(transform_pieces))
