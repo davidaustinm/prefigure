@@ -21,13 +21,9 @@ def image(element, diagram, parent, outline_group):
         log.error("An <image> must contain content to replace the image in a tactile build")
         return;
     
-    if diagram.output_format() == 'tactile':
-        element.tag = 'group'
-        group.group(element, diagram, parent, outline_group)
-        return
-        
+    svg_string = diagram.get_source_data(element, 'string')
     source = element.get('source', None)
-    if source is None:
+    if source is None and svg_string is None:
         log.error("An <image> needs a @source attribute")
         return
     try:
@@ -43,6 +39,16 @@ def image(element, diagram, parent, outline_group):
         scale = un.valid_eval(element.get('scale', '1'))
     except:
         log.error("Error parsing placement data in an <image>")
+        return
+
+    if diagram.output_format() == 'tactile':
+        element.tag = 'group'
+        if len(element) == 1:
+            if element[0].tag == 'label':
+                if element[0].get('anchor', None) is None:
+                    element[0].set('anchor',
+                                f"({center[0]},{center[1]})")
+        group.group(element, diagram, parent, outline_group)
         return
 
     file_type = None
@@ -65,7 +71,7 @@ def image(element, diagram, parent, outline_group):
         source = 'data/' + source
     else:
         assets_dir = diagram.get_external()
-        if assets_dir is not None:
+        if svg_string is None and assets_dir is not None:
             assets_dir = assets_dir.strip()
             if assets_dir[-1] != '/':
                 assets_dir += '/'
@@ -75,8 +81,11 @@ def image(element, diagram, parent, outline_group):
     if opacity is not None:
         opacity = un.valid_eval(opacity)
     if file_type == 'svg':
-        svg_tree = ET.parse(source)
-        svg_root = svg_tree.getroot()
+        if svg_string is None:
+            svg_tree = ET.parse(source)
+            svg_root = svg_tree.getroot()
+        else:
+            svg_root = ET.fromstring(svg_string)
         svg_width = svg_root.get('width', None)
         svg_height = svg_root.get('height', None)
 
@@ -124,3 +133,23 @@ def image(element, diagram, parent, outline_group):
 
     image_el.set('transform', ' '.join(transform_pieces))
     
+def qr_code(element, diagram, parent, outline_group):
+    text = element.text
+    if text is None:
+        log.error('A <qr-code> element needs text')
+        return
+
+    import segno
+    qr = segno.make(text, error='H')
+
+    import io
+    buffer = io.BytesIO()
+    qr.save(buffer, kind='svg', scale=10)
+    svg_string = buffer.getvalue()
+    diagram.register_source_data(element, 'string', svg_string)
+    element.set('filetype', 'svg')
+    label_el = ET.SubElement(element, 'label')
+    label_el.text = element.text
+    label_el.set('alignment', 'center')
+    element.text = None
+    image(element, diagram, parent, outline_group)
