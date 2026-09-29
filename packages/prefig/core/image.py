@@ -20,10 +20,14 @@ def image(element, diagram, parent, outline_group):
     if len(element) == 0:
         log.error("An <image> must contain content to replace the image in a tactile build")
         return;
-    
-    svg_string = diagram.get_source_data(element, 'string')
+
+    if diagram.output_format() == 'tactile':
+        element.tag = 'group'
+        group.group(element, diagram, parent, outline_group)
+        return
+
     source = element.get('source', None)
-    if source is None and svg_string is None:
+    if source is None:
         log.error("An <image> needs a @source attribute")
         return
     try:
@@ -39,16 +43,6 @@ def image(element, diagram, parent, outline_group):
         scale = un.valid_eval(element.get('scale', '1'))
     except:
         log.error("Error parsing placement data in an <image>")
-        return
-
-    if diagram.output_format() == 'tactile':
-        element.tag = 'group'
-        if len(element) == 1:
-            if element[0].tag == 'label':
-                if element[0].get('anchor', None) is None:
-                    element[0].set('anchor',
-                                f"({center[0]},{center[1]})")
-        group.group(element, diagram, parent, outline_group)
         return
 
     file_type = None
@@ -71,7 +65,7 @@ def image(element, diagram, parent, outline_group):
         source = 'data/' + source
     else:
         assets_dir = diagram.get_external()
-        if svg_string is None and assets_dir is not None:
+        if assets_dir is not None:
             assets_dir = assets_dir.strip()
             if assets_dir[-1] != '/':
                 assets_dir += '/'
@@ -81,11 +75,8 @@ def image(element, diagram, parent, outline_group):
     if opacity is not None:
         opacity = un.valid_eval(opacity)
     if file_type == 'svg':
-        if svg_string is None:
-            svg_tree = ET.parse(source)
-            svg_root = svg_tree.getroot()
-        else:
-            svg_root = ET.fromstring(svg_string)
+        svg_tree = ET.parse(source)
+        svg_root = svg_tree.getroot()
         svg_width = svg_root.get('width', None)
         svg_height = svg_root.get('height', None)
 
@@ -140,16 +131,66 @@ def qr_code(element, diagram, parent, outline_group):
         return
 
     import segno
-    qr = segno.make(text, error='H')
-
     import io
+    qr = segno.make(text, error='H')
     buffer = io.BytesIO()
     qr.save(buffer, kind='svg', scale=10)
-    svg_string = buffer.getvalue()
-    diagram.register_source_data(element, 'string', svg_string)
-    element.set('filetype', 'svg')
-    label_el = ET.SubElement(element, 'label')
-    label_el.text = element.text
-    label_el.set('alignment', 'center')
-    element.text = None
-    image(element, diagram, parent, outline_group)
+    svg_root = ET.fromstring(buffer.getvalue())
+
+    try:
+        ll = un.valid_eval(element.get('lower-left', '(0,0)'))
+        dims = un.valid_eval(element.get('dimensions', '(1,1)'))
+        center = element.get('center', None)
+        if center is not None:
+            center = un.valid_eval(center)
+            ll = center - 0.5 * dims
+        else:
+            center = ll + 0.5 * dims
+        rotation = un.valid_eval(element.get('rotate', '0'))
+    except:
+        log.error("Error parsing placement data in a <qr-code>")
+        return
+
+    if diagram.output_format() == 'tactile':
+        element.tag = 'group'
+        if len(element) == 1:
+            if element[0].tag == 'label':
+                if element[0].get('anchor', None) is None:
+                    element[0].set('anchor', f"({center[0]},{center[1]})")
+        group.group(element, diagram, parent, outline_group)
+        return
+
+    ll_svg = diagram.transform(ll)
+    ur_svg = diagram.transform(ll + dims)
+    width = ur_svg[0] - ll_svg[0]
+    height = ll_svg[1] - ur_svg[1]
+
+    viewBox = svg_root.get('viewBox', None)
+    if viewBox:
+        vb_parts = viewBox.split()
+        vb_w, vb_h = float(vb_parts[2]), float(vb_parts[3])
+    else:
+        vb_w = float(svg_root.get('width', '100').rstrip('pt'))
+        vb_h = float(svg_root.get('height', '100').rstrip('pt'))
+
+    sx = width / vb_w
+    sy = height / vb_h
+
+    transform_pieces = [
+        f"translate({util.float2str(ll_svg[0])},{util.float2str(ur_svg[1])})",
+        f"scale({util.float2str(sx)},{util.float2str(sy)})",
+    ]
+    if rotation != 0:
+        transform_pieces.insert(0, f"rotate({-rotation},{util.float2str((ll_svg[0]+ur_svg[0])/2)},{util.float2str((ll_svg[1]+ur_svg[1])/2)})")
+
+    g_el = ET.SubElement(parent, 'g')
+    g_el.set('transform', ' '.join(transform_pieces))
+    diagram.add_id(g_el, element.get('id'))
+
+    for child in svg_root:
+        local = ET.QName(child.tag).localname
+        new_el = ET.SubElement(g_el, local)
+        new_el.attrib.update(child.attrib)
+        new_el.set('fill', 'none')
+        if child.text:
+            new_el.text = child.text
