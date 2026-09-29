@@ -24,6 +24,7 @@ scipy = [{version = "^1.8", python = "<3.13"}, {version = "^1.14.1", python = ">
 numpy = [{version = "^1.26", python = "<3.13"}, {version = "^2.1.0", python = ">=3.13"}]
 pycairo = {version = "^1.20", optional = true}
 click-log = "^0.4.0"
+segno = "^1.6.6"
 
 [tool.poetry.extras]
 text = ["pycairo"]
