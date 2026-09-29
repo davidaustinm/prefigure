@@ -6,6 +6,148 @@ use crate::core::{ctm, group};
 use crate::value::{py_str, Value};
 use crate::xml::{self, El};
 
+#[cfg(feature = "qrcodes")]
+fn qr_svg_path(code: &qrcode::QrCode, quiet: usize) -> String {
+    let size = code.width();
+    let mut d = String::new();
+    for row in 0..size {
+        let mut col = 0;
+        while col < size {
+            if code[(col, row)] == qrcode::Color::Dark {
+                let start = col + quiet;
+                while col < size && code[(col, row)] == qrcode::Color::Dark {
+                    col += 1;
+                }
+                let run_len = col - (start - quiet);
+                if !d.is_empty() {
+                    d.push(' ');
+                }
+                d.push_str(&format!(
+                    "M{start} {}h{run_len}",
+                    (row + quiet) as f32 + 0.5
+                ));
+            } else {
+                col += 1;
+            }
+        }
+    }
+    d
+}
+
+#[cfg(feature = "qrcodes")]
+pub fn qr_code(
+    element: &El,
+    diagram: &mut Diagram,
+    parent: &El,
+    outline_group: Option<&El>,
+) -> Result<(), String> {
+    let Some(text) = element.borrow().text.clone() else {
+        log::error!("A <qr-code> element needs text");
+        return Ok(());
+    };
+    let text = text.trim().to_string();
+    if text.is_empty() {
+        log::error!("A <qr-code> element needs text");
+        return Ok(());
+    }
+
+    let code = qrcode::QrCode::with_error_correction_level(text.as_bytes(), qrcode::EcLevel::H)
+        .map_err(|e| format!("Failed to generate QR code: {e}"))?;
+    let quiet = 4usize;
+    let total = code.width() + 2 * quiet;
+
+    let eval_pair = |diagram: &mut Diagram, attr: &str| -> Option<[f64; 2]> {
+        let v = diagram.ctx.valid_eval(attr).ok()?.as_vec_f64().ok()?;
+        (v.len() >= 2).then(|| [v[0], v[1]])
+    };
+    let ll_attr = element.borrow().get_or("lower-left", "(0,0)");
+    let dims_attr = element.borrow().get_or("dimensions", "(1,1)");
+    let (Some(mut ll), Some(dims)) = (eval_pair(diagram, &ll_attr), eval_pair(diagram, &dims_attr))
+    else {
+        log::error!("Error parsing placement data in a <qr-code>");
+        return Ok(());
+    };
+    let center_attr = element.borrow().get("center");
+    let center = match center_attr {
+        Some(attr) => {
+            let Some(c) = eval_pair(diagram, &attr) else {
+                log::error!("Error parsing placement data in a <qr-code>");
+                return Ok(());
+            };
+            ll = [c[0] - 0.5 * dims[0], c[1] - 0.5 * dims[1]];
+            c
+        }
+        None => [ll[0] + 0.5 * dims[0], ll[1] + 0.5 * dims[1]],
+    };
+    let rotation_attr = element.borrow().get_or("rotate", "0");
+    let rotation = diagram
+        .ctx
+        .valid_eval(&rotation_attr)
+        .ok()
+        .and_then(|v| v.as_num().ok())
+        .unwrap_or(0.0);
+
+    if diagram.output_format() == "tactile" {
+        element.borrow_mut().tag = "group".to_string();
+        let children = element.borrow().children.clone();
+        if children.len() == 1 {
+            let child = &children[0];
+            if child.borrow().tag == "label" && child.borrow().get("anchor").is_none() {
+                child
+                    .borrow_mut()
+                    .set("anchor", &format!("({},{})", center[0], center[1]));
+            }
+        }
+        group::group(element, diagram, parent, outline_group);
+        return Ok(());
+    }
+
+    let ll_svg = diagram.transform(ll);
+    let ur_svg = diagram.transform([ll[0] + dims[0], ll[1] + dims[1]]);
+    let width = ur_svg[0] - ll_svg[0];
+    let height = ll_svg[1] - ur_svg[1];
+
+    let sx = width / total as f64;
+    let sy = height / total as f64;
+
+    let mut transform_pieces = vec![
+        format!(
+            "translate({},{})",
+            float2str(ll_svg[0]),
+            float2str(ur_svg[1])
+        ),
+        format!("scale({},{})", float2str(sx), float2str(sy)),
+    ];
+    if rotation != 0.0 {
+        let cx = (ll_svg[0] + ur_svg[0]) / 2.0;
+        let cy = (ll_svg[1] + ur_svg[1]) / 2.0;
+        transform_pieces.insert(
+            0,
+            format!(
+                "rotate({},{},{})",
+                float2str(-rotation),
+                float2str(cx),
+                float2str(cy)
+            ),
+        );
+    }
+
+    let g_el = xml::sub_element(parent, "g");
+    g_el.borrow_mut()
+        .set("transform", &transform_pieces.join(" "));
+    let id = element.borrow().get("id");
+    diagram.add_id(&g_el, id.as_deref());
+
+    let path_el = xml::sub_element(&g_el, "path");
+    {
+        let mut p = path_el.borrow_mut();
+        p.set("stroke", "#000");
+        p.set("fill", "none");
+        p.set("d", &qr_svg_path(&code, quiet));
+    }
+    Ok(())
+}
+
 fn file_type_for(suffix: &str) -> Option<&'static str> {
     match suffix {
         "jpg" | "jpeg" => Some("jpeg"),
