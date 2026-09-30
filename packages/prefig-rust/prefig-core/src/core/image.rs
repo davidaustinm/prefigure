@@ -7,25 +7,22 @@ use crate::value::{py_str, Value};
 use crate::xml::{self, El};
 
 #[cfg(feature = "qrcodes")]
-fn qr_svg_path(code: &qrcode::QrCode, quiet: usize) -> String {
+fn qr_svg_path(code: &qrcode::QrCode) -> String {
     let size = code.width();
     let mut d = String::new();
     for row in 0..size {
         let mut col = 0;
         while col < size {
             if code[(col, row)] == qrcode::Color::Dark {
-                let start = col + quiet;
+                let start = col;
                 while col < size && code[(col, row)] == qrcode::Color::Dark {
                     col += 1;
                 }
-                let run_len = col - (start - quiet);
+                let run_len = col - start;
                 if !d.is_empty() {
                     d.push(' ');
                 }
-                d.push_str(&format!(
-                    "M{start} {}h{run_len}",
-                    (row + quiet) as f32 + 0.5
-                ));
+                d.push_str(&format!("M{start} {}h{run_len}", row as f32 + 0.5));
             } else {
                 col += 1;
             }
@@ -53,8 +50,7 @@ pub fn qr_code(
 
     let code = qrcode::QrCode::with_error_correction_level(text.as_bytes(), qrcode::EcLevel::H)
         .map_err(|e| format!("Failed to generate QR code: {e}"))?;
-    let quiet = 4usize;
-    let total = code.width() + 2 * quiet;
+    let qr_size = code.width() as f64;
 
     let eval_pair = |diagram: &mut Diagram, attr: &str| -> Option<[f64; 2]> {
         let v = diagram.ctx.valid_eval(attr).ok()?.as_vec_f64().ok()?;
@@ -81,14 +77,13 @@ pub fn qr_code(
     };
     if diagram.output_format() == "tactile" {
         element.borrow_mut().tag = "group".to_string();
-        let children = element.borrow().children.clone();
-        if children.len() == 1 {
-            let child = &children[0];
-            if child.borrow().tag == "label" && child.borrow().get("anchor").is_none() {
-                child
-                    .borrow_mut()
-                    .set("anchor", &format!("({},{})", center[0], center[1]));
-            }
+        element.borrow_mut().text = None;
+        let label_el = xml::sub_element(element, "label");
+        {
+            let mut l = label_el.borrow_mut();
+            l.text = Some("A QR code".to_string());
+            l.set("anchor", &format!("({},{})", center[0], center[1]));
+            l.set("alignment", "c");
         }
         group::group(element, diagram, parent, outline_group);
         return Ok(());
@@ -99,15 +94,17 @@ pub fn qr_code(
     let width = ur_svg[0] - ll_svg[0];
     let height = ll_svg[1] - ur_svg[1];
 
-    let sx = width / total as f64;
-    let sy = height / total as f64;
+    let fitted = width.min(height);
+    let s = fitted / qr_size;
+    let x_offset = ll_svg[0] + (width - fitted) / 2.0;
+    let y_offset = ur_svg[1] + (height - fitted) / 2.0;
 
     let transform = format!(
         "translate({},{}) scale({},{})",
-        float2str(ll_svg[0]),
-        float2str(ur_svg[1]),
-        float2str(sx),
-        float2str(sy)
+        float2str(x_offset),
+        float2str(y_offset),
+        float2str(s),
+        float2str(s)
     );
 
     let g_el = xml::sub_element(parent, "g");
@@ -120,7 +117,7 @@ pub fn qr_code(
         let mut p = path_el.borrow_mut();
         p.set("stroke", "#000");
         p.set("fill", "none");
-        p.set("d", &qr_svg_path(&code, quiet));
+        p.set("d", &qr_svg_path(&code));
     }
     Ok(())
 }

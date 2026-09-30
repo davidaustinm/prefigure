@@ -131,11 +131,9 @@ def qr_code(element, diagram, parent, outline_group):
         return
 
     import segno
-    import io
     qr = segno.make(text, error='H')
-    buffer = io.BytesIO()
-    qr.save(buffer, kind='svg', scale=10)
-    svg_root = ET.fromstring(buffer.getvalue())
+    matrix = qr.matrix
+    qr_size = len(matrix)
 
     try:
         ll = un.valid_eval(element.get('lower-left', '(0,0)'))
@@ -152,10 +150,11 @@ def qr_code(element, diagram, parent, outline_group):
 
     if diagram.output_format() == 'tactile':
         element.tag = 'group'
-        if len(element) == 1:
-            if element[0].tag == 'label':
-                if element[0].get('anchor', None) is None:
-                    element[0].set('anchor', f"({center[0]},{center[1]})")
+        label_el = ET.SubElement(element, 'label')
+        label_el.text = "A QR code"
+        element.text = None
+        label_el.set('anchor', f"({center[0]},{center[1]})")
+        label_el.set('alignment', 'c')
         group.group(element, diagram, parent, outline_group)
         return
 
@@ -164,30 +163,28 @@ def qr_code(element, diagram, parent, outline_group):
     width = ur_svg[0] - ll_svg[0]
     height = ll_svg[1] - ur_svg[1]
 
-    viewBox = svg_root.get('viewBox', None)
-    if viewBox:
-        vb_parts = viewBox.split()
-        vb_w, vb_h = float(vb_parts[2]), float(vb_parts[3])
-    else:
-        vb_w = float(svg_root.get('width', '100').rstrip('pt'))
-        vb_h = float(svg_root.get('height', '100').rstrip('pt'))
+    fitted = min(width, height)
+    s = fitted / qr_size
+    x_offset = ll_svg[0] + (width - fitted) / 2
+    y_offset = ur_svg[1] + (height - fitted) / 2
 
-    sx = width / vb_w
-    sy = height / vb_h
-
-    transform_pieces = [
-        f"translate({util.float2str(ll_svg[0])},{util.float2str(ur_svg[1])})",
-        f"scale({util.float2str(sx)},{util.float2str(sy)})",
-    ]
+    d_parts = []
+    for row_idx, row in enumerate(matrix):
+        col = 0
+        while col < qr_size:
+            if row[col]:
+                start = col
+                while col < qr_size and row[col]:
+                    col += 1
+                d_parts.append(f"M{start} {row_idx + 0.5}h{col - start}")
+            else:
+                col += 1
 
     g_el = ET.SubElement(parent, 'g')
-    g_el.set('transform', ' '.join(transform_pieces))
+    g_el.set('transform', f"translate({util.float2str(x_offset)},{util.float2str(y_offset)}) scale({util.float2str(s)},{util.float2str(s)})")
     diagram.add_id(g_el, element.get('id'))
 
-    for child in svg_root:
-        local = ET.QName(child.tag).localname
-        new_el = ET.SubElement(g_el, local)
-        new_el.attrib.update(child.attrib)
-        new_el.set('fill', 'none')
-        if child.text:
-            new_el.text = child.text
+    path_el = ET.SubElement(g_el, 'path')
+    path_el.set('stroke', '#000')
+    path_el.set('fill', 'none')
+    path_el.set('d', ' '.join(d_parts))
