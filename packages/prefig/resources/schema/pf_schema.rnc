@@ -385,6 +385,7 @@ GraphicalElements =
         Point |
         Polygon |
         Poset |
+        QR-Code |
         Rectangle |
         Riemann-Sum |
         Scatter |
@@ -822,6 +823,14 @@ Poset = element poset {
         LabelText?
     }*,
     CommonAttributes
+}
+
+QR-Code = element qr-code {
+    text,
+    attribute at {text}?,
+    attribute lower-left {text}?,
+    attribute center {text}?,
+    attribute dimensions {text}?
 }
 
 Rectangle = element rectangle {

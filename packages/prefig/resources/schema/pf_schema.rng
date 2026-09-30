@@ -834,6 +834,7 @@
       <ref name="Point"/>
       <ref name="Polygon"/>
       <ref name="Poset"/>
+      <ref name="QR-Code"/>
       <ref name="Rectangle"/>
       <ref name="Riemann-Sum"/>
       <ref name="Scatter"/>
@@ -2114,6 +2115,23 @@
         </element>
       </zeroOrMore>
       <ref name="CommonAttributes"/>
+    </element>
+  </define>
+  <define name="QR-Code">
+    <element name="qr-code">
+      <text/>
+      <optional>
+        <attribute name="at"/>
+      </optional>
+      <optional>
+        <attribute name="lower-left"/>
+      </optional>
+      <optional>
+        <attribute name="center"/>
+      </optional>
+      <optional>
+        <attribute name="dimensions"/>
+      </optional>
     </element>
   </define>
   <define name="Rectangle">

@@ -7,7 +7,8 @@ repository.workspace = true
 description = "Rust port of PreFigure: an authoring system for mathematical diagrams"
 
 [features]
-default = ["xml-parse", "diffeqs", "network", "shapes", "xast"]
+default = ["xml-parse", "diffeqs", "network", "shapes", "xast", "qrcodes"]
+qrcodes = ["dep:qrcode"]
 xml-parse = ["dep:quick-xml"]
 xast = ["dep:serde", "dep:serde_json"]
 diffeqs = []
@@ -32,6 +33,7 @@ serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 petgraph = { version = "0.8", optional = true }
 geo = { version = "0.30", optional = true }
+qrcode = { version = "0.14", optional = true }
 
 # Pure-Rust LaTeX -> SVG for the `ratex` feature (native and wasm).
 ratex-parser = { version = "0.1", optional = true }

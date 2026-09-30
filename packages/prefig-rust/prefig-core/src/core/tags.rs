@@ -65,6 +65,8 @@ pub fn parse_element(
         "ellipse" => circle::ellipse(element, diagram, root, outline_group),
         "graph" => graph::graph(element, diagram, root, outline_group),
         "image" => image::image(element, diagram, root, outline_group)?,
+        #[cfg(feature = "qrcodes")]
+        "qr-code" => image::qr_code(element, diagram, root, outline_group)?,
         "histogram" => statistics::histogram(element, diagram, root, outline_group),
         "implicit-curve" => implicit::implicit_curve(element, diagram, root, outline_group),
         "grid" => grid_axes::grid(element, diagram, root, outline_group),

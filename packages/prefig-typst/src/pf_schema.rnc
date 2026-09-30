@@ -1,3 +1,7 @@
+# pf_schema.rnc — canonical PreFigure schema (namespace-free).
+# When copying into another repository, record the commit hash here so future
+# resyncs can be scoped with: git diff <hash>..HEAD -- packages/prefig/resources/schema/pf_schema.rnc
+# Last updated: commit 27c382c (2026-08-01)
 grammar {
 start = Diagram
 
@@ -16,8 +20,9 @@ Diagram = element diagram {
 Caption = element caption {text}
 
 Annotations = element annotations {
-    (attribute text {text}, Annotation*) |
-    Annotation
+    attribute language {text}?,
+    ((attribute text {text}, Annotation*) |
+    Annotation)
 }
 
 AnnotationAttributes = 
@@ -379,6 +384,8 @@ GraphicalElements =
         Plot-DE-Solution |
         Point |
         Polygon |
+        Poset |
+        QR-Code |
         Rectangle |
         Riemann-Sum |
         Scatter |
@@ -644,6 +651,34 @@ Line = element line {
     LabelText?
 }
 
+NetworkNode = element node {
+    attribute at {text}?,
+    attribute p {text}?,
+    attribute edges {text}?,
+    attribute loop-orientation {text}?,
+    attribute style {text}?,
+    FillAttributes,
+    LabelAttributes,
+    LabelText?
+}
+
+NetworkEdge = element edge {
+    attribute at {text}?,
+    attribute vertices {text},
+    attribute weight {text}?,
+    attribute loop-scale {text}?,
+    attribute label-location {text}?,
+    attribute launch-angle {text}?,
+    StrokeAttributes,
+    LabelAttributes,
+    LabelText?
+}
+
+NetworkRepeat = element repeat {
+    attribute parameter {text},
+    (NetworkNode | NetworkEdge | NetworkRepeat)*
+}
+
 Network = element network {
     attribute at {text}?,
     attribute graph {text}?,
@@ -677,29 +712,7 @@ Network = element network {
     attribute tactile-edge-spread {text}?,
     attribute labels {"yes"|"no"}?,
     attribute label-dictionary {text}?,
-    (
-        element node {
-            attribute at {text}?,
-            attribute p {text}?,
-            attribute edges {text}?,
-            attribute loop-orientation {text}?,
-            attribute style {text}?,
-            FillAttributes,
-            LabelAttributes,
-            LabelText?
-
-        }* &
-        element edge {
-            attribute at {text}?,
-            attribute vertices {text},
-            attribute weight {text}?,
-            attribute loop-scale {text}?,
-            attribute label-location {text}?,
-            StrokeAttributes,
-            LabelAttributes,
-            LabelText?
-        }*
-    ),
+    (NetworkNode | NetworkEdge | NetworkRepeat)*,
     CommonAttributes
 }
 
@@ -774,6 +787,50 @@ Polygon = element polygon {
     attribute arrow-angles {text}?,
     FillAttributes,
     CommonAttributes
+}
+
+Poset = element poset {
+    attribute covers {text},
+    attribute at {text}?,
+    attribute labels {text}?,
+    attribute locations {text}?,
+    attribute alignments {text}?,
+    attribute labeled {"yes"|"no"}?,
+    attribute centered-labels {"yes"|"no"}?,
+    attribute node-size {text}?,
+    attribute node-style {text}?,
+    attribute node-stroke {text}?,
+    attribute node-fill {text}?,
+    attribute tactile-node-size {text}?,
+    attribute tactile-node-style {text}?,
+    attribute tactile-node-stroke {text}?,
+    attribute tactile-node-fill {text}?,
+    attribute edge-stroke {text}?,
+    attribute edge-thickness {text}?,
+    attribute edge-dash {text}?,
+    attribute tactile-edge-stroke {text}?,
+    attribute tactile-edge-thickness {text}?,
+    attribute tactile-edge-dash {text}?,
+    element node {
+        attribute at {text},
+        attribute p {text}?,
+        attribute style {text}?,
+        attribute size {text}?,
+        attribute tactile-style {text}?,
+        attribute tactile-size {text}?,
+        FillAttributes,
+        LabelAttributes,
+        LabelText?
+    }*,
+    CommonAttributes
+}
+
+QR-Code = element qr-code {
+    text,
+    attribute at {text}?,
+    attribute lower-left {text}?,
+    attribute center {text}?,
+    attribute dimensions {text}?
 }
 
 Rectangle = element rectangle {

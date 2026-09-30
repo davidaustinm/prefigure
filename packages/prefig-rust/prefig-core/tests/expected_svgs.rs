@@ -157,6 +157,10 @@ const RASTER_IDENTICAL: &[&str] = &[
 ///   pair of <use> marks is dropped (four SVG children where there should be
 ///   six). The Rust port draws it correctly, so it rightly produces more than
 ///   the saved file.
+/// - qr_code: the QR standard permits 8 mask patterns; Python (segno) and Rust
+///   (qrcode) independently score the penalties and choose different masks.
+///   Both produce valid, scannable QR codes for the same URL; the module
+///   patterns simply differ.
 const SKIPPED: &[&str] = &[
     "extracted_from_docs/network-annotations",
     "extracted_from_docs/network-combination",
@@ -167,6 +171,7 @@ const SKIPPED: &[&str] = &[
     "extracted_from_docs/network-verbose",
     "extracted_from_docs/judson-system",
     "extracted_from_docs/outline",
+    "extracted_from_docs/qr_code",
 ];
 
 fn check_for(name: &str) -> Check {

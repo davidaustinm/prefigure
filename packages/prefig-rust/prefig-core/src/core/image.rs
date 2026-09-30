@@ -6,6 +6,122 @@ use crate::core::{ctm, group};
 use crate::value::{py_str, Value};
 use crate::xml::{self, El};
 
+#[cfg(feature = "qrcodes")]
+fn qr_svg_path(code: &qrcode::QrCode) -> String {
+    let size = code.width();
+    let mut d = String::new();
+    for row in 0..size {
+        let mut col = 0;
+        while col < size {
+            if code[(col, row)] == qrcode::Color::Dark {
+                let start = col;
+                while col < size && code[(col, row)] == qrcode::Color::Dark {
+                    col += 1;
+                }
+                let run_len = col - start;
+                if !d.is_empty() {
+                    d.push(' ');
+                }
+                d.push_str(&format!("M{start} {}h{run_len}", row as f32 + 0.5));
+            } else {
+                col += 1;
+            }
+        }
+    }
+    d
+}
+
+#[cfg(feature = "qrcodes")]
+pub fn qr_code(
+    element: &El,
+    diagram: &mut Diagram,
+    parent: &El,
+    outline_group: Option<&El>,
+) -> Result<(), String> {
+    let Some(text) = element.borrow().text.clone() else {
+        log::error!("A <qr-code> element needs text");
+        return Ok(());
+    };
+    let text = text.trim().to_string();
+    if text.is_empty() {
+        log::error!("A <qr-code> element needs text");
+        return Ok(());
+    }
+
+    let code = qrcode::QrCode::with_error_correction_level(text.as_bytes(), qrcode::EcLevel::H)
+        .map_err(|e| format!("Failed to generate QR code: {e}"))?;
+    let qr_size = code.width() as f64;
+
+    let eval_pair = |diagram: &mut Diagram, attr: &str| -> Option<[f64; 2]> {
+        let v = diagram.ctx.valid_eval(attr).ok()?.as_vec_f64().ok()?;
+        (v.len() >= 2).then(|| [v[0], v[1]])
+    };
+    let ll_attr = element.borrow().get_or("lower-left", "(0,0)");
+    let dims_attr = element.borrow().get_or("dimensions", "(1,1)");
+    let (Some(mut ll), Some(dims)) = (eval_pair(diagram, &ll_attr), eval_pair(diagram, &dims_attr))
+    else {
+        log::error!("Error parsing placement data in a <qr-code>");
+        return Ok(());
+    };
+    let center_attr = element.borrow().get("center");
+    let center = match center_attr {
+        Some(attr) => {
+            let Some(c) = eval_pair(diagram, &attr) else {
+                log::error!("Error parsing placement data in a <qr-code>");
+                return Ok(());
+            };
+            ll = [c[0] - 0.5 * dims[0], c[1] - 0.5 * dims[1]];
+            c
+        }
+        None => [ll[0] + 0.5 * dims[0], ll[1] + 0.5 * dims[1]],
+    };
+    if diagram.output_format() == "tactile" {
+        element.borrow_mut().tag = "group".to_string();
+        element.borrow_mut().text = None;
+        let label_el = xml::sub_element(element, "label");
+        {
+            let mut l = label_el.borrow_mut();
+            l.text = Some("A QR code".to_string());
+            l.set("anchor", &format!("({},{})", center[0], center[1]));
+            l.set("alignment", "c");
+        }
+        group::group(element, diagram, parent, outline_group);
+        return Ok(());
+    }
+
+    let ll_svg = diagram.transform(ll);
+    let ur_svg = diagram.transform([ll[0] + dims[0], ll[1] + dims[1]]);
+    let width = ur_svg[0] - ll_svg[0];
+    let height = ll_svg[1] - ur_svg[1];
+
+    let fitted = width.min(height);
+    let s = fitted / qr_size;
+    let x_offset = ll_svg[0] + (width - fitted) / 2.0;
+    let y_offset = ur_svg[1] + (height - fitted) / 2.0;
+
+    let transform = format!(
+        "translate({},{}) scale({},{})",
+        float2str(x_offset),
+        float2str(y_offset),
+        float2str(s),
+        float2str(s)
+    );
+
+    let g_el = xml::sub_element(parent, "g");
+    g_el.borrow_mut().set("transform", &transform);
+    let id = element.borrow().get("id");
+    diagram.add_id(&g_el, id.as_deref());
+
+    let path_el = xml::sub_element(&g_el, "path");
+    {
+        let mut p = path_el.borrow_mut();
+        p.set("stroke", "#000");
+        p.set("fill", "none");
+        p.set("d", &qr_svg_path(&code));
+    }
+    Ok(())
+}
+
 fn file_type_for(suffix: &str) -> Option<&'static str> {
     match suffix {
         "jpg" | "jpeg" => Some("jpeg"),

@@ -20,12 +20,12 @@ def image(element, diagram, parent, outline_group):
     if len(element) == 0:
         log.error("An <image> must contain content to replace the image in a tactile build")
         return;
-    
+
     if diagram.output_format() == 'tactile':
         element.tag = 'group'
         group.group(element, diagram, parent, outline_group)
         return
-        
+
     source = element.get('source', None)
     if source is None:
         log.error("An <image> needs a @source attribute")
@@ -124,3 +124,68 @@ def image(element, diagram, parent, outline_group):
 
     image_el.set('transform', ' '.join(transform_pieces))
     
+def qr_code(element, diagram, parent, outline_group):
+    text = element.text
+    if text is None:
+        log.error('A <qr-code> element needs text')
+        return
+    text = text.strip()
+
+    import segno
+    qr = segno.make(text, error='H')
+    matrix = qr.matrix
+    qr_size = len(matrix)
+
+    try:
+        ll = un.valid_eval(element.get('lower-left', '(0,0)'))
+        dims = un.valid_eval(element.get('dimensions', '(1,1)'))
+        center = element.get('center', None)
+        if center is not None:
+            center = un.valid_eval(center)
+            ll = center - 0.5 * dims
+        else:
+            center = ll + 0.5 * dims
+    except:
+        log.error("Error parsing placement data in a <qr-code>")
+        return
+
+    if diagram.output_format() == 'tactile':
+        element.tag = 'group'
+        label_el = ET.SubElement(element, 'label')
+        label_el.text = "A QR code"
+        element.text = None
+        label_el.set('anchor', f"({center[0]},{center[1]})")
+        label_el.set('alignment', 'c')
+        group.group(element, diagram, parent, outline_group)
+        return
+
+    ll_svg = diagram.transform(ll)
+    ur_svg = diagram.transform(ll + dims)
+    width = ur_svg[0] - ll_svg[0]
+    height = ll_svg[1] - ur_svg[1]
+
+    fitted = min(width, height)
+    s = fitted / qr_size
+    x_offset = ll_svg[0] + (width - fitted) / 2
+    y_offset = ur_svg[1] + (height - fitted) / 2
+
+    d_parts = []
+    for row_idx, row in enumerate(matrix):
+        col = 0
+        while col < qr_size:
+            if row[col]:
+                start = col
+                while col < qr_size and row[col]:
+                    col += 1
+                d_parts.append(f"M{start} {row_idx + 0.5}h{col - start}")
+            else:
+                col += 1
+
+    g_el = ET.SubElement(parent, 'g')
+    g_el.set('transform', f"translate({util.float2str(x_offset)},{util.float2str(y_offset)}) scale({util.float2str(s)},{util.float2str(s)})")
+    diagram.add_id(g_el, element.get('id'))
+
+    path_el = ET.SubElement(g_el, 'path')
+    path_el.set('stroke', '#000')
+    path_el.set('fill', 'none')
+    path_el.set('d', ' '.join(d_parts))

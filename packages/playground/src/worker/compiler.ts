@@ -53,6 +53,9 @@ export class PreFigureCompiler {
                 const PREFIG_PATH =
                     ((this.pyodide as any)._api.config.indexURL as string) +
                     "prefig-0.7.9-py3-none-any.whl";
+                const SEGNO_PATH =
+                    ((this.pyodide as any)._api.config.indexURL as string) +
+                    "segno-1.6.6-py3-none-any.whl";
 
                 // Load all the dependencies
                 await this.pyodide.loadPackage([
@@ -65,6 +68,7 @@ export class PreFigureCompiler {
                     "click",
                     "networkx",
                     PREFIG_PATH,
+                    SEGNO_PATH,
                 ]);
             } catch (e) {
                 reject(e);

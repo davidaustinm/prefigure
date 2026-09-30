@@ -65,6 +65,7 @@ tag_dict = {
     'path': path.path,
     'point': point.point,
     'polygon': polygon.polygon,
+    'qr-code': image.qr_code,
     'read': read.read,
     'rectangle': rectangle.rectangle,
     'repeat': repeat.repeat,
