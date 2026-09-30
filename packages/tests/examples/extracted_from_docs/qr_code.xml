@@ -1,0 +1,13 @@
+<diagram xmlns="https://prefigure.org"
+         dimensions="(300,300)" margins="5">
+  <definition>f(x)=-(x+1)^2+3</definition>
+  <coordinates bbox="(-4,-4,4,4)">
+    <grid-axes/>
+    <graph function="f"/>
+    <rectangle lower-left="(2, 1.5)" dimensions="(2,2.5)"
+               stroke="black" fill="white"/>
+    <qr-code lower-left="(2,1.5)" dimensions="(2,2.5)">
+      https://prefigure.org
+    </qr-code>
+  </coordinates>
+</diagram>

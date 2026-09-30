@@ -129,6 +129,7 @@ def qr_code(element, diagram, parent, outline_group):
     if text is None:
         log.error('A <qr-code> element needs text')
         return
+    text = text.strip()
 
     import segno
     qr = segno.make(text, error='H')
