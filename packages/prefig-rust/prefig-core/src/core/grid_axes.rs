@@ -122,6 +122,11 @@ pub fn find_log_positions(r: &[f64]) -> Vec<f64> {
     positions
 }
 
+/// Python's math.isclose with default tolerances (rel_tol=1e-9, abs_tol=0).
+fn isclose(a: f64, b: f64) -> bool {
+    a == b || (a - b).abs() <= 1e-9 * a.abs().max(b.abs())
+}
+
 fn find_linear_positions(r: (f64, f64, f64)) -> Vec<f64> {
     let n = ((r.2 - r.0) / r.1).round_ties_even() as usize;
     linspace(r.0, r.2, n)
@@ -338,8 +343,12 @@ pub fn grid(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
     }
 
     // a plain rectangular grid
+    let grid_border = element.borrow().get_or("border", "yes") == "yes";
     for x in x_positions {
         if x < bbox[0] || x > bbox[2] {
+            continue;
+        }
+        if !grid_border && (isclose(x, bbox[0]) || isclose(x, bbox[2])) {
             continue;
         }
         let line_el = mk_line([x, bbox[1]], [x, bbox[3]], diagram, None, None, true);
@@ -348,6 +357,9 @@ pub fn grid(element: &El, diagram: &mut Diagram, parent: &El, outline_group: Opt
     }
     for y in y_positions {
         if y < bbox[1] || y > bbox[3] {
+            continue;
+        }
+        if !grid_border && (isclose(y, bbox[1]) || isclose(y, bbox[3])) {
             continue;
         }
         let line_el = mk_line([bbox[0], y], [bbox[2], y], diagram, None, None, true);

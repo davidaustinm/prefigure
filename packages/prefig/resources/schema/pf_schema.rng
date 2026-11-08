@@ -1183,6 +1183,14 @@
           </choice>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="border">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
+      </optional>
       <ref name="StrokeAttributes"/>
       <ref name="CommonAttributes"/>
     </element>
@@ -1194,6 +1202,14 @@
       </optional>
       <optional>
         <attribute name="spacings"/>
+      </optional>
+      <optional>
+        <attribute name="border">
+          <choice>
+            <value>yes</value>
+            <value>no</value>
+          </choice>
+        </attribute>
       </optional>
       <optional>
         <attribute name="hspacing"/>
