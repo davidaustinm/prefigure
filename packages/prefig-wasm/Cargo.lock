@@ -606,7 +606,7 @@ checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
 name = "prefig-core"
-version = "0.7.0"
+version = "0.7.10"
 dependencies = [
  "geo",
  "indexmap",
@@ -623,7 +623,7 @@ dependencies = [
 
 [[package]]
 name = "prefig-wasm"
-version = "0.7.0"
+version = "0.7.10"
 dependencies = [
  "js-sys",
  "prefig-core",
