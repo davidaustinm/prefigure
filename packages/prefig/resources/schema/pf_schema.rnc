@@ -492,6 +492,7 @@ Grid = element grid {
     attribute coordinates {text}?,
     attribute spacing-degrees {"yes"|"no"}?,
     attribute scales {"linear"|"semilogx"|"semilogy"|"loglog"}?,
+    attribute border {"yes"|"no"}?,
     StrokeAttributes,
     CommonAttributes
 }
@@ -499,6 +500,7 @@ Grid = element grid {
 Grid-Axes = element grid-axes {
     attribute at {text}?,
     attribute spacings {text}?,
+    attribute border {"yes"|"no"}?,
     attribute hspacing {text}?,
     attribute vspacing {text}?,
     attribute h-pi-format {"yes"|"no"}?,
