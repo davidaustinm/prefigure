@@ -52,7 +52,7 @@ export class PreFigureCompiler {
                 // future.
                 const PREFIG_PATH =
                     ((this.pyodide as any)._api.config.indexURL as string) +
-                    "prefig-0.7.10-py3-none-any.whl";
+                    "prefig-0.7.11-py3-none-any.whl";
                 const SEGNO_PATH =
                     ((this.pyodide as any)._api.config.indexURL as string) +
                     "segno-1.6.6-py3-none-any.whl";
