@@ -720,7 +720,7 @@ class Diagram:
 
         use = ET.SubElement(parent, 'use', attrib={       
             'fill': fill,
-            'stroke-width': str(int(width) + outline_width),
+            'stroke-width': f"{float(width) + outline_width:g}",
             'stroke': 'white',
             'href': r'#' + outline_id
         }

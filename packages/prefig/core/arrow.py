@@ -13,6 +13,16 @@ arrow_length_dict = {}
 def get_arrow_length(key):
     return arrow_length_dict.get(key)
 
+# SVG stroke widths may be fractional, so we read them as floats.
+# A zero width would make the arrowhead's scaling singular, so we
+# clamp it to a tiny positive value, which leaves the arrowhead
+# effectively invisible, just like the zero-width path it sits on.
+MIN_STROKE_WIDTH = 1e-3
+def get_stroke_width(path):
+    stroke_width_str = path.get('stroke-width', '1')
+    stroke_width = max(float(stroke_width_str), MIN_STROKE_WIDTH)
+    return stroke_width_str, stroke_width
+
 # Form arrows to be used with a variety of graphical components
 # Arrowheads are created as markers and then added to paths
 
@@ -24,8 +34,7 @@ def get_arrow_length(key):
 # width.
 def add_tactile_arrowhead_marker(diagram, path, mid=False):
     # get the stroke width from the graphical component
-    stroke_width_str = path.get('stroke-width', '1')
-    stroke_width = int(stroke_width_str)
+    stroke_width_str, stroke_width = get_stroke_width(path)
     id = diagram.prepend_id_prefix('arrow-head-'+stroke_width_str)
 
     # if we've seen this already, there's no need to create it again
@@ -178,8 +187,7 @@ def add_arrowhead_marker(diagram,
         return add_tactile_arrowhead_marker(diagram, path)
     
     # get the stroke width from the graphical component
-    stroke_width_str = path.get('stroke-width', '1')
-    stroke_width = int(stroke_width_str)
+    stroke_width_str, stroke_width = get_stroke_width(path)
     stroke_color = path.get('stroke')
 
     # Dimensions are a bit different if the arrow head is at an

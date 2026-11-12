@@ -915,8 +915,11 @@ impl Diagram {
         {
             let mut u = use_el.borrow_mut();
             u.set("fill", &fill);
-            let width_num: i64 = width.parse().unwrap_or(1);
-            u.set("stroke-width", &format!("{}", width_num + outline_width));
+            let width_num: f64 = width.parse().unwrap_or(1.0);
+            u.set(
+                "stroke-width",
+                &format!("{}", width_num + outline_width as f64),
+            );
             u.set("stroke", "white");
             u.set("href", &format!("#{outline_id}"));
         }
