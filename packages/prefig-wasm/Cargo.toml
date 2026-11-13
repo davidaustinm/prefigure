@@ -19,7 +19,7 @@ ratex = ["prefig-core/ratex"]
 
 [dependencies]
 # WASM build: everything pure-Rust — XML parsing, XAST, ODE/diffeqs, boolean
-# <shape> ops (geo), and <network> auto-layout (petgraph). Excluded: only the
+# <shape> ops (geo), and <network> auto-layout. Excluded: only the
 # native host integrations (cairo text, liblouis braille, node MathJax).
 prefig-core = { path = "../prefig-rust/prefig-core", default-features = false, features = ["xml-parse", "xast", "diffeqs", "shapes", "network"] }
 wasm-bindgen = "0.2"

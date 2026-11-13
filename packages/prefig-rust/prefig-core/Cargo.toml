@@ -10,9 +10,9 @@ description = "Rust port of PreFigure: an authoring system for mathematical diag
 default = ["xml-parse", "diffeqs", "network", "shapes", "xast", "qrcodes"]
 qrcodes = ["dep:qrcode"]
 xml-parse = ["dep:quick-xml"]
-xast = ["dep:serde", "dep:serde_json"]
+xast = []
 diffeqs = []
-network = ["dep:petgraph"]
+network = []
 shapes = ["dep:geo"]
 # text measurement through the system libcairo (native builds only)
 text-cairo = []
@@ -29,9 +29,6 @@ log = "0.4"
 indexmap = "2"
 peg = "0.8"
 quick-xml = { version = "0.37", optional = true }
-serde = { version = "1", features = ["derive"], optional = true }
-serde_json = { version = "1", optional = true }
-petgraph = { version = "0.8", optional = true }
 geo = { version = "0.30", optional = true }
 qrcode = { version = "0.14", optional = true }
 
