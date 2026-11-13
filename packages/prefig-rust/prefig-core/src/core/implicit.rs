@@ -64,8 +64,8 @@ impl QuadTree {
 
     fn intersects(&self, g: &LevelSet, diagram: &mut Diagram) -> bool {
         let mut sign = g.value(self.corners[3], diagram);
-        for i in 0..4 {
-            let nextsign = g.value(self.corners[i], diagram);
+        for &corner in &self.corners {
+            let nextsign = g.value(corner, diagram);
             if sign * nextsign <= 0.0 {
                 return true;
             }
