@@ -889,7 +889,7 @@ dependencies = [
 
 [[package]]
 name = "prefig-cli"
-version = "0.7.10"
+version = "0.7.11"
 dependencies = [
  "clap",
  "env_logger",
@@ -899,7 +899,7 @@ dependencies = [
 
 [[package]]
 name = "prefig-core"
-version = "0.7.10"
+version = "0.7.11"
 dependencies = [
  "env_logger",
  "geo",
