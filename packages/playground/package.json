@@ -60,7 +60,7 @@
         "react": "^18.3.1",
         "react-bootstrap-icons": "^1.11.5",
         "react-dom": "^18.3.1",
-        "speech-rule-engine": "5.0.0-beta.7"
+        "speech-rule-engine": "5.0.0-rc.4"
     },
     "devDependencies": {
         "@types/node": "^22.10.1",
@@ -69,7 +69,7 @@
         "@vitejs/plugin-react": "^4.3.4",
         "react-bootstrap": "^2.10.6",
         "typescript": "~5.7.2",
-        "vite": "^6.0.3",
+        "vite": "^6.4.6",
         "vite-plugin-static-copy": "^2.2.0",
         "wireit": "^0.14.9"
     }

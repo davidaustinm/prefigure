@@ -23,7 +23,7 @@
     },
     "devDependencies": {
         "typescript": "~5.7.2",
-        "vitest": "^2.1.8",
+        "vitest": "^5.1.0",
         "vscode-jsonrpc": "^8.2.1",
         "vscode-languageserver-protocol": "^3.17.5"
     }
